@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+ <meta charset="UTF-8" />
+ <title>LizGoban</title>
+ <script defer src="renderer.js"></script>
+ <style type="text/css"> * {font-size: 120%;} </style>
+</head>
+
+<body>
+
+<canvas id="goban" style="background: #f9ca91; float: left;"></canvas>
+<canvas id="sub_goban" style="background: #fff; float: right;"></canvas>
+
+<div>
+<canvas id="winrate_bar" style="background: #000; float: right;"></canvas>
+</div>
+
+<div style='float: right; margin-top: 2%'>
+<button onclick="main('undo_to_start')">|&lt;</button>
+<button onclick="main('undo_ntimes', 15)">&lt;&lt;</button>
+<button onclick="main('undo')">&lt;</button>
+(<span id="stone_count"></span>)
+<button onclick="main('redo')">&gt;</button>
+<button onclick="main('redo_ntimes', 15)">&gt;&gt;</button>
+<button onclick="main('redo_to_end')">&gt;|</button>
+<span id="turn"></span>
+<button onclick="main('pass')">pass</button>
+</div>
+
+<!--
+ <input id="move" type="text" />
+ <button onclick="play()">play</button>
+ <button onclick="play_best()">play_best</button>
+-->
+
+<pre id="debug"></pre>
+
+</body>
+</html>
