@@ -2,7 +2,7 @@
 
 // idx [i][j] of array: [0][0] = left top, [0][18] = right top
 // coord (x, y) on canvas: (0, 0) = left top, (width, 0) = right top
-// move: "a19" = left top, "t19" = right top
+// move: "A19" = left top, "T19" = right top
 
 const col_name = 'ABCDEFGHJKLMNOPQRST'
 const board_size = col_name.length
