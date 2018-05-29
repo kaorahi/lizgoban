@@ -6,6 +6,7 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const ipc = require('electron').ipcRenderer
+const {to_i, to_f, xor, clone, flatten, hash_each, seq, do_ntimes} = require('./util.js')
 const {board_size, idx2coord_translator_pair, move2idx, idx2move} = require('./coord.js')
 
 // canvas
@@ -28,13 +29,6 @@ window.onresize = set_all_canvas_size
 
 /////////////////////////////////////////////////
 // util
-
-const to_i = x => (x | 0)
-const to_f = x => (x - 0)
-const clone = x => JSON.parse(JSON.stringify(x))
-// seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
-const seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
-const xor = (a, b) => (a && !b) || (!a && b)
 
 function setq(x, val) {Q(x).textContent = val}
 function setdebug(x) {setq('#debug', JSON.stringify(x))}

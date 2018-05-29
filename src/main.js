@@ -16,16 +16,8 @@ const ipc = electron.ipcMain
 let history = [], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
 
 // util
+const {to_i, to_f, xor, clone, flatten, hash_each_pair, seq, do_ntimes} = require('./util.js')
 const {idx2move} = require('./coord.js')
-const to_i = x => (x | 0)
-const to_f = x => (x - 0)
-const clone = x => JSON.parse(JSON.stringify(x))
-// seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
-const seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
-const do_ntimes = (n, f) => seq(n).forEach(f)
-// const sum = a => a.reduce((r,x) => r + x, 0)
-const flatten = a => [].concat(...a)
-const hash_each_pair = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 
 /////////////////////////////////////////////////
 // electron
