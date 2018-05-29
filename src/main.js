@@ -25,6 +25,7 @@ const seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
 const do_ntimes = (n, f) => seq(n).forEach(f)
 // const sum = a => a.reduce((r,x) => r + x, 0)
 const flatten = a => [].concat(...a)
+const hash_each_pair = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 
 /////////////////////////////////////////////////
 // electron
@@ -46,17 +47,14 @@ function renderer(channel, x) {window && window.webContents.send(channel, x)}
 /////////////////////////////////////////////////
 // from renderer
 
-function handle(f) {return (e, x) => f(x)}
+const api = {
+    play: play, undo: undo, redo: redo, pass: () => play('pass'),
+    undo_ntimes: undo_ntimes, redo_ntimes: redo_ntimes,
+    undo_to_start: undo_to_start, redo_to_end: redo_to_end,
+    update: update,
+}
 
-ipc.on('play', handle(play))
-ipc.on('pass', (e) => play('pass'))
-ipc.on('undo', undo)
-ipc.on('redo', redo)
-ipc.on('undo_ntimes', handle(undo_ntimes))
-ipc.on('redo_ntimes', handle(redo_ntimes))
-ipc.on('undo_to_start', undo_to_start)
-ipc.on('redo_to_end', redo_to_end)
-ipc.on('update', update)
+hash_each_pair(api, (channel, handler) => ipc.on(channel, (e, ...args) => handler(...args)))
 
 /////////////////////////////////////////////////
 // leelaz action
