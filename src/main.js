@@ -16,7 +16,7 @@ const ipc = electron.ipcMain
 let history = [], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
 
 // util
-const {to_i, to_f, xor, clone, flatten, hash_each_pair, seq, do_ntimes} = require('./util.js')
+const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes} = require('./util.js')
 const {idx2move} = require('./coord.js')
 
 /////////////////////////////////////////////////
@@ -46,7 +46,7 @@ const api = {
     update: update,
 }
 
-hash_each_pair(api, (channel, handler) => ipc.on(channel, (e, ...args) => handler(...args)))
+each_key_value(api, (channel, handler) => ipc.on(channel, (e, ...args) => handler(...args)))
 
 /////////////////////////////////////////////////
 // leelaz action
