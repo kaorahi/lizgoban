@@ -178,8 +178,8 @@ function finish_suggest_reader(suggest) {
 
 function each_line(f) {
     let buf = ''
-    return d => {
-        let a = d.toString().split('\n'), rest = a.pop()
+    return stream => {
+        let a = stream.toString().split('\n'), rest = a.pop()
         a.length > 0 && (a[0] = buf + a[0], buf = '', a.forEach(f))
         buf += rest
     }

@@ -11,7 +11,7 @@ const {board_size, idx2coord_translator_pair, move2idx, idx2move} = require('./c
 // canvas
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
 const winrate_bar_canvas = Q('#winrate_bar')
-main_canvas.lizgoban_operatable = true
+main_canvas.lizgoban_operable = true
 
 // color constant
 const BLACK = "#000", WHITE = "#fff", RED = "#f00"
@@ -114,7 +114,7 @@ function draw_goban(canvas, stones) {
     g.clearRect(0, 0, canvas.width, canvas.height)
     draw_grid(unit, idx2coord, g)
     draw_on_board(stones, unit, idx2coord, g)
-    if (canvas.lizgoban_operatable) {
+    if (canvas.lizgoban_operable) {
         canvas.onmousedown = e => play_here(e, coord2idx)
         canvas.onmousemove = e => hover_here(e, coord2idx, canvas)
     }
