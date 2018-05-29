@@ -10,8 +10,9 @@ const board_size = col_name.length
 function idx2move(i, j) {return col_name[j] + (board_size - i)}
 
 function move2idx(move) {
-    let [_, col, row] = move.match(/([A-HJ-T])((1[0-9])|[1-9])/)
-    return [board_size - to_i(row), col_name.indexOf(col)]
+    // return [] if move is pass
+    let m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
+    return m ? [board_size - to_i(row), col_name.indexOf(col)] : []
 }
 
 function translator_pair([from1, from2], [to1, to2]) {

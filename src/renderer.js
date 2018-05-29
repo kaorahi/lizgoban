@@ -90,23 +90,25 @@ function draw_main_goban(canvas) {
 
 function draw_goban_with_suggest(canvas) {
     let displayed_stones = clone(stones)
-    suggest.forEach(h => {
-        let [i, j] = move2idx(h.move)
-        displayed_stones[i][j] = {suggest: true, data: h}
-    })
+    suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     draw_goban(canvas, displayed_stones)
 }
 
 function draw_goban_with_variation(canvas, variation) {
     let displayed_stones = clone(stones)
     variation.forEach((move, k) => {
-        let [i, j] = move2idx(move), b = xor(bturn, k % 2 === 1), w = !b
-        displayed_stones[i][j] = {
+        let b = xor(bturn, k % 2 === 1), w = !b
+        set_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
             variation: true, movenum: k + 1, variation_last: k === variation.length - 1
-        }
+        })
     })
     draw_goban(canvas, displayed_stones)
+}
+
+function set_stone_at(move, stone_array, stone) {
+    // do nothing if move is pass
+    let [i, j] = move2idx(move); (i !== undefined) && (stone_array[i][j] = stone)
 }
 
 function draw_goban(canvas, stones) {
