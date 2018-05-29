@@ -6,12 +6,7 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const ipc = require('electron').ipcRenderer
-
-// coordinate translator
-const C = require('./coord.js')
-const board_size = C.board_size
-const idx2coord_translator_pair = C.idx2coord_translator_pair
-const move2idx = C.move2idx, idx2move = C.idx2move
+const {board_size, idx2coord_translator_pair, move2idx, idx2move} = require('./coord.js')
 
 // canvas
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')

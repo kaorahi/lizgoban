@@ -12,12 +12,11 @@ const leelaz_process = require('child_process').spawn(leelaz_command, leelaz_arg
 const electron = require('electron')
 const ipc = electron.ipcMain
 
-const coord = require('./coord.js')
-
 // game state
 let history = [], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
 
 // util
+const {idx2move} = require('./coord.js')
 const to_i = x => (x | 0)
 const to_f = x => (x - 0)
 const clone = x => JSON.parse(JSON.stringify(x))
@@ -130,7 +129,7 @@ function finish_board_reader(stones) {
 function store_last_move(stones) {
     let j, i = stones.findIndex(b => (j = (b || []).findIndex(h => h.last)) >= 0)
     if (i < 0) {return}
-    let last_move = coord.idx2move(i, j), b = stones[i][j].black
+    let last_move = idx2move(i, j), b = stones[i][j].black
     history[stone_count - 1] = {move: last_move, is_black: b}
 }
 
