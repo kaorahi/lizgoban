@@ -130,7 +130,8 @@ function board_reader(s) {
 
 function finish_board_reader(stones) {
     stone_count = b_prison + w_prison + flatten(stones).filter(x => x.stone).length
-    renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones})
+    renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones,
+                       availability: availability()})
     store_last_move(stones)
 }
 
@@ -181,6 +182,18 @@ function finish_suggest_reader(suggest) {
     // winrate is NaN if suggest = []
     renderer('suggest', {suggest: suggest, playouts: psum, winrate: wsum / psum,
                          min_winrate: Math.min(...wrs), max_winrate: Math.max(...wrs)})
+}
+
+/////////////////////////////////////////////////
+// availability
+
+function availability() {
+    return {
+        undo: stone_count > 0,
+        redo: future_len() > 0,
+        previous_sequence: sequence_cursor > 0,
+        next_sequence: sequence_cursor < sequence.length - 1,
+    }
 }
 
 /////////////////////////////////////////////////

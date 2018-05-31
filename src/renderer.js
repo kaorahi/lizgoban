@@ -52,6 +52,7 @@ ipc.on('state', (e, h) => {
     setq('#turn', h.bturn ? '⬤' : '◯')
     setq('#stone_count', '' + h.stone_count)
     update_goban()
+    update_button(h.availability)
 })
 
 ipc.on('suggest', (e, h) => {
@@ -261,4 +262,15 @@ function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, siz
 
 function set_canvas_size(canvas, width, height) {
     canvas.setAttribute('width', width); canvas.setAttribute('height', height)
+}
+
+/////////////////////////////////////////////////
+// button
+
+function update_button(availability) {
+    const f = (ids, key) => ids.split(/ /).forEach(x => (Q('#' + x).disabled = !availability[key]))
+    f('undo undo_ntimes undo_to_start explicit_undo', 'undo')
+    f('redo redo_ntimes redo_to_end', 'redo')
+    f('previous_sequence', 'previous_sequence')
+    f('next_sequence', 'next_sequence')
 }

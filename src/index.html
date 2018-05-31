@@ -17,32 +17,32 @@
 </div>
 
 <div style='float: right; margin-top: 2%'>
-<button onclick="main('undo_to_start')">|&lt;</button>
-<button onclick="main('undo_ntimes', 15)">&lt;&lt;</button>
-<button onclick="main('undo')">&lt;</button>
+<input type='button' id='undo_to_start' onclick="main('undo_to_start')" value="|&lt;">
+<input type='button' id='undo_ntimes' onclick="main('undo_ntimes', 15)" value="&lt;&lt">
+<input type='button' id='undo' onclick="main('undo')" value="&lt;">
 (<span id="stone_count"></span>)
-<button onclick="main('redo')">&gt;</button>
-<button onclick="main('redo_ntimes', 15)">&gt;&gt;</button>
-<button onclick="main('redo_to_end')">&gt;|</button>
+<input type='button' id='redo' onclick="main('redo')" value="&gt;">
+<input type='button' id='redo_ntimes' onclick="main('redo_ntimes', 15)" value="&gt;&gt;">
+<input type='button' id='redo_to_end' onclick="main('redo_to_end')" value="&gt;|">
 <span id="turn"></span>
-<button onclick="main('pass')">pass</button>
-<button onclick="main('explicit_undo')">undo</button>
+<input type='button' id='pass' onclick="main('pass')" value="pass">
+<input type='button' id='explicit_undo' onclick="main('explicit_undo')" value="undo">
 </div>
 
 <div style='float: right;'>
-<button onclick="main('previous_sequence')">previous board</button>
-<button onclick="main('next_sequence')">next board</button>
+<input type='button' id='previous_sequence' onclick="main('previous_sequence')" value="previous board">
+<input type='button' id='next_sequence' onclick="main('next_sequence')" value="next board">
 </div>
 
 <div style='float: right;'>
-<button onclick="main('copy_sgf_to_clipboard')">copy SGF to clipboard</button>
-<button onclick="main('paste_sgf_from_clipboard')">paste SGF from clipboard</button>
+<input type='button' id='copy' onclick="main('copy_sgf_to_clipboard')" value="copy SGF to clipboard">
+<input type='button' id='paste' onclick="main('paste_sgf_from_clipboard')" value="paste SGF from clipboard">
 </div>
 
 <!--
  <input id="move" type="text" />
- <button onclick="play()">play</button>
- <button onclick="play_best()">play_best</button>
+ <input type='button' onclick="play()" value="play">
+ <input type='button' onclick="play_best()" value="play_best">
 -->
 
 <pre id="debug" style='clear: both'></pre>
