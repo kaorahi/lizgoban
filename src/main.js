@@ -46,6 +46,7 @@ const api = {
     undo_to_start: undo_to_start, redo_to_end: redo_to_end,
     update: update,
     paste_sgf_from_clipboard: paste_sgf_from_clipboard,
+    copy_sgf_to_clipboard: copy_sgf_to_clipboard,
 }
 
 each_key_value(api, (channel, handler) => ipc.on(channel, (e, ...args) => handler(...args)))
@@ -209,6 +210,13 @@ function sabaki_gametree_to_history(gametree) {
     return hist
 }
 
-function paste_sgf_from_clipboard() {
-    read_sgf(clipboard.readText())
+function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
+
+function history_to_sgf(hist) {
+    return '(;KM[7.5]PW[]PB[]' +
+        hist.map(({move: move, is_black: is_black}) =>
+                 (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
+        ')'
 }
+
+function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history))}
