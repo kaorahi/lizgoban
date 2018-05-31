@@ -11,6 +11,7 @@ let leelaz_process
 // electron
 const electron = require('electron')
 const ipc = electron.ipcMain
+const dialog = electron.dialog
 
 // game state
 let history = [], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
@@ -271,15 +272,19 @@ function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
 
 function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history))}
 
-function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
+function paste_sgf_from_clipboard() {try_read_sgf(read_sgf, clipboard.readText())}
 
 function open_sgf() {
-    const fs = electron.dialog.showOpenDialog(null, {
+    const fs = dialog.showOpenDialog(null, {
         properties: ['openFile'],
         title: 'Select SGF file',
         // defaultPath: '.',
     })
-    fs && fs.forEach(f => load_sabaki_gametree(SGF.parseFile(f)))
+    fs && fs.forEach(f => try_read_sgf(g => load_sabaki_gametree(SGF.parseFile(g)), f))
+}
+
+function try_read_sgf(f, arg) {
+    try {return f(arg)} catch (e) {dialog.showErrorBox("Failed to read SGF", arg)}
 }
 
 function history_to_sgf(hist) {
