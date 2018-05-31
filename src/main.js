@@ -161,7 +161,7 @@ const char2stone = {
 }
 
 function parse_board_line(line) {
-    const m = line.replace(/\(X\)/g, ' x ').replace(/\(O\)/g, ' o ')
+    const m = line.replace(/\(X\)/g, ' x ').replace(/\(O\)/g, ' o ').replace(/\(\.\)/g, ' . ')
           .replace(/\+/g, '.').replace(/\s/g, '').match(/[0-9]+([XxOo.]+)/)
     if (!m) {return false}
     return m[1].split('').map(c => clone(char2stone[c] || {}))
