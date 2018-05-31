@@ -51,7 +51,7 @@ const api = {
     undo_ntimes: undo_ntimes, redo_ntimes: redo_ntimes,
     undo_to_start: undo_to_start, redo_to_end: redo_to_end,
     paste_sgf_from_clipboard: paste_sgf_from_clipboard,
-    copy_sgf_to_clipboard: copy_sgf_to_clipboard,
+    copy_sgf_to_clipboard: copy_sgf_to_clipboard, open_sgf: open_sgf,
     next_sequence: next_sequence, previous_sequence: previous_sequence,
 }
 
@@ -247,11 +247,20 @@ function store_stone_count(hist) {hist.stone_count = stone_count}
 function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
 
 /////////////////////////////////////////////////
-// clipboard
+// SGF
 
 function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history))}
 
 function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
+
+function open_sgf() {
+    const fs = electron.dialog.showOpenDialog(null, {
+        properties: ['openFile'],
+        title: 'Select SGF file',
+        // defaultPath: '.',
+    })
+    fs && fs.forEach(f => load_sabaki_gametree(SGF.parseFile(f)))
+}
 
 function history_to_sgf(hist) {
     return '(;KM[7.5]PW[]PB[]' +
@@ -260,11 +269,13 @@ function history_to_sgf(hist) {
         ')'
 }
 
-function read_sgf(sgf_str) {
-    backup_history(); clear_board(); load_sabaki_gametree(SGF.parse(sgf_str)); redo_to_end()
-}
+function read_sgf(sgf_str) {load_sabaki_gametree(SGF.parse(sgf_str))}
 
 function load_sabaki_gametree(gametree) {
+    backup_history(); clear_board(); load_sabaki_gametree_sub(gametree); redo_to_end()
+}
+
+function load_sabaki_gametree_sub(gametree) {
     let f = (positions, is_black) => {
         (positions || []).forEach(pos => history.push({move: sgfpos2move(pos), is_black: is_black}))
     }
