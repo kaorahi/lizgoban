@@ -24,14 +24,14 @@
 <input type='button' id='redo' onclick="main('redo')" value="&gt;">
 <input type='button' id='redo_ntimes' onclick="main('redo_ntimes', 15)" value="&gt;&gt;">
 <input type='button' id='redo_to_end' onclick="main('redo_to_end')" value="&gt;|">
+(
+board <span id="sequence_cursor"></span>
+<input type='button' id='previous_sequence' onclick="main('previous_sequence')" value="↑">
+<input type='button' id='next_sequence' onclick="main('next_sequence')" value="↓">
+)
 <span id="turn"></span>
 <input type='button' id='pass' onclick="main('pass')" value="pass">
 <input type='button' id='explicit_undo' onclick="main('explicit_undo')" value="undo">
-</div>
-
-<div style='float: right;'>
-<input type='button' id='previous_sequence' onclick="main('previous_sequence')" value="previous board">
-<input type='button' id='next_sequence' onclick="main('next_sequence')" value="next board">
 </div>
 
 <div style='float: right;'>
