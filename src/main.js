@@ -276,8 +276,9 @@ function load_sabaki_gametree(gametree) {
 }
 
 function load_sabaki_gametree_sub(gametree) {
+    const nodes = gametree[0].nodes
     let f = (positions, is_black) => {
         (positions || []).forEach(pos => history.push({move: sgfpos2move(pos), is_black: is_black}))
     }
-    gametree[0].nodes.forEach(h => {f(h.B, true); f(h.W, false)})
+    nodes.forEach(h => {f(h.AB, true); f(h.B, true); f(h.W, false)})
 }
