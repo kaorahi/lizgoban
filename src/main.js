@@ -46,13 +46,10 @@ function renderer(channel, x) {window && window.webContents.send(channel, x)}
 // from renderer
 
 const api = {
-    restart_leelaz: restart_leelaz,
-    play: play, undo: undo, redo: redo, explicit_undo: explicit_undo, pass: () => play('pass'),
-    undo_ntimes: undo_ntimes, redo_ntimes: redo_ntimes,
-    undo_to_start: undo_to_start, redo_to_end: redo_to_end,
-    paste_sgf_from_clipboard: paste_sgf_from_clipboard,
-    copy_sgf_to_clipboard: copy_sgf_to_clipboard, open_sgf: open_sgf,
-    next_sequence: next_sequence, previous_sequence: previous_sequence,
+    restart_leelaz,
+    play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
+    paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf,
+    next_sequence, previous_sequence,
 }
 
 function api_handler(handler) {return (e, ...args) => {handler(...args); showboard()}}
@@ -86,6 +83,7 @@ function explicit_undo() {
     (stone_count === history.length) && history.pop()
     leelaz_action('undo')
 }
+function pass() {play('pass')}
 function clear_board() {clear_leelaz_board(); history.splice(0); stone_count = 0; bturn = true}
 
 // multi-undo/redo

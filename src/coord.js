@@ -62,10 +62,5 @@ function sgfpos2move(pos) {
 }
 
 module.exports = {
-    idx2move: idx2move,
-    move2idx: move2idx,
-    idx2coord_translator_pair: idx2coord_translator_pair,
-    board_size: board_size,
-    sgfpos2move: sgfpos2move,
-    move2sgfpos: move2sgfpos,
+    idx2move, move2idx, idx2coord_translator_pair, board_size, sgfpos2move, move2sgfpos,
 }
