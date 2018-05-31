@@ -142,7 +142,7 @@ function draw_on_board(stones, draw_next_p, unit, idx2coord, g) {
         let xy = idx2coord(i, j)
         h.stone ? draw_stone(h, xy, stone_radius, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
-        draw_next_p && h.next_move && draw_nextmove(h, xy, stone_radius, g)
+        draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
     }))
 }
 
@@ -177,7 +177,7 @@ function draw_stone(h, xy, radius, g) {
     h.maybe && (g.fillStyle = h.black ? MAYBE_BLACK : MAYBE_WHITE)
     edged_fill_circle(xy, radius, g)
     h.movenum && draw_movenum(h, xy, radius, g)
-    h.last && draw_lastmove(h, xy, radius, g)
+    h.last && draw_last_move(h, xy, radius, g)
 }
 
 function draw_movenum(h, xy, radius, g) {
@@ -187,11 +187,11 @@ function draw_movenum(h, xy, radius, g) {
     g.fillText('' + to_i(h.movenum), x, y + fontsize * 0.35, max_width)
 }
 
-function draw_lastmove(h, xy, radius, g) {
+function draw_last_move(h, xy, radius, g) {
     g.strokeStyle = h.black ? WHITE : BLACK; circle(xy, radius * 0.5, g)
 }
 
-function draw_nextmove(h, xy, radius, g) {
+function draw_next_move(h, xy, radius, g) {
     g.lineWidth = 3; g.strokeStyle = h.next_is_black ? BLACK : WHITE; circle(xy, radius, g)
 }
 
