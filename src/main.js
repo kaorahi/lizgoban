@@ -19,6 +19,8 @@ let history = [], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
 const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes} = require('./util.js')
 const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
       = require('./coord.js')
+const clipboard = electron.clipboard
+const SGF = require('@sabaki/sgf')
 
 /////////////////////////////////////////////////
 // electron
@@ -192,8 +194,16 @@ function with_skip(from, to, f) {
 /////////////////////////////////////////////////
 // SGF
 
-const clipboard = electron.clipboard
-const SGF = require('@sabaki/sgf')
+function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history))}
+
+function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
+
+function history_to_sgf(hist) {
+    return '(;KM[7.5]PW[]PB[]' +
+        hist.map(({move: move, is_black: is_black}) =>
+                 (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
+        ')'
+}
 
 function read_sgf(sgf_str) {
     clear_board()
@@ -209,14 +219,3 @@ function sabaki_gametree_to_history(gametree) {
     gametree[0].nodes.forEach(h => {f(h.B, true); f(h.W, false)})
     return hist
 }
-
-function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
-
-function history_to_sgf(hist) {
-    return '(;KM[7.5]PW[]PB[]' +
-        hist.map(({move: move, is_black: is_black}) =>
-                 (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
-        ')'
-}
-
-function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history))}
