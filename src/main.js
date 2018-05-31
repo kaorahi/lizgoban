@@ -18,7 +18,7 @@ let sequence = [history], sequence_cursor = 0;
 history.stone_count = stone_count
 
 // util
-const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes}
+const {to_i, to_f, xor, clone, merge, flatten, each_key_value, seq, do_ntimes}
       = require('./util.js')
 const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
       = require('./coord.js')
@@ -145,7 +145,7 @@ function board_reader(s) {
 
 function finish_board_reader(stones) {
     stone_count = b_prison + w_prison + flatten(stones).filter(x => x.stone).length
-    store_last_move(stones)
+    store_last_move(stones); add_next_stone_mark(stones)
     renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones,
                        history_length: history.length,
                        sequence_cursor: sequence_cursor, sequence_length: sequence.length,
@@ -157,6 +157,12 @@ function store_last_move(stones) {
     if (i < 0) {return}
     let last_move = idx2move(i, j), b = stones[i][j].black
     history[stone_count - 1] = {move: last_move, is_black: b}
+}
+
+function add_next_stone_mark(stones) {
+    if (future_len() <= 0) {return}
+    let h = history[stone_count], [i, j] = move2idx(h.move), s = stones[i][j]
+    s.next_move = true; s.next_is_black = h.is_black
 }
 
 const char2stone = {

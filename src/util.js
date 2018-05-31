@@ -7,6 +7,7 @@ E.to_f = x => (x - 0)
 E.xor = (a, b) => (a && !b) || (!a && b)
 // E.sum = a => a.reduce((r,x) => r + x, 0)
 E.clone = x => JSON.parse(JSON.stringify(x))
+E.merge = Object.assign
 E.flatten = a => [].concat(...a)
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 

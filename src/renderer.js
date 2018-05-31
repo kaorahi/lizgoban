@@ -6,7 +6,7 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const ipc = require('electron').ipcRenderer
-const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes}
+const {to_i, to_f, xor, clone, merge, flatten, each_key_value, seq, do_ntimes}
       = require('./util.js')
 const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
       = require('./coord.js')
@@ -92,7 +92,7 @@ function draw_main_goban(canvas) {
 function draw_goban_with_suggest(canvas) {
     let displayed_stones = clone(stones)
     suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
-    draw_goban(canvas, displayed_stones)
+    draw_goban(canvas, displayed_stones, true)
 }
 
 function draw_goban_with_variation(canvas, variation) {
@@ -109,17 +109,17 @@ function draw_goban_with_variation(canvas, variation) {
 
 function set_stone_at(move, stone_array, stone) {
     // do nothing if move is pass
-    let [i, j] = move2idx(move); (i !== undefined) && (stone_array[i][j] = stone)
+    let [i, j] = move2idx(move); (i !== undefined) && merge(stone_array[i][j], stone)
 }
 
-function draw_goban(canvas, stones) {
+function draw_goban(canvas, stones, draw_next_p) {
     let margin = canvas.width * 0.05
     let g = canvas.getContext("2d")
     let [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin)
     let unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
     g.clearRect(0, 0, canvas.width, canvas.height)
     draw_grid(unit, idx2coord, g)
-    draw_on_board(stones, unit, idx2coord, g)
+    draw_on_board(stones, draw_next_p, unit, idx2coord, g)
     if (canvas.lizgoban_operable) {
         canvas.onmousedown = e => play_here(e, coord2idx)
         canvas.onmousemove = e => hover_here(e, coord2idx, canvas)
@@ -136,12 +136,13 @@ function draw_grid(unit, idx2coord, g) {
     stars.forEach(i => stars.forEach(j => fill_circle(idx2coord(i, j), star_radius, g)))
 }
 
-function draw_on_board(stones, unit, idx2coord, g) {
+function draw_on_board(stones, draw_next_p, unit, idx2coord, g) {
     const stone_radius = unit * 0.5
     stones.forEach((row, i) => row.forEach((h, j) => {
         let xy = idx2coord(i, j)
         h.stone ? draw_stone(h, xy, stone_radius, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
+        draw_next_p && h.next_move && draw_nextmove(h, xy, stone_radius, g)
     }))
 }
 
@@ -188,6 +189,10 @@ function draw_movenum(h, xy, radius, g) {
 
 function draw_lastmove(h, xy, radius, g) {
     g.strokeStyle = h.black ? WHITE : BLACK; circle(xy, radius * 0.5, g)
+}
+
+function draw_nextmove(h, xy, radius, g) {
+    g.lineWidth = 3; g.strokeStyle = h.next_is_black ? BLACK : WHITE; circle(xy, radius, g)
 }
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
