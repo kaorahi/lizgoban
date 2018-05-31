@@ -25,7 +25,7 @@ Help needed:
 
 To try it:
 
-1. Install Node.js and type "npm install electron".
+1. Install Node.js and type "npm install electron @sabaki/sgf".
 2. Put Leela Zero binary as src/leelaz and its network weight as src/network.
 3. Type "npx electron src".
 

@@ -7,7 +7,8 @@
 function Q(x) {return document.querySelector(x)}
 const ipc = require('electron').ipcRenderer
 const {to_i, to_f, xor, clone, flatten, hash_each, seq, do_ntimes} = require('./util.js')
-const {board_size, idx2coord_translator_pair, move2idx, idx2move} = require('./coord.js')
+const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
+      = require('./coord.js')
 
 // canvas
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')

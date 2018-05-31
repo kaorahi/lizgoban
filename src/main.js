@@ -17,7 +17,8 @@ let history = [], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
 
 // util
 const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes} = require('./util.js')
-const {idx2move} = require('./coord.js')
+const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
+      = require('./coord.js')
 
 /////////////////////////////////////////////////
 // electron
@@ -44,6 +45,7 @@ const api = {
     undo_ntimes: undo_ntimes, redo_ntimes: redo_ntimes,
     undo_to_start: undo_to_start, redo_to_end: redo_to_end,
     update: update,
+    paste_sgf_from_clipboard: paste_sgf_from_clipboard,
 }
 
 each_key_value(api, (channel, handler) => ipc.on(channel, (e, ...args) => handler(...args)))
@@ -69,13 +71,15 @@ function undo_to_start() {undo_ntimes(stone_count)}
 function redo_to_end() {redo_ntimes(future_len())}
 
 // for renderer
-function update() {leelaz('showboard'); start_ponder()}
+function update() {showboard(); start_ponder()}
+function showboard() {leelaz('showboard')}
 function start_ponder() {leelaz('time_left b 0 0')}
 
 // util
 function leelaz_action(s) {skip_suggest(); leelaz(s)}
 function leelaz(s) {leelaz_process.stdin.write(s + '\n'); console.log('> ' + s)}
 function future_len() {return history.length - stone_count}
+function clear_board() {leelaz("clear_board"); history = []; bturn = true}
 
 /////////////////////////////////////////////////
 // reader
@@ -114,6 +118,7 @@ function finish_board_reader(stones) {
     stone_count = b_prison + w_prison + flatten(stones).filter(x => x.stone).length
     renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones})
     store_last_move(stones)
+    console.log(JSON.stringify(history))
 }
 
 function store_last_move(stones) {
@@ -181,4 +186,29 @@ function with_skip(from, to, f) {
     let skipping = false
     return s => skipping ? (skipping = !s.match(to)) :
         s.match(from) ? (skipping = true) : f(s)
+}
+
+/////////////////////////////////////////////////
+// SGF
+
+const clipboard = electron.clipboard
+const SGF = require('@sabaki/sgf')
+
+function read_sgf(sgf_str) {
+    clear_board()
+    history = sabaki_gametree_to_history(SGF.parse(sgf_str))
+    redo_to_end()
+}
+
+function sabaki_gametree_to_history(gametree) {
+    let hist = []
+    let f = (positions, is_black) => {
+        (positions || []).forEach(pos => hist.push({move: sgfpos2move(pos), is_black: is_black}))
+    }
+    gametree[0].nodes.forEach(h => {f(h.B, true); f(h.W, false)})
+    return hist
+}
+
+function paste_sgf_from_clipboard() {
+    read_sgf(clipboard.readText())
 }

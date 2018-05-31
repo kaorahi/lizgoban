@@ -3,6 +3,10 @@
 // idx [i][j] of array: [0][0] = left top, [0][18] = right top
 // coord (x, y) on canvas: (0, 0) = left top, (width, 0) = right top
 // move: "A19" = left top, "T19" = right top
+// sgfpos: "aa" = left top, "sa" = right top
+
+/////////////////////////////////////////////////
+// idx <=> move
 
 const col_name = 'ABCDEFGHJKLMNOPQRST'
 const board_size = col_name.length
@@ -14,6 +18,9 @@ function move2idx(move) {
     let m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
     return m ? [board_size - to_i(row), col_name.indexOf(col)] : []
 }
+
+/////////////////////////////////////////////////
+// idx <=> coord
 
 function translator_pair([from1, from2], [to1, to2]) {
     // [from1, from2] * scale + [shift, shift] = [to1, to2]
@@ -29,9 +36,33 @@ function idx2coord_translator_pair(canvas, xmargin, ymargin) {
             ((x, y) => [Math.round(yinv(y)), Math.round(xinv(x))])]
 }
 
+/////////////////////////////////////////////////
+// sgfpos (<=> idx) <=> move
+
+const sgfpos_name = "abcdefghijklmnopqrs"
+
+function idx2sgfpos(i, j) {
+    return sgfpos_name[j] + sgfpos_name[i]
+}
+
+function sgfpos2idx(pos) {
+    const [j, i] = pos.split('').map(c => sgfpos_name.indexOf(c))
+    return [i, j]
+}
+
+function move2sgfpos(move) {
+    return idx2sgfpos(...move2idx(move))
+}
+
+function sgfpos2move(pos) {
+    return idx2move(...sgfpos2idx(pos))
+}
+
 module.exports = {
     idx2move: idx2move,
     move2idx: move2idx,
     idx2coord_translator_pair: idx2coord_translator_pair,
     board_size: board_size,
+    sgfpos2move: sgfpos2move,
+    move2sgfpos: move2sgfpos,
 }
