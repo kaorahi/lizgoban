@@ -275,3 +275,20 @@ function update_button(availability) {
     f('previous_sequence', 'previous_sequence')
     f('next_sequence', 'next_sequence')
 }
+
+/////////////////////////////////////////////////
+// keyboard operation
+
+document.onkeydown = (e) => {
+    switch (e.key) {
+    case "ArrowLeft": main('undo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "ArrowRight": main('redo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "ArrowUp": main('previous_sequence'); break;
+    case "ArrowDown": main('next_sequence'); break;
+    case "p": main('pass'); break;
+    case "o": e.ctrlKey && main('open_sgf'); break;
+    case "c": e.ctrlKey && main('copy_sgf_to_clipboard'); break;
+    case "v": e.ctrlKey && main('paste_sgf_from_clipboard'); break;
+    case "Backspace": case "Delete": main('explicit_undo'); break;
+    }
+}
