@@ -43,7 +43,7 @@ function renderer(channel, x) {window && window.webContents.send(channel, x)}
 // from renderer
 
 const api = {
-    play: play, undo: undo, redo: redo, pass: () => play('pass'),
+    play: play, undo: undo, redo: redo, explicit_undo: explicit_undo, pass: () => play('pass'),
     undo_ntimes: undo_ntimes, redo_ntimes: redo_ntimes,
     undo_to_start: undo_to_start, redo_to_end: redo_to_end,
     update: update,
@@ -64,6 +64,10 @@ function play_move({move: move, is_black: is_black}) {
 }
 function undo() {leelaz_action('undo')}
 function redo() {redo_ntimes(1)}
+function explicit_undo() {
+    (stone_count === history.length) && history.pop()
+    leelaz_action('undo')
+}
 
 // multi-undo/redo
 function undo_ntimes(n) {do_ntimes(n, undo)}
