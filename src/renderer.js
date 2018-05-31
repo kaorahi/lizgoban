@@ -6,7 +6,8 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const ipc = require('electron').ipcRenderer
-const {to_i, to_f, xor, clone, flatten, hash_each, seq, do_ntimes} = require('./util.js')
+const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes}
+      = require('./util.js')
 const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
       = require('./coord.js')
 
@@ -40,7 +41,7 @@ function setdebug(x) {setq('#debug', JSON.stringify(x))}
 function play() {let d = Q('#move'); play_move(d.value); d.value = ''}
 function play_best() {suggest.length > 0 && play_move(suggest[0].move)}
 function play_move(move) {main('play', move)}
-function main(channel, x) {ipc.send(channel, x); ipc.send('update')}
+function main(channel, x) {ipc.send(channel, x)}
 
 /////////////////////////////////////////////////
 // from main

@@ -29,16 +29,21 @@
 <button onclick="main('explicit_undo')">undo</button>
 </div>
 
-<!--
- <input id="move" type="text" />
- <button onclick="play()">play</button>
- <button onclick="play_best()">play_best</button>
--->
+<div style='float: right;'>
+<button onclick="main('previous_sequence')">previous board</button>
+<button onclick="main('next_sequence')">next board</button>
+</div>
 
 <div style='float: right;'>
 <button onclick="main('copy_sgf_to_clipboard')">copy SGF to clipboard</button>
 <button onclick="main('paste_sgf_from_clipboard')">paste SGF from clipboard</button>
 </div>
+
+<!--
+ <input id="move" type="text" />
+ <button onclick="play()">play</button>
+ <button onclick="play_best()">play_best</button>
+-->
 
 <pre id="debug"></pre>
 

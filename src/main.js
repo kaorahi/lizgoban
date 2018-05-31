@@ -14,9 +14,11 @@ const ipc = electron.ipcMain
 
 // game state
 let history = [], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
+let sequence = [history], sequence_cursor = 0;
 
 // util
-const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes} = require('./util.js')
+const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes}
+      = require('./util.js')
 const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
       = require('./coord.js')
 const clipboard = electron.clipboard
@@ -34,6 +36,7 @@ electron.app.on('ready', () => {
     window.setMenu(null)
     leelaz_process.stderr.on('data', each_line(with_skip('~begin', '~end', reader)))
     setInterval(update, update_interval_msec)
+    showboard()
 })
 electron.app.on('window-all-closed', () => electron.app.quit())
 
@@ -46,18 +49,20 @@ const api = {
     play: play, undo: undo, redo: redo, explicit_undo: explicit_undo, pass: () => play('pass'),
     undo_ntimes: undo_ntimes, redo_ntimes: redo_ntimes,
     undo_to_start: undo_to_start, redo_to_end: redo_to_end,
-    update: update,
     paste_sgf_from_clipboard: paste_sgf_from_clipboard,
     copy_sgf_to_clipboard: copy_sgf_to_clipboard,
+    next_sequence: next_sequence, previous_sequence: previous_sequence,
 }
 
-each_key_value(api, (channel, handler) => ipc.on(channel, (e, ...args) => handler(...args)))
+function api_handler(handler) {return (e, ...args) => {handler(...args); showboard()}}
+
+each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(handler)))
 
 /////////////////////////////////////////////////
 // leelaz action
 
 // game play
-function play(move) {history.splice(stone_count); play_move({move: move, is_black: bturn})}
+function play(move) {create_sequence_maybe(); play_move({move: move, is_black: bturn})}
 function play_move({move: move, is_black: is_black}) {
     renderer('suggest', [])
     leelaz_action('play ' + (is_black ? 'b ' : 'w ') + move)
@@ -68,6 +73,7 @@ function explicit_undo() {
     (stone_count === history.length) && history.pop()
     leelaz_action('undo')
 }
+function clear_board() {clear_leelaz_board(); history.splice(0); bturn = true}
 
 // multi-undo/redo
 function undo_ntimes(n) {do_ntimes(n, undo)}
@@ -78,15 +84,16 @@ function undo_to_start() {undo_ntimes(stone_count)}
 function redo_to_end() {redo_ntimes(future_len())}
 
 // for renderer
-function update() {showboard(); start_ponder()}
 function showboard() {leelaz('showboard')}
 function start_ponder() {leelaz('time_left b 0 0')}
+function stop_ponder() {leelaz('name')}
 
 // util
+function update() {stop_ponder(); start_ponder()}
 function leelaz_action(s) {skip_suggest(); leelaz(s)}
 function leelaz(s) {leelaz_process.stdin.write(s + '\n'); console.log('> ' + s)}
+function clear_leelaz_board() {leelaz_action("clear_board")}
 function future_len() {return history.length - stone_count}
-function clear_board() {leelaz("clear_board"); history = []; bturn = true}
 
 /////////////////////////////////////////////////
 // reader
@@ -125,7 +132,6 @@ function finish_board_reader(stones) {
     stone_count = b_prison + w_prison + flatten(stones).filter(x => x.stone).length
     renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones})
     store_last_move(stones)
-    console.log(JSON.stringify(history))
 }
 
 function store_last_move(stones) {
@@ -196,7 +202,33 @@ function with_skip(from, to, f) {
 }
 
 /////////////////////////////////////////////////
-// SGF
+// sequence
+
+function backup_history() {
+    if (history.length === 0) {return}
+    sequence.splice(sequence_cursor, 0, clone(history))
+    goto_nth_sequence(sequence_cursor + 1)
+}
+
+function create_sequence_maybe() {
+    (stone_count < history.length) && (backup_history(), history.splice(stone_count))
+}
+
+function next_sequence() {switch_to_nth_sequence(sequence_cursor + 1)}
+
+function previous_sequence() {switch_to_nth_sequence(sequence_cursor - 1)}
+
+function switch_to_nth_sequence(n) {
+    (0 <= n) && (n < sequence.length) &&
+        (clear_leelaz_board(), goto_nth_sequence(n), stone_count = 0, redo_to_end())
+}
+
+function goto_nth_sequence(n) {
+    history = sequence[sequence_cursor = n]
+}
+
+/////////////////////////////////////////////////
+// clipboard
 
 function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history))}
 
@@ -210,16 +242,13 @@ function history_to_sgf(hist) {
 }
 
 function read_sgf(sgf_str) {
-    clear_board()
-    history = sabaki_gametree_to_history(SGF.parse(sgf_str))
-    redo_to_end()
+    backup_history(); clear_board(); load_sabaki_gametree(SGF.parse(sgf_str)); redo_to_end()
 }
 
-function sabaki_gametree_to_history(gametree) {
-    let hist = []
+function load_sabaki_gametree(gametree) {
+    history.splice(0)
     let f = (positions, is_black) => {
-        (positions || []).forEach(pos => hist.push({move: sgfpos2move(pos), is_black: is_black}))
+        (positions || []).forEach(pos => history.push({move: sgfpos2move(pos), is_black: is_black}))
     }
     gametree[0].nodes.forEach(h => {f(h.B, true); f(h.W, false)})
-    return hist
 }
