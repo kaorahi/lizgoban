@@ -15,6 +15,7 @@ const ipc = electron.ipcMain
 // game state
 let history = [], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
 let sequence = [history], sequence_cursor = 0;
+history.stone_count = stone_count
 
 // util
 const {to_i, to_f, xor, clone, flatten, each_key_value, seq, do_ntimes}
@@ -73,7 +74,7 @@ function explicit_undo() {
     (stone_count === history.length) && history.pop()
     leelaz_action('undo')
 }
-function clear_board() {clear_leelaz_board(); history.splice(0); bturn = true}
+function clear_board() {clear_leelaz_board(); history.splice(0); stone_count = 0; bturn = true}
 
 // multi-undo/redo
 function undo_ntimes(n) {do_ntimes(n, undo)}
@@ -221,7 +222,7 @@ function with_skip(from, to, f) {
 
 function backup_history() {
     if (history.length === 0) {return}
-    sequence.splice(sequence_cursor, 0, clone(history))
+    sequence.splice(sequence_cursor, 0, clone_history())
     goto_nth_sequence(sequence_cursor + 1)
 }
 
@@ -235,12 +236,15 @@ function previous_sequence() {switch_to_nth_sequence(sequence_cursor - 1)}
 
 function switch_to_nth_sequence(n) {
     (0 <= n) && (n < sequence.length) &&
-        (clear_leelaz_board(), goto_nth_sequence(n), stone_count = 0, redo_to_end())
+        (store_stone_count(history), clear_leelaz_board(), goto_nth_sequence(n),
+         stone_count = 0, redo_ntimes(history.stone_count))
 }
 
-function goto_nth_sequence(n) {
-    history = sequence[sequence_cursor = n]
-}
+function clone_history() {const hist = clone(history); store_stone_count(hist); return hist}
+
+function store_stone_count(hist) {hist.stone_count = stone_count}
+
+function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
 
 /////////////////////////////////////////////////
 // clipboard
@@ -261,7 +265,6 @@ function read_sgf(sgf_str) {
 }
 
 function load_sabaki_gametree(gametree) {
-    history.splice(0)
     let f = (positions, is_black) => {
         (positions || []).forEach(pos => history.push({move: sgfpos2move(pos), is_black: is_black}))
     }
