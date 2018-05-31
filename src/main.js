@@ -130,9 +130,11 @@ function board_reader(s) {
 
 function finish_board_reader(stones) {
     stone_count = b_prison + w_prison + flatten(stones).filter(x => x.stone).length
-    renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones,
-                       sequence_cursor: sequence_cursor, availability: availability()})
     store_last_move(stones)
+    renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones,
+                       history_length: history.length,
+                       sequence_cursor: sequence_cursor, sequence_length: sequence.length,
+                       availability: availability()})
 }
 
 function store_last_move(stones) {

@@ -50,8 +50,8 @@ ipc.on('state', (e, h) => {
     stones = h.stones
     bturn = h.bturn
     setq('#turn', h.bturn ? '⬤' : '◯')
-    setq('#stone_count', '' + h.stone_count)
-    setq('#sequence_cursor', '' + (h.sequence_cursor + 1))
+    setq('#stone_count', '' + h.stone_count + '/' + h.history_length)
+    setq('#sequence_cursor', '' + (h.sequence_cursor + 1) + '/' + h.sequence_length)
     update_goban()
     update_button(h.availability)
 })
