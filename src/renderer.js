@@ -18,6 +18,7 @@ main_canvas.lizgoban_operable = true
 
 // color constant
 const BLACK = "#000", WHITE = "#fff", RED = "#f00"
+const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 
 // board & game state
 let stones = [], bturn = true, suggest = [], playouts = 1
@@ -65,6 +66,13 @@ ipc.on('suggest', (e, h) => {
         b_winrate = bturn ? h.winrate : 100 - h.winrate
     }
     update_goban()
+})
+
+ipc.on('play_maybe', (e, {move, is_black}) => {
+    const [i, j] = move2idx(move)
+    // update items on the board only.
+    // don't toggle bturn because it causes flicker of winrate bar.
+    i && (stones[i][j] = {stone: true, black: is_black, maybe: true}, suggest = [])
 })
 
 /////////////////////////////////////////////////
@@ -165,6 +173,7 @@ function mouse2move(e, coord2idx) {
 
 function draw_stone(h, xy, radius, g) {
     g.strokeStyle = BLACK; g.fillStyle = h.black ? BLACK : WHITE; g.lineWidth = 1
+    h.maybe && (g.fillStyle = h.black ? MAYBE_BLACK : MAYBE_WHITE)
     edged_fill_circle(xy, radius, g)
     h.movenum && draw_movenum(h, xy, radius, g)
     h.last && draw_lastmove(h, xy, radius, g)

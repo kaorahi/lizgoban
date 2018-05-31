@@ -40,7 +40,7 @@ electron.app.on('ready', () => {
 })
 electron.app.on('window-all-closed', () => electron.app.quit())
 
-function renderer(channel, x) {window && window.webContents.send(channel, x)}
+function renderer(channel, ...args) {window && window.webContents.send(channel, ...args)}
 
 /////////////////////////////////////////////////
 // from renderer
@@ -73,9 +73,13 @@ function restart_leelaz() {
 
 // game play
 function play(move) {create_sequence_maybe(); play_move({move: move, is_black: bturn})}
-function play_move({move: move, is_black: is_black}) {
-    renderer('suggest', [])
+function play_move({move, is_black}) {
     leelaz_action('play ' + (is_black ? 'b ' : 'w ') + move)
+    play_maybe({move, is_black})
+}
+function play_maybe({move, is_black}) {
+    // update status tentatively (officially updated from leelaz output later)
+    renderer('play_maybe', {move, is_black}); bturn = !bturn; stone_count += 1
 }
 function undo() {leelaz_action('undo')}
 function redo() {redo_ntimes(1)}
