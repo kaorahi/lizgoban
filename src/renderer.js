@@ -21,7 +21,7 @@ const BLACK = "#000", WHITE = "#fff", RED = "#f00"
 const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 
 // board & game state
-let stones = [], bturn = true, suggest = [], playouts = 1
+let stones = [], stone_count = 0, bturn = true, suggest = [], playouts = 1
 let b_winrate = 50, min_winrate = 50, max_winrate = 50
 
 // handler
@@ -48,8 +48,7 @@ function main(channel, x) {ipc.send(channel, x)}
 // from main
 
 ipc.on('state', (e, h) => {
-    stones = h.stones
-    bturn = h.bturn
+    stones = h.stones; stone_count = h.stone_count; bturn = h.bturn
     setq('#turn', h.bturn ? '⬤' : '◯')
     setq('#stone_count', '' + h.stone_count + '/' + h.history_length)
     setq('#sequence_cursor', '' + (h.sequence_cursor + 1) + '/' + h.sequence_length)
@@ -188,11 +187,11 @@ function draw_movenum(h, xy, radius, g) {
 }
 
 function draw_last_move(h, xy, radius, g) {
-    g.strokeStyle = h.black ? WHITE : BLACK; circle(xy, radius * 0.5, g)
+    g.strokeStyle = h.black ? WHITE : BLACK; g.lineWidth = 1; circle(xy, radius * 0.5, g)
 }
 
 function draw_next_move(h, xy, radius, g) {
-    g.lineWidth = 3; g.strokeStyle = h.next_is_black ? BLACK : WHITE; circle(xy, radius, g)
+    g.strokeStyle = h.next_is_black ? BLACK : WHITE; g.lineWidth = 3; circle(xy, radius, g)
 }
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
@@ -231,19 +230,27 @@ function kilo_str(x) {
 /////////////////////////////////////////////////
 // winrate bar
 
+let wrbar_previous_b_winrate = b_winrate, wrbar_current_b_winrate = b_winrate
+let wrbar_current_stone_count = stone_count
+
 function draw_winrate_bar(canvas) {
+    if (stone_count != wrbar_current_stone_count) {
+        wrbar_previous_b_winrate = wrbar_current_b_winrate; wrbar_current_stone_count = stone_count
+    }
+    wrbar_current_b_winrate = b_winrate
     let tics = 9
     let w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
+    let xfor = percent => w * percent / 100
+    let vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
     g.strokeStyle = BLACK; g.fillStyle = WHITE; g.lineWidth = 1; fill_rect([0, 0], [w, h], g)
-    let b = w * b_winrate / 100
-    g.fillStyle = BLACK; fill_rect([0, 0], [b, h], g)
+    g.fillStyle = BLACK; fill_rect([0, 0], [xfor(b_winrate), h], g)
     seq(tics, 1).forEach(i => {
-        let r = w * i / (tics + 1)
-        g.strokeStyle = (r < b) ? WHITE : BLACK; line([r, 0], [r, h], g)
+        let r = 100 * i / (tics + 1)
+        g.strokeStyle = (r < b_winrate) ? WHITE : BLACK; vline(r)
     })
-    g.lineWidth = 3; g.strokeStyle = (b_winrate > 50) ? WHITE : BLACK
-    line([w / 2, 0], [w / 2, h], g)
-    g.strokeStyle = BLACK; rect([0, 0], [w, h], g)
+    g.lineWidth = 3; g.strokeStyle = (b_winrate > 50) ? WHITE : BLACK; vline(50)
+    g.strokeStyle = RED; vline(wrbar_previous_b_winrate)
+    g.strokeStyle = BLACK; g.lineWidth = 1; rect([0, 0], [w, h], g)
 }
 
 /////////////////////////////////////////////////
