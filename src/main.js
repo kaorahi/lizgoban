@@ -6,7 +6,7 @@ const leelaz_command = __dirname + '/leelaz'
 const leelaz_args = ['-g', '-w', __dirname + '/network']
 const update_interval_msec = 1000
 
-const leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
+let leelaz_process
 
 // electron
 const electron = require('electron')
@@ -35,9 +35,8 @@ electron.app.on('ready', () => {
     window = new electron.BrowserWindow({width: ss.width * 0.8, height: ss.height * 0.8})
     window.loadURL('file://' + __dirname + '/index.html')
     window.setMenu(null)
-    leelaz_process.stderr.on('data', each_line(with_skip('~begin', '~end', reader)))
+    start_leelaz()
     setInterval(update, update_interval_msec)
-    showboard()
 })
 electron.app.on('window-all-closed', () => electron.app.quit())
 
@@ -47,6 +46,7 @@ function renderer(channel, x) {window && window.webContents.send(channel, x)}
 // from renderer
 
 const api = {
+    restart_leelaz: restart_leelaz,
     play: play, undo: undo, redo: redo, explicit_undo: explicit_undo, pass: () => play('pass'),
     undo_ntimes: undo_ntimes, redo_ntimes: redo_ntimes,
     undo_to_start: undo_to_start, redo_to_end: redo_to_end,
@@ -61,6 +61,18 @@ each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(handler)))
 
 /////////////////////////////////////////////////
 // leelaz action
+
+// process
+function start_leelaz() {
+    leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
+    leelaz_process.stderr.on('data', each_line(with_skip('~begin', '~end', reader)))
+    showboard()
+}
+function restart_leelaz() {
+    leelaz_process && leelaz_process.kill()
+    start_leelaz()
+    switch_to_nth_sequence(sequence_cursor)
+}
 
 // game play
 function play(move) {create_sequence_maybe(); play_move({move: move, is_black: bturn})}
