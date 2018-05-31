@@ -4,7 +4,7 @@ const E = module.exports
 
 E.to_i = x => (x | 0)
 E.to_f = x => (x - 0)
-E.xor = (a, b) => (a && !b) || (!a && b)
+E.xor = (a, b) => (!a === !!b)
 // E.sum = a => a.reduce((r,x) => r + x, 0)
 E.clone = x => JSON.parse(JSON.stringify(x))
 E.merge = Object.assign
