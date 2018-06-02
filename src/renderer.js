@@ -230,14 +230,21 @@ function kilo_str(x) {
 /////////////////////////////////////////////////
 // winrate bar
 
-let wrbar_previous_b_winrate = b_winrate, wrbar_current_b_winrate = b_winrate
-let wrbar_current_stone_count = stone_count
+function previous_value_keeper(initial_value) {
+    // (ex) f = previous_value_keeper(3)
+    // f("a", 4) ==> 3, f("a", 5) ==> 3, f("a", 6) ==> 3
+    // f("b", 7) ==> 6, f("b", 8) ==> 6, f("c", 9) ==> 8
+    let prev_key, prev_val = initial_value, cur_val
+    return (key, val) => {
+        if (key != prev_key) {prev_key = key, prev_val = cur_val}
+        cur_val = val
+        return prev_val
+    }
+}
+
+const previous_b_winrate = previous_value_keeper(b_winrate)
 
 function draw_winrate_bar(canvas) {
-    if (stone_count != wrbar_current_stone_count) {
-        wrbar_previous_b_winrate = wrbar_current_b_winrate; wrbar_current_stone_count = stone_count
-    }
-    wrbar_current_b_winrate = b_winrate
     let tics = 9
     let w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     let xfor = percent => w * percent / 100
@@ -249,7 +256,7 @@ function draw_winrate_bar(canvas) {
         g.strokeStyle = (r < b_winrate) ? WHITE : BLACK; vline(r)
     })
     g.lineWidth = 3; g.strokeStyle = (b_winrate > 50) ? WHITE : BLACK; vline(50)
-    g.strokeStyle = RED; vline(wrbar_previous_b_winrate)
+    g.strokeStyle = RED; vline(previous_b_winrate(stone_count, b_winrate))
     g.strokeStyle = BLACK; g.lineWidth = 1; rect([0, 0], [w, h], g)
 }
 
