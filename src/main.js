@@ -82,7 +82,7 @@ each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(handler)))
 
 // game play
 function play(move) {
-    const [i, j] = move2idx(move); if (i && stones[i][j].stone) {return}
+    const [i, j] = move2idx(move); if ((i >= 0) && stones[i][j].stone) {return}
     create_sequence_maybe(); play_move({move: move, is_black: bturn})
 }
 function play_move(h) {
@@ -126,7 +126,7 @@ function board_handler(h) {
 
 function add_next_mark_to_stones(stones, history, stone_count) {
     if (stone_count >= history.length) {return}
-    let h = history[stone_count], [i, j] = move2idx(h.move), s = i && stones[i][j]
+    let h = history[stone_count], [i, j] = move2idx(h.move), s = (i >= 0) && stones[i][j]
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
 

@@ -20,7 +20,7 @@ function idx2move(i, j) {
 }
 
 function move2idx(move) {
-    // return [] if move is pass
+    // return [] if move is pass (note: undefined >= 0 is false)
     let m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
     return m ? [board_size - to_i(row), col_name.indexOf(col)] : []
 }
