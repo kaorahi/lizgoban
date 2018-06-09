@@ -317,6 +317,8 @@ document.onkeydown = e => {
     case "o": e.ctrlKey && main('open_sgf'); break;
     case "v": e.ctrlKey && main('paste_sgf_from_clipboard'); break;
     case "Backspace": case "Delete": main('explicit_undo'); break;
+    case "Home": main('undo_to_start'); break;
+    case "End": main('redo_to_end'); break;
     }
 }
 
