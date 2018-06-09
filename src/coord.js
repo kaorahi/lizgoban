@@ -5,7 +5,7 @@
 // move: "A19" = left top, "T19" = right top
 // sgfpos: "aa" = left top, "sa" = right top
 
-const {to_i, to_f, xor, clone, merge, flatten, each_key_value, seq, do_ntimes}
+const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
 
 /////////////////////////////////////////////////
@@ -14,7 +14,10 @@ const {to_i, to_f, xor, clone, merge, flatten, each_key_value, seq, do_ntimes}
 const col_name = 'ABCDEFGHJKLMNOPQRST'
 const board_size = col_name.length
 
-function idx2move(i, j) {return col_name[j] + (board_size - i)}
+function idx2move(i, j) {
+    return (0 <= i) && (i < board_size) && (0 <= j) && (j < board_size) &&
+        col_name[j] + (board_size - i)
+}
 
 function move2idx(move) {
     // return [] if move is pass

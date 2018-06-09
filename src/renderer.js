@@ -5,29 +5,30 @@
 
 // util
 function Q(x) {return document.querySelector(x)}
-const ipc = require('electron').ipcRenderer
-const {to_i, to_f, xor, clone, merge, flatten, each_key_value, seq, do_ntimes}
+const electron = require('electron')
+const ipc = electron.ipcRenderer
+const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
 const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
       = require('./coord.js')
+function current_window() {return electron.remote.getCurrentWindow()}
 
 // canvas
-const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
+const main_canvas = Q('#goban')
 const winrate_bar_canvas = Q('#winrate_bar')
-main_canvas.lizgoban_operable = true
+let board_type = current_window().lizgoban_board_type
 
 // color constant
 const BLACK = "#000", WHITE = "#fff", RED = "#f00"
 const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 
-// board & game state
+// state
 let stones = [], stone_count = 0, bturn = true, suggest = [], playouts = 1
 let b_winrate = 50, min_winrate = 50, max_winrate = 50
+let attached = false, showing_raw_board_temporally = false
 
 // handler
-window.onload = () => {
-    set_all_canvas_size(); draw_goban(main_canvas, stones); draw_goban(sub_canvas, stones)
-}
+window.onload = () => {set_all_canvas_size(); draw_goban(main_canvas, stones)}
 window.onresize = set_all_canvas_size
 
 /////////////////////////////////////////////////
@@ -37,23 +38,28 @@ function setq(x, val) {Q(x).textContent = val}
 function setdebug(x) {setq('#debug', JSON.stringify(x))}
 
 /////////////////////////////////////////////////
-// play
+// action
 
 function play() {let d = Q('#move'); play_move(d.value); d.value = ''}
 function play_best() {suggest.length > 0 && play_move(suggest[0].move)}
 function play_move(move) {main('play', move)}
+
+function new_window() {main('new_window', board_type === 'suggest' ? 'variation' : 'suggest')}
+
 function main(channel, x) {ipc.send(channel, x)}
 
 /////////////////////////////////////////////////
 // from main
 
 ipc.on('state', (e, h) => {
-    stones = h.stones; stone_count = h.stone_count; bturn = h.bturn
+    stones = h.stones; stone_count = h.stone_count; bturn = h.bturn, attached = h.attached
     setq('#turn', h.bturn ? '⬤' : '◯')
     setq('#stone_count', '' + h.stone_count + '/' + h.history_length)
     setq('#sequence_cursor', '' + (h.sequence_cursor + 1) + '/' + h.sequence_length)
+    suggest = []  // avoid flicker of stone colors in subboard
     update_goban()
     update_button(h.availability)
+    update_board_type_switch()
 })
 
 ipc.on('suggest', (e, h) => {
@@ -78,8 +84,10 @@ ipc.on('play_maybe', (e, {move, is_black}) => {
 // draw goban etc.
 
 function update_goban() {
-    draw_main_goban(main_canvas)
-    draw_goban_with_variation(sub_canvas, (suggest[0] && suggest[0].variation) || [])
+    (showing_raw_board_temporally ||
+     board_type === "raw") ? draw_goban(main_canvas, stones) :
+        board_type === "suggest" ? draw_main_goban(main_canvas) :
+        draw_goban_with_variation(main_canvas, (suggest[0] && suggest[0].variation) || [])
     draw_winrate_bar(winrate_bar_canvas)
 }
 
@@ -119,10 +127,8 @@ function draw_goban(canvas, stones, draw_next_p) {
     g.clearRect(0, 0, canvas.width, canvas.height)
     draw_grid(unit, idx2coord, g)
     draw_on_board(stones, draw_next_p, unit, idx2coord, g)
-    if (canvas.lizgoban_operable) {
-        canvas.onmousedown = e => play_here(e, coord2idx)
-        canvas.onmousemove = e => hover_here(e, coord2idx, canvas)
-    }
+    canvas.onmousedown = e => (!attached && play_here(e, coord2idx))
+    canvas.onmousemove = e => hover_here(e, coord2idx, canvas)
 }
 
 function draw_grid(unit, idx2coord, g) {
@@ -195,7 +201,7 @@ function draw_next_move(h, xy, radius, g) {
 }
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
-// See "suggestion reader" section in main.js for suggestion_data.
+// See "suggestion reader" section in engine.js for suggestion_data.
 
 function draw_suggest(h, xy, radius, g) {
     let epsilon = 1e-8, green_hue = 120
@@ -221,10 +227,9 @@ function hsl(h, s, l, alpha) {
 // kilo_str(12345) = '12k'
 function kilo_str(x) {
     let digits = 3, unit = 'k'
-    if (('' + x). length <= digits) {return '' + x}
-    let a = Math.floor(x / 10**digits), b = x - a * 10**digits
-    let c = '' + a, d = '.' + ('' + b)[0]
-    return c + (c.length < digits - 1 ? d : '') + unit
+    let b = 10**digits, y = x / 10**digits, z = Math.floor(y)
+    return x < b ? ('' + x) :
+        (x < b * 10 ? ('' + y).slice(0, digits) : '' + z) + unit
 }
 
 /////////////////////////////////////////////////
@@ -280,11 +285,9 @@ function circle_gen([x, y], r, g) {g.beginPath(); g.arc(x, y, r, 0, 2 * Math.PI)
 // canvas
 
 function set_all_canvas_size() {
-    let main_size = window.innerHeight * 0.95
-    let sub_size = Math.min(window.innerWidth - main_size, window.innerHeight) * 0.95
+    let main_size = Math.min(document.body.clientWidth, document.body.clientHeight) * 0.98
     set_canvas_square_size(main_canvas, main_size)
-    set_canvas_square_size(sub_canvas, sub_size)
-    set_canvas_size(winrate_bar_canvas, sub_size, sub_size / 20)
+    set_canvas_size(winrate_bar_canvas, main_size, main_size / 50)
 }
 
 function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, size)}
@@ -294,29 +297,98 @@ function set_canvas_size(canvas, width, height) {
 }
 
 /////////////////////////////////////////////////
-// button
-
-function update_button(availability) {
-    const f = (ids, key) => ids.split(/ /).forEach(x => (Q('#' + x).disabled = !availability[key]))
-    f('undo undo_ntimes undo_to_start explicit_undo', 'undo')
-    f('redo redo_ntimes redo_to_end', 'redo')
-    f('previous_sequence', 'previous_sequence')
-    f('next_sequence', 'next_sequence')
-}
-
-/////////////////////////////////////////////////
 // keyboard operation
 
-document.onkeydown = (e) => {
+document.onkeydown = e => {
+    if (!accept_call()) {return}
     switch (e.key) {
-    case "ArrowLeft": main('undo_ntimes', e.shiftKey ? 15 : 1); break;
-    case "ArrowRight": main('redo_ntimes', e.shiftKey ? 15 : 1); break;
-    case "ArrowUp": main('previous_sequence'); break;
-    case "ArrowDown": main('next_sequence'); break;
-    case "p": main('pass'); break;
-    case "o": e.ctrlKey && main('open_sgf'); break;
     case "c": e.ctrlKey && main('copy_sgf_to_clipboard'); break;
+    case "z": showing_raw_board_temporally = true; break;
+    }
+    switch (!attached && e.key) {
+    case "ArrowLeft": case "ArrowUp":
+        main('undo_ntimes', e.shiftKey ? 15 : 1); e.preventDefault(); break;
+    case "ArrowRight": case "ArrowDown":
+        main('redo_ntimes', e.shiftKey ? 15 : 1); e.preventDefault(); break;
+    case "[": main('previous_sequence'); break;
+    case "]": main('next_sequence'); break;
+    case "p": main('pass'); break;
+    case ",": play_best(); break;
+    case "o": e.ctrlKey && main('open_sgf'); break;
     case "v": e.ctrlKey && main('paste_sgf_from_clipboard'); break;
     case "Backspace": case "Delete": main('explicit_undo'); break;
     }
 }
+
+document.onkeyup = e => {
+    switch (e.key) {
+    case "z": showing_raw_board_temporally = false; break;
+    }
+}
+
+
+// avoid too fast call
+let last_call_time = 0
+function accept_call() {
+    const minimum_interval_millisec = 0
+    // const minimum_interval_millisec = 10
+    return (Date.now() - last_call_time >= minimum_interval_millisec) &&
+        (last_call_time = Date.now())
+}
+
+/////////////////////////////////////////////////
+// controller
+
+// board type selector
+
+function switch_board_type() {
+    current_window().lizgoban_board_type = board_type =
+        get_selection(Q("#switch_board_type"))
+    main('update')
+}
+function update_board_type_switch() {update_ui_element("#switch_board_type", board_type)}
+
+// buttons
+
+function update_button(availability) {
+    const f = (ids, key) =>
+          ids.split(/ /).forEach(x => update_ui_element('#' + x, availability[key]))
+    f('undo undo_ntimes undo_to_start explicit_undo', 'undo')
+    f('redo redo_ntimes redo_to_end', 'redo')
+    f('previous_sequence', 'previous_sequence')
+    f('next_sequence', 'next_sequence')
+    f('attach hide_when_attached', 'attach')
+    f('detach', 'detach')
+}
+
+/////////////////////////////////////////////////
+// DOM
+
+function update_ui_element(query_string, val) {
+    const elem = Q(query_string), tag = elem.tagName
+    switch (tag) {
+    case "INPUT": elem.disabled = !val; break
+    case "DIV": elem.style.display = (val ? "block" : "none"); break
+    case "SPAN": elem.style.display = (val ? "inline" : "none"); break
+    case "SELECT": set_selection(elem, val); break
+    }
+}
+
+function get_selection(elem) {return elem.options[elem.selectedIndex].value}
+
+function set_selection(elem, val) {
+    elem.selectedIndex =
+        to_i(seq(elem.options.length).find(i => (elem.options[i].value === val)))
+}
+
+/////////////////////////////////////////////////
+// init
+
+main('update')
+
+// (ref.)
+// https://teratail.com/questions/8773
+// https://qiita.com/damele0n/items/f4050649de023a948178
+// https://qiita.com/tkdn/items/5be7ee5cc178a62f4f67
+Q('body').offsetLeft  // magic spell to get updated clientWidth value
+set_all_canvas_size()

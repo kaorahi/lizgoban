@@ -1,12 +1,11 @@
 Note on implementation:
 
 JavaScript code knows nothing about the rule of Go (liberty, ko, ...).
-It merely parses the output of "showboard" from leelaz.
-It holds only move history for redo.
-This history is also updated passively from "showboard"
-because it cannot judge whether a move is legal by itself.
+It merely parses the output of "showboard" from leelaz for simplicity.
 
-It repeats...
-1. Send "time_left b 0 0" to leelaz for starting pondering
-2. Wait for 1 sec
-3. Send "showboard" for stopping pondering and get suggestions from leelaz
+Leelaz is wrapped as if it is a stateless analyzer for convenience.
+The wrapped leelaz receives the history of moves from the beginning to
+the current board state for every analysis.  Only the difference from
+the previous call is sent to leelaz internally for efficiency.
+
+LizGoban listens to the port 8848 to receive treePosition from Sabaki.

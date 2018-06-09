@@ -1,0 +1,21 @@
+--- a/src/components/MainView.js
++++ b/src/components/MainView.js
+@@ -10,6 +10,10 @@ const FindBar = require('./bars/FindBar')
+ 
+ const gametree = require('../modules/gametree')
+ 
++const lizgoban_socket_port = 8848
++const lizgoban_socket = require("socket.io-client").connect(`http://localhost:${lizgoban_socket_port}/`,
++                                                            {reconnection: true})
++
+ class MainView extends Component {
+     constructor() {
+         super()
+@@ -140,6 +144,7 @@ class MainView extends Component {
+                 paintMap[y][x] = 1
+             }
+         }
++        lizgoban_socket.emit('sabaki_treepos', sabaki.state.treePosition)
+ 
+         return h('section',
+             {

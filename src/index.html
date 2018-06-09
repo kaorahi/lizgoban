@@ -4,19 +4,24 @@
  <meta charset="UTF-8" />
  <title>LizGoban</title>
  <script defer src="renderer.js"></script>
- <style type="text/css"> * {font-size: 120%;} </style>
+ <style type="text/css">
+ body {font-size: 3vw;}
+ input, select {font-size: 100%;}
+ .controller_row {margin-top: 2%;}
+ </style>
 </head>
 
 <body>
 
-<canvas id="goban" style="background: #f9ca91; float: left;"></canvas>
-<canvas id="sub_goban" style="background: #fff; float: right;"></canvas>
+<canvas id="goban" style="background: #f9ca91;"></canvas>
 
 <div>
-<canvas id="winrate_bar" style="background: #000; float: right;"></canvas>
+<canvas id="winrate_bar" style="background: #000;"></canvas>
 </div>
 
-<div style='float: right; margin-top: 2%'>
+<div id="hide_when_attached">
+
+<div class="controller_row">
 <input type='button' id='undo_to_start' onclick="main('undo_to_start')" value="|&lt;">
 <input type='button' id='undo_ntimes' onclick="main('undo_ntimes', 15)" value="&lt;&lt">
 <input type='button' id='undo' onclick="main('undo')" value="&lt;">
@@ -25,17 +30,18 @@
 <input type='button' id='redo_ntimes' onclick="main('redo_ntimes', 15)" value="&gt;&gt;">
 <input type='button' id='redo_to_end' onclick="main('redo_to_end')" value="&gt;|">
 (
-board <span id="sequence_cursor"></span>
-<input type='button' id='previous_sequence' onclick="main('previous_sequence')" value="↑">
-<input type='button' id='next_sequence' onclick="main('next_sequence')" value="↓">
+board
+<input type='button' id='previous_sequence' onclick="main('previous_sequence')" value="[">
+<span id="sequence_cursor"></span>
+<input type='button' id='next_sequence' onclick="main('next_sequence')" value="]">
 )
 <span id="turn"></span>
 <input type='button' id='pass' onclick="main('pass')" value="pass">
 <input type='button' id='explicit_undo' onclick="main('explicit_undo')" value="undo">
+<input type='button' onclick="play_best()" value="best">
 </div>
 
-<div style='float: right; margin-top: 1%'>
-<input type='button' id='copy' onclick="main('restart_leelaz')" value="restart">
+<div class="controller_row">
 <input type='button' id='copy' onclick="main('copy_sgf_to_clipboard')" value="copy">
 <input type='button' id='paste' onclick="main('paste_sgf_from_clipboard')" value="paste">
 <input type='button' id='paste' onclick="main('open_sgf')" value="open...">
@@ -44,8 +50,26 @@ board <span id="sequence_cursor"></span>
 <!--
  <input id="move" type="text" />
  <input type='button' onclick="play()" value="play">
- <input type='button' onclick="play_best()" value="play_best">
 -->
+
+</div>
+
+<div class="controller_row">
+<select id="switch_board_type" onchange="switch_board_type()">
+<option value="suggest" selected="selected">suggestions</option>
+<option value="variation">principal variation</option>
+<option value="raw">raw board</option>
+</select>
+<input type='button' onclick="main('stop_ponder')" value="pause">
+<input type='button' id='copy' onclick="main('restart')" value="reset">
+<input type='button' id='copy' onclick="new_window()" value="new window">
+<span id='attach'>
+<input type='button' onclick="main('attach_to_sabaki')" value="attach to sabaki">
+</span>
+<span id='detach'>
+<input type='button' onclick="main('detach_from_sabaki')" value="detach from sabaki">
+</span>
+</div>
 
 <pre id="debug" style='clear: both'></pre>
 
