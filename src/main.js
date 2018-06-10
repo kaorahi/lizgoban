@@ -8,26 +8,26 @@ const ipc = electron.ipcMain
 
 // leelaz
 const leelaz = require('./engine.js')
-const {update, stop_ponder} = leelaz
+const {update} = leelaz
 
 // game state
 let history = [], stones = [[]], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
 let sequence = [history], sequence_cursor = 0;
-history.stone_count = stone_count
+history.stone_count = stone_count; history.initial_b_winrate = NaN
+let auto_analysis_playouts = Infinity
 
-// socket
-const socket_port = 8848
-const SOCKET_IO = require("socket.io")
+// sabaki
 let attached = false
 
 // util
 const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
-const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
-      = require('./coord.js')
+const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
+       board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
 const clipboard = electron.clipboard
 const SGF = require('@sabaki/sgf')
 const config = new (require('electron-config'))({name: 'lizgoban'})
+const fs = require('fs'), TMP = require('tmp')
 
 /////////////////////////////////////////////////
 // electron
@@ -40,7 +40,7 @@ function new_window(default_board_type) {
     const {board_type, position, size} = config.get(conf_key) || {}
     const [x, y] = position || [0, 0]
     const [width, height] = size || [ss.height * 0.7, ss.height * 0.9]
-    const win = new electron.BrowserWindow({x, y, width, height})
+    const win = new electron.BrowserWindow({x, y, width, height, show: false})
     win.lizgoban_window_id = id
     win.lizgoban_board_type = board_type || default_board_type
     win.loadURL('file://' + __dirname + '/index.html')
@@ -49,6 +49,7 @@ function new_window(default_board_type) {
            () => config.set(conf_key, {board_type: win.lizgoban_board_type,
                                        position: win.getPosition(), size: win.getSize()}))
     windows.push(win)
+    win.once('ready-to-show', () => {update_ui(); win.show()})
 }
 
 app.on('ready', () => {
@@ -66,23 +67,29 @@ function renderer(channel, ...args) {
 /////////////////////////////////////////////////
 // from renderer
 
+function toggle_ponder() {leelaz.toggle_ponder(); update_ui()}
+
 const api = {
-    restart, new_window, update, stop_ponder, attach_to_sabaki, detach_from_sabaki,
+    restart, new_window, update, toggle_ponder, attach_to_sabaki, detach_from_sabaki,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
+    goto_stone_count, toggle_auto_analyze,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf,
     next_sequence, previous_sequence,
 }
 
-function api_handler(handler) {return (e, ...args) => handler(...args)}
+function api_handler(channel, handler) {
+    return (e, ...args) => (channel !== 'toggle_auto_analyze' && stop_auto_analyze(), handler(...args))
+}
 
-each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(handler)))
+each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(channel, handler)))
 
 /////////////////////////////////////////////////
 // leelaz action
 
 // game play
 function play(move) {
-    const [i, j] = move2idx(move); if ((i >= 0) && stones[i][j].stone) {return}
+    const [i, j] = move2idx(move)
+    if (i >= 0 && (!stones[i] || !stones[i][j] || stones[i][j].stone)) {return}
     create_sequence_maybe(); play_move({move: move, is_black: bturn})
 }
 function play_move(h) {
@@ -110,6 +117,10 @@ function set_board(history) {
 function goto_stone_count(count) {set_board(history.slice(0, Math.max(count, 0)))}
 function future_len() {return history.length - stone_count}
 function restart() {leelaz.restart(); switch_to_nth_sequence(sequence_cursor)}
+function toggle_auto_analyze(playouts) {
+    auto_analysis_playouts = (auto_analysis_playouts === playouts) ? Infinity : playouts
+}
+function stop_auto_analyze() {auto_analysis_playouts = Infinity}
 
 /////////////////////////////////////////////////
 // from leelaz
@@ -117,12 +128,15 @@ function restart() {leelaz.restart(); switch_to_nth_sequence(sequence_cursor)}
 // board
 function board_handler(h) {
     stones = h.stones
-    add_next_mark_to_stones(stones, history, h.stone_count)
+    add_next_mark_to_stones(stones, history, stone_count)
     renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones,
                        history_length: history.length,
                        sequence_cursor: sequence_cursor, sequence_length: sequence.length,
-                       attached: attached, availability: availability()})
+                       attached: attached})
+    update_ui()
 }
+
+function update_ui() {renderer('update_ui', availability())}
 
 function add_next_mark_to_stones(stones, history, stone_count) {
     if (stone_count >= history.length) {return}
@@ -131,7 +145,16 @@ function add_next_mark_to_stones(stones, history, stone_count) {
 }
 
 // suggest
-function suggest_handler(h) {renderer('suggest', h)}
+function suggest_handler(h) {
+    stone_count > 0 ? history[stone_count - 1].b_winrate = h.b_winrate
+        : (history.initial_b_winrate = h.b_winrate)
+    const initial_b_winrate = history.initial_b_winrate
+    renderer('suggest', merge({history, initial_b_winrate}, h))
+    if (h.playouts >= auto_analysis_playouts) {
+        stone_count < history.length ? redo() :
+            (stop_ponder(), (auto_analysis_playouts = Infinity))
+    }
+}
 
 /////////////////////////////////////////////////
 // availability
@@ -144,6 +167,8 @@ function availability() {
         next_sequence: sequence_cursor < sequence.length - 1,
         attach: !attached,
         detach: attached,
+        pause: leelaz.is_pondering(),
+        resume: !leelaz.is_pondering(),
     }
 }
 
@@ -205,39 +230,73 @@ function history_to_sgf(hist) {
 
 function read_sgf(sgf_str) {load_sabaki_gametree_on_new_history(SGF.parse(sgf_str)[0])}
 
+/////////////////////////////////////////////////
+// Sabaki gameTree
+
 function load_sabaki_gametree_on_new_history(gametree) {
     backup_history(); load_sabaki_gametree(gametree)
 }
 
 function load_sabaki_gametree(gametree, index) {
     if (!gametree || !gametree.nodes) {return}
-    history.splice(0)
-    const nodes = gametree.nodes
-    let f = (positions, is_black) => {
+    const parent_nodes = nodes_from_sabaki_gametree(gametree.parent)
+    const new_history = history_from_sabaki_nodes(parent_nodes.concat(gametree.nodes))
+    const com = leelaz.common_header_length(history, new_history)
+    // keep old history for keeping winrate
+    history.splice(com, Infinity, ...new_history.slice(com))
+    const idx = (index === undefined) ? Infinity : index
+    const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
+    const history_until_index = history_from_sabaki_nodes(nodes_until_index)
+    set_board(history.slice(0, history_until_index.length))
+}
+
+function history_from_sabaki_nodes(nodes) {
+    let new_history = []
+    const f = (positions, is_black) => {
         (positions || []).forEach(pos => {
             const move = sgfpos2move(pos)
-            move && history.push({move: sgfpos2move(pos), is_black: is_black})
+            move && new_history.push({move: sgfpos2move(pos), is_black: is_black})
         })
     }
     nodes.forEach(h => {f(h.AB, true); f(h.B, true); f(h.W, false)})
-    set_board(history.slice(0, index === undefined ? Infinity : index))
+    return new_history
+}
+
+function nodes_from_sabaki_gametree(gametree) {
+    return (gametree === null) ? [] :
+        nodes_from_sabaki_gametree(gametree.parent).concat(gametree.nodes)
 }
 
 /////////////////////////////////////////////////
-// socket for Sabaki
+// Sabaki
 
-let io
+const sabaki_command = __dirname + '/../external/sabaki'
+let sabaki_process
+
+function start_sabaki(...sabaki_args) {
+    sabaki_process = require('child_process').spawn(sabaki_command, sabaki_args, {detached: true})
+    sabaki_process.stdout.on('data', leelaz.each_line(sabaki_reader))
+}
+
+function stop_sabaki() {
+    // ref. https://azimi.me/2014/12/31/kill-child_process-node-js.html
+    sabaki_process && process.kill(-sabaki_process.pid)
+}
+
+function sabaki_reader(line) {
+    console.log(`sabaki> ${line}`)
+    const m = line.match(/^sabaki_dump_state:\s*(.*)/)
+    m && load_sabaki_gametree(...JSON.parse(m[1]).treePosition)
+}
 
 function attach_to_sabaki() {
     if (attached) {return}
-    io = SOCKET_IO.listen(socket_port)
-    io.on("connection", socket => {
-        socket.on('sabaki_treepos', ([tree, index]) => load_sabaki_gametree(tree, index))
-    })
-    attached = true; update()
+    const sgf_file = TMP.fileSync({mode: 0644, prefix: 'lizgoban-', postfix: '.sgf'})
+    fs.writeSync(sgf_file.fd, history_to_sgf(history))
+    backup_history(); set_board([]); start_sabaki(sgf_file.name); attached = true; update()
 }
 
 function detach_from_sabaki() {
     if (!attached) {return}
-    io.close(); attached = false; update()
+    stop_sabaki(); attached = false; update()
 }

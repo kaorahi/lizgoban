@@ -9,33 +9,33 @@ const electron = require('electron')
 const ipc = electron.ipcRenderer
 const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
-const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
-      = require('./coord.js')
+const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
+       board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
 function current_window() {return electron.remote.getCurrentWindow()}
 
 // canvas
 const main_canvas = Q('#goban')
-const winrate_bar_canvas = Q('#winrate_bar')
+const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate_graph')
 let board_type = current_window().lizgoban_board_type
 
 // color constant
-const BLACK = "#000", WHITE = "#fff", RED = "#f00"
+const BLACK = "#000", WHITE = "#fff", GRAY = "#ccc",  RED = "#f00"
 const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 
 // state
-let stones = [], stone_count = 0, bturn = true, suggest = [], playouts = 1
-let b_winrate = 50, min_winrate = 50, max_winrate = 50
+let stones = [], stone_count = 0, bturn = true, history = [], suggest = [], playouts = 1
+let initial_b_winrate = NaN, b_winrate = 50, min_winrate = 50, max_winrate = 50
 let attached = false, showing_raw_board_temporally = false
 
 // handler
-window.onload = () => {set_all_canvas_size(); draw_goban(main_canvas, stones)}
-window.onresize = set_all_canvas_size
+window.onload = window.onresize = () => {set_all_canvas_size(); update_goban()}
 
 /////////////////////////////////////////////////
 // util
 
 function setq(x, val) {Q(x).textContent = val}
 function setdebug(x) {setq('#debug', JSON.stringify(x))}
+const f2s = (new Intl.NumberFormat(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})).format
 
 /////////////////////////////////////////////////
 // action
@@ -45,6 +45,7 @@ function play_best() {suggest.length > 0 && play_move(suggest[0].move)}
 function play_move(move) {main('play', move)}
 
 function new_window() {main('new_window', board_type === 'suggest' ? 'variation' : 'suggest')}
+function toggle_auto_analyze() {main('toggle_auto_analyze', to_i(Q('#auto_analysis_playouts').value))}
 
 function main(channel, x) {ipc.send(channel, x)}
 
@@ -57,19 +58,27 @@ ipc.on('state', (e, h) => {
     setq('#stone_count', '' + h.stone_count + '/' + h.history_length)
     setq('#sequence_cursor', '' + (h.sequence_cursor + 1) + '/' + h.sequence_length)
     suggest = []  // avoid flicker of stone colors in subboard
+})
+
+ipc.on('update_ui', (e, availability) => {
     update_goban()
-    update_button(h.availability)
+    update_button(availability)
     update_board_type_switch()
 })
 
 ipc.on('suggest', (e, h) => {
     suggest = h.suggest
     playouts = h.playouts
-    if (!isNaN(h.winrate)) {
-        min_winrate = h.min_winrate
-        max_winrate = h.max_winrate
-        b_winrate = bturn ? h.winrate : 100 - h.winrate
-    }
+    min_winrate = h.min_winrate
+    max_winrate = h.max_winrate
+    b_winrate = h.b_winrate
+    history = h.history
+    initial_b_winrate = h.initial_b_winrate
+    const last_move_eval = (b_winrate - winrate_before(stone_count)) * (bturn ? -1 : 1)
+    const summary = `B ${f2s(b_winrate)}% W ${f2s(100 - b_winrate)}%`
+          + (isNaN(last_move_eval) ? '' :
+             ` Last move ${last_move_eval > 0 ? '+' : ''}${f2s(last_move_eval)}`)
+    current_window().setTitle(`LizGoban (${summary})`)
     update_goban()
 })
 
@@ -84,11 +93,13 @@ ipc.on('play_maybe', (e, {move, is_black}) => {
 // draw goban etc.
 
 function update_goban() {
-    (showing_raw_board_temporally ||
-     board_type === "raw") ? draw_goban(main_canvas, stones) :
+    board_type === "winrate_only" ? null :
+        (showing_raw_board_temporally ||
+         board_type === "raw") ? draw_goban(main_canvas, stones) :
         board_type === "suggest" ? draw_main_goban(main_canvas) :
         draw_goban_with_variation(main_canvas, (suggest[0] && suggest[0].variation) || [])
     draw_winrate_bar(winrate_bar_canvas)
+    draw_winrate_graph(winrate_graph_canvas)
 }
 
 function draw_main_goban(canvas) {
@@ -164,9 +175,13 @@ function hover_here(e, coord2idx, canvas) {
     if (canvas.lizgoban_mouse_move != old) {update_goban()}
 }
 
-function mouse2idx(e, coord2idx) {
+function mouse2coord(e) {
     let bbox = e.target.getBoundingClientRect()
-    let [i, j] = coord2idx(e.clientX - bbox.left, e.clientY - bbox.top)
+    return [e.clientX - bbox.left, e.clientY - bbox.top]
+}
+
+function mouse2idx(e, coord2idx) {
+    let [i, j] = coord2idx(...mouse2coord(e))
     return (0 <= i && i < board_size && 0 <= j && j < board_size) && [i, j]
 }
 
@@ -235,34 +250,85 @@ function kilo_str(x) {
 /////////////////////////////////////////////////
 // winrate bar
 
-function previous_value_keeper(initial_value) {
-    // (ex) f = previous_value_keeper(3)
-    // f("a", 4) ==> 3, f("a", 5) ==> 3, f("a", 6) ==> 3
-    // f("b", 7) ==> 6, f("b", 8) ==> 6, f("c", 9) ==> 8
-    let prev_key, prev_val = initial_value, cur_val
-    return (key, val) => {
-        if (key != prev_key) {prev_key = key, prev_val = cur_val}
-        cur_val = val
-        return prev_val
-    }
-}
-
-const previous_b_winrate = previous_value_keeper(b_winrate)
-
 function draw_winrate_bar(canvas) {
-    let tics = 9
-    let w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    let xfor = percent => w * percent / 100
-    let vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
+    const tics = 9
+    const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
+    const xfor = percent => w * percent / 100
+    const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
+    g.clearRect(0, 0, canvas.width, canvas.height)
     g.strokeStyle = BLACK; g.fillStyle = WHITE; g.lineWidth = 1; fill_rect([0, 0], [w, h], g)
     g.fillStyle = BLACK; fill_rect([0, 0], [xfor(b_winrate), h], g)
     seq(tics, 1).forEach(i => {
-        let r = 100 * i / (tics + 1)
+        const r = 100 * i / (tics + 1)
         g.strokeStyle = (r < b_winrate) ? WHITE : BLACK; vline(r)
     })
     g.lineWidth = 3; g.strokeStyle = (b_winrate > 50) ? WHITE : BLACK; vline(50)
-    g.strokeStyle = RED; vline(previous_b_winrate(stone_count, b_winrate))
+    g.strokeStyle = RED; vline(winrate_before(stone_count))
     g.strokeStyle = BLACK; g.lineWidth = 1; rect([0, 0], [w, h], g)
+}
+
+function winrate_before(stone_count) {return winrate_after(stone_count - 1)}
+
+function winrate_after(stone_count) {
+    return stone_count < 0 ? NaN :
+        stone_count === 0 ? initial_b_winrate :
+        (history[stone_count - 1] || {b_winrate: NaN}).b_winrate
+}
+
+/////////////////////////////////////////////////
+// winrate graph
+
+function draw_winrate_graph(canvas) {
+    const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
+    const tics = board_type === 'winrate_only' ? 9 : 3
+    const xmargin = w * 0.02, fontsize = to_i(w * 0.04)
+    const smax = Math.max(history.length, 1)
+    // s = stone_count, r = winrate
+    const [sr2coord, coord2sr] =
+          uv2coord_translator_pair(canvas, [0, smax], [100, 0], xmargin, 0)
+    g.clearRect(0, 0, canvas.width, canvas.height)
+    draw_winrate_graph_frame(w, h, tics, g)
+    draw_winrate_graph_stone_count(smax, fontsize, sr2coord, g)
+    draw_winrate_graph_curve(sr2coord, g)
+    canvas.onmousedown = e => !attached && winrate_graph_goto(e, coord2sr)
+    canvas.onmousemove = e => !attached && (e.buttons === 1) && winrate_graph_goto(e, coord2sr)
+}
+
+function draw_winrate_graph_frame(w, h, tics, g) {
+    // horizontal lines (tics)
+    g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
+    seq(tics, 1).forEach(i => {let y = h * i / (tics + 1); line([0, y], [w, y], g)})
+    // frame
+    g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
+    rect([0, 0], [w, h], g)
+    // 50% line
+    g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
+    line([0, h / 2], [w, h / 2], g)
+}
+
+function draw_winrate_graph_stone_count(smax, fontsize, sr2coord, g) {
+    // vertical line
+    const vline = s => line(sr2coord(s, 0), sr2coord(s, 100), g)
+    g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
+    vline(stone_count)
+    // move number
+    g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
+    g.font = '' + fontsize + 'px sans-serif'
+    g.textAlign = stone_count < smax / 2 ? 'left' : 'right'
+    g.fillText(' ' + stone_count + ' ', ...sr2coord(stone_count, 0))
+}
+
+function draw_winrate_graph_curve(sr2coord, g) {
+    g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
+    let prev = null, cur = null;
+    [initial_b_winrate].concat(history.map(m => m.b_winrate))
+        .forEach((r, s, a) => (r >= 0) && (r !== null) &&
+                 ((cur = sr2coord(s, r)), prev && line(prev, cur, g), (prev = cur)))
+}
+
+function winrate_graph_goto(e, coord2sr) {
+    const [s, r] = coord2sr(...mouse2coord(e))
+    s >= 0 && main('goto_stone_count', Math.max(0, Math.min(s, history.length)))
 }
 
 /////////////////////////////////////////////////
@@ -274,7 +340,7 @@ function line([x0, y0], [x1, y1], g) {
 
 function rect(xy0, xy1, g) {rect_gen(xy0, xy1, g); g.stroke()}
 function fill_rect(xy0, xy1, g) {rect_gen(xy0, xy1, g); g.fill()}
-function rect_gen([x0, y0], [x1, y1], g) {g.beginPath(); g.rect(x0, y0, x1, y1)}
+function rect_gen([x0, y0], [x1, y1], g) {g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0)}
 
 function circle(xy, r, g) {circle_gen(xy, r, g); g.stroke()}
 function fill_circle(xy, r, g) {circle_gen(xy, r, g); g.fill()}
@@ -285,9 +351,11 @@ function circle_gen([x, y], r, g) {g.beginPath(); g.arc(x, y, r, 0, 2 * Math.PI)
 // canvas
 
 function set_all_canvas_size() {
-    let main_size = Math.min(document.body.clientWidth, document.body.clientHeight) * 0.98
+    let main_size = Math.min(document.body.clientWidth, window.innerHeight) * 0.98
     set_canvas_square_size(main_canvas, main_size)
     set_canvas_size(winrate_bar_canvas, main_size, main_size / 50)
+    set_canvas_size(winrate_graph_canvas, main_size,
+                    main_size * (board_type === "winrate_only" ? 1 : 0.2))
 }
 
 function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, size)}
@@ -300,16 +368,16 @@ function set_canvas_size(canvas, width, height) {
 // keyboard operation
 
 document.onkeydown = e => {
+    e.preventDefault()
     if (!accept_call()) {return}
     switch (e.key) {
     case "c": e.ctrlKey && main('copy_sgf_to_clipboard'); break;
     case "z": showing_raw_board_temporally = true; break;
+    case " ": main('toggle_ponder'); break;
     }
     switch (!attached && e.key) {
-    case "ArrowLeft": case "ArrowUp":
-        main('undo_ntimes', e.shiftKey ? 15 : 1); e.preventDefault(); break;
-    case "ArrowRight": case "ArrowDown":
-        main('redo_ntimes', e.shiftKey ? 15 : 1); e.preventDefault(); break;
+    case "ArrowLeft": case "ArrowUp": main('undo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "ArrowRight": case "ArrowDown": main('redo_ntimes', e.shiftKey ? 15 : 1); break;
     case "[": main('previous_sequence'); break;
     case "]": main('next_sequence'); break;
     case "p": main('pass'); break;
@@ -319,6 +387,7 @@ document.onkeydown = e => {
     case "Backspace": case "Delete": main('explicit_undo'); break;
     case "Home": main('undo_to_start'); break;
     case "End": main('redo_to_end'); break;
+    case "a": toggle_auto_analyze(); break;
     }
 }
 
@@ -346,9 +415,14 @@ function accept_call() {
 function switch_board_type() {
     current_window().lizgoban_board_type = board_type =
         get_selection(Q("#switch_board_type"))
-    main('update')
+    set_all_canvas_size()
+    update_board_type_switch()
+    update_goban()
 }
-function update_board_type_switch() {update_ui_element("#switch_board_type", board_type)}
+function update_board_type_switch() {
+    update_ui_element("#switch_board_type", board_type)
+    update_ui_element("#goban_container", board_type !== "winrate_only")
+}
 
 // buttons
 
@@ -356,11 +430,13 @@ function update_button(availability) {
     const f = (ids, key) =>
           ids.split(/ /).forEach(x => update_ui_element('#' + x, availability[key]))
     f('undo undo_ntimes undo_to_start explicit_undo', 'undo')
-    f('redo redo_ntimes redo_to_end', 'redo')
+    f('redo redo_ntimes redo_to_end auto_analyze', 'redo')
     f('previous_sequence', 'previous_sequence')
     f('next_sequence', 'next_sequence')
     f('attach hide_when_attached', 'attach')
     f('detach', 'detach')
+    f('pause', 'pause')
+    f('resume', 'resume')
 }
 
 /////////////////////////////////////////////////

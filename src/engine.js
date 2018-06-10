@@ -2,13 +2,13 @@
 // setup
 
 // leelaz
-const leelaz_command = __dirname + '/leelaz'
-const leelaz_args = ['-g', '-w', __dirname + '/network']
+const leelaz_command = __dirname + '/../external/leelaz'
+const leelaz_args = ['-g', '-w', __dirname + '/../external/network.gz']
 const analyze_interval_centisec = 10
 
 let leelaz_process, the_board_handler, the_suggest_handler
 
-let last_command_id = -1, last_response_id = -1
+let last_command_id = -1, last_response_id = -1, pondering = true
 
 // game state
 let b_prison = 0, w_prison = 0, bturn = true
@@ -16,8 +16,8 @@ let b_prison = 0, w_prison = 0, bturn = true
 // util
 const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
-const {board_size, idx2coord_translator_pair, move2idx, idx2move, sgfpos2move, move2sgfpos}
-      = require('./coord.js')
+const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
+       board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
 function log(header, s) {console.log(`${header} ${s}`)}
 
 /////////////////////////////////////////////////
@@ -37,10 +37,11 @@ function kill() {
                        leelaz_process.kill('SIGKILL'))
 }
 
-// for renderer
-function showboard() {leelaz('showboard')}
-function start_ponder() {leelaz(`lz-analyze ${analyze_interval_centisec}`)}
+function start_ponder() {pondering && leelaz(`lz-analyze ${analyze_interval_centisec}`)}
 function stop_ponder() {leelaz('name')}
+function showboard() {leelaz('showboard')}
+function is_pondering() {return pondering}
+function toggle_ponder() {pondering = !pondering; pondering ? start_ponder() : stop_ponder()}
 
 // stateless wrapper of leelaz
 let leelaz_previous_history = []
@@ -73,15 +74,22 @@ let command_queue = []
 
 function send_to_queue(s) {
     // remove useless lz-analyze that will be canceled immediately
-    command_queue = command_queue.filter(x => !x.match(/^lz-analyze/))
+    command_queue = command_queue.filter(x => !pondering_command_p(x))
+    // remove duplicated showboard
+    command_queue.find(showboard_command_p) &&
+        (command_queue = command_queue.filter(x => !showboard_command_p(x)).concat("showboard"))
     command_queue.push(s); try_send_from_queue()
 }
 
 function try_send_from_queue() {
-    if (command_queue.length === 0 || last_response_id < last_command_id) {return}
-    const command = `${++last_command_id} ${command_queue.shift()}`
-    console.log('leelaz> ' + command); leelaz_process.stdin.write(command + "\n")
+    if (command_queue.length === 0 || !up_to_date_response()) {return}
+    const cmd = command_queue.shift(), cmd_with_id = `${++last_command_id} ${cmd}`
+    console.log('leelaz> ' + cmd_with_id); leelaz_process.stdin.write(cmd_with_id + "\n")
 }
+
+function up_to_date_response() {return last_response_id >= last_command_id}
+function pondering_command_p(command) {return command.match(/^lz-analyze/)}
+function showboard_command_p(command) {return command.match(/^showboard/)}
 
 /////////////////////////////////////////////////
 // stdout reader
@@ -92,20 +100,22 @@ function try_send_from_queue() {
 
 function stdout_reader(s) {
     log('stdout|', s)
-    let m
-    if (m = s.match(/^[=?](\d+)/)) {last_response_id = to_i(m[1]); try_send_from_queue()}
-    s.match(/^info /) && suggest_reader(s)
+    let m = s.match(/^[=?](\d+)/)
+    m && (last_response_id = to_i(m[1]))
+    up_to_date_response() && s.match(/^info /) && suggest_reader(s)
+    try_send_from_queue()
 }
 
 function suggest_reader(s) {
     const suggest = s.split(/info/).slice(1).map(suggest_parser)
           .sort((a, b) => (a.order - b.order))
-    const [wsum, psum] = suggest.map(h => [h.winrate, h.playouts])
+    const [wsum, playouts] = suggest.map(h => [h.winrate, h.playouts])
           .reduce(([ws, ps], [w, p]) => [ws + w * p, ps + p], [0, 0])
+    const winrate = wsum / playouts, b_winrate = bturn ? winrate : 100 - winrate
     const wrs = suggest.map(h => h.winrate)
+    const min_winrate = Math.min(...wrs), max_winrate = Math.max(...wrs)
     // winrate is NaN if suggest = []
-    the_suggest_handler({suggest: suggest, playouts: psum, winrate: wsum / psum,
-                         min_winrate: Math.min(...wrs), max_winrate: Math.max(...wrs)})
+    the_suggest_handler({suggest, playouts, b_winrate, min_winrate, max_winrate})
 }
 
 // (sample of leelaz output for "lz-analize 10")
@@ -146,7 +156,8 @@ current_reader = main_reader
 // stone = {stone: true, black: true} etc. or {} for empty position
 
 // history = [move_data, ..., move_data]
-// move_data = {move: "G16", is_black: false} etc.
+// move_data = {move: "G16", is_black: false, b_winrate: 42.19} etc.
+// history[0] is "first move", "first stone color (= black)", "winrate *after* first move"
 
 let stones_buf = []
 function board_reader(s) {
@@ -192,4 +203,7 @@ function with_skip(from, to, f) {
 /////////////////////////////////////////////////
 // exports
 
-module.exports = {start, restart, kill, set_board, update, stop_ponder}
+module.exports = {
+    start, restart, kill, set_board, update, is_pondering, toggle_ponder,
+    common_header_length, each_line
+}

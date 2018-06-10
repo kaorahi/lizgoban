@@ -21,6 +21,7 @@ It works already.
 * Colored suggestions
 * Variation by mouse hover
 * Subboard that always shows the principal variation
+* Clickable & draggable win-rate graph with autoanalysis
 
 Help needed:
 
@@ -29,19 +30,18 @@ Help needed:
 
 To try it (stand alone):
 
-1. Install [Node.js](https://nodejs.org/) and type "npm install electron electron-config socket.io @sabaki/sgf".
+1. Install [Node.js](https://nodejs.org/) and type "npm install electron electron-config tmp @sabaki/sgf".
 2. Build unreleased Leela Zero in "next" branch (or copy leelaz.exe in Lizzie-0.5 for Windows).
-3. Put Leela Zero binary as src/leelaz together with its network weight as src/network.
+3. Put Leela Zero binary as "external/leelaz" together with its network weight as "external/network.gz".
 3. Type "npx electron src".
 
 To attach it to Sabaki:
 
-1. Build a customized Sabaki as follows.
-  * Get the source code of Sabaki.
-  * Type "npm install socket.io-client".
-  * Apply the patch "sabaki/send_treepos.patch" and build Sabaki.
-2. Start LizGoban and Sabaki.
-3. Click "attach to sabaki" button on LizGoban.
-3. Put a stone on Sabaki and see it appears on LizGoban.
+1. Build a [customized Sabaki](https://github.com/kaorahi/Sabaki/tree/dump_state) in "dump_state" branch.
+2. Put Sabaki binary as "external/sabaki".
+3. Start LizGoban.
+4. Click "attach to sabaki" button on LizGoban and wait for Sabaki window.
+5. Open the "Preferences" drawer in Sabaki by pressing <kbd>Ctrl/Cmd</kbd>+<kbd>,</kbd> and click "Dump state for external tools".
+5. Put a stone on Sabaki and see it appears on LizGoban.
 
 [Project Home](https://github.com/kaorahi/lizgoban)

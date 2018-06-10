@@ -7,5 +7,3 @@ Leelaz is wrapped as if it is a stateless analyzer for convenience.
 The wrapped leelaz receives the history of moves from the beginning to
 the current board state for every analysis.  Only the difference from
 the previous call is sent to leelaz internally for efficiency.
-
-LizGoban listens to the port 8848 to receive treePosition from Sabaki.

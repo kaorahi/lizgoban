@@ -20,9 +20,9 @@ function idx2move(i, j) {
 }
 
 function move2idx(move) {
-    // return [] if move is pass (note: undefined >= 0 is false)
+    // return [-1, -1] if move is pass
     let m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
-    return m ? [board_size - to_i(row), col_name.indexOf(col)] : []
+    return m ? [board_size - to_i(row), col_name.indexOf(col)] : [-1, -1]
 }
 
 /////////////////////////////////////////////////
@@ -36,10 +36,20 @@ function translator_pair([from1, from2], [to1, to2]) {
 }
 
 function idx2coord_translator_pair(canvas, xmargin, ymargin) {
-    let [xtrans, xinv] = translator_pair([0, board_size - 1], [xmargin, canvas.width - xmargin])
-    let [ytrans, yinv] = translator_pair([0, board_size - 1], [ymargin, canvas.height - ymargin])
-    return [((i, j) => [xtrans(j), ytrans(i)]),
-            ((x, y) => [Math.round(yinv(y)), Math.round(xinv(x))])]
+    // u = j, v = i
+    const [uv2xy, xy2uv] =
+          uv2coord_translator_pair(canvas, [0, board_size - 1], [0, board_size - 1],
+                                   xmargin, ymargin)
+    return [((i, j) => uv2xy(j, i)), ((x, y) => xy2uv(x, y).reverse())]
+}
+
+function uv2coord_translator_pair(canvas, u_min_max, v_min_max, xmargin, ymargin) {
+    // u: horizontal, v: vertical
+    const [xtrans, xinv] = translator_pair(u_min_max, [xmargin, canvas.width - xmargin])
+    const [ytrans, yinv] = translator_pair(v_min_max, [ymargin, canvas.height - ymargin])
+    const to = (u, v) => [xtrans(u), ytrans(v)]
+    const from = (x, y) => [Math.round(xinv(x)), Math.round(yinv(y))]
+    return [to, from]
 }
 
 /////////////////////////////////////////////////
@@ -65,5 +75,6 @@ function sgfpos2move(pos) {
 }
 
 module.exports = {
-    idx2move, move2idx, idx2coord_translator_pair, board_size, sgfpos2move, move2sgfpos,
+    idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
+    board_size, sgfpos2move, move2sgfpos,
 }
