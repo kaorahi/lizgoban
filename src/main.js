@@ -67,8 +67,6 @@ function renderer(channel, ...args) {
 /////////////////////////////////////////////////
 // from renderer
 
-function toggle_ponder() {leelaz.toggle_ponder(); update_ui()}
-
 const api = {
     restart, new_window, update, toggle_ponder, attach_to_sabaki, detach_from_sabaki,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
@@ -117,6 +115,7 @@ function set_board(history) {
 function goto_stone_count(count) {set_board(history.slice(0, Math.max(count, 0)))}
 function future_len() {return history.length - stone_count}
 function restart() {leelaz.restart(); switch_to_nth_sequence(sequence_cursor)}
+function toggle_ponder() {leelaz.toggle_ponder(); update_ui()}
 function toggle_auto_analyze(playouts) {
     auto_analysis_playouts = (auto_analysis_playouts === playouts) ? Infinity : playouts
 }
