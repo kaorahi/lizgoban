@@ -152,7 +152,7 @@ function suggest_handler(h) {
     renderer('suggest', merge({history, initial_b_winrate}, h))
     if (h.playouts >= auto_analysis_playouts) {
         stone_count < history.length ? redo() :
-            (stop_ponder(), (auto_analysis_playouts = Infinity))
+            (toggle_ponder(), (auto_analysis_playouts = Infinity))
     }
 }
 
