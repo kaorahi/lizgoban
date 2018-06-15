@@ -14,6 +14,7 @@ const {update} = leelaz
 let history = [], stones = [[]], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
 let sequence = [history], sequence_cursor = 0;
 history.stone_count = stone_count; history.initial_b_winrate = NaN
+history.player_black = history.player_white = ""
 let auto_analysis_playouts = Infinity
 
 // sabaki
@@ -148,7 +149,8 @@ function suggest_handler(h) {
     stone_count > 0 ? history[stone_count - 1].b_winrate = h.b_winrate
         : (history.initial_b_winrate = h.b_winrate)
     const initial_b_winrate = history.initial_b_winrate
-    renderer('suggest', merge({history, initial_b_winrate}, h))
+    const player_black = history.player_black, player_white = history.player_white
+    renderer('suggest', merge({history, initial_b_winrate, player_black, player_white}, h))
     if (h.playouts >= auto_analysis_playouts) {
         stone_count < history.length ? redo() :
             (toggle_ponder(), (auto_analysis_playouts = Infinity))
@@ -184,7 +186,9 @@ function backup_history() {
 }
 
 function create_sequence_maybe() {
-    (stone_count < history.length) && (backup_history(), history.splice(stone_count))
+    (stone_count < history.length) &&
+        (backup_history(), history.splice(stone_count),
+         (history.player_black = history.player_white = ""))
 }
 
 function next_sequence() {switch_to_nth_sequence(sequence_cursor + 1)}
@@ -247,6 +251,8 @@ function load_sabaki_gametree(gametree, index) {
     const idx = (index === undefined) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     const history_until_index = history_from_sabaki_nodes(nodes_until_index)
+    history.player_black = (gametree.nodes[0].PB || [""])[0]
+    history.player_white = (gametree.nodes[0].PW || [""])[0]
     set_board(history.slice(0, history_until_index.length))
 }
 

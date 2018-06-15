@@ -74,7 +74,8 @@ ipc.on('suggest', (e, h) => {
     history = h.history
     initial_b_winrate = h.initial_b_winrate
     const last_move_eval = (b_winrate - winrate_before(stone_count)) * (bturn ? -1 : 1)
-    const summary = `B ${f2s(b_winrate)}% W ${f2s(100 - b_winrate)}%`
+    const summary = `B: ${h.player_black} ${f2s(b_winrate)}% /`
+          + ` W: ${h.player_white} ${f2s(100 - b_winrate)}%`
           + (isNaN(last_move_eval) ? '' :
              ` Last move ${last_move_eval > 0 ? '+' : ''}${f2s(last_move_eval)}`)
     current_window().setTitle(`LizGoban (${summary})`)
