@@ -19,7 +19,7 @@ const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate
 let board_type = current_window().lizgoban_board_type
 
 // color constant
-const BLACK = "#000", WHITE = "#fff", GRAY = "#ccc",  RED = "#f00"
+const BLACK = "#000", WHITE = "#fff", GRAY = "#ccc", RED = "#f00", GREEN = "#0f0", BGCOLOR = "#111111"
 const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 
 // state
@@ -54,7 +54,6 @@ function main(channel, x) {ipc.send(channel, x)}
 
 ipc.on('state', (e, h) => {
     stones = h.stones; stone_count = h.stone_count; bturn = h.bturn, attached = h.attached
-    setq('#turn', h.bturn ? '⬤' : '◯')
     setq('#stone_count', '' + h.stone_count + '/' + h.history_length)
     setq('#sequence_cursor', '' + (h.sequence_cursor + 1) + '/' + h.sequence_length)
     suggest = []  // avoid flicker of stone colors in subboard
@@ -256,15 +255,15 @@ function draw_winrate_bar(canvas) {
     const xfor = percent => w * percent / 100
     const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
     g.clearRect(0, 0, canvas.width, canvas.height)
-    g.strokeStyle = BLACK; g.fillStyle = WHITE; g.lineWidth = 1; fill_rect([0, 0], [w, h], g)
-    g.fillStyle = BLACK; fill_rect([0, 0], [xfor(b_winrate), h], g)
+    g.strokeStyle = BGCOLOR; g.fillStyle = WHITE; g.lineWidth = 1; fill_rect([0, 0], [w, h], g)
+    g.fillStyle = BGCOLOR; fill_rect([0, 0], [xfor(b_winrate), h], g)
+    g.strokeStyle = WHITE; g.lineWidth = 1; rect([0, 0], [w, h], g)
     seq(tics, 1).forEach(i => {
         const r = 100 * i / (tics + 1)
-        g.strokeStyle = (r < b_winrate) ? WHITE : BLACK; vline(r)
+        g.lineWidth = 1; g.strokeStyle = (r < b_winrate) ? WHITE : BGCOLOR; vline(r)
     })
-    g.lineWidth = 3; g.strokeStyle = (b_winrate > 50) ? WHITE : BLACK; vline(50)
-    g.strokeStyle = RED; vline(winrate_before(stone_count))
-    g.strokeStyle = BLACK; g.lineWidth = 1; rect([0, 0], [w, h], g)
+    g.lineWidth = 3; g.strokeStyle = (b_winrate > 50) ? WHITE : BGCOLOR; vline(50)
+    g.lineWidth = 3; g.strokeStyle = GREEN; vline(winrate_before(stone_count))
 }
 
 function winrate_before(stone_count) {return winrate_after(stone_count - 1)}
@@ -298,12 +297,12 @@ function draw_winrate_graph_frame(w, h, tics, g) {
     // horizontal lines (tics)
     g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
     seq(tics, 1).forEach(i => {let y = h * i / (tics + 1); line([0, y], [w, y], g)})
-    // frame
-    g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
-    rect([0, 0], [w, h], g)
-    // 50% line
-    g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
-    line([0, h / 2], [w, h / 2], g)
+    // // frame
+    // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
+    // rect([0, 0], [w, h], g)
+    // // 50% line
+    // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
+    // line([0, h / 2], [w, h / 2], g)
 }
 
 function draw_winrate_graph_stone_count(smax, fontsize, sr2coord, g) {
@@ -319,7 +318,7 @@ function draw_winrate_graph_stone_count(smax, fontsize, sr2coord, g) {
 }
 
 function draw_winrate_graph_curve(sr2coord, g) {
-    g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
+    g.strokeStyle = GREEN; g.fillStyle = GREEN; g.lineWidth = 3
     let prev = null, cur = null;
     [initial_b_winrate].concat(history.map(m => m.b_winrate))
         .forEach((r, s, a) => (r >= 0) && (r !== null) &&
@@ -437,6 +436,8 @@ function update_button(availability) {
     f('detach', 'detach')
     f('pause', 'pause')
     f('resume', 'resume')
+    f('bturn', 'bturn')
+    f('wturn', 'wturn')
 }
 
 /////////////////////////////////////////////////

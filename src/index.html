@@ -5,11 +5,11 @@
  <title>LizGoban</title>
  <script defer src="renderer.js"></script>
  <style type="text/css">
- body {font-size: 3vw;}
+ body {font-size: 3vw; color: white; background-color: #444;}
  input, select {font-size: 100%;}
  .controller_row {margin-top: 2%;}
- #winrate_graph {border: solid 1px white;}
- #winrate_graph:hover {border: solid 1px red;}
+ #winrate_graph {border: solid 1px #ccc;}
+ #winrate_graph:hover {border: solid 1px green;}
  </style>
 </head>
 
@@ -24,7 +24,7 @@
 </div>
 
 <div>
-<canvas id="winrate_graph" style="background: #fff;"></canvas>
+<canvas id="winrate_graph" style="background: #111111;"></canvas>
 </div>
 
 <div id="hide_when_attached">
@@ -43,7 +43,8 @@ board
 <span id="sequence_cursor"></span>
 <input type='button' id='next_sequence' onclick="main('next_sequence')" value="]">
 )
-<span id="turn"></span>
+<span id="bturn" style="color: black">⬤</span>
+<span id="wturn" style="color: white">⬤</span>
 <input type='button' id='pass' onclick="main('pass')" value="pass">
 <input type='button' id='explicit_undo' onclick="main('explicit_undo')" value="undo">
 <input type='button' onclick="play_best()" value="best">

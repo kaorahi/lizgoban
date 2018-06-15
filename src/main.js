@@ -168,6 +168,8 @@ function availability() {
         detach: attached,
         pause: leelaz.is_pondering(),
         resume: !leelaz.is_pondering(),
+        bturn: bturn,
+        wturn: !bturn,
     }
 }
 
