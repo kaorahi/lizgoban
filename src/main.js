@@ -178,7 +178,8 @@ function availability() {
 
 function backup_history() {
     if (history.length === 0) {return}
-    sequence.splice(sequence_cursor, 0, clone_history())
+    store_stone_count(history)
+    sequence.splice(sequence_cursor + 1, 0, clone(history))
     goto_nth_sequence(sequence_cursor + 1)
 }
 
@@ -195,8 +196,6 @@ function switch_to_nth_sequence(n) {
         (store_stone_count(history), set_board([]), goto_nth_sequence(n),
          stone_count = 0, redo_ntimes(history.stone_count))
 }
-
-function clone_history() {const hist = clone(history); store_stone_count(hist); return hist}
 
 function store_stone_count(hist) {hist.stone_count = stone_count}
 
