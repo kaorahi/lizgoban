@@ -309,8 +309,9 @@ function start_sabaki(...sabaki_args) {
 }
 
 function stop_sabaki() {
-    // ref. https://azimi.me/2014/12/31/kill-child_process-node-js.html
-    sabaki_process && process.kill(-sabaki_process.pid)
+    sabaki_process && (process.platform === 'win32' ? sabaki_process.kill() :
+                       // ref. https://azimi.me/2014/12/31/kill-child_process-node-js.html
+                       process.kill(- sabaki_process.pid))
 }
 
 function sabaki_reader(line) {
