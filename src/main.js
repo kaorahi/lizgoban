@@ -294,7 +294,9 @@ function attach_to_sabaki() {
     if (attached) {return}
     const sgf_file = TMP.fileSync({mode: 0644, prefix: 'lizgoban-', postfix: '.sgf'})
     fs.writeSync(sgf_file.fd, history_to_sgf(history))
-    backup_history(); set_board([]); start_sabaki(sgf_file.name); attached = true; update()
+    backup_history()
+    start_sabaki(sgf_file.name + '#' + stone_count)
+    attached = true; update()
 }
 
 function detach_from_sabaki() {

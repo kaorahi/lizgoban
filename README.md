@@ -33,15 +33,14 @@ To try it (stand alone):
 1. Install [Node.js](https://nodejs.org/) and type "npm install electron electron-config tmp @sabaki/sgf".
 2. Build unreleased Leela Zero in "next" branch (or copy leelaz.exe in Lizzie-0.5 for Windows).
 3. Put Leela Zero binary as "external/leelaz" together with its network weight as "external/network.gz".
-3. Type "npx electron src".
+4. Type "npx electron src".
 
 To attach it to Sabaki:
 
-1. Build a [customized Sabaki](https://github.com/kaorahi/Sabaki/tree/dump_state) in "dump_state" branch.
+1. Build a [customized Sabaki](https://github.com/kaorahi/Sabaki/tree/dump_state2) in "dump_state2" branch.
 2. Put Sabaki binary as "external/sabaki".
 3. Start LizGoban.
 4. Click "attach to sabaki" button on LizGoban and wait for Sabaki window.
-5. Open the "Preferences" drawer in Sabaki by pressing <kbd>Ctrl/Cmd</kbd>+<kbd>,</kbd> and click "Dump state for external tools".
 5. Put a stone on Sabaki and see it appears on LizGoban.
 
 [Project Home](https://github.com/kaorahi/lizgoban)
