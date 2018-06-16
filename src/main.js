@@ -233,7 +233,7 @@ function open_sgf() {
         title: 'Select SGF file',
         // defaultPath: '.',
     })
-    fs && fs.forEach(f => try_read_sgf(g => load_sabaki_gametree(SGF.parseFile(g)), f))
+    fs && fs.forEach(f => try_read_sgf(g => load_sabaki_gametree(SGF.parseFile(g)[0]), f))
 }
 
 function save_sgf() {
