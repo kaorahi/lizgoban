@@ -367,7 +367,8 @@ function set_canvas_size(canvas, width, height) {
 // keyboard operation
 
 document.onkeydown = e => {
-    e.target.tagName === "INPUT" || e.preventDefault()
+    if (e.target.tagName === "INPUT" && e.target.type !== "button") {return}
+    e.preventDefault()
     if (!accept_call()) {return}
     switch (e.key) {
     case "c": e.ctrlKey && main('copy_sgf_to_clipboard'); break;
