@@ -13,6 +13,7 @@ const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, 
 
 const col_name = 'ABCDEFGHJKLMNOPQRST'
 const board_size = col_name.length
+const idx_pass = [-1, -1]
 
 function idx2move(i, j) {
     return (0 <= i) && (i < board_size) && (0 <= j) && (j < board_size) &&
@@ -20,9 +21,8 @@ function idx2move(i, j) {
 }
 
 function move2idx(move) {
-    // return [-1, -1] if move is pass
     let m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
-    return m ? [board_size - to_i(row), col_name.indexOf(col)] : [-1, -1]
+    return m ? [board_size - to_i(row), col_name.indexOf(col)] : idx_pass
 }
 
 /////////////////////////////////////////////////
@@ -56,18 +56,22 @@ function uv2coord_translator_pair(canvas, u_min_max, v_min_max, xmargin, ymargin
 // sgfpos (<=> idx) <=> move
 
 const sgfpos_name = "abcdefghijklmnopqrs"
+const sgfpos_pass = "tt"
 
 function idx2sgfpos(i, j) {
     return sgfpos_name[j] + sgfpos_name[i]
 }
 
 function sgfpos2idx(pos) {
+    if (pos === sgfpos_pass) {return idx_pass}
     const [j, i] = pos.split('').map(c => sgfpos_name.indexOf(c))
     return [i, j]
 }
 
 function move2sgfpos(move) {
-    return idx2sgfpos(...move2idx(move))
+    // pass = 'tt'
+    const [i, j] = move2idx(move)
+    return i >= 0 ? idx2sgfpos(i, j) : sgfpos_pass
 }
 
 function sgfpos2move(pos) {
