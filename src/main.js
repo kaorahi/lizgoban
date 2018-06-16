@@ -226,7 +226,8 @@ function try_read_sgf(f, arg) {
 }
 
 function history_to_sgf(hist) {
-    return '(;KM[7.5]PW[]PB[]' +
+    const f = (t, p) => `${t}[${SGF.escapeString(p || '')}]`
+    return `(;KM[7.5]${f('PW', history.player_white)}${f('PB', history.player_black)}` +
         hist.map(({move: move, is_black: is_black}) =>
                  (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
         ')'
