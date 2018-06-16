@@ -1,13 +1,7 @@
 /////////////////////////////////////////////////
 // setup
 
-// leelaz
-const leelaz_command = __dirname + '/../external/leelaz'
-const leelaz_args = ['-g', '-w', __dirname + '/../external/network.gz']
-const analyze_interval_centisec = 10
-
-let leelaz_process, the_board_handler, the_suggest_handler
-
+let leelaz_process, start_args, the_analyze_interval_centisec
 let last_command_id = -1, last_response_id = -1, pondering = true
 
 // game state
@@ -24,20 +18,23 @@ function log(header, s) {console.log(`${header} ${s}`)}
 // leelaz action
 
 // process
-function start(board_handler, suggest_handler) {
+function start(...args) {
+    const [leelaz_command, leelaz_args, analyze_interval_centisec,
+           board_handler, suggest_handler] = start_args = args
     leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
     leelaz_process.stdout.on('data', each_line(stdout_reader))
     leelaz_process.stderr.on('data', each_line(with_skip('~begin', '~end', reader)))
     the_board_handler = board_handler; the_suggest_handler = suggest_handler
+    the_analyze_interval_centisec = analyze_interval_centisec
     update()
 }
-function restart() {kill(); start(the_board_handler, the_suggest_handler)}
+function restart() {kill(); start(...start_args)}
 function kill() {
     leelaz_process && (leelaz_process.stderr.on('data', () => null),
                        leelaz_process.kill('SIGKILL'))
 }
 
-function start_ponder() {pondering && leelaz(`lz-analyze ${analyze_interval_centisec}`)}
+function start_ponder() {pondering && leelaz(`lz-analyze ${the_analyze_interval_centisec}`)}
 function stop_ponder() {leelaz('name')}
 function showboard() {leelaz('showboard')}
 function is_pondering() {return pondering}

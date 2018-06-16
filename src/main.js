@@ -1,4 +1,18 @@
 /////////////////////////////////////////////////
+// command line option
+
+// example:
+// npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
+
+let option = {
+    leelaz_command: __dirname + "/../external/leelaz",
+    leelaz_args: ["-g", "-w", __dirname + "/../external/network.gz"],
+    analyze_interval_centisec: 10,
+}
+process.argv.forEach((x, i, a) => (x === "-j") && Object.assign(option, JSON.parse(a[i + 1])))
+console.log("option: " + JSON.stringify(option))
+
+/////////////////////////////////////////////////
 // setup
 
 // electron
@@ -54,7 +68,8 @@ function new_window(default_board_type) {
 }
 
 app.on('ready', () => {
-    leelaz.start(board_handler, suggest_handler)
+    leelaz.start(option.leelaz_command, option.leelaz_args, option.analyze_interval_centisec,
+                 board_handler, suggest_handler)
     new_window('suggest')
 })
 app.on('window-all-closed', quit)
