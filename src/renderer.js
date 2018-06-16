@@ -373,6 +373,7 @@ document.onkeydown = e => {
     if (!accept_call()) {return}
     switch (e.key) {
     case "c": e.ctrlKey && main('copy_sgf_to_clipboard'); break;
+    case "s": e.ctrlKey && main('save_sgf'); break;
     case "z": showing_raw_board_temporally = true; break;
     case " ": main('toggle_ponder'); break;
     }

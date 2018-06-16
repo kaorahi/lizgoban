@@ -87,7 +87,7 @@ const api = {
     restart, new_window, update, toggle_ponder, attach_to_sabaki, detach_from_sabaki,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     goto_stone_count, toggle_auto_analyze,
-    paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf,
+    paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
     next_sequence, previous_sequence,
 }
 
@@ -234,6 +234,14 @@ function open_sgf() {
         // defaultPath: '.',
     })
     fs && fs.forEach(f => try_read_sgf(g => load_sabaki_gametree(SGF.parseFile(g)), f))
+}
+
+function save_sgf() {
+    const f = dialog.showSaveDialog(null, {
+        title: 'Save SGF file',
+        // defaultPath: '.',
+    })
+    f && fs.writeFile(f, history_to_sgf(history))
 }
 
 function try_read_sgf(f, arg) {
