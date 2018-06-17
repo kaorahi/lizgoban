@@ -318,7 +318,7 @@ function stop_sabaki() {
 function sabaki_reader(line) {
     console.log(`sabaki> ${line}`)
     const m = line.match(/^sabaki_dump_state:\s*(.*)/)
-    m && load_sabaki_gametree(...JSON.parse(m[1]).treePosition)
+    m && load_sabaki_gametree(...(JSON.parse(m[1]).treePosition || []))
 }
 
 function attach_to_sabaki() {
