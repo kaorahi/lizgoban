@@ -305,6 +305,7 @@ const sabaki_command = __dirname + '/../external/sabaki'
 let sabaki_process
 
 function start_sabaki(...sabaki_args) {
+    console.log('start sabaki: ' + JSON.stringify([sabaki_command, sabaki_args]))
     sabaki_process = require('child_process').spawn(sabaki_command, sabaki_args, {detached: true})
     sabaki_process.stdout.on('data', leelaz.each_line(sabaki_reader))
 }
@@ -324,7 +325,9 @@ function sabaki_reader(line) {
 function attach_to_sabaki() {
     if (attached) {return}
     const sgf_file = TMP.fileSync({mode: 0644, prefix: 'lizgoban-', postfix: '.sgf'})
-    fs.writeSync(sgf_file.fd, history_to_sgf(history))
+    const sgf_text = history_to_sgf(history)
+    fs.writeSync(sgf_file.fd, sgf_text)
+    console.log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_history()
     start_sabaki(sgf_file.name + '#' + stone_count)
     attached = true; update()
