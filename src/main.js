@@ -133,7 +133,8 @@ function future_len() {return history.length - stone_count}
 function restart() {leelaz.restart(); switch_to_nth_sequence(sequence_cursor)}
 function toggle_ponder() {leelaz.toggle_ponder(); update_ui()}
 function toggle_auto_analyze(playouts) {
-    auto_analysis_playouts = (auto_analysis_playouts === playouts) ? Infinity : playouts
+    auto_analysis_playouts = (auto_analysis_playouts === playouts) ? Infinity :
+        (leelaz.is_pondering() || toggle_ponder(), playouts)
 }
 function stop_auto_analyze() {auto_analysis_playouts = Infinity}
 
