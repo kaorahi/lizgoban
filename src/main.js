@@ -273,7 +273,7 @@ function load_sabaki_gametree(gametree, index) {
     const com = leelaz.common_header_length(history, new_history)
     // keep old history for keeping winrate
     history.splice(com, Infinity, ...new_history.slice(com))
-    const idx = (index === undefined) ? Infinity : index
+    const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     const history_until_index = history_from_sabaki_nodes(nodes_until_index)
     history.player_black = (gametree.nodes[0].PB || [""])[0]
