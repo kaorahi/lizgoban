@@ -168,12 +168,15 @@ function suggest_handler(h) {
         : (history.initial_b_winrate = h.b_winrate)
     const initial_b_winrate = history.initial_b_winrate
     const player_black = history.player_black, player_white = history.player_white
+    show_suggest_p() || (h.suggest = [])
     renderer('suggest', merge({history, initial_b_winrate, player_black, player_white}, h))
     if (h.playouts >= auto_analysis_playouts) {
         stone_count < history.length ? redo() :
             (toggle_ponder(), (auto_analysis_playouts = Infinity))
     }
 }
+
+function show_suggest_p() {return auto_analysis_playouts >= 10}  // fixme: customize
 
 /////////////////////////////////////////////////
 // availability
