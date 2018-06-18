@@ -82,13 +82,6 @@ ipc.on('suggest', (e, h) => {
     update_goban()
 })
 
-ipc.on('play_maybe', (e, {move, is_black}) => {
-    const [i, j] = move2idx(move)
-    // update items on the board only.
-    // don't toggle bturn because it causes flicker of winrate bar.
-    (i >= 0) && (stones[i][j] = {stone: true, black: is_black, maybe: true}, suggest = [])
-})
-
 /////////////////////////////////////////////////
 // draw goban etc.
 

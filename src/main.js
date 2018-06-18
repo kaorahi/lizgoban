@@ -104,12 +104,10 @@ each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(channel, h
 function play(move) {
     const [i, j] = move2idx(move)
     if (i >= 0 && (!stones[i] || !stones[i][j] || stones[i][j].stone)) {return}
-    create_sequence_maybe(); play_move({move: move, is_black: bturn})
+    i >= 0 && (stones[i][j] = {stone: true, black: bturn, maybe: true})
+    create_sequence_maybe(); update_state(); play_move({move: move, is_black: bturn})
 }
-function play_move(h) {
-    renderer('play_maybe', h)
-    history.splice(stone_count); history.push(h); set_board(history)
-}
+function play_move(h) {history.splice(stone_count); history.push(h); set_board(history)}
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
@@ -145,6 +143,10 @@ function stop_auto_analyze() {auto_analysis_playouts = Infinity}
 function board_handler(h) {
     stones = h.stones
     add_next_mark_to_stones(stones, history, stone_count)
+    update_state()
+}
+
+function update_state() {
     renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones,
                        history_length: history.length,
                        sequence_cursor: sequence_cursor, sequence_length: sequence.length,
