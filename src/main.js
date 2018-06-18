@@ -313,6 +313,7 @@ function start_sabaki(...sabaki_args) {
     console.log('start sabaki: ' + JSON.stringify([sabaki_command, sabaki_args]))
     sabaki_process = require('child_process').spawn(sabaki_command, sabaki_args, {detached: true})
     sabaki_process.stdout.on('data', leelaz.each_line(sabaki_reader))
+    leelaz.set_io_error_handler(sabaki_process, restart)
 }
 
 function stop_sabaki() {

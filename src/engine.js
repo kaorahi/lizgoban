@@ -24,6 +24,7 @@ function start(...args) {
     leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
     leelaz_process.stdout.on('data', each_line(stdout_reader))
     leelaz_process.stderr.on('data', each_line(with_skip('~begin', '~end', reader)))
+    set_io_error_handler(leelaz_process, restart)
     the_board_handler = board_handler; the_suggest_handler = suggest_handler
     the_analyze_interval_centisec = analyze_interval_centisec
     command_queue = []; last_command_id = -1; last_response_id = -1
@@ -33,6 +34,9 @@ function restart() {kill(); start(...start_args)}
 function kill() {
     leelaz_process && (leelaz_process.stderr.on('data', () => null),
                        leelaz_process.kill('SIGKILL'))
+}
+function set_io_error_handler(process, handler) {
+    ['stdin', 'stdout', 'stderr'].forEach(k => process[k].on('error', handler))
 }
 
 function start_ponder() {pondering && leelaz(`lz-analyze ${the_analyze_interval_centisec}`)}
@@ -201,5 +205,6 @@ function with_skip(from, to, f) {
 
 module.exports = {
     start, restart, kill, set_board, update, is_pondering, toggle_ponder,
-    common_header_length, each_line
+    // utility
+    common_header_length, each_line, set_io_error_handler
 }
