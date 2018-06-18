@@ -2,7 +2,7 @@
 // setup
 
 let leelaz_process, start_args, the_analyze_interval_centisec
-let last_command_id = -1, last_response_id = -1, pondering = true
+let command_queue, last_command_id, last_response_id, pondering = true
 
 // game state
 let b_prison = 0, w_prison = 0, bturn = true
@@ -26,6 +26,7 @@ function start(...args) {
     leelaz_process.stderr.on('data', each_line(with_skip('~begin', '~end', reader)))
     the_board_handler = board_handler; the_suggest_handler = suggest_handler
     the_analyze_interval_centisec = analyze_interval_centisec
+    command_queue = []; last_command_id = -1; last_response_id = -1
     update()
 }
 function restart() {kill(); start(...start_args)}
@@ -66,8 +67,6 @@ function clear_leelaz_board() {leelaz("clear_board"); leelaz_previous_history = 
 
 /////////////////////////////////////////////////
 // command queue
-
-let command_queue = []
 
 function send_to_queue(s) {
     // remove useless lz-analyze that will be canceled immediately
