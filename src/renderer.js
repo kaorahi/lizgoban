@@ -53,10 +53,11 @@ function play_best(n) {
     play_best_until = Math.max(play_best_until, stone_count) + (n || 1); try_play_best()
 }
 function try_play_best() {
-    play_best_until <= stone_count ? (stop_play_best()) :
+    finished_playing_best() ? (stop_play_best()) :
         suggest.length > 0 && play_move(suggest[0].move)
 }
 function stop_play_best() {play_best_until = -1}
+function finished_playing_best() {return play_best_until <= stone_count}
 stop_play_best()
 
 /////////////////////////////////////////////////
@@ -98,7 +99,7 @@ ipc.on('suggest', (e, h) => {
 
 function update_goban() {
     board_type === "winrate_only" ? null :
-        (showing_raw_board_temporally ||
+        (showing_raw_board_temporally || !finished_playing_best() ||
          board_type === "raw") ? draw_goban(main_canvas, stones) :
         board_type === "suggest" ? draw_main_goban(main_canvas) :
         draw_goban_with_variation(main_canvas, (suggest[0] && suggest[0].variation) || [])
