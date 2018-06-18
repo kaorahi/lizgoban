@@ -384,7 +384,7 @@ document.onkeydown = e => {
     case "[": main('previous_sequence'); break;
     case "]": main('next_sequence'); break;
     case "p": main('pass'); break;
-    case ",": play_best(); break;
+    case "Enter": play_best(); break;
     case "o": e.ctrlKey && main('open_sgf'); break;
     case "v": e.ctrlKey && main('paste_sgf_from_clipboard'); break;
     case "Backspace": case "Delete": main('explicit_undo'); break;
