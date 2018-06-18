@@ -26,6 +26,7 @@ const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 let stones = [], stone_count = 0, bturn = true, history = [], suggest = [], playouts = 1
 let initial_b_winrate = NaN, b_winrate = 50, min_winrate = 50, max_winrate = 50
 let attached = false, showing_raw_board_temporally = false
+let play_best_until = -1
 
 // handler
 window.onload = window.onresize = () => {set_all_canvas_size(); update_goban()}
@@ -41,13 +42,22 @@ const f2s = (new Intl.NumberFormat(undefined, {minimumFractionDigits: 1, maximum
 // action
 
 function play() {let d = Q('#move'); play_move(d.value); d.value = ''}
-function play_best() {suggest.length > 0 && play_move(suggest[0].move)}
 function play_move(move) {main('play', move)}
 
 function new_window() {main('new_window', board_type === 'suggest' ? 'variation' : 'suggest')}
 function toggle_auto_analyze() {main('toggle_auto_analyze', to_i(Q('#auto_analysis_playouts').value))}
 
 function main(channel, x) {ipc.send(channel, x)}
+
+function play_best() {
+    play_best_until = Math.max(play_best_until, stone_count) + 1; try_play_best()
+}
+function try_play_best() {
+    play_best_until <= stone_count ? (stop_play_best()) :
+        suggest.length > 0 && play_move(suggest[0].move)
+}
+function stop_play_best() {play_best_until = -1}
+stop_play_best()
 
 /////////////////////////////////////////////////
 // from main
@@ -80,6 +90,7 @@ ipc.on('suggest', (e, h) => {
              ` Last move ${last_move_eval > 0 ? '+' : ''}${f2s(last_move_eval)}`)
     current_window().setTitle(`LizGoban (${summary})`)
     update_goban()
+    try_play_best()
 })
 
 /////////////////////////////////////////////////
@@ -360,10 +371,13 @@ function set_canvas_size(canvas, width, height) {
 /////////////////////////////////////////////////
 // keyboard operation
 
+document.onmousedown = e => {stop_play_best()}
+
 document.onkeydown = e => {
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {return}
     e.preventDefault()
     if (!accept_call()) {return}
+    if (e.key !== "Enter") {stop_play_best()}
     switch (e.key) {
     case "c": e.ctrlKey && main('copy_sgf_to_clipboard'); break;
     case "s": e.ctrlKey && main('save_sgf'); break;
