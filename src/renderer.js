@@ -441,18 +441,13 @@ function update_board_type_switch() {
 // buttons
 
 function update_button(availability) {
-    const f = (ids, key) =>
-          ids.split(/ /).forEach(x => update_ui_element('#' + x, availability[key]))
-    f('undo undo_ntimes undo_to_start explicit_undo', 'undo')
-    f('redo redo_ntimes redo_to_end auto_analyze', 'redo')
-    f('previous_sequence', 'previous_sequence')
-    f('next_sequence', 'next_sequence')
-    f('attach hide_when_attached', 'attach')
-    f('detach', 'detach')
-    f('pause', 'pause')
-    f('resume', 'resume')
-    f('bturn', 'bturn')
-    f('wturn', 'wturn')
+    const f = (key, ids) =>
+          (ids || key).split(/ /).forEach(x => update_ui_element('#' + x, availability[key]))
+    f('undo', 'undo undo_ntimes undo_to_start explicit_undo')
+    f('redo', 'redo redo_ntimes redo_to_end auto_analyze')
+    f('previous_sequence'); f('next_sequence')
+    f('attach', 'attach hide_when_attached'); f('detach')
+    f('pause'); f('resume'); f('bturn'); f('wturn')
 }
 
 /////////////////////////////////////////////////
