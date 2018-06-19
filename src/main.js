@@ -87,7 +87,7 @@ function renderer(channel, ...args) {
 const api = {
     restart, new_window, update, toggle_ponder, attach_to_sabaki, detach_from_sabaki,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
-    goto_stone_count, toggle_auto_analyze,
+    goto_stone_count, toggle_auto_analyze, stop_auto_analyze,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
     next_sequence, previous_sequence,
 }

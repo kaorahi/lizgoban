@@ -50,6 +50,7 @@ function toggle_auto_analyze() {main('toggle_auto_analyze', to_i(Q('#auto_analys
 function main(channel, x) {ipc.send(channel, x)}
 
 function play_best(n) {
+    main('stop_auto_analyze')
     play_best_until = Math.max(play_best_until, stone_count) + (n || 1); try_play_best()
 }
 function try_play_best() {
