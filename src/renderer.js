@@ -375,6 +375,9 @@ function set_canvas_size(canvas, width, height) {
 document.onmousedown = e => {stop_play_best()}
 
 document.onkeydown = e => {
+    if (e.target.id === "auto_analysis_playouts" && e.key === "Enter") {
+        toggle_auto_analyze(); return
+    }
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {return}
     e.preventDefault()
     if (!accept_call()) {return}
