@@ -134,6 +134,7 @@ function toggle_ponder() {leelaz.toggle_ponder(); update_ui()}
 function toggle_auto_analyze(playouts) {
     auto_analysis_playouts = (auto_analysis_playouts === playouts) ? Infinity :
         (leelaz.is_pondering() || toggle_ponder(), playouts)
+    update_ui()
 }
 function stop_auto_analyze() {auto_analysis_playouts = Infinity}
 
@@ -173,7 +174,7 @@ function suggest_handler(h) {
     renderer('suggest', merge({history, initial_b_winrate, player_black, player_white}, h))
     if (h.playouts >= auto_analysis_playouts) {
         stone_count < history.length ? redo() :
-            (toggle_ponder(), (auto_analysis_playouts = Infinity))
+            (toggle_ponder(), (auto_analysis_playouts = Infinity), update_ui())
     }
 }
 
@@ -194,6 +195,8 @@ function availability() {
         resume: !leelaz.is_pondering(),
         bturn: bturn,
         wturn: !bturn,
+        start_auto_analyze: auto_analysis_playouts === Infinity,
+        stop_auto_analyze: auto_analysis_playouts < Infinity,
     }
 }
 
