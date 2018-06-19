@@ -8,6 +8,7 @@ let option = {
     leelaz_command: __dirname + "/../external/leelaz",
     leelaz_args: ["-g", "-w", __dirname + "/../external/network.gz"],
     analyze_interval_centisec: 10,
+    sabaki_command: __dirname + '/../external/sabaki',
 }
 process.argv.forEach((x, i, a) => (x === "-j") && Object.assign(option, JSON.parse(a[i + 1])))
 console.log("option: " + JSON.stringify(option))
@@ -306,10 +307,10 @@ function nodes_from_sabaki_gametree(gametree) {
 /////////////////////////////////////////////////
 // Sabaki
 
-const sabaki_command = __dirname + '/../external/sabaki'
 let sabaki_process
 
 function start_sabaki(...sabaki_args) {
+    const sabaki_command = option.sabaki_command
     console.log('start sabaki: ' + JSON.stringify([sabaki_command, sabaki_args]))
     sabaki_process = require('child_process').spawn(sabaki_command, sabaki_args, {detached: true})
     sabaki_process.stdout.on('data', leelaz.each_line(sabaki_reader))
