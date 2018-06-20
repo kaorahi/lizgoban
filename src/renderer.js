@@ -447,7 +447,7 @@ function update_button(availability) {
     f('undo', 'undo undo_ntimes undo_to_start explicit_undo')
     f('redo', 'redo redo_ntimes redo_to_end auto_analyze')
     f('previous_sequence'); f('next_sequence')
-    f('attach', 'attach hide_when_attached'); f('detach')
+    f('sabaki'); f('attach', 'attach hide_when_attached'); f('detach')
     f('pause'); f('resume'); f('bturn'); f('wturn')
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_playouts')
     f('stop_auto_analyze')

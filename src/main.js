@@ -32,9 +32,6 @@ history.stone_count = stone_count; history.initial_b_winrate = NaN
 history.player_black = history.player_white = ""
 let auto_analysis_playouts = Infinity
 
-// sabaki
-let attached = false
-
 // util
 const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
@@ -44,6 +41,12 @@ const clipboard = electron.clipboard
 const SGF = require('@sabaki/sgf')
 const config = new (require('electron-config'))({name: 'lizgoban'})
 const fs = require('fs'), TMP = require('tmp')
+
+// sabaki
+let attached = false, has_sabaki = true
+fs.access(option.sabaki_command, null,
+          (err) => err && fs.access(option.sabaki_command + '.exe', null,
+                                    (err) => err && (has_sabaki = false)))
 
 /////////////////////////////////////////////////
 // electron
@@ -190,6 +193,7 @@ function availability() {
         redo: future_len() > 0,
         previous_sequence: sequence_cursor > 0,
         next_sequence: sequence_cursor < sequence.length - 1,
+        sabaki: has_sabaki,
         attach: !attached,
         detach: attached,
         pause: leelaz.is_pondering(),
