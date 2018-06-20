@@ -49,8 +49,8 @@ function toggle_auto_analyze() {main('toggle_auto_analyze', to_i(Q('#auto_analys
 
 function main(channel, x) {ipc.send(channel, x)}
 
-function play_best() {
-    play_best_until = Math.max(play_best_until, stone_count) + 1; try_play_best()
+function play_best(n) {
+    play_best_until = Math.max(play_best_until, stone_count) + (n || 1); try_play_best()
 }
 function try_play_best() {
     play_best_until <= stone_count ? (stop_play_best()) :
@@ -391,7 +391,7 @@ document.onkeydown = e => {
     case "[": main('previous_sequence'); break;
     case "]": main('next_sequence'); break;
     case "p": main('pass'); break;
-    case "Enter": play_best(); break;
+    case "Enter": play_best(e.shiftKey ? 5 : 1); break;
     case "o": e.ctrlKey && main('open_sgf'); break;
     case "v": e.ctrlKey && main('paste_sgf_from_clipboard'); break;
     case "Backspace": case "Delete": main('explicit_undo'); break;
