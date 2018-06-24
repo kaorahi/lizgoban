@@ -18,29 +18,29 @@ console.log("option: " + JSON.stringify(option))
 
 // electron
 const electron = require('electron')
-const {dialog, app} = electron
-const ipc = electron.ipcMain
+const {dialog, app, clipboard} = electron, ipc = electron.ipcMain
 
 // leelaz
 const leelaz = require('./engine.js')
-const {update} = leelaz
 
-// game state
-let history = [], stones = [[]], stone_count = 0, b_prison = 0, w_prison = 0, bturn = true
-let sequence = [history], sequence_cursor = 0;
-history.stone_count = stone_count; history.initial_b_winrate = NaN
+// state
+let history = [], sequence = [history], sequence_cursor = 0;
+history.stone_count = 0; history.initial_b_winrate = NaN
 history.player_black = history.player_white = ""
-let auto_analysis_playouts = Infinity
+let auto_analysis_playouts = Infinity, play_best_until = -1
+
+// renderer state
+// (cf.) "set_and_render" in this file
+// (cf.) "the_board_handler" and "the_suggest_handler" in engine.js
+let R = {stones: [[]]}
 
 // util
-const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
+const {to_i, to_f, xor, truep, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
-const clipboard = electron.clipboard
-const SGF = require('@sabaki/sgf')
+const SGF = require('@sabaki/sgf'), fs = require('fs'), TMP = require('tmp')
 const config = new (require('electron-config'))({name: 'lizgoban'})
-const fs = require('fs'), TMP = require('tmp')
 
 // sabaki
 let attached = false, has_sabaki = true
@@ -88,79 +88,115 @@ function renderer(channel, ...args) {
 // from renderer
 
 const api = {
-    restart, new_window, update, toggle_ponder, attach_to_sabaki, detach_from_sabaki,
+    restart, new_window, init_from_renderer, toggle_ponder, attach_to_sabaki, detach_from_sabaki,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
-    goto_stone_count, toggle_auto_analyze, stop_auto_analyze,
+    goto_stone_count, toggle_auto_analyze, stop_auto_analyze, play_best, stop_play_best,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
     next_sequence, previous_sequence,
 }
 
 function api_handler(channel, handler) {
-    return (e, ...args) => (channel !== 'toggle_auto_analyze' && stop_auto_analyze(), handler(...args))
+    return (e, ...args) => {
+        channel !== 'toggle_auto_analyze' && stop_auto_analyze()
+        channel !== 'play_best' && stop_play_best()
+        handler(...args)
+    }
 }
 
 each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(channel, handler)))
 
 /////////////////////////////////////////////////
-// leelaz action
+// action
 
 // game play
 function play(move) {
-    const [i, j] = move2idx(move)
-    if (i >= 0 && (!stones[i] || !stones[i][j] || stones[i][j].stone)) {return}
-    i >= 0 && (stones[i][j] = {stone: true, black: bturn, maybe: true})
-    create_sequence_maybe(); update_state(); play_move({move: move, is_black: bturn})
+    const [i, j] = move2idx(move), pass = (i < 0)
+    if (!pass && (!R.stones[i] || !R.stones[i][j] || R.stones[i][j].stone)) {return}
+    !pass && (R.stones[i][j] = {stone: true, black: R.bturn, maybe: true})
+    create_sequence_maybe(); update_state(); do_play(move, R.bturn)
 }
-function play_move(h) {history.splice(stone_count); history.push(h); set_board(history)}
+function do_play(move, is_black) {
+    history.splice(R.stone_count); history.push({move, is_black}); set_board(history)
+}
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    (stone_count < history.length) ? undo() : (history.pop(), set_board(history))
+    (R.stone_count < history.length) ? undo() : (history.pop(), set_board(history))
 }
 function pass() {play('pass')}
 
 // multi-undo/redo
-function undo_ntimes(n) {goto_stone_count(stone_count - n)}
+function undo_ntimes(n) {goto_stone_count(R.stone_count - n)}
 function redo_ntimes(n) {undo_ntimes(- n)}
 function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
 
 // util
 function set_board(history) {
-    leelaz.set_board(history); stone_count = history.length
-    bturn = !(history[history.length - 1] || {}).is_black
+    leelaz.set_board(history); R.stone_count = history.length
+    R.bturn = !(history[history.length - 1] || {}).is_black
 }
 function goto_stone_count(count) {set_board(history.slice(0, Math.max(count, 0)))}
-function future_len() {return history.length - stone_count}
+function future_len() {return history.length - R.stone_count}
 function restart() {leelaz.restart(); switch_to_nth_sequence(sequence_cursor)}
 function toggle_ponder() {leelaz.toggle_ponder(); update_ui()}
+function init_from_renderer() {leelaz.update()}
+
+// auto-analyze
+function try_auto_analyze(current_playouts) {
+    (current_playouts >= auto_analysis_playouts) &&
+        (R.stone_count < history.length ? redo() :
+         (toggle_ponder(), (auto_analysis_playouts = Infinity), update_ui()))
+}
 function toggle_auto_analyze(playouts) {
-    if (future_len() === 0) {return}
+    if (history.length === 0) {return}
     auto_analysis_playouts = (auto_analysis_playouts === playouts) ? Infinity :
-        (leelaz.is_pondering() || toggle_ponder(), playouts)
+        (future_len() > 0 || goto_stone_count(0),
+         leelaz.is_pondering() || toggle_ponder(),
+         playouts)
     update_ui()
 }
 function stop_auto_analyze() {auto_analysis_playouts = Infinity}
+function auto_analyzing() {return auto_analysis_playouts < Infinity}
+stop_auto_analyze()
+
+// play best move(s)
+function play_best(n) {
+    stop_auto_analyze()
+    play_best_until = Math.max(play_best_until, R.stone_count) + (n || 1); try_play_best()
+}
+function try_play_best() {
+    finished_playing_best() ? stop_play_best() :
+        R.suggest.length > 0 && play(R.suggest[0].move)
+}
+function stop_play_best() {play_best_until = -1}
+function finished_playing_best() {return play_best_until <= R.stone_count}
+stop_play_best()
 
 /////////////////////////////////////////////////
-// from leelaz
+// from leelaz to renderer
+
+function set_renderer_state(...args) {merge(R, ...args)}
+function set_and_render(...args) {set_renderer_state(...args); renderer('render', R)}
 
 // board
 function board_handler(h) {
-    stones = h.stones
-    add_next_mark_to_stones(stones, history, stone_count)
+    set_renderer_state(h)
+    add_next_mark_to_stones(R.stones, history, R.stone_count)
     update_state()
 }
 
 function update_state() {
-    renderer('state', {bturn: bturn, stone_count: stone_count, stones: stones,
-                       history_length: history.length,
-                       sequence_cursor: sequence_cursor, sequence_length: sequence.length,
-                       attached: attached})
-    update_ui()
+    const history_length = history.length, sequence_length = sequence.length, suggest = []
+    const player_black = history.player_black, player_white = history.player_white
+    set_and_render({
+        history_length, suggest, sequence_cursor, sequence_length, attached,
+        player_black, player_white,
+    })
+    update_ui(true)
 }
 
-function update_ui() {renderer('update_ui', availability())}
+function update_ui(ui_only) {renderer('update_ui', availability(), ui_only)}
 
 function add_next_mark_to_stones(stones, history, stone_count) {
     if (stone_count >= history.length) {return}
@@ -170,26 +206,83 @@ function add_next_mark_to_stones(stones, history, stone_count) {
 
 // suggest
 function suggest_handler(h) {
-    stone_count > 0 ? history[stone_count - 1].b_winrate = h.b_winrate
+    R.stone_count > 0 && (history[R.stone_count - 1].suggest = h.suggest)
+    R.stone_count > 0 ? history[R.stone_count - 1].b_winrate = h.b_winrate
         : (history.initial_b_winrate = h.b_winrate)
     const initial_b_winrate = history.initial_b_winrate
-    const player_black = history.player_black, player_white = history.player_white
+    const last_move_b_eval = (h.b_winrate - winrate_before(R.stone_count, initial_b_winrate))
+    const last_move_eval = last_move_b_eval * (R.bturn ? -1 : 1)
+    const winrate_history = winrate_from_history(history, initial_b_winrate)
     show_suggest_p() || (h.suggest = [])
-    renderer('suggest', merge({history, initial_b_winrate, player_black, player_white}, h))
-    if (h.playouts >= auto_analysis_playouts) {
-        stone_count < history.length ? redo() :
-            (toggle_ponder(), (auto_analysis_playouts = Infinity), update_ui())
-    }
+    set_and_render({last_move_b_eval, last_move_eval, winrate_history}, h)
+    try_play_best(); try_auto_analyze(h.playouts)
 }
 
-function show_suggest_p() {return auto_analysis_playouts >= 10}  // fixme: customize
+function show_suggest_p() {
+    return !finished_playing_best() || auto_analysis_playouts >= 10
+}  // fixme: customize
+
+/////////////////////////////////////////////////
+// sequence (list of histories)
+
+function backup_history() {
+    if (history.length === 0) {return}
+    store_stone_count(history)
+    sequence.splice(sequence_cursor + 1, 0, history.slice())  // shallow copy
+    goto_nth_sequence(sequence_cursor + 1)
+}
+
+function create_sequence_maybe() {
+    (R.stone_count < history.length) &&
+        (backup_history(), history.splice(R.stone_count),
+         (history.player_black = history.player_white = ""))
+}
+
+function next_sequence() {switch_to_nth_sequence(sequence_cursor + 1)}
+function previous_sequence() {switch_to_nth_sequence(sequence_cursor - 1)}
+
+function switch_to_nth_sequence(n) {
+    (0 <= n) && (n < sequence.length) &&
+        (store_stone_count(history), set_board([]), goto_nth_sequence(n),
+         R.stone_count = 0, redo_ntimes(history.stone_count))
+}
+
+function store_stone_count(hist) {hist.stone_count = R.stone_count}
+function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
+
+/////////////////////////////////////////////////
+// winrate history
+
+function winrate_before(stone_count, initial_b_winrate) {return winrate_after(stone_count - 1)}
+
+function winrate_after(stone_count, initial_b_winrate) {
+    return stone_count < 0 ? NaN :
+        stone_count === 0 ? initial_b_winrate :
+        (history[stone_count - 1] || {b_winrate: NaN}).b_winrate
+}
+
+function winrate_from_history(history, initial_b_winrate) {
+    return [initial_b_winrate].concat(history.map(m => m.b_winrate)).map((r, s, a) => {
+        if (!truep(r)) {return {}}
+        const move_eval = a[s - 1] && (r - a[s - 1]) * (history[s - 1].is_black ? 1 : -1)
+        const predict = winrate_suggested(s)
+        return {r, move_eval, predict}
+    })
+}
+
+function winrate_suggested(stone_count) {
+    const {move, is_black} = history[stone_count - 1] || {}
+    const {suggest} = history[stone_count - 2] || {}
+    const sw = ((suggest || []).find(h => h.move === move) || {}).winrate
+    return truep(sw) && (is_black ? sw : 100 - sw)
+}
 
 /////////////////////////////////////////////////
 // availability
 
 function availability() {
     return {
-        undo: stone_count > 0,
+        undo: R.stone_count > 0,
         redo: future_len() > 0,
         previous_sequence: sequence_cursor > 0,
         next_sequence: sequence_cursor < sequence.length - 1,
@@ -198,48 +291,18 @@ function availability() {
         detach: attached,
         pause: leelaz.is_pondering(),
         resume: !leelaz.is_pondering(),
-        bturn: bturn,
-        wturn: !bturn,
-        start_auto_analyze: auto_analysis_playouts === Infinity,
-        stop_auto_analyze: auto_analysis_playouts < Infinity,
+        bturn: R.bturn,
+        wturn: !R.bturn,
+        auto_analyze: history.length > 0,
+        start_auto_analyze: !auto_analyzing(),
+        stop_auto_analyze: auto_analyzing(),
     }
 }
-
-/////////////////////////////////////////////////
-// sequence
-
-function backup_history() {
-    if (history.length === 0) {return}
-    store_stone_count(history)
-    sequence.splice(sequence_cursor + 1, 0, clone(history))
-    goto_nth_sequence(sequence_cursor + 1)
-}
-
-function create_sequence_maybe() {
-    (stone_count < history.length) &&
-        (backup_history(), history.splice(stone_count),
-         (history.player_black = history.player_white = ""))
-}
-
-function next_sequence() {switch_to_nth_sequence(sequence_cursor + 1)}
-
-function previous_sequence() {switch_to_nth_sequence(sequence_cursor - 1)}
-
-function switch_to_nth_sequence(n) {
-    (0 <= n) && (n < sequence.length) &&
-        (store_stone_count(history), set_board([]), goto_nth_sequence(n),
-         stone_count = 0, redo_ntimes(history.stone_count))
-}
-
-function store_stone_count(hist) {hist.stone_count = stone_count}
-
-function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
 
 /////////////////////////////////////////////////
 // SGF
 
 function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history))}
-
 function paste_sgf_from_clipboard() {try_read_sgf(read_sgf, clipboard.readText())}
 
 function open_sgf() {
@@ -344,11 +407,11 @@ function attach_to_sabaki() {
     fs.writeSync(sgf_file.fd, sgf_text)
     console.log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_history()
-    start_sabaki(sgf_file.name + '#' + stone_count)
-    attached = true; update()
+    start_sabaki(sgf_file.name + '#' + R.stone_count)
+    attached = true; leelaz.update()
 }
 
 function detach_from_sabaki() {
     if (!attached) {return}
-    stop_sabaki(); attached = false; update()
+    stop_sabaki(); attached = false; leelaz.update()
 }

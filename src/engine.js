@@ -8,7 +8,7 @@ let command_queue, last_command_id, last_response_id, pondering = true
 let b_prison = 0, w_prison = 0, bturn = true
 
 // util
-const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
+const {to_i, to_f, xor, truep, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -23,7 +23,7 @@ function start(...args) {
            board_handler, suggest_handler] = start_args = args
     leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
     leelaz_process.stdout.on('data', each_line(stdout_reader))
-    leelaz_process.stderr.on('data', each_line(with_skip('~begin', '~end', reader)))
+    leelaz_process.stderr.on('data', each_line(reader))
     set_io_error_handler(leelaz_process, restart)
     the_board_handler = board_handler; the_suggest_handler = suggest_handler
     the_analyze_interval_centisec = analyze_interval_centisec
@@ -192,12 +192,6 @@ function each_line(f) {
         a.length > 0 && (a[0] = buf + a[0], buf = '', a.forEach(f))
         buf += rest
     }
-}
-
-function with_skip(from, to, f) {
-    let skipping = false
-    return s => skipping ? (skipping = !s.match(to)) :
-        s.match(from) ? (skipping = true) : f(s)
 }
 
 /////////////////////////////////////////////////

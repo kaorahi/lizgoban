@@ -16,11 +16,8 @@
 <body>
 
 <div id="goban_container">
-<canvas id="goban" style="background: #f9ca91;"></canvas>
-</div>
-
-<div>
-<canvas id="winrate_bar" style="background: #fff;"></canvas>
+<div><canvas id="goban" style="background: #f9ca91;"></canvas></div>
+<div><canvas id="winrate_bar" style="background: #fff;"></canvas></div>
 </div>
 
 <div>
@@ -47,8 +44,8 @@ board
 <span id="wturn" style="color: white">⬤</span>
 <input type='button' id='pass' onclick="main('pass')" value="pass">
 <input type='button' id='explicit_undo' onclick="main('explicit_undo')" value="undo">
-<input type='button' onclick="play_best()" value="best">
-<input type='button' style="font-size: 70%" onclick="play_best(5)" value="×5">
+<input type='button' onclick="main('play_best')" value="best">
+<input type='button' style="font-size: 70%" onclick="main('play_best', 5)" value="×5">
 </div>
 
 <div class="controller_row">
@@ -63,14 +60,9 @@ board
 <input type='button' style='color: red' onclick="toggle_auto_analyze()" value="stop auto">
 </span>
 (playouts
-<input type='number' id='auto_analysis_playouts' value='1' step='100' min='1' style='width: 4em'>
+<input type='number' id='auto_analysis_playouts' value='1' min='1' style='width: 4em'>
 )
 </div>
-
-<!--
- <input id="move" type="text" />
- <input type='button' onclick="play()" value="play">
--->
 
 </div>
 
