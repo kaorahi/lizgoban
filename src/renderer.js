@@ -60,7 +60,7 @@ ipc.on('render', (e, h) => {
     setq('#stone_count', '' + R.stone_count + '/' + R.history_length)
     setq('#sequence_cursor', '' + (R.sequence_cursor + 1) + '/' + R.sequence_length)
     update_goban()
-    R.suggest.length > 0 && update_title()
+    update_title(R.suggest.length > 0)
 })
 
 ipc.on('update_ui', (e, availability, ui_only) => {
@@ -69,11 +69,13 @@ ipc.on('update_ui', (e, availability, ui_only) => {
     update_board_type_switch()
 })
 
-function update_title() {
-    const summary = `B: ${R.player_black} ${f2s(R.b_winrate)}% /`
-          + ` W: ${R.player_white} ${f2s(100 - R.b_winrate)}%`
-          + (isNaN(R.last_move_eval) ? '' :
-             ` Last move ${R.last_move_eval > 0 ? '+' : ''}${f2s(R.last_move_eval)}`)
+function update_title(with_eval) {
+    const summary = with_eval ?
+          (`B: ${R.player_black} ${f2s(R.b_winrate)}% /`
+           + ` W: ${R.player_white} ${f2s(100 - R.b_winrate)}%`
+           + (isNaN(R.last_move_eval) ? '' :
+              ` Last move ${R.last_move_eval > 0 ? '+' : ''}${f2s(R.last_move_eval)}`)) :
+          `B: ${R.player_black || "?"} / W: ${R.player_white || "?"}`
     current_window().setTitle(`LizGoban (${summary})`)
 }
 
