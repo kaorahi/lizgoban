@@ -229,6 +229,7 @@ function backup_history() {
     if (history.length === 0) {return}
     store_stone_count(history)
     sequence.splice(sequence_cursor + 1, 0, history.slice())  // shallow copy
+    set_renderer_state({winrate_history: []})
     goto_nth_sequence(sequence_cursor + 1)
 }
 
