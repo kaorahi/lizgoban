@@ -16,12 +16,13 @@ for many Go players because it needs Java.
 In this project, the core feature of Lizzie is transported to JavaScript
 so that they can taste the joy of real-time analysis.
 
-It works already.
+Features:
 
 * Colored suggestions
 * Variation by mouse hover
 * Subboard that always shows the principal variation
 * Clickable & draggable win-rate graph with autoanalysis
+* Win-rate bar with evaluations of suggested moves
 
 Help needed:
 
@@ -44,3 +45,4 @@ To attach it to Sabaki:
 5. Put a stone on Sabaki and see it appears on LizGoban.
 
 [Project Home](https://github.com/kaorahi/lizgoban)
+[License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)

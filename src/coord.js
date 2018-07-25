@@ -5,7 +5,7 @@
 // move: "A19" = left top, "T19" = right top
 // sgfpos: "aa" = left top, "sa" = right top
 
-const {to_i, to_f, xor, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
+const {to_i, to_f, xor, truep, clone, merge, last, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
 
 /////////////////////////////////////////////////
@@ -35,18 +35,21 @@ function translator_pair([from1, from2], [to1, to2]) {
     return [trans, inv]
 }
 
-function idx2coord_translator_pair(canvas, xmargin, ymargin) {
+function idx2coord_translator_pair(canvas, xmargin, ymargin, is_square) {
     // u = j, v = i
     const [uv2xy, xy2uv] =
           uv2coord_translator_pair(canvas, [0, board_size - 1], [0, board_size - 1],
-                                   xmargin, ymargin)
+                                   xmargin, ymargin, is_square)
     return [((i, j) => uv2xy(j, i)), ((x, y) => xy2uv(x, y).reverse())]
 }
 
-function uv2coord_translator_pair(canvas, u_min_max, v_min_max, xmargin, ymargin) {
+function uv2coord_translator_pair(canvas, u_min_max, v_min_max, xmargin, ymargin,
+                                  is_square) {
     // u: horizontal, v: vertical
-    const [xtrans, xinv] = translator_pair(u_min_max, [xmargin, canvas.width - xmargin])
-    const [ytrans, yinv] = translator_pair(v_min_max, [ymargin, canvas.height - ymargin])
+    let w = canvas.width, h = canvas.height
+    is_square && (w = h = Math.min(w, h))
+    const [xtrans, xinv] = translator_pair(u_min_max, [xmargin, w - xmargin])
+    const [ytrans, yinv] = translator_pair(v_min_max, [ymargin, h - ymargin])
     const to = (u, v) => [xtrans(u), ytrans(v)]
     const from = (x, y) => [Math.round(xinv(x)), Math.round(yinv(y))]
     return [to, from]

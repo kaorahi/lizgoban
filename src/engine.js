@@ -8,7 +8,7 @@ let command_queue, last_command_id, last_response_id, pondering = true
 let b_prison = 0, w_prison = 0, bturn = true
 
 // util
-const {to_i, to_f, xor, truep, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
+const {to_i, to_f, xor, truep, clone, merge, last, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -20,23 +20,25 @@ function log(header, s) {console.log(`${header} ${s}`)}
 // process
 function start(...args) {
     const [leelaz_command, leelaz_args, analyze_interval_centisec,
-           board_handler, suggest_handler] = start_args = args
+           board_handler, suggest_handler, restart_handler] = start_args = args
+    log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
     leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
     leelaz_process.stdout.on('data', each_line(stdout_reader))
     leelaz_process.stderr.on('data', each_line(reader))
-    set_io_error_handler(leelaz_process, restart)
+    set_error_handler(leelaz_process, restart_handler)
     the_board_handler = board_handler; the_suggest_handler = suggest_handler
     the_analyze_interval_centisec = analyze_interval_centisec
     command_queue = []; last_command_id = -1; last_response_id = -1
-    update()
+    clear_leelaz_board() // for restart
 }
 function restart() {kill(); start(...start_args)}
 function kill() {
     leelaz_process && (leelaz_process.stderr.on('data', () => null),
                        leelaz_process.kill('SIGKILL'))
 }
-function set_io_error_handler(process, handler) {
+function set_error_handler(process, handler) {
     ['stdin', 'stdout', 'stderr'].forEach(k => process[k].on('error', handler))
+    process.on('exit', handler)
 }
 
 function start_ponder() {pondering && leelaz(`lz-analyze ${the_analyze_interval_centisec}`)}
@@ -83,7 +85,11 @@ function send_to_queue(s) {
 
 function try_send_from_queue() {
     if (command_queue.length === 0 || !up_to_date_response()) {return}
-    const cmd = command_queue.shift(), cmd_with_id = `${++last_command_id} ${cmd}`
+    send_to_leelaz(command_queue.shift())
+}
+
+function send_to_leelaz(cmd) {
+    const cmd_with_id = `${++last_command_id} ${cmd}`
     console.log('leelaz> ' + cmd_with_id); leelaz_process.stdin.write(cmd_with_id + "\n")
 }
 
@@ -166,8 +172,8 @@ function board_reader(s) {
 }
 
 function finish_board_reader(stones) {
-    const stone_count = b_prison + w_prison + flatten(stones).filter(x => x.stone).length
-    the_board_handler({bturn, stone_count, stones})
+    const move_count = b_prison + w_prison + flatten(stones).filter(x => x.stone).length
+    the_board_handler({bturn, move_count, stones})
 }
 
 const char2stone = {
@@ -200,5 +206,7 @@ function each_line(f) {
 module.exports = {
     start, restart, kill, set_board, update, is_pondering, toggle_ponder,
     // utility
-    common_header_length, each_line, set_io_error_handler
+    common_header_length, each_line, set_error_handler,
+    // for debug
+    send_to_leelaz,
 }

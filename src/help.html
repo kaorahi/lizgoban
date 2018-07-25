@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+ <meta charset="UTF-8" />
+ <title>LizGoban Help</title>
+ <style type="text/css">
+ body {color: black; background-color: #eee; white-space: nowrap;}
+ </style>
+</head>
+
+<body>
+
+<h1>LizGoban Help</h1>
+
+<h2>UI layout</h2>
+
+You can switch landscape / portrait layout by changing window size.
+(Portrait may be preferable when it is attached to Sabaki. See also "View" menu.)
+
+<h2>Suggested moves in the board</h2>
+
+<ul>
+ <li>color, top number (%): winrate
+ <li>opacity, bottom number: visits
+</ul>
+
+<h2>Winrate bar</h2>
+
+<ul>
+ <li>black/white area: winrate of the current board</li>
+ <li>green/red rectangle: evaluation of the last move (green = good, red = bad)</li>
+ <li>triangles: evaluations of suggested moves (size = visits ratio, yellow = next move)</li>
+</ul>
+
+<h2>Winrate graph</h2>
+
+<ul>
+ <li>green segment: good move (increase winrate)</li>
+ <li>red segment: bad move (decrease winrate)</li>
+ <li>yellow segment: unexpected good move that was missed by leela zero</li>
+ <li>yellow vertical line: evaluation error (difference between evaluations of the move before/after it was played)</li>
+</ul>
+
+<h2>Shortcut keys</h2>
+
+Game
+<ul>
+ <li>up/left arrow: previous move (shift = 15 moves)</li>
+ <li>down/right arrow: next move (shift = 15 moves)</li>
+ <li>Home: first move</li>
+ <li>End: last move</li>
+ <li>BS/Del: undo</li>
+ <li>p: pass</li>
+ <li>[: previous variation</li>
+ <li>]: next variation</li>
+</ul>
+
+Analysis
+<ul>
+ <li>Space: pause/resume analysis</li>
+ <li>a: start/stop auto-analysis</li>
+ <li>Enter: play the best move (shift = 5 moves)</li>
+ <li>Ctrl+r: reset leela zero</li>
+</ul>
+
+View
+<ul>
+ <li>z (keep holding down): show raw board without suggestions, marks, etc.</li>
+ <li>x (keep holding down): enlarge winrate graph</li>
+ <li>Ctrl+n: new window</li>
+</ul>
+
+SGF
+<ul>
+ <li>Ctrl+c: copy SGF to clipboard</li>
+ <li>Ctrl+v: paste SGF from clipboard</li>
+ <li>Ctrl+o: open SGF file</li>
+ <li>Ctrl+s: save SGF file</li>
+</ul>
+
+Sabaki
+<ul>
+ <li>Ctrl+a: attach to Sabaki</li>
+ <li>Ctrl+d: detach from Sabaki</li>
+</ul>
+
+</body>

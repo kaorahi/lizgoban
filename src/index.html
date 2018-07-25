@@ -5,32 +5,47 @@
  <title>LizGoban</title>
  <script defer src="renderer.js"></script>
  <style type="text/css">
- body {font-size: 2.8vw; color: white; background-color: #444;}
+ body {white-space: nowrap;}
  input, select {font-size: 100%;}
- .controller_row {margin-top: 2%;}
+ .controller_row {margin-top: 2%; white-space: normal; text-align: left;}
  #winrate_graph {border: solid 1px #ccc;}
  #winrate_graph:hover {border: solid 1px green;}
+ @media (max-aspect-ratio: 13/10) {
+  #main_div {width: 96vmin; display: block;}
+  #rest_div {width: 96vmin; display: block; font-size: 3vw;}
+ }
+ @media (min-aspect-ratio: 13/10) {
+  body {text-align: center;}
+  #main_div {width: 96vmin; display: inline-block;}
+  #rest_div {
+   width: calc(96vw - 96vh); display: inline-block; vertical-align: top;
+   font-size: calc((96vw - 96vh) * 3/100);
+   text-align: left;
+  }
+ }
  </style>
 </head>
 
-<body>
+<body id="body">
 
-<div id="goban_container">
-<div><canvas id="goban" style="background: #f9ca91;"></canvas></div>
-<div><canvas id="winrate_bar" style="background: #fff;"></canvas></div>
+<div id="main_div">
+<div><canvas id="goban"></canvas></div>
+<div><canvas id="winrate_bar"></canvas></div>
 </div>
+
+<!-------- begin rest_div ----------->
+<div id="rest_div">
+
+<div id="sub_goban_container" style="text-align: center;"><canvas id="sub_goban"></canvas></div>
+<div><canvas id="winrate_graph"></canvas></div>
 
 <div>
-<canvas id="winrate_graph" style="background: #111111;"></canvas>
-</div>
 
-<div id="hide_when_attached">
-
-<div class="controller_row">
+<div id="hide_when_attached1" class="controller_row">
 <input type='button' id='undo_to_start' onclick="main('undo_to_start')" value="|&lt;">
 <input type='button' id='undo_ntimes' onclick="main('undo_ntimes', 15)" value="&lt;&lt">
 <input type='button' id='undo' onclick="main('undo')" value="&lt;">
-(<span id="stone_count"></span>)
+(<span id="move_count"></span>)
 <input type='button' id='redo' onclick="main('redo')" value="&gt;">
 <input type='button' id='redo_ntimes' onclick="main('redo_ntimes', 15)" value="&gt;&gt;">
 <input type='button' id='redo_to_end' onclick="main('redo_to_end')" value="&gt;|">
@@ -42,20 +57,19 @@ board
 )
 <span id="bturn" style="color: black">⬤</span>
 <span id="wturn" style="color: white">⬤</span>
-</div>
-
-<div class="controller_row">
 <input type='button' id='pass' onclick="main('pass')" value="pass">
 <input type='button' id='explicit_undo' onclick="main('explicit_undo')" value="undo">
-<input type='button' onclick="main('play_best')" value="best">
-<input type='button' style="font-size: 70%" onclick="main('play_best', 5)" value="×5">
 </div>
 
-<div class="controller_row">
-<input type='button' id='copy' onclick="main('copy_sgf_to_clipboard')" value="copy">
-<input type='button' id='paste' onclick="main('paste_sgf_from_clipboard')" value="paste">
-<input type='button' id='paste' onclick="main('open_sgf')" value="open...">
-<input type='button' id='paste' onclick="main('save_sgf')" value="save...">
+<div id="normal_ui" class="controller_row">
+<span id='pause'>
+<input type='button' onclick="main('toggle_ponder')" value="pause">
+</span>
+<span id='resume'>
+<input type='button' onclick="main('toggle_ponder')" value="resume" style="color: red;">
+</span>
+<!-------- begin hide_when_attached2 ----------->
+<span id="hide_when_attached2">
 <span id='start_auto_analyze'>
 <input type='button' id='auto_analyze' onclick="toggle_auto_analyze()" value="auto analysis">
 </span>
@@ -65,36 +79,19 @@ board
 (playouts
 <input type='number' id='auto_analysis_playouts' value='1' min='1' style='width: 4em'>
 )
-</div>
-
-</div>
-
-<div class="controller_row">
-<select id="switch_board_type" onchange="switch_board_type()">
-<option value="suggest" selected="selected">suggestions</option>
-<option value="variation">principal variation</option>
-<option value="raw">raw board</option>
-<option value="winrate_only">winrate graph</option>
-</select>
-<span id='pause'>
-<input type='button' onclick="main('toggle_ponder')" value="pause">
+<input type='button' onclick="main('play_best')" value="best">
+<input type='button' style="font-size: 70%" onclick="main('play_best', 5)" value="×5">
 </span>
-<span id='resume'>
-<input type='button' onclick="main('toggle_ponder')" value="resume" style="color: red;">
-</span>
-<input type='button' id='copy' onclick="main('restart')" value="reset">
-<input type='button' id='copy' onclick="new_window()" value="new window">
-<span id='sabaki'>
-<span id='attach'>
-<input type='button' onclick="main('attach_to_sabaki')" value="attach to sabaki">
-</span>
+<!-------- end hide_when_attached2 ----------->
 <span id='detach'>
 <input type='button' onclick="main('detach_from_sabaki')" value="detach from sabaki">
-</span>
 </span>
 </div>
 
 <pre id="debug" style='clear: both'></pre>
+
+</div>
+<!-------- end rest_div ----------->
 
 </body>
 </html>

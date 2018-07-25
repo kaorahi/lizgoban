@@ -6,30 +6,37 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
-const {to_i, to_f, xor, truep, clone, merge, flatten, each_key_value, array2hash, seq, do_ntimes}
+const {to_i, to_f, xor, truep, clone, merge, last, flatten, each_key_value, array2hash, seq, do_ntimes}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
 function current_window() {return electron.remote.getCurrentWindow()}
 
 // canvas
-const main_canvas = Q('#goban')
+const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
 const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate_graph')
 
 // color constant
-const BLACK = "#000", WHITE = "#fff",  BGCOLOR = "#111111"
+const BLACK = "#000", WHITE = "#fff"
 const GRAY = "#ccc", DARK_GRAY = "#444"
-const RED = "#f00", GREEN = "#0c0", YELLOW = "#ff0"
+const RED = "#f00", GREEN = "#0c0", BLUE = "#88f", YELLOW = "#ff0"
+const ORANGE = "#fc8d49"
+const DARK_YELLOW = "#c9a700", TRANSPARENT = "rgba(0,0,0,0)"
 const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
+const PALE_BLUE = "rgba(128,128,255,0.3)"
+const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
+const NORMAL_GOBAN_BG = "#f9ca91", PAUSE_GOBAN_BG = '#a38360', AUTO_GOBAN_BG = GRAY
+const WINRATE_BG = "#111111"
 
 // renderer state
 const R = {
-    stones: [], stone_count: 0, bturn: true, history_length: 0, suggest: [], playouts: 1,
+    stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], playouts: 1,
     b_winrate: 50, min_winrate: 50, max_winrate: 50,
     last_move_b_eval: NaN, last_move_eval: NaN, winrate_history: [],
-    attached: false,
+    attached: false, pausing: false, auto_analyzing: false
 }
-let board_type = current_window().lizgoban_board_type, temporal_board_type = false
+let board_type = current_window().lizgoban_board_type, temporary_board_type = false
+let hovered_suggest = null
 
 // handler
 window.onload = window.onresize = update
@@ -41,6 +48,9 @@ function update()  {set_all_canvas_size(); update_goban()}
 function setq(x, val) {Q(x).textContent = val}
 function setdebug(x) {setq('#debug', JSON.stringify(x))}
 const f2s = (new Intl.NumberFormat(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})).format
+
+// for debug from Developper Tool
+function send_to_leelaz(cmd) {main('send_to_leelaz', cmd)}
 
 /////////////////////////////////////////////////
 // action
@@ -57,16 +67,19 @@ function main(channel, x) {ipc.send(channel, x)}
 
 ipc.on('render', (e, h) => {
     merge(R, h)
-    setq('#stone_count', '' + R.stone_count + '/' + R.history_length)
+    setq('#move_count', '' + R.move_count + '/' + R.history_length)
     setq('#sequence_cursor', '' + (R.sequence_cursor + 1) + '/' + R.sequence_length)
     update_goban()
     update_title(R.suggest.length > 0)
 })
 
 ipc.on('update_ui', (e, availability, ui_only) => {
+    R.pausing = availability.resume
+    R.auto_analyzing = availability.stop_auto_analyze
     ui_only || update_goban()
-    update_button(availability)
-    update_board_type_switch()
+    update_body_color(availability.detach)
+    update_button_etc(availability)
+    update_board_type()
 })
 
 function update_title(with_eval) {
@@ -79,28 +92,49 @@ function update_title(with_eval) {
     current_window().setTitle(`LizGoban (${summary})`)
 }
 
+function update_body_color(attached) {
+    Q('#body').style.color = attached ? 'black' : 'white'
+    Q('#body').style.backgroundColor = attached ? '#eee' : '#444'
+}
+
 /////////////////////////////////////////////////
 // draw goban etc.
 
 function update_goban() {
-    let btype = current_board_type()
-    btype === "winrate_only" ? null :
-        btype === "raw" ? draw_goban(main_canvas, R.stones) :
-        btype === "suggest" ? draw_main_goban(main_canvas) :
-        draw_goban_with_variation(main_canvas, (R.suggest[0] && R.suggest[0].variation) || [])
-    draw_winrate_bar(winrate_bar_canvas)
-    draw_winrate_graph(winrate_graph_canvas)
+    const btype = current_board_type()
+    const draw_raw = c => draw_goban(c, null, true), do_nothing = truep
+    const f = (m, w, s) => (m(main_canvas),
+                            (w || draw_winrate_graph)(winrate_graph_canvas),
+                            (s || do_nothing)(sub_canvas),
+                            draw_winrate_bar(winrate_bar_canvas))
+    if (board_type === "double_boards") {
+        switch (btype) {
+        case "winrate_only":
+            f(draw_winrate_graph, draw_raw, draw_main_goban); break;
+        case "raw":
+            f(draw_goban, null, draw_goban_with_principal_variation); break;
+        default:
+            f(draw_main_goban, null, draw_goban_with_principal_variation); break;
+        }
+    } else {
+        switch (btype) {
+        case "winrate_only": f(draw_winrate_graph, draw_raw); break;
+        case "raw": f(draw_goban); break;
+        case "variation": f(draw_goban_with_principal_variation); break;
+        case "suggest": default: f(draw_main_goban); break;
+        }
+    }
 }
 
 function draw_main_goban(canvas) {
-    let h = R.suggest.find(h => h.move === canvas.lizgoban_mouse_move)
+    let h = hovered_suggest = R.suggest.find(h => h.move === canvas.lizgoban_mouse_move)
     h ? draw_goban_with_variation(canvas, h.variation) : draw_goban_with_suggest(canvas)
 }
 
 function draw_goban_with_suggest(canvas) {
     let displayed_stones = clone(R.stones)
     R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
-    draw_goban(canvas, displayed_stones, true)
+    draw_goban(canvas, displayed_stones, true, true)
 }
 
 function draw_goban_with_variation(canvas, variation) {
@@ -112,7 +146,11 @@ function draw_goban_with_variation(canvas, variation) {
             variation: true, movenum: k + 1, variation_last: k === variation.length - 1
         })
     })
-    draw_goban(canvas, displayed_stones)
+    draw_goban(canvas, displayed_stones, true)
+}
+
+function draw_goban_with_principal_variation(canvas) {
+    draw_goban_with_variation(canvas, (R.suggest[0] && R.suggest[0].variation) || [])
 }
 
 function set_stone_at(move, stone_array, stone) {
@@ -120,14 +158,19 @@ function set_stone_at(move, stone_array, stone) {
     let [i, j] = move2idx(move); (i >= 0) && merge(stone_array[i][j], stone)
 }
 
-function draw_goban(canvas, stones, draw_next_p) {
-    let margin = canvas.width * 0.05
+function draw_goban(canvas, stones, draw_last_p, draw_next_p) {
+    let margin = canvas.height * 0.05
     let g = canvas.getContext("2d")
-    let [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin)
+    let [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     let unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
-    g.clearRect(0, 0, canvas.width, canvas.height)
+    clear_canvas(canvas,
+                 (R.pausing ? PAUSE_GOBAN_BG :
+                  R.auto_analyzing ? AUTO_GOBAN_BG : NORMAL_GOBAN_BG),
+                 g)
+    g.strokeStyle = BLACK; g.lineWidth = 1
+    rect([0, 0], [canvas.width, canvas.height], g)
     draw_grid(unit, idx2coord, g)
-    draw_on_board(stones, draw_next_p, unit, idx2coord, g)
+    draw_on_board(stones || R.stones, draw_last_p, draw_next_p, unit, idx2coord, g)
     canvas.onmousedown = e => (!R.attached && play_here(e, coord2idx))
     canvas.onmousemove = e => hover_here(e, coord2idx, canvas)
 }
@@ -142,17 +185,26 @@ function draw_grid(unit, idx2coord, g) {
     stars.forEach(i => stars.forEach(j => fill_circle(idx2coord(i, j), star_radius, g)))
 }
 
-function draw_on_board(stones, draw_next_p, unit, idx2coord, g) {
+function draw_on_board(stones, draw_last_p, draw_next_p, unit, idx2coord, g) {
     const stone_radius = unit * 0.5
     stones.forEach((row, i) => row.forEach((h, j) => {
         let xy = idx2coord(i, j)
-        h.stone ? draw_stone(h, xy, stone_radius, g) :
+        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
     }))
 }
 
-function current_board_type() {return temporal_board_type || board_type}
+function current_board_type() {
+    return (temporary_board_type === board_type && board_type === "raw") ?
+        "suggest" : (temporary_board_type || board_type)
+}
+
+function set_temporary_board_type(btype, btype2) {
+    const b = (board_type === btype) ? btype2 : btype
+    if (temporary_board_type === b) {return}
+    temporary_board_type = b; update_board_type()
+}
 
 /////////////////////////////////////////////////
 // mouse action
@@ -184,12 +236,12 @@ function mouse2move(e, coord2idx) {
 /////////////////////////////////////////////////
 // draw parts
 
-function draw_stone(h, xy, radius, g) {
+function draw_stone(h, xy, radius, draw_last_p, g) {
     g.strokeStyle = BLACK; g.fillStyle = h.black ? BLACK : WHITE; g.lineWidth = 1
     h.maybe && (g.fillStyle = h.black ? MAYBE_BLACK : MAYBE_WHITE)
     edged_fill_circle(xy, radius, g)
     h.movenum && draw_movenum(h, xy, radius, g)
-    h.last && draw_last_move(h, xy, radius, g)
+    draw_last_p && h.last && draw_last_move(h, xy, radius, g)
 }
 
 function draw_movenum(h, xy, radius, g) {
@@ -212,8 +264,10 @@ function draw_next_move(h, xy, radius, g) {
 
 function draw_suggest(h, xy, radius, g) {
     let epsilon = 1e-8, green_hue = 120
-    let c = (h.data.winrate - R.min_winrate) / (R.max_winrate - R.min_winrate + epsilon)
-    let hue = to_i(green_hue * c), alpha = h.data.playouts / (R.playouts + 1)
+    let c = (h.data.winrate - R.min_winrate + epsilon) / (R.max_winrate - R.min_winrate + epsilon)
+    let hue = to_i(green_hue * c)
+    let max_alpha = 0.5, alpha_emphasis = 0.5
+    let alpha = max_alpha * (h.data.playouts / (R.playouts + 1))**(1 - alpha_emphasis)
     g.lineWidth = 1
     g.fillStyle = hsl(hue, 100, 50, alpha); g.strokeStyle = hsl(0, 0, 0, alpha**0.3)
     edged_fill_circle(xy, radius, g)
@@ -243,25 +297,63 @@ function kilo_str(x) {
 // winrate bar
 
 function draw_winrate_bar(canvas) {
-    const tics = 9
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
+    const tics = 9
     const xfor = percent => w * percent / 100
     const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
-    g.clearRect(0, 0, canvas.width, canvas.height)
-    g.strokeStyle = BGCOLOR; g.fillStyle = WHITE; g.lineWidth = 1; fill_rect([0, 0], [w, h], g)
-    g.fillStyle = BGCOLOR; fill_rect([0, 0], [xfor(R.b_winrate), h], g)
-    g.strokeStyle = WHITE; g.lineWidth = 1; rect([0, 0], [w, h], g)
-    // tics
+    draw_winrate_bar_areas(w, h, xfor, vline, g)
+    draw_winrate_bar_tics(tics, vline, g)
+    draw_winrate_bar_last_move_eval(h, xfor, vline, g)
+    draw_winrate_bar_suggestions(h, xfor, vline, g)
+}
+
+function draw_winrate_bar_areas(w, h, xfor, vline, g) {
+    const wrx = xfor(R.b_winrate)
+    g.lineWidth = 1
+    g.fillStyle = WINRATE_BG; g.strokeStyle = WHITE; edged_fill_rect([0, 0], [wrx, h], g)
+    g.fillStyle = WHITE; g.strokeStyle = WINRATE_BG; edged_fill_rect([wrx, 0], [w, h], g)
+}
+
+function draw_winrate_bar_tics(tics, vline, g) {
     seq(tics, 1).forEach(i => {
         const r = 100 * i / (tics + 1)
-        g.lineWidth = 1; g.strokeStyle = (r < R.b_winrate) ? WHITE : BGCOLOR; vline(r)
+        g.lineWidth = 1; g.strokeStyle = (r < R.b_winrate) ? WHITE : WINRATE_BG; vline(r)
     })
-    g.lineWidth = 3; g.strokeStyle = (R.b_winrate > 50) ? WHITE : BGCOLOR; vline(50)
-    // last_move_eval
+    g.lineWidth = 3; g.strokeStyle = (R.b_winrate > 50) ? WHITE : WINRATE_BG; vline(50)
+}
+
+function draw_winrate_bar_last_move_eval(h, xfor, vline, g) {
     if (isNaN(R.last_move_eval)) {return}
     const [x1, x2] = [R.b_winrate, R.b_winrate - R.last_move_b_eval].map(xfor).sort()
-    g.lineWidth = 2; g.strokeStyle = (R.last_move_eval >= 0 ? GREEN : RED)
-    rect([x1, 0], [x2, h], g)
+    const [stroke, fill] = (R.last_move_eval >= 0 ?
+                            [GREEN, PALE_GREEN] : [RED, PALE_RED])
+    const lw = g.lineWidth = 3; g.strokeStyle = stroke; g.fillStyle = fill
+    edged_fill_rect([x1, lw / 2], [x2, h - lw / 2], g)
+}
+
+function draw_winrate_bar_suggestions(h, xfor, vline, g) {
+    g.lineWidth = 1
+    const flip_maybe = x => R.bturn ? x : 100 - x
+    const wr = flip_maybe(R.b_winrate)
+    const is_next_move = move => {
+        [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
+    }
+    R.suggest.forEach(s => {
+        const {move, visits, winrate} = s
+        // fan
+        g.lineWidth = 1; g.strokeStyle = BLUE
+        g.fillStyle = (s === hovered_suggest) ? ORANGE :
+            is_next_move(move) ? YELLOW : PALE_BLUE
+        const x = xfor(flip_maybe(winrate)), y = h / 2
+        const radius = Math.sqrt(visits / R.playouts) * h
+        const degs = R.bturn ? [150, 210] : [-30, 30]
+        edged_fill_fan([x, y], radius, degs, g)
+        // vertical line
+        g.lineWidth = 3
+        g.strokeStyle = (s === hovered_suggest) ? ORANGE :
+            is_next_move(move) ? DARK_YELLOW : TRANSPARENT
+        vline(flip_maybe(winrate))
+    })
 }
 
 /////////////////////////////////////////////////
@@ -269,15 +361,15 @@ function draw_winrate_bar(canvas) {
 
 function draw_winrate_graph(canvas) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    const tics = current_board_type() === 'winrate_only' ? 9 : 3
+    const tics = current_board_type() === 'winrate_only' ? 9 : 9
     const xmargin = w * 0.02, fontsize = to_i(w * 0.04)
     const smax = Math.max(R.history_length, 1)
-    // s = stone_count, r = winrate
+    // s = move_count, r = winrate
     const [sr2coord, coord2sr] =
           uv2coord_translator_pair(canvas, [0, smax], [100, 0], xmargin, 0)
-    g.clearRect(0, 0, canvas.width, canvas.height)
+    clear_canvas(canvas, WINRATE_BG, g)
     draw_winrate_graph_frame(w, h, tics, g)
-    draw_winrate_graph_stone_count(smax, fontsize, sr2coord, g)
+    draw_winrate_graph_move_count(smax, fontsize, sr2coord, g)
     draw_winrate_graph_vline(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     canvas.onmousedown = e => !R.attached && winrate_graph_goto(e, coord2sr)
@@ -298,15 +390,15 @@ function draw_winrate_graph_frame(w, h, tics, g) {
 
 function draw_winrate_graph_vline(sr2coord, g) {
     const vline = s => line(sr2coord(s, 0), sr2coord(s, 100), g)
-    g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
-    vline(R.stone_count)
+    g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
+    vline(R.move_count)
 }
 
-function draw_winrate_graph_stone_count(smax, fontsize, sr2coord, g) {
+function draw_winrate_graph_move_count(smax, fontsize, sr2coord, g) {
     g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
     g.font = '' + fontsize + 'px sans-serif'
-    g.textAlign = R.stone_count < smax / 2 ? 'left' : 'right'
-    g.fillText(' ' + R.stone_count + ' ', ...sr2coord(R.stone_count, 0))
+    g.textAlign = R.move_count < smax / 2 ? 'left' : 'right'
+    g.fillText(' ' + R.move_count + ' ', ...sr2coord(R.move_count, 0))
 }
 
 function draw_winrate_graph_curve(sr2coord, g) {
@@ -319,40 +411,61 @@ function draw_winrate_graph_curve(sr2coord, g) {
         truep(h.predict) && draw_predict(h.r, s, h.predict)
         g.strokeStyle = isNaN(h.move_eval) ? GRAY : (h.move_eval < 0) ? RED :
             (s > 0 && !truep(h.predict)) ? YELLOW : GREEN
-        g.lineWidth = 3; cur = sr2coord(s, h.r); prev && line(prev, cur, g); prev = cur
+        g.lineWidth = (s <= R.move_count ? 3 : 1)
+        cur = sr2coord(s, h.r); prev && line(prev, cur, g); prev = cur
     })
 }
 
 function winrate_graph_goto(e, coord2sr) {
     const [s, r] = coord2sr(...mouse2coord(e))
-    s >= 0 && main('goto_stone_count', Math.max(0, Math.min(s, R.history_length)))
+    s >= 0 && main('goto_move_count', Math.max(0, Math.min(s, R.history_length)))
 }
 
 /////////////////////////////////////////////////
 // graphics
 
+function clear_canvas(canvas, bg_color, g) {
+    canvas.style.background = bg_color
+    g.clearRect(0, 0, canvas.width, canvas.height)
+}
+
 function line([x0, y0], [x1, y1], g) {
     g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke()
 }
 
-function rect(xy0, xy1, g) {rect_gen(xy0, xy1, g); g.stroke()}
-function fill_rect(xy0, xy1, g) {rect_gen(xy0, xy1, g); g.fill()}
-function rect_gen([x0, y0], [x1, y1], g) {g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0)}
+function drawers_trio(gen) {
+    const edged = (...a) => {gen(...a); last(a).stroke()}
+    const filled = (...a) => {gen(...a); last(a).fill()}
+    const both = (...a) => {filled(...a); edged(...a)}
+    return [edged, filled, both]
+}
 
-function circle(xy, r, g) {circle_gen(xy, r, g); g.stroke()}
-function fill_circle(xy, r, g) {circle_gen(xy, r, g); g.fill()}
-function edged_fill_circle(xy, r, g) {fill_circle(xy, r, g); circle(xy, r, g)}
+function rect_gen([x0, y0], [x1, y1], g) {g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0)}
 function circle_gen([x, y], r, g) {g.beginPath(); g.arc(x, y, r, 0, 2 * Math.PI)}
+function fan_gen([x, y], r, [deg1, deg2], g) {
+    g.beginPath(); g.moveTo(x, y)
+    g.arc(x, y, r, deg1 * Math.PI / 180, deg2 * Math.PI / 180); g.closePath()
+}
+
+const [rect, fill_rect, edged_fill_rect] = drawers_trio(rect_gen)
+const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
+const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
 
 /////////////////////////////////////////////////
 // canvas
 
 function set_all_canvas_size() {
-    let main_size = Math.min(document.body.clientWidth, window.innerHeight) * 0.98
-    set_canvas_square_size(main_canvas, main_size)
-    set_canvas_size(winrate_bar_canvas, main_size, main_size / 50)
-    set_canvas_size(winrate_graph_canvas, main_size,
-                    main_size * (current_board_type() === "winrate_only" ? 1 : 0.2))
+    const main_size = Q('#main_div').clientWidth
+    const rest_size = Q('#rest_div').clientWidth
+    const main_board_ratio = 0.96, main_board_size = main_size * main_board_ratio
+    // use main_board_ratio in winrate_graph_width for portrait layout
+    const winrate_graph_width = rest_size * main_board_ratio
+    set_canvas_square_size(main_canvas, main_board_size)
+    set_canvas_size(winrate_bar_canvas,
+                    main_board_size, main_size * (1 - main_board_ratio))
+    set_canvas_square_size(sub_canvas, rest_size * 0.85)
+    set_canvas_size(winrate_graph_canvas,
+                    winrate_graph_width, winrate_graph_width * 0.35)
 }
 
 function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, size)}
@@ -369,34 +482,32 @@ document.onkeydown = e => {
         toggle_auto_analyze(); return
     }
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {return}
-    e.preventDefault()
+    const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     switch (e.key) {
-    case "c": e.ctrlKey && main('copy_sgf_to_clipboard'); break;
-    case "s": e.ctrlKey && main('save_sgf'); break;
-    case "n": e.ctrlKey && new_window(); break;
-    case "z": temporal_board_type = "raw"; break;
-    case "x": temporal_board_type = "winrate_only"; switch_board_type(); break;
-    case " ": main('toggle_ponder'); break;
+    case "c": e.ctrlKey && m('copy_sgf_to_clipboard'); break;
+    case "d": e.ctrlKey && m('detach_from_sabaki'); break;
+    case "z": f(set_temporary_board_type, "raw", "suggest"); break;
+    case "x": f(set_temporary_board_type, "winrate_only", "suggest"); break;
+    case " ": m('toggle_ponder'); break;
     }
     switch (!R.attached && e.key) {
-    case "ArrowLeft": case "ArrowUp": main('undo_ntimes', e.shiftKey ? 15 : 1); break;
-    case "ArrowRight": case "ArrowDown": main('redo_ntimes', e.shiftKey ? 15 : 1); break;
-    case "[": main('previous_sequence'); break;
-    case "]": main('next_sequence'); break;
-    case "p": main('pass'); break;
-    case "Enter": main('play_best', e.shiftKey ? 5 : 1); break;
-    case "o": e.ctrlKey && main('open_sgf'); break;
-    case "v": e.ctrlKey && main('paste_sgf_from_clipboard'); break;
-    case "Backspace": case "Delete": main('explicit_undo'); break;
-    case "Home": main('undo_to_start'); break;
-    case "End": main('redo_to_end'); break;
-    case "a": toggle_auto_analyze(); break;
+    case "ArrowLeft": case "ArrowUp": m('undo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "ArrowRight": case "ArrowDown": m('redo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "[": m('previous_sequence'); break;
+    case "]": m('next_sequence'); break;
+    case "p": m('pass'); break;
+    case "Enter": m('play_best', e.shiftKey ? 5 : 1); break;
+    case "v": e.ctrlKey && m('paste_sgf_from_clipboard'); break;
+    case "Backspace": case "Delete": m('explicit_undo'); break;
+    case "Home": m('undo_to_start'); break;
+    case "End": m('redo_to_end'); break;
+    case "a": e.ctrlKey ? m('attach_to_sabaki') : f(toggle_auto_analyze); break;
     }
 }
 
 document.onkeyup = e => {
     switch (e.key) {
-    case "z": case "x": temporal_board_type = false; switch_board_type(); break;
+    case "z": case "x": set_temporary_board_type(false); break;
     }
 }
 
@@ -405,30 +516,25 @@ document.onkeyup = e => {
 
 // board type selector
 
-function switch_board_type() {
-    current_window().lizgoban_board_type = board_type =
-        get_selection(Q("#switch_board_type"))
-    set_all_canvas_size()
-    update_board_type_switch()
+function update_board_type() {
+    board_type = current_window().lizgoban_board_type
+    update_ui_element("#sub_goban_container", board_type === "double_boards")
     update_goban()
-}
-function update_board_type_switch() {
-    update_ui_element("#switch_board_type", board_type)
-    update_ui_element("#goban_container", current_board_type() !== "winrate_only")
 }
 
 // buttons
 
-function update_button(availability) {
+function update_button_etc(availability) {
     const f = (key, ids) =>
           (ids || key).split(/ /).forEach(x => update_ui_element('#' + x, availability[key]))
     f('undo', 'undo undo_ntimes undo_to_start explicit_undo')
     f('redo', 'redo redo_ntimes redo_to_end')
     f('previous_sequence'); f('next_sequence')
-    f('sabaki'); f('attach', 'attach hide_when_attached'); f('detach')
+    f('attach', 'hide_when_attached1 hide_when_attached2'); f('detach')
     f('pause'); f('resume'); f('bturn'); f('wturn'); f('auto_analyze')
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_playouts')
     f('stop_auto_analyze')
+    f('normal_ui')
 }
 
 /////////////////////////////////////////////////

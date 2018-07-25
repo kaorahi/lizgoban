@@ -9,6 +9,7 @@ E.truep = x => (x || x === 0 || x === '')
 // E.sum = a => a.reduce((r,x) => r + x, 0)
 E.clone = x => JSON.parse(JSON.stringify(x))
 E.merge = Object.assign
+E.last = a => a[a.length - 1]
 E.flatten = a => [].concat(...a)
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 E.array2hash = a => {
