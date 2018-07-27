@@ -33,8 +33,11 @@ function start(...args) {
 }
 function restart() {kill(); start(...start_args)}
 function kill() {
-    leelaz_process && (leelaz_process.stderr.on('data', () => null),
-                       leelaz_process.kill('SIGKILL'))
+    if (!leelaz_process) {return}
+    ['stdin', 'stdout', 'stderr']
+        .forEach(k => leelaz_process[k].removeAllListeners())
+    leelaz_process.removeAllListeners()
+    leelaz_process.kill('SIGKILL')
 }
 function set_error_handler(process, handler) {
     ['stdin', 'stdout', 'stderr'].forEach(k => process[k].on('error', handler))
