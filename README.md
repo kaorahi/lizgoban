@@ -44,5 +44,5 @@ To attach it to Sabaki:
 4. Click "attach to sabaki" button on LizGoban and wait for Sabaki window.
 5. Put a stone on Sabaki and see it appears on LizGoban.
 
-[Project Home](https://github.com/kaorahi/lizgoban)
+[Project Home](https://github.com/kaorahi/lizgoban) /
 [License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
