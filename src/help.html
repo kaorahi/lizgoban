@@ -5,7 +5,11 @@
  <title>LizGoban Help</title>
  <style type="text/css">
  body {color: black; background-color: #eee; white-space: nowrap;}
+ .ext {color: blue; text-decoration: underline; cursor: pointer;}
  </style>
+ <script>
+ function open_ext(url) {require('electron').shell.openExternal(url)}
+ </script>
 </head>
 
 <body>
@@ -83,5 +87,10 @@ Sabaki
  <li>Ctrl+a: attach to Sabaki</li>
  <li>Ctrl+d: detach from Sabaki</li>
 </ul>
+
+<hr>
+
+<span class="ext" onclick="open_ext('https://github.com/kaorahi/lizgoban')">Project Home</span>
+<span class="ext" onclick="open_ext('https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt')">License (GPL3)</span>
 
 </body>
