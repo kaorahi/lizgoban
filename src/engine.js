@@ -124,6 +124,8 @@ function suggest_reader(s) {
     const wrs = suggest.map(h => h.winrate)
     const min_winrate = Math.min(...wrs), max_winrate = Math.max(...wrs)
     // winrate is NaN if suggest = []
+    suggest.slice().sort((a, b) => (b.winrate - a.winrate))
+        .forEach((h, i) => (h.winrate_order = i))
     the_suggest_handler({suggest, playouts, b_winrate, min_winrate, max_winrate})
 }
 

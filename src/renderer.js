@@ -24,16 +24,18 @@ const ORANGE = "#fc8d49"
 const DARK_YELLOW = "#c9a700", TRANSPARENT = "rgba(0,0,0,0)"
 const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 const PALE_BLUE = "rgba(128,128,255,0.3)"
+const PALE_BLACK = "rgba(0,0,0,0.1)", PALE_WHITE = "rgba(255,255,255,0.3)"
 const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
-const NORMAL_GOBAN_BG = "#f9ca91", PAUSE_GOBAN_BG = '#a38360', AUTO_GOBAN_BG = GRAY
-const WINRATE_BG = "#111111"
+const NORMAL_GOBAN_BG = "#f9ca91", PAUSE_GOBAN_BG = '#a38360'
 
 // renderer state
 const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], playouts: 1,
     b_winrate: 50, min_winrate: 50, max_winrate: 50,
     last_move_b_eval: NaN, last_move_eval: NaN, winrate_history: [],
-    attached: false, pausing: false, auto_analyzing: false
+    attached: false, pausing: false, auto_analyzing: false,
+    auto_analysis_playouts: Infinity,
+    sequence_cursor: 1, sequence_length: 1,
 }
 let board_type = current_window().lizgoban_board_type, temporary_board_type = false
 let hovered_suggest = null
@@ -57,7 +59,13 @@ function send_to_leelaz(cmd) {main('send_to_leelaz', cmd)}
 
 function new_window() {main('new_window', board_type === 'suggest' ? 'variation' : 'suggest')}
 function toggle_auto_analyze() {
-    main('toggle_auto_analyze', to_i(Q('#auto_analysis_playouts').value))
+    main('toggle_auto_analyze', auto_analysis_playouts_setting())
+}
+function toggle_auto_analyze_playouts() {
+    R.auto_analyzing ? toggle_auto_analyze() : Q('#auto_analysis_playouts').select()
+}
+function auto_analysis_playouts_setting () {
+    return to_i(Q('#auto_analysis_playouts').value)
 }
 
 function main(channel, x) {ipc.send(channel, x)}
@@ -77,7 +85,7 @@ ipc.on('update_ui', (e, availability, ui_only) => {
     R.pausing = availability.resume
     R.auto_analyzing = availability.stop_auto_analyze
     ui_only || update_goban()
-    update_body_color(availability.detach)
+    update_body_color()
     update_button_etc(availability)
     update_board_type()
 })
@@ -92,17 +100,21 @@ function update_title(with_eval) {
     current_window().setTitle(`LizGoban (${summary})`)
 }
 
-function update_body_color(attached) {
-    Q('#body').style.color = attached ? 'black' : 'white'
-    Q('#body').style.backgroundColor = attached ? '#eee' : '#444'
+function update_body_color() {
+    [Q('#body').style.color, Q('#body').style.backgroundColor] =
+        R.attached ? ['white', '#111'] :
+        R.auto_analyzing ? ['black', '#aaa'] : ['white', '#444']
 }
+
+ipc.on('slide_in', (e, direction) => slide_in(direction))
 
 /////////////////////////////////////////////////
 // draw goban etc.
 
 function update_goban() {
-    const btype = current_board_type()
-    const draw_raw = c => draw_goban(c, null, true), do_nothing = truep
+    const btype = current_board_type(), do_nothing = truep
+    const draw_raw_unclickable = c => draw_goban(c, null, {draw_last_p: true, read_only: true})
+    const draw_raw_clickable = c => draw_goban(c, null, {draw_playouts_p: true})
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_winrate_graph)(winrate_graph_canvas),
                             (s || do_nothing)(sub_canvas),
@@ -110,16 +122,16 @@ function update_goban() {
     if (board_type === "double_boards") {
         switch (btype) {
         case "winrate_only":
-            f(draw_winrate_graph, draw_raw, draw_main_goban); break;
+            f(draw_winrate_graph, draw_raw_unclickable, draw_main_goban); break;
         case "raw":
-            f(draw_goban, null, draw_goban_with_principal_variation); break;
+            f(draw_raw_clickable, null, draw_goban_with_principal_variation); break;
         default:
             f(draw_main_goban, null, draw_goban_with_principal_variation); break;
         }
     } else {
         switch (btype) {
-        case "winrate_only": f(draw_winrate_graph, draw_raw); break;
-        case "raw": f(draw_goban); break;
+        case "winrate_only": f(draw_winrate_graph, draw_raw_unclickable); break;
+        case "raw": f(draw_raw_clickable); break;
         case "variation": f(draw_goban_with_principal_variation); break;
         case "suggest": default: f(draw_main_goban); break;
         }
@@ -127,17 +139,21 @@ function update_goban() {
 }
 
 function draw_main_goban(canvas) {
-    let h = hovered_suggest = R.suggest.find(h => h.move === canvas.lizgoban_mouse_move)
-    h ? draw_goban_with_variation(canvas, h.variation) : draw_goban_with_suggest(canvas)
+    let h = hovered_suggest =
+        R.suggest.find(h => h.move === canvas.lizgoban_hovered_move)
+    let opts = {draw_playouts_p: true, read_only: R.attached}
+    h ? draw_goban_with_variation(canvas, h.variation, opts) :
+        draw_goban_with_suggest(canvas, opts)
 }
 
-function draw_goban_with_suggest(canvas) {
+function draw_goban_with_suggest(canvas, opts) {
     let displayed_stones = clone(R.stones)
     R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
-    draw_goban(canvas, displayed_stones, true, true)
+    draw_goban(canvas, displayed_stones,
+               merge({draw_last_p: true, draw_next_p: true}, opts || {}))
 }
 
-function draw_goban_with_variation(canvas, variation) {
+function draw_goban_with_variation(canvas, variation, opts) {
     let displayed_stones = clone(R.stones)
     variation.forEach((move, k) => {
         let b = xor(R.bturn, k % 2 === 1), w = !b
@@ -146,11 +162,13 @@ function draw_goban_with_variation(canvas, variation) {
             variation: true, movenum: k + 1, variation_last: k === variation.length - 1
         })
     })
-    draw_goban(canvas, displayed_stones, true)
+    draw_goban(canvas, displayed_stones, merge({draw_last_p: true}, opts || {}))
 }
 
 function draw_goban_with_principal_variation(canvas) {
-    draw_goban_with_variation(canvas, (R.suggest[0] && R.suggest[0].variation) || [])
+    draw_goban_with_variation(canvas,
+                              (R.suggest[0] && R.suggest[0].variation) || [],
+                              {read_only: true})
 }
 
 function set_stone_at(move, stone_array, stone) {
@@ -158,21 +176,28 @@ function set_stone_at(move, stone_array, stone) {
     let [i, j] = move2idx(move); (i >= 0) && merge(stone_array[i][j], stone)
 }
 
-function draw_goban(canvas, stones, draw_last_p, draw_next_p) {
+function draw_goban(canvas, stones, opts) {
+    let {draw_last_p, draw_next_p, draw_playouts_p, read_only} = opts || {}
     let margin = canvas.height * 0.05
     let g = canvas.getContext("2d")
     let [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     let unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
+    let hovered_move = canvas.lizgoban_hovered_move
+    // clear
     clear_canvas(canvas,
-                 (R.pausing ? PAUSE_GOBAN_BG :
-                  R.auto_analyzing ? AUTO_GOBAN_BG : NORMAL_GOBAN_BG),
+                 (R.pausing ? PAUSE_GOBAN_BG : NORMAL_GOBAN_BG),
                  g)
     g.strokeStyle = BLACK; g.lineWidth = 1
     rect([0, 0], [canvas.width, canvas.height], g)
+    // draw
     draw_grid(unit, idx2coord, g)
+    draw_playouts_p && draw_playouts(margin, canvas, g)
+    !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     draw_on_board(stones || R.stones, draw_last_p, draw_next_p, unit, idx2coord, g)
-    canvas.onmousedown = e => (!R.attached && play_here(e, coord2idx))
+    // mouse events
+    canvas.onmousedown = e => (!read_only && !R.attached && play_here(e, coord2idx))
     canvas.onmousemove = e => hover_here(e, coord2idx, canvas)
+    canvas.onmouseleave = e => hover_off(canvas)
 }
 
 function draw_grid(unit, idx2coord, g) {
@@ -183,6 +208,25 @@ function draw_grid(unit, idx2coord, g) {
     })
     const star_radius = unit * 0.1, stars = [3, 9, 15]
     stars.forEach(i => stars.forEach(j => fill_circle(idx2coord(i, j), star_radius, g)))
+}
+
+function draw_playouts(margin, canvas, g) {
+    if (!truep(R.playouts)) {return}
+    g.fillStyle = PALE_BLACK; g.font = `${margin / 3}px sans-serif`
+    g.textAlign = 'left'
+    g.fillText(` playouts = ${R.playouts}`, 0, canvas.height - margin / 6)
+    if (R.auto_analyzing) {
+        const progress = R.playouts / R.auto_analysis_playouts
+        g.fillStyle = R.bturn ? BLACK : WHITE
+        fill_rect([0, canvas.height - margin / 24],
+                  [canvas.width * progress, canvas.height], g)
+    }
+}
+
+function draw_cursor(hovered_move, unit, idx2coord, g) {
+    const xy = idx2coord(...move2idx(hovered_move))
+    g.fillStyle = R.bturn ? PALE_BLACK : PALE_WHITE
+    fill_circle(xy, unit / 4, g)
 }
 
 function draw_on_board(stones, draw_last_p, draw_next_p, unit, idx2coord, g) {
@@ -214,9 +258,13 @@ function play_here(e, coord2idx) {
 }
 
 function hover_here(e, coord2idx, canvas) {
-    let old = canvas.lizgoban_mouse_move
-    canvas.lizgoban_mouse_move = mouse2move(e, coord2idx)
-    if (canvas.lizgoban_mouse_move != old) {update_goban()}
+    let old = canvas.lizgoban_hovered_move
+    canvas.lizgoban_hovered_move = mouse2move(e, coord2idx)
+    if (canvas.lizgoban_hovered_move != old) {update_goban()}
+}
+
+function hover_off(canvas) {
+    canvas.lizgoban_hovered_move = undefined; update_goban()
 }
 
 function mouse2coord(e) {
@@ -266,20 +314,25 @@ function draw_suggest(h, xy, radius, g) {
     let epsilon = 1e-8, green_hue = 120
     let c = (h.data.winrate - R.min_winrate + epsilon) / (R.max_winrate - R.min_winrate + epsilon)
     let hue = to_i(green_hue * c)
-    let max_alpha = 0.5, alpha_emphasis = 0.5
-    let alpha = max_alpha * (h.data.playouts / (R.playouts + 1))**(1 - alpha_emphasis)
+    let max_alpha = 0.5
+    let playouts_ratio = h.data.playouts / (R.playouts + 1)
+    let alpha_emphasis = emph => max_alpha * playouts_ratio ** (1 - emph)
+    let hsl_e = (h, s, l, emphasis) => hsla(h, s, l, alpha_emphasis(emphasis))
     g.lineWidth = 1
-    g.fillStyle = hsl(hue, 100, 50, alpha); g.strokeStyle = hsl(0, 0, 0, alpha**0.3)
+    g.strokeStyle = hsl_e(hue, 100, 20, 0.85); g.fillStyle = hsl_e(hue, 100, 50, 0.4)
     edged_fill_circle(xy, radius, g)
     let [x, y] = xy, max_width = radius * 1.8
     let fontsize = to_i(radius * 0.8), next_y = y + fontsize
-    g.fillStyle = g.strokeStyle
+    let normal_color = hsl_e(0, 0, 0, 0.75), champ_color = RED
+    g.strokeStyle = hsl_e(0, 0, 0, 0.75)
+    g.fillStyle = h.data.winrate_order === 0 ? champ_color : normal_color
     g.font = '' + fontsize + 'px sans-serif'; g.textAlign = 'center'
     g.fillText('' + to_i(h.data.winrate) + '%', x, y, max_width)
+    g.fillStyle = h.data.order === 0 ? champ_color : normal_color
     g.fillText(kilo_str(h.data.playouts), x, next_y , max_width)
 }
 
-function hsl(h, s, l, alpha) {
+function hsla(h, s, l, alpha) {
     return 'hsla(' + h + ',' + s + '%,' + l + '%,' + (alpha === undefined ? 1 : alpha) + ')'
 }
 
@@ -310,16 +363,20 @@ function draw_winrate_bar(canvas) {
 function draw_winrate_bar_areas(w, h, xfor, vline, g) {
     const wrx = xfor(R.b_winrate)
     g.lineWidth = 1
-    g.fillStyle = WINRATE_BG; g.strokeStyle = WHITE; edged_fill_rect([0, 0], [wrx, h], g)
-    g.fillStyle = WHITE; g.strokeStyle = WINRATE_BG; edged_fill_rect([wrx, 0], [w, h], g)
+    // black area
+    g.fillStyle = R.bturn ? BLACK : "#222"
+    g.strokeStyle = WHITE; edged_fill_rect([0, 0], [wrx, h], g)
+    // white area
+    g.fillStyle = R.bturn ? "#ddd" : WHITE
+    g.strokeStyle = BLACK; edged_fill_rect([wrx, 0], [w, h], g)
 }
 
 function draw_winrate_bar_tics(tics, vline, g) {
     seq(tics, 1).forEach(i => {
         const r = 100 * i / (tics + 1)
-        g.lineWidth = 1; g.strokeStyle = (r < R.b_winrate) ? WHITE : WINRATE_BG; vline(r)
+        g.lineWidth = 1; g.strokeStyle = (r < R.b_winrate) ? WHITE : BLACK; vline(r)
     })
-    g.lineWidth = 3; g.strokeStyle = (R.b_winrate > 50) ? WHITE : WINRATE_BG; vline(50)
+    g.lineWidth = 3; g.strokeStyle = (R.b_winrate > 50) ? WHITE : BLACK; vline(50)
 }
 
 function draw_winrate_bar_last_move_eval(h, xfor, vline, g) {
@@ -367,7 +424,7 @@ function draw_winrate_graph(canvas) {
     // s = move_count, r = winrate
     const [sr2coord, coord2sr] =
           uv2coord_translator_pair(canvas, [0, smax], [100, 0], xmargin, 0)
-    clear_canvas(canvas, WINRATE_BG, g)
+    clear_canvas(canvas, BLACK, g)
     draw_winrate_graph_frame(w, h, tics, g)
     draw_winrate_graph_move_count(smax, fontsize, sr2coord, g)
     draw_winrate_graph_vline(sr2coord, g)
@@ -458,14 +515,16 @@ function set_all_canvas_size() {
     const main_size = Q('#main_div').clientWidth
     const rest_size = Q('#rest_div').clientWidth
     const main_board_ratio = 0.96, main_board_size = main_size * main_board_ratio
+    const sub_board_size = Math.min(main_board_size * 0.65, rest_size * 0.85)
     // use main_board_ratio in winrate_graph_width for portrait layout
     const winrate_graph_width = rest_size * main_board_ratio
+    const winrate_graph_height = main_board_size * 0.25
     set_canvas_square_size(main_canvas, main_board_size)
     set_canvas_size(winrate_bar_canvas,
                     main_board_size, main_size * (1 - main_board_ratio))
-    set_canvas_square_size(sub_canvas, rest_size * 0.85)
+    set_canvas_square_size(sub_canvas, sub_board_size)
     set_canvas_size(winrate_graph_canvas,
-                    winrate_graph_width, winrate_graph_width * 0.35)
+                    winrate_graph_width, winrate_graph_height)
 }
 
 function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, size)}
@@ -498,10 +557,10 @@ document.onkeydown = e => {
     case "p": m('pass'); break;
     case "Enter": m('play_best', e.shiftKey ? 5 : 1); break;
     case "v": e.ctrlKey && m('paste_sgf_from_clipboard'); break;
-    case "Backspace": case "Delete": m('explicit_undo'); break;
+    case "Backspace": case "Delete": !e.ctrlKey && m('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
-    case "a": e.ctrlKey ? m('attach_to_sabaki') : f(toggle_auto_analyze); break;
+    case "a": e.ctrlKey ? m('attach_to_sabaki') : f(toggle_auto_analyze_playouts); break;
     }
 }
 
@@ -534,7 +593,7 @@ function update_button_etc(availability) {
     f('pause'); f('resume'); f('bturn'); f('wturn'); f('auto_analyze')
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_playouts')
     f('stop_auto_analyze')
-    f('normal_ui')
+    f('normal_ui'); f('simple_ui')
 }
 
 /////////////////////////////////////////////////
@@ -555,6 +614,17 @@ function get_selection(elem) {return elem.options[elem.selectedIndex].value}
 function set_selection(elem, val) {
     elem.selectedIndex =
         to_i(seq(elem.options.length).find(i => (elem.options[i].value === val)))
+}
+
+/////////////////////////////////////////////////
+// effect
+
+function slide_in(direction) {
+    const shift = {left: '30%', right: '-30%'}[direction]
+    Q('#body').animate([
+        {transform: `translate(${shift}, 0%)`, opacity: 0},
+        {transform: 'translate(0)', opacity: 1},
+    ], 200)
 }
 
 /////////////////////////////////////////////////

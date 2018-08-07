@@ -25,9 +25,9 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 const leelaz = require('./engine.js')
 
 // state
-let history = [], sequence = [history], sequence_cursor = 0;
-history.move_count = 0; history.initial_b_winrate = NaN
-history.player_black = history.player_white = ""
+let history = [], sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
+history.move_count = 0; history.player_black = history.player_white = ""
+let deleted_sequences = []
 let auto_analysis_playouts = Infinity, play_best_until = -1
 const simple_ui = false
 
@@ -100,9 +100,9 @@ function renderer(channel, ...args) {
 const api = {
     restart, new_window, init_from_renderer, toggle_ponder, attach_to_sabaki, detach_from_sabaki,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
-    goto_move_count, toggle_auto_analyze, stop_auto_analyze, play_best, stop_play_best,
+    goto_move_count, toggle_auto_analyze, play_best, stop_play_best,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
-    next_sequence, previous_sequence, help,
+    next_sequence, previous_sequence, delete_sequence, help,
     // for debug
     send_to_leelaz: leelaz.send_to_leelaz,
 }
@@ -147,6 +147,7 @@ function redo_to_end() {redo_ntimes(Infinity)}
 function set_board(history) {
     leelaz.set_board(history); R.move_count = history.length
     R.bturn = !(history[history.length - 1] || {}).is_black
+    R.playouts = null
 }
 function goto_move_count(count) {set_board(history.slice(0, Math.max(count, 0)))}
 function future_len() {return history.length - R.move_count}
@@ -165,10 +166,14 @@ function try_auto_analyze(current_playouts) {
 }
 function toggle_auto_analyze(playouts) {
     if (history.length === 0) {return}
-    auto_analysis_playouts = (auto_analysis_playouts === playouts) ? Infinity :
-        (future_len() > 0 || goto_move_count(0),
-         leelaz.is_pondering() || toggle_ponder(),
-         playouts)
+    (auto_analysis_playouts === playouts) ?
+        (stop_auto_analyze(), update_ui()) :
+        start_auto_analyze(playouts)
+}
+function start_auto_analyze(playouts) {
+    future_len() === 0 && goto_move_count(0)
+    !leelaz.is_pondering() && toggle_ponder()
+    auto_analysis_playouts = playouts
     update_ui()
 }
 function stop_auto_analyze() {auto_analysis_playouts = Infinity}
@@ -212,7 +217,10 @@ function help() {
 /////////////////////////////////////////////////
 // from leelaz to renderer
 
-function set_renderer_state(...args) {merge(R, ...args)}
+function set_renderer_state(...args) {
+    const winrate_history = winrate_from_history(history)
+    merge(R, {winrate_history, auto_analysis_playouts}, ...args)
+}
 function set_and_render(...args) {set_renderer_state(...args); renderer('render', R)}
 
 // board
@@ -246,13 +254,11 @@ function add_next_mark_to_stones(stones, history, move_count) {
 function suggest_handler(h) {
     R.move_count > 0 && (history[R.move_count - 1].suggest = h.suggest)
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
-        : (history.initial_b_winrate = h.b_winrate)
-    const initial_b_winrate = history.initial_b_winrate
-    const last_move_b_eval = (h.b_winrate - winrate_before(R.move_count, initial_b_winrate))
+        : (initial_b_winrate = h.b_winrate)
+    const last_move_b_eval = (h.b_winrate - winrate_before(R.move_count))
     const last_move_eval = last_move_b_eval * (R.bturn ? -1 : 1)
-    const winrate_history = winrate_from_history(history, initial_b_winrate)
-    show_suggest_p() || (h.suggest = [])
-    set_and_render({last_move_b_eval, last_move_eval, winrate_history}, h)
+    set_and_render({last_move_b_eval, last_move_eval}, h,
+                   show_suggest_p() ? {} : {suggest: [], playouts: null})
     try_play_best(); try_auto_analyze(h.playouts)
 }
 
@@ -266,9 +272,7 @@ function show_suggest_p() {
 function backup_history() {
     if (history.length === 0) {return}
     store_move_count(history)
-    sequence.splice(sequence_cursor + 1, 0, history.slice())  // shallow copy
-    set_renderer_state({winrate_history: []})
-    goto_nth_sequence(sequence_cursor + 1)
+    insert_sequence(history.slice())  // shallow copy
 }
 
 function create_sequence_maybe() {
@@ -277,31 +281,56 @@ function create_sequence_maybe() {
          (history.player_black = history.player_white = ""))
 }
 
-function next_sequence() {switch_to_nth_sequence(sequence_cursor + 1)}
-function previous_sequence() {switch_to_nth_sequence(sequence_cursor - 1)}
+function next_sequence() {
+    switch_to_nth_sequence(sequence_cursor + 1) && next_sequence_effect()
+}
+function previous_sequence() {
+    switch_to_nth_sequence(sequence_cursor - 1) && previous_sequence_effect()
+}
+
+function delete_sequence() {
+    store_move_count(history)
+    history.length > 0 && deleted_sequences.push(history)
+    sequence.length === 1 && (sequence[1] = [])
+    sequence.splice(sequence_cursor, 1)
+    switch_to_nth_sequence(Math.max(sequence_cursor - 1, 0))
+    previous_sequence_effect()
+}
+
+function undelete_sequence() {insert_sequence(deleted_sequences.pop(), true)}
+
+function insert_sequence(new_history, switch_to) {
+    if (!new_history) {return}
+    const f = switch_to ? switch_to_nth_sequence : goto_nth_sequence
+    sequence.splice(sequence_cursor + 1, 0, new_history)
+    f(sequence_cursor + 1); update_state(); next_sequence_effect()
+}
 
 function switch_to_nth_sequence(n) {
-    (0 <= n) && (n < sequence.length) &&
+    return (0 <= n) && (n < sequence.length) &&
         (store_move_count(history), set_board([]), goto_nth_sequence(n),
-         R.move_count = 0, redo_ntimes(history.move_count))
+         R.move_count = 0, redo_ntimes(history.move_count), true)
 }
 
 function store_move_count(hist) {hist.move_count = R.move_count}
 function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
+function next_sequence_effect() {renderer('slide_in', 'left')}
+function previous_sequence_effect() {renderer('slide_in', 'right')}
 
 /////////////////////////////////////////////////
 // winrate history
 
-function winrate_before(move_count, initial_b_winrate) {return winrate_after(move_count - 1)}
+function winrate_before(move_count) {return winrate_after(move_count - 1)}
 
-function winrate_after(move_count, initial_b_winrate) {
+function winrate_after(move_count) {
     return move_count < 0 ? NaN :
         move_count === 0 ? initial_b_winrate :
         (history[move_count - 1] || {b_winrate: NaN}).b_winrate
 }
 
-function winrate_from_history(history, initial_b_winrate) {
-    return [initial_b_winrate].concat(history.map(m => m.b_winrate)).map((r, s, a) => {
+function winrate_from_history(history) {
+    const winrates = history.map(m => m.b_winrate)
+    return [initial_b_winrate, ...winrates].map((r, s, a) => {
         if (!truep(r)) {return {}}
         const move_eval = a[s - 1] && (r - a[s - 1]) * (history[s - 1].is_black ? 1 : -1)
         const predict = winrate_suggested(s)
@@ -334,7 +363,7 @@ function availability() {
         auto_analyze: history.length > 0,
         start_auto_analyze: !auto_analyzing(),
         stop_auto_analyze: auto_analyzing(),
-        normal_ui: !simple_ui
+        simple_ui: simple_ui, normal_ui: !simple_ui
     }
 }
 
@@ -494,6 +523,11 @@ function menu_template(win) {
     const edit_menu = menu('Edit', [
         {label: 'Copy SGF', accelerator: 'CmdOrCtrl+C', click: copy_sgf_to_clipboard},
         {label: 'Paste SGF', accelerator: 'CmdOrCtrl+V', click: paste_sgf_from_clipboard},
+        {type: 'separator'},
+        {label: 'Delete variation', accelerator: 'CmdOrCtrl+Backspace', click: delete_sequence},
+        {label: 'Undelete variation',
+         enabled: (deleted_sequences.length > 0),
+         click: undelete_sequence},
     ])
     const view_menu = menu('View', [
         board_type_menu_item('Two boards', 'double_boards', win),

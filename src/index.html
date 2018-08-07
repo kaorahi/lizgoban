@@ -8,6 +8,7 @@
  body {white-space: nowrap;}
  input, select {font-size: 100%;}
  .controller_row {margin-top: 2%; white-space: normal; text-align: left;}
+ .small {font-size: 70%;}
  #winrate_graph {border: solid 1px #ccc;}
  #winrate_graph:hover {border: solid 1px green;}
  @media (max-aspect-ratio: 13/10) {
@@ -24,6 +25,12 @@
   }
  }
  </style>
+ <style type="text/css">
+ .ext {color: #a38360; text-decoration: underline; cursor: pointer;}
+ </style>
+ <script>
+ function open_ext(url) {require('electron').shell.openExternal(url)}
+ </script>
 </head>
 
 <body id="body">
@@ -61,6 +68,10 @@ board
 <input type='button' id='explicit_undo' onclick="main('explicit_undo')" value="undo">
 </div>
 
+<div id="simple_ui" class="controller_row" style="text-align: right;">
+ <span class="ext" onclick="open_ext('https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt')">License</span>
+</div>
+
 <div id="normal_ui" class="controller_row">
 <span id='pause'>
 <input type='button' onclick="main('toggle_ponder')" value="pause">
@@ -80,7 +91,7 @@ board
 <input type='number' id='auto_analysis_playouts' value='1' min='1' style='width: 4em'>
 )
 <input type='button' onclick="main('play_best')" value="best">
-<input type='button' style="font-size: 70%" onclick="main('play_best', 5)" value="×5">
+<input type='button' class='small' onclick="main('play_best', 5)" value="×5">
 </span>
 <!-------- end hide_when_attached2 ----------->
 <span id='detach'>
