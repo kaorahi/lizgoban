@@ -31,8 +31,7 @@ const NORMAL_GOBAN_BG = "#f9ca91", PAUSE_GOBAN_BG = '#a38360'
 // renderer state
 const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], playouts: 1,
-    b_winrate: 50, min_winrate: 50, max_winrate: 50,
-    last_move_b_eval: NaN, last_move_eval: NaN, winrate_history: [],
+    min_winrate: 50, max_winrate: 50, winrate_history: [],
     attached: false, pausing: false, auto_analyzing: false,
     auto_analysis_playouts: Infinity,
     sequence_cursor: 1, sequence_length: 1,
@@ -78,7 +77,7 @@ ipc.on('render', (e, h) => {
     setq('#move_count', '' + R.move_count + '/' + R.history_length)
     setq('#sequence_cursor', '' + (R.sequence_cursor + 1) + '/' + R.sequence_length)
     update_goban()
-    update_title(R.suggest.length > 0)
+    update_title()
 })
 
 ipc.on('update_ui', (e, availability, ui_only) => {
@@ -90,15 +89,20 @@ ipc.on('update_ui', (e, availability, ui_only) => {
     update_board_type()
 })
 
-function update_title(with_eval) {
-    const summary = with_eval ?
-          (`B: ${R.player_black} ${f2s(R.b_winrate)}% /`
-           + ` W: ${R.player_white} ${f2s(100 - R.b_winrate)}%`
-           + (isNaN(R.last_move_eval) ? '' :
-              ` Last move ${R.last_move_eval > 0 ? '+' : ''}${f2s(R.last_move_eval)}`)) :
+function update_title() {
+    const b_wr = b_winrate(), eval = last_move_eval()
+    const summary = truep(b_wr) ?
+          (`B: ${R.player_black} ${f2s(b_wr)}% /`
+           + ` W: ${R.player_white} ${f2s(100 - b_wr)}%`
+           + (truep(eval) ? ` Last move ${eval > 0 ? '+' : ''}${f2s(eval)}` : '')) :
           `B: ${R.player_black || "?"} / W: ${R.player_white || "?"}`
     current_window().setTitle(`LizGoban (${summary})`)
 }
+
+function b_winrate() {return winrate_history_ref('r')}
+function last_move_b_eval() {return winrate_history_ref('move_b_eval')}
+function last_move_eval() {return winrate_history_ref('move_eval')}
+function winrate_history_ref(key) {return (R.winrate_history[R.move_count] || {})[key]}
 
 function update_body_color() {
     [Q('#body').style.color, Q('#body').style.backgroundColor] =
@@ -349,19 +353,32 @@ function kilo_str(x) {
 /////////////////////////////////////////////////
 // winrate bar
 
+let winrate_bar_prev = 50
+
 function draw_winrate_bar(canvas) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9
     const xfor = percent => w * percent / 100
     const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
-    draw_winrate_bar_areas(w, h, xfor, vline, g)
-    draw_winrate_bar_tics(tics, vline, g)
-    draw_winrate_bar_last_move_eval(h, xfor, vline, g)
+    const b_wr0 = b_winrate(), b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
+    winrate_bar_prev = b_wr
+    if (R.pausing && !truep(b_wr0)) {
+        draw_winrate_bar_unavailable(w, h, g)
+        draw_winrate_bar_tics(0, tics, vline, g)
+        return
+    }
+    draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
+    draw_winrate_bar_tics(b_wr, tics, vline, g)
+    draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
     draw_winrate_bar_suggestions(h, xfor, vline, g)
 }
 
-function draw_winrate_bar_areas(w, h, xfor, vline, g) {
-    const wrx = xfor(R.b_winrate)
+function draw_winrate_bar_unavailable(w, h, g) {
+    g.fillStyle = "#888"; fill_rect([0, 0], [w, h], g)
+}
+
+function draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g) {
+    const wrx = xfor(b_wr)
     g.lineWidth = 1
     // black area
     g.fillStyle = R.bturn ? BLACK : "#222"
@@ -371,19 +388,19 @@ function draw_winrate_bar_areas(w, h, xfor, vline, g) {
     g.strokeStyle = BLACK; edged_fill_rect([wrx, 0], [w, h], g)
 }
 
-function draw_winrate_bar_tics(tics, vline, g) {
+function draw_winrate_bar_tics(b_wr, tics, vline, g) {
     seq(tics, 1).forEach(i => {
         const r = 100 * i / (tics + 1)
-        g.lineWidth = 1; g.strokeStyle = (r < R.b_winrate) ? WHITE : BLACK; vline(r)
+        g.lineWidth = 1; g.strokeStyle = (r < b_wr) ? WHITE : BLACK; vline(r)
     })
-    g.lineWidth = 3; g.strokeStyle = (R.b_winrate > 50) ? WHITE : BLACK; vline(50)
+    g.lineWidth = 3; g.strokeStyle = (b_wr > 50) ? WHITE : BLACK; vline(50)
 }
 
-function draw_winrate_bar_last_move_eval(h, xfor, vline, g) {
-    if (isNaN(R.last_move_eval)) {return}
-    const [x1, x2] = [R.b_winrate, R.b_winrate - R.last_move_b_eval].map(xfor).sort()
-    const [stroke, fill] = (R.last_move_eval >= 0 ?
-                            [GREEN, PALE_GREEN] : [RED, PALE_RED])
+function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
+    const eval = last_move_eval(), b_eval = last_move_b_eval()
+    if (!truep(eval)) {return}
+    const [x1, x2] = [b_wr, b_wr - b_eval].map(xfor).sort()
+    const [stroke, fill] = (eval >= 0 ? [GREEN, PALE_GREEN] : [RED, PALE_RED])
     const lw = g.lineWidth = 3; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_rect([x1, lw / 2], [x2, h - lw / 2], g)
 }
@@ -391,7 +408,7 @@ function draw_winrate_bar_last_move_eval(h, xfor, vline, g) {
 function draw_winrate_bar_suggestions(h, xfor, vline, g) {
     g.lineWidth = 1
     const flip_maybe = x => R.bturn ? x : 100 - x
-    const wr = flip_maybe(R.b_winrate)
+    const wr = flip_maybe(b_winrate())
     const is_next_move = move => {
         [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
     }

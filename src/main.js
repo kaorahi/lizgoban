@@ -255,10 +255,7 @@ function suggest_handler(h) {
     R.move_count > 0 && (history[R.move_count - 1].suggest = h.suggest)
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
         : (initial_b_winrate = h.b_winrate)
-    const last_move_b_eval = (h.b_winrate - winrate_before(R.move_count))
-    const last_move_eval = last_move_b_eval * (R.bturn ? -1 : 1)
-    set_and_render({last_move_b_eval, last_move_eval}, h,
-                   show_suggest_p() ? {} : {suggest: [], playouts: null})
+    set_and_render(h, show_suggest_p() ? {} : {suggest: [], playouts: null})
     try_play_best(); try_auto_analyze(h.playouts)
 }
 
@@ -323,18 +320,20 @@ function previous_sequence_effect() {renderer('slide_in', 'right')}
 function winrate_before(move_count) {return winrate_after(move_count - 1)}
 
 function winrate_after(move_count) {
+    const or_NaN = x => truep(x) ? x : NaN
     return move_count < 0 ? NaN :
         move_count === 0 ? initial_b_winrate :
-        (history[move_count - 1] || {b_winrate: NaN}).b_winrate
+        or_NaN((history[move_count - 1] || {}).b_winrate)
 }
 
 function winrate_from_history(history) {
     const winrates = history.map(m => m.b_winrate)
     return [initial_b_winrate, ...winrates].map((r, s, a) => {
         if (!truep(r)) {return {}}
-        const move_eval = a[s - 1] && (r - a[s - 1]) * (history[s - 1].is_black ? 1 : -1)
+        const move_b_eval = a[s - 1] && (r - a[s - 1])
+        const move_eval = move_b_eval && move_b_eval * (history[s - 1].is_black ? 1 : -1)
         const predict = winrate_suggested(s)
-        return {r, move_eval, predict}
+        return {r, move_b_eval, move_eval, predict}
     })
 }
 
