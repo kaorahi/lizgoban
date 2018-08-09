@@ -87,8 +87,8 @@ app.on('ready', () => {
     update_menu()
     new_window('double_boards')
 })
-app.on('window-all-closed', quit)
-function quit() {leelaz.kill(), app.quit()}
+app.on('window-all-closed', app.quit)
+app.on('quit', leelaz.kill)
 
 function renderer(channel, ...args) {
     // Caution [2018-08-08]
@@ -207,7 +207,7 @@ function auto_restart() {
         dialog.showMessageBox(null, {
             type: "error", message: "Leela Zero is down.",
             buttons: ["retry", "save SGF and quit", "quit"],
-        }, response => [restart, () => (save_sgf(), quit()), quit][response]())
+        }, response => [restart, () => (save_sgf(), app.quit()), app.quit][response]())
 }
 
 // help
@@ -522,7 +522,7 @@ function menu_template(win) {
         {type: 'separator'},
         {label: 'Reset', accelerator: 'CmdOrCtrl+R', click: restart},
         {type: 'separator'},
-        {label: 'Quit', accelerator: 'CmdOrCtrl+Q', click: quit},
+        {role: 'quit'},
     ])
     const edit_menu = menu('Edit', [
         {label: 'Copy SGF', accelerator: 'CmdOrCtrl+C', click: copy_sgf_to_clipboard},
