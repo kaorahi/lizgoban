@@ -522,6 +522,7 @@ function menu_template(win) {
         {type: 'separator'},
         {label: 'Reset', accelerator: 'CmdOrCtrl+R', click: restart},
         {type: 'separator'},
+        {role: 'close'},
         {role: 'quit'},
     ])
     const edit_menu = menu('Edit', [
