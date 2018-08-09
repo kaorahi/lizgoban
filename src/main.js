@@ -516,8 +516,7 @@ function menu_template(win) {
     const file_menu = menu('File', [
         {label: 'New window', accelerator: 'CmdOrCtrl+N',
          click: (item, win) =>
-         new_window(win.lizgoban_board_type === 'suggest' ? 'variation' : 'suggest')
-        },
+         new_window(win.lizgoban_board_type === 'suggest' ? 'variation' : 'suggest')},
         {label: 'Open SGF...', accelerator: 'CmdOrCtrl+O', click: open_sgf},
         {label: 'Save SGF...', accelerator: 'CmdOrCtrl+S', click: save_sgf},
         {type: 'separator'},
