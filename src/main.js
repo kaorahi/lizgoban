@@ -91,6 +91,12 @@ app.on('window-all-closed', quit)
 function quit() {leelaz.kill(), app.quit()}
 
 function renderer(channel, ...args) {
+    // Caution [2018-08-08]
+    // (1) JSON.stringify(NaN) is 'null' (2) ipc converts {foo: NaN} to {}
+    // example:
+    // [main.js] renderer('foo', {bar: NaN, baz: null, qux: 3})
+    // [renderer.js] ipc.on('foo', (e, x) => tmp = x)
+    // [result] tmp is {baz: null, qux: 3}
     get_windows().forEach(win => win.webContents.send(channel, ...args))
 }
 
