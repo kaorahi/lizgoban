@@ -557,7 +557,9 @@ document.onkeydown = e => {
     if (e.target.id === "auto_analysis_playouts" && e.key === "Enter") {
         toggle_auto_analyze(); return
     }
-    if (e.target.tagName === "INPUT" && e.target.type !== "button") {return}
+    if (e.target.tagName === "INPUT" && e.target.type !== "button") {
+        (e.key === "Escape") && e.target.blur(); return
+    }
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     switch (e.key) {
     case "c": e.ctrlKey && m('copy_sgf_to_clipboard'); break;
