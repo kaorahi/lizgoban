@@ -154,7 +154,7 @@ function draw_goban_with_suggest(canvas, opts) {
     let displayed_stones = clone(R.stones)
     R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     draw_goban(canvas, displayed_stones,
-               merge({draw_last_p: true, draw_next_p: true}, opts || {}))
+               {draw_last_p: true, draw_next_p: true, ...opts})
 }
 
 function draw_goban_with_variation(canvas, variation, opts) {
@@ -166,7 +166,7 @@ function draw_goban_with_variation(canvas, variation, opts) {
             variation: true, movenum: k + 1, variation_last: k === variation.length - 1
         })
     })
-    draw_goban(canvas, displayed_stones, merge({draw_last_p: true}, opts || {}))
+    draw_goban(canvas, displayed_stones, {draw_last_p: true, ...opts})
 }
 
 function draw_goban_with_principal_variation(canvas) {
