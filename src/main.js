@@ -32,7 +32,6 @@ function new_history() {
 }
 let history = new_history()
 let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
-let deleted_sequences = []
 let auto_analysis_playouts = Infinity, play_best_until = -1
 const simple_ui = false
 
@@ -113,7 +112,7 @@ const api = {
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     goto_move_count, toggle_auto_analyze, play_best, stop_play_best,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
-    next_sequence, previous_sequence, delete_sequence, help,
+    next_sequence, previous_sequence, cut_sequence, help,
     // for debug
     send_to_leelaz: leelaz.send_to_leelaz,
 }
@@ -296,16 +295,15 @@ function previous_sequence() {
     switch_to_nth_sequence(sequence_cursor - 1) && previous_sequence_effect()
 }
 
+function cut_sequence() {copy_sgf_to_clipboard(); delete_sequence()}
+
 function delete_sequence() {
     store_move_count(history)
-    history.length > 0 && deleted_sequences.push(history)
     sequence.length === 1 && (sequence[1] = new_history())
     sequence.splice(sequence_cursor, 1)
     switch_to_nth_sequence(Math.max(sequence_cursor - 1, 0))
     previous_sequence_effect()
 }
-
-function undelete_sequence() {insert_sequence(deleted_sequences.pop(), true)}
 
 function insert_sequence(new_history, switch_to) {
     if (!new_history) {return}
@@ -534,10 +532,7 @@ function menu_template(win) {
         {label: 'Copy SGF', accelerator: 'CmdOrCtrl+C', click: copy_sgf_to_clipboard},
         {label: 'Paste SGF', accelerator: 'CmdOrCtrl+V', click: paste_sgf_from_clipboard},
         {type: 'separator'},
-        {label: 'Delete variation', accelerator: 'CmdOrCtrl+Backspace', click: delete_sequence},
-        {label: 'Undelete variation',
-         enabled: (deleted_sequences.length > 0),
-         click: undelete_sequence},
+        {label: 'Cut variation (&& Copy SGF)', accelerator: 'CmdOrCtrl+X', click: cut_sequence},
     ])
     const view_menu = menu('View', [
         board_type_menu_item('Two boards', 'double_boards', win),

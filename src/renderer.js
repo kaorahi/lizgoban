@@ -571,6 +571,7 @@ document.onkeydown = e => {
     }
     switch (!R.attached && key) {
     case "C-v": m('paste_sgf_from_clipboard'); break;
+    case "C-x": m('cut_sequence'); break;
     case "C-a": m('attach_to_sabaki'); break;
     case "ArrowLeft": case "ArrowUp": m('undo_ntimes', e.shiftKey ? 15 : 1); break;
     case "ArrowRight": case "ArrowDown": m('redo_ntimes', e.shiftKey ? 15 : 1); break;
