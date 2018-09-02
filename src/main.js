@@ -238,7 +238,7 @@ function board_handler(h) {
 
 function update_state() {
     const history_length = history.length, sequence_length = sequence.length, suggest = []
-    const player_black = history.player_black, player_white = history.player_white
+    const {player_black, player_white} = history
     set_and_render({
         history_length, suggest, sequence_cursor, sequence_length, attached,
         player_black, player_white
