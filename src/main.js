@@ -25,8 +25,13 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 const leelaz = require('./engine.js')
 
 // state
-let history = [], sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
-history.move_count = 0; history.player_black = history.player_white = ""
+function new_history() {
+    const history = []
+    history.move_count = 0; history.player_black = history.player_white = ""
+    return history
+}
+let history = new_history()
+let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
 let deleted_sequences = []
 let auto_analysis_playouts = Infinity, play_best_until = -1
 const simple_ui = false
@@ -294,7 +299,7 @@ function previous_sequence() {
 function delete_sequence() {
     store_move_count(history)
     history.length > 0 && deleted_sequences.push(history)
-    sequence.length === 1 && (sequence[1] = [])
+    sequence.length === 1 && (sequence[1] = new_history())
     sequence.splice(sequence_cursor, 1)
     switch_to_nth_sequence(Math.max(sequence_cursor - 1, 0))
     previous_sequence_effect()
