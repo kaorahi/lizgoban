@@ -554,32 +554,34 @@ function set_canvas_size(canvas, width, height) {
 // keyboard operation
 
 document.onkeydown = e => {
-    if (e.target.id === "auto_analysis_playouts" && e.key === "Enter") {
+    const key = (e.ctrlKey ? 'C-' : '') + e.key
+    if (e.target.id === "auto_analysis_playouts" && key === "Enter") {
         toggle_auto_analyze(); return
     }
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {
-        (e.key === "Escape") && e.target.blur(); return
+        (key === "Escape") && e.target.blur(); return
     }
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
-    switch (e.key) {
-    case "c": e.ctrlKey && m('copy_sgf_to_clipboard'); break;
-    case "d": e.ctrlKey && m('detach_from_sabaki'); break;
+    switch (key) {
+    case "C-c": m('copy_sgf_to_clipboard'); break;
+    case "C-d": m('detach_from_sabaki'); break;
     case "z": f(set_temporary_board_type, "raw", "suggest"); break;
     case "x": f(set_temporary_board_type, "winrate_only", "suggest"); break;
     case " ": m('toggle_ponder'); break;
     }
-    switch (!R.attached && e.key) {
+    switch (!R.attached && key) {
+    case "C-v": m('paste_sgf_from_clipboard'); break;
+    case "C-a": m('attach_to_sabaki'); break;
     case "ArrowLeft": case "ArrowUp": m('undo_ntimes', e.shiftKey ? 15 : 1); break;
     case "ArrowRight": case "ArrowDown": m('redo_ntimes', e.shiftKey ? 15 : 1); break;
     case "[": m('previous_sequence'); break;
     case "]": m('next_sequence'); break;
     case "p": m('pass'); break;
     case "Enter": m('play_best', e.shiftKey ? 5 : 1); break;
-    case "v": e.ctrlKey && m('paste_sgf_from_clipboard'); break;
-    case "Backspace": case "Delete": !e.ctrlKey && m('explicit_undo'); break;
+    case "Backspace": case "Delete": m('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
-    case "a": e.ctrlKey ? m('attach_to_sabaki') : f(toggle_auto_analyze_playouts); break;
+    case "a": f(toggle_auto_analyze_playouts); break;
     }
 }
 
