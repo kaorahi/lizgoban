@@ -37,7 +37,7 @@ const R = {
     sequence_cursor: 1, sequence_length: 1,
 }
 let board_type = current_window().lizgoban_board_type, temporary_board_type = false
-let hovered_suggest = null
+let hovered_suggest = null, verbose = false
 
 // handler
 window.onload = window.onresize = update
@@ -216,13 +216,13 @@ function draw_grid(unit, idx2coord, g) {
 
 function draw_playouts(margin, canvas, g) {
     if (!truep(R.playouts)) {return}
-    g.fillStyle = PALE_BLACK; g.font = `${margin / 3}px sans-serif`
+    g.fillStyle = verbose ? BLACK : PALE_BLACK; g.font = `${margin / 3}px sans-serif`
     g.textAlign = 'left'
     g.fillText(` playouts = ${R.playouts}`, 0, canvas.height - margin / 6)
     if (R.auto_analyzing) {
         const progress = R.playouts / R.auto_analysis_playouts
         g.fillStyle = R.bturn ? BLACK : WHITE
-        fill_rect([0, canvas.height - margin / 24],
+        fill_rect([0, canvas.height - margin / (verbose ? 10 : 24)],
                   [canvas.width * progress, canvas.height], g)
     }
 }
@@ -264,12 +264,14 @@ function play_here(e, coord2idx) {
 }
 
 function hover_here(e, coord2idx, canvas) {
+    verbose = (canvas === main_canvas)
     const old = canvas.lizgoban_hovered_move
     canvas.lizgoban_hovered_move = mouse2move(e, coord2idx)
     if (canvas.lizgoban_hovered_move != old) {update_goban()}
 }
 
 function hover_off(canvas) {
+    verbose = false
     canvas.lizgoban_hovered_move = undefined; update_goban()
 }
 
@@ -341,7 +343,8 @@ function draw_suggest(h, xy, radius, g) {
 function draw_winrate_mapping_line(h, xy, unit, g) {
     const canvas = g.lizgoban_canvas, b_winrate = flip_maybe(h.data.winrate)
     const x1 = canvas.width * b_winrate / 100, y1 = canvas.height, d = unit * 0.3
-    g.lineWidth = 0.3 / (h.next_move ? 1 : (h.data.winrate_order + 1))
+    const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
+    g.lineWidth = (verbose ? 1.5 : 0.3) / (order * 2 + 1)
     g.strokeStyle = RED
     line(xy, [x1, y1 - d], [x1, y1], g)
 }
@@ -383,6 +386,8 @@ function draw_winrate_bar(canvas) {
     draw_winrate_bar_tics(b_wr, tics, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
     draw_winrate_bar_suggestions(h, xfor, vline, g)
+    canvas.onmouseenter = e => {verbose = true; update_goban()}
+    canvas.onmouseleave = e => {verbose = false; update_goban()}
 }
 
 function draw_winrate_bar_unavailable(w, h, g) {
