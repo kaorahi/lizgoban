@@ -110,7 +110,7 @@ function showboard_command_p(command) {return command.match(/^showboard/)}
 
 function stdout_reader(s) {
     log('stdout|', s)
-    let m = s.match(/^[=?](\d+)/)
+    const m = s.match(/^[=?](\d+)/)
     m && (last_response_id = to_i(m[1]))
     up_to_date_response() && s.match(/^info /) && suggest_reader(s)
     try_send_from_queue()
@@ -137,7 +137,7 @@ function suggest_reader(s) {
 // info move pass visits 2 winrate 683 order 159 pv pass Q7
 
 function suggest_parser(s) {
-    let [a, b] = s.split(/pv/), h = array2hash(a.trim().split(/\s+/))
+    const [a, b] = s.split(/pv/), h = array2hash(a.trim().split(/\s+/))
     h.pv = b.trim().split(/\s+/)
     h.visits = to_i(h.visits); h.order = to_i(h.order); h.winrate = to_f(h.winrate) / 100
     h.playouts = h.visits; h.variation = h.pv  // for compatibility
@@ -173,7 +173,7 @@ current_reader = main_reader
 
 let stones_buf = []
 function board_reader(s) {
-    let p = parse_board_line(s); p ? stones_buf.push(p) :
+    const p = parse_board_line(s); p ? stones_buf.push(p) :
         (finish_board_reader(stones_buf), stones_buf = [], current_reader = main_reader)
 }
 
@@ -200,7 +200,7 @@ function parse_board_line(line) {
 function each_line(f) {
     let buf = ''
     return stream => {
-        let a = stream.toString().split('\n'), rest = a.pop()
+        const a = stream.toString().split('\n'), rest = a.pop()
         a.length > 0 && (a[0] = buf + a[0], buf = '', a.forEach(f))
         buf += rest
     }

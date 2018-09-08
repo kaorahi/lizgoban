@@ -21,7 +21,7 @@ function idx2move(i, j) {
 }
 
 function move2idx(move) {
-    let m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
+    const m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
     return m ? [board_size - to_i(row), col_name.indexOf(col)] : idx_pass
 }
 
@@ -30,8 +30,8 @@ function move2idx(move) {
 
 function translator_pair([from1, from2], [to1, to2]) {
     // [from1, from2] * scale + [shift, shift] = [to1, to2]
-    let d = from2 - from1, scale = (to2 - to1) / d, shift = (from2 * to1 - from1 * to2) / d
-    let trans = (x => x * scale + shift), inv = (z => (z - shift) / scale)
+    const d = from2 - from1, scale = (to2 - to1) / d, shift = (from2 * to1 - from1 * to2) / d
+    const trans = (x => x * scale + shift), inv = (z => (z - shift) / scale)
     return [trans, inv]
 }
 

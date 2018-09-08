@@ -143,24 +143,24 @@ function update_goban() {
 }
 
 function draw_main_goban(canvas) {
-    let h = hovered_suggest =
+    const h = hovered_suggest =
         R.suggest.find(h => h.move === canvas.lizgoban_hovered_move)
-    let opts = {draw_playouts_p: true, read_only: R.attached}
+    const opts = {draw_playouts_p: true, read_only: R.attached}
     h ? draw_goban_with_variation(canvas, h.variation, opts) :
         draw_goban_with_suggest(canvas, opts)
 }
 
 function draw_goban_with_suggest(canvas, opts) {
-    let displayed_stones = clone(R.stones)
+    const displayed_stones = clone(R.stones)
     R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, ...opts})
 }
 
 function draw_goban_with_variation(canvas, variation, opts) {
-    let displayed_stones = clone(R.stones)
+    const displayed_stones = clone(R.stones)
     variation.forEach((move, k) => {
-        let b = xor(R.bturn, k % 2 === 1), w = !b
+        const b = xor(R.bturn, k % 2 === 1), w = !b
         set_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
             variation: true, movenum: k + 1, variation_last: k === variation.length - 1
@@ -177,16 +177,16 @@ function draw_goban_with_principal_variation(canvas) {
 
 function set_stone_at(move, stone_array, stone) {
     // do nothing if move is pass
-    let [i, j] = move2idx(move); (i >= 0) && merge(stone_array[i][j], stone)
+    const [i, j] = move2idx(move); (i >= 0) && merge(stone_array[i][j], stone)
 }
 
 function draw_goban(canvas, stones, opts) {
-    let {draw_last_p, draw_next_p, draw_playouts_p, read_only} = opts || {}
-    let margin = canvas.height * 0.05
-    let g = canvas.getContext("2d")
-    let [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
-    let unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
-    let hovered_move = canvas.lizgoban_hovered_move
+    const {draw_last_p, draw_next_p, draw_playouts_p, read_only} = opts || {}
+    const margin = canvas.height * 0.05
+    const g = canvas.getContext("2d")
+    const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
+    const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
+    const hovered_move = canvas.lizgoban_hovered_move
     // clear
     clear_canvas(canvas,
                  (R.pausing ? PAUSE_GOBAN_BG : NORMAL_GOBAN_BG),
@@ -258,11 +258,11 @@ function set_temporary_board_type(btype, btype2) {
 // mouse action
 
 function play_here(e, coord2idx) {
-    let move = mouse2move(e, coord2idx); move && main('play', move)
+    const move = mouse2move(e, coord2idx); move && main('play', move)
 }
 
 function hover_here(e, coord2idx, canvas) {
-    let old = canvas.lizgoban_hovered_move
+    const old = canvas.lizgoban_hovered_move
     canvas.lizgoban_hovered_move = mouse2move(e, coord2idx)
     if (canvas.lizgoban_hovered_move != old) {update_goban()}
 }
@@ -272,17 +272,17 @@ function hover_off(canvas) {
 }
 
 function mouse2coord(e) {
-    let bbox = e.target.getBoundingClientRect()
+    const bbox = e.target.getBoundingClientRect()
     return [e.clientX - bbox.left, e.clientY - bbox.top]
 }
 
 function mouse2idx(e, coord2idx) {
-    let [i, j] = coord2idx(...mouse2coord(e))
+    const [i, j] = coord2idx(...mouse2coord(e))
     return (0 <= i && i < board_size && 0 <= j && j < board_size) && [i, j]
 }
 
 function mouse2move(e, coord2idx) {
-    let idx = mouse2idx(e, coord2idx); return idx && idx2move(...idx)
+    const idx = mouse2idx(e, coord2idx); return idx && idx2move(...idx)
 }
 
 /////////////////////////////////////////////////
@@ -298,7 +298,7 @@ function draw_stone(h, xy, radius, draw_last_p, g) {
 
 function draw_movenum(h, xy, radius, g) {
     g.fillStyle = h.variation_last ? RED : (!h.black ? BLACK : WHITE)
-    let [x, y] = xy, max_width = radius * 1.5, fontsize = to_i(radius * 1.8)
+    const [x, y] = xy, max_width = radius * 1.5, fontsize = to_i(radius * 1.8)
     g.font = '' + fontsize + 'px sans-serif'; g.textAlign = 'center'
     g.fillText('' + to_i(h.movenum), x, y + fontsize * 0.35, max_width)
 }
@@ -315,19 +315,19 @@ function draw_next_move(h, xy, radius, g) {
 // See "suggestion reader" section in engine.js for suggestion_data.
 
 function draw_suggest(h, xy, radius, g) {
-    let epsilon = 1e-8, green_hue = 120
-    let c = (h.data.winrate - R.min_winrate + epsilon) / (R.max_winrate - R.min_winrate + epsilon)
-    let hue = to_i(green_hue * c)
-    let max_alpha = 0.5
-    let playouts_ratio = h.data.playouts / (R.playouts + 1)
-    let alpha_emphasis = emph => max_alpha * playouts_ratio ** (1 - emph)
-    let hsl_e = (h, s, l, emphasis) => hsla(h, s, l, alpha_emphasis(emphasis))
+    const epsilon = 1e-8, green_hue = 120
+    const c = (h.data.winrate - R.min_winrate + epsilon) / (R.max_winrate - R.min_winrate + epsilon)
+    const hue = to_i(green_hue * c)
+    const max_alpha = 0.5
+    const playouts_ratio = h.data.playouts / (R.playouts + 1)
+    const alpha_emphasis = emph => max_alpha * playouts_ratio ** (1 - emph)
+    const hsl_e = (h, s, l, emphasis) => hsla(h, s, l, alpha_emphasis(emphasis))
     g.lineWidth = 1
     g.strokeStyle = hsl_e(hue, 100, 20, 0.85); g.fillStyle = hsl_e(hue, 100, 50, 0.4)
     edged_fill_circle(xy, radius, g)
-    let [x, y] = xy, max_width = radius * 1.8
-    let fontsize = to_i(radius * 0.8), next_y = y + fontsize
-    let normal_color = hsl_e(0, 0, 0, 0.75), champ_color = RED
+    const [x, y] = xy, max_width = radius * 1.8
+    const fontsize = to_i(radius * 0.8), next_y = y + fontsize
+    const normal_color = hsl_e(0, 0, 0, 0.75), champ_color = RED
     g.strokeStyle = hsl_e(0, 0, 0, 0.75)
     g.fillStyle = h.data.winrate_order === 0 ? champ_color : normal_color
     g.font = '' + fontsize + 'px sans-serif'; g.textAlign = 'center'
@@ -344,8 +344,8 @@ function hsla(h, s, l, alpha) {
 // kilo_str(1234) = '1.2k'
 // kilo_str(12345) = '12k'
 function kilo_str(x) {
-    let digits = 3, unit = 'k'
-    let b = 10**digits, y = x / 10**digits, z = Math.floor(y)
+    const digits = 3, unit = 'k'
+    const b = 10**digits, y = x / 10**digits, z = Math.floor(y)
     return x < b ? ('' + x) :
         (x < b * 10 ? ('' + y).slice(0, digits) : '' + z) + unit
 }
@@ -453,7 +453,7 @@ function draw_winrate_graph(canvas) {
 function draw_winrate_graph_frame(w, h, tics, g) {
     // horizontal lines (tics)
     g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
-    seq(tics, 1).forEach(i => {let y = h * i / (tics + 1); line([0, y], [w, y], g)})
+    seq(tics, 1).forEach(i => {const y = h * i / (tics + 1); line([0, y], [w, y], g)})
     // // frame
     // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
     // rect([0, 0], [w, h], g)

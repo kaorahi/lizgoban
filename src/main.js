@@ -4,7 +4,7 @@
 // example:
 // npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 
-let option = {
+const option = {
     leelaz_command: __dirname + "/../external/leelaz",
     leelaz_args: ["-g", "-w", __dirname + "/../external/network.gz"],
     analyze_interval_centisec: 10,
@@ -256,7 +256,7 @@ function update_ui(ui_only) {
 
 function add_next_mark_to_stones(stones, history, move_count) {
     if (move_count >= history.length) {return}
-    let h = history[move_count], [i, j] = move2idx(h.move), s = (i >= 0) && stones[i][j]
+    const h = history[move_count], [i, j] = move2idx(h.move), s = (i >= 0) && stones[i][j]
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
 
@@ -443,7 +443,7 @@ function load_sabaki_gametree(gametree, index) {
 }
 
 function history_from_sabaki_nodes(nodes) {
-    let new_history = []
+    const new_history = []
     const f = (positions, is_black) => {
         (positions || []).forEach(pos => {
             const move = sgfpos2move(pos)

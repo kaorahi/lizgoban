@@ -13,7 +13,7 @@ E.last = a => a[a.length - 1]
 E.flatten = a => [].concat(...a)
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 E.array2hash = a => {
-    let h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h
+    const h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h
 }
 
 // seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
