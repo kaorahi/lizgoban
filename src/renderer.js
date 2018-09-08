@@ -163,7 +163,7 @@ function draw_goban_with_variation(canvas, variation, opts) {
         const b = xor(R.bturn, k % 2 === 1), w = !b
         set_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
-            variation: true, movenum: k + 1, variation_last: k === variation.length - 1
+            variation: true, movenums: [k + 1], variation_last: k === variation.length - 1
         })
     })
     draw_goban(canvas, displayed_stones, {draw_last_p: true, ...opts})
@@ -176,8 +176,13 @@ function draw_goban_with_principal_variation(canvas) {
 }
 
 function set_stone_at(move, stone_array, stone) {
+    const get_movenums = s => s.movenums || []
+    const ary_or_undef = a => (a || []).length > 0 ? a : undefined
+    const merge_stone = (stone0, stone1) =>
+        merge(stone0, stone1,
+              {movenums: ary_or_undef(flatten([stone0, stone1].map(get_movenums)))})
     // do nothing if move is pass
-    const [i, j] = move2idx(move); (i >= 0) && merge(stone_array[i][j], stone)
+    const [i, j] = move2idx(move); (i >= 0) && merge_stone(stone_array[i][j], stone)
 }
 
 function draw_goban(canvas, stones, opts) {
@@ -296,15 +301,17 @@ function draw_stone(h, xy, radius, draw_last_p, g) {
     g.strokeStyle = BLACK; g.fillStyle = h.black ? BLACK : WHITE; g.lineWidth = 1
     h.maybe && (g.fillStyle = h.black ? MAYBE_BLACK : MAYBE_WHITE)
     edged_fill_circle(xy, radius, g)
-    h.movenum && draw_movenum(h, xy, radius, g)
+    h.movenums && draw_movenums(h, xy, radius, g)
     draw_last_p && h.last && draw_last_move(h, xy, radius, g)
 }
 
-function draw_movenum(h, xy, radius, g) {
+function draw_movenums(h, xy, radius, g) {
+    const text = h.movenums.slice().sort((a, b) => a - b).join(','), l = text.length
+    const [x, y] = xy, max_width = radius * 1.5
+    const fontsize = to_i(radius * (l < 3 ? 1.8 : l < 6 ? 1.2 : 0.9))
     g.fillStyle = h.variation_last ? RED : (!h.black ? BLACK : WHITE)
-    const [x, y] = xy, max_width = radius * 1.5, fontsize = to_i(radius * 1.8)
     g.font = '' + fontsize + 'px sans-serif'; g.textAlign = 'center'
-    g.fillText('' + to_i(h.movenum), x, y + fontsize * 0.35, max_width)
+    g.fillText(text, x, y + fontsize * 0.35, max_width)
 }
 
 function draw_last_move(h, xy, radius, g) {
