@@ -183,7 +183,7 @@ function set_stone_at(move, stone_array, stone) {
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_playouts_p, read_only} = opts || {}
     const margin = canvas.height * 0.05
-    const g = canvas.getContext("2d")
+    const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
     const hovered_move = canvas.lizgoban_hovered_move
@@ -235,12 +235,14 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 
 function draw_on_board(stones, draw_last_p, draw_next_p, unit, idx2coord, g) {
     const stone_radius = unit * 0.5
-    stones.forEach((row, i) => row.forEach((h, j) => {
-        let xy = idx2coord(i, j)
+    const each_coord = proc =>
+          stones.forEach((row, i) => row.forEach((h, j) => proc(h, idx2coord(i, j))))
+    each_coord((h, xy) => {
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
-    }))
+    })
+    each_coord((h, xy) => h.suggest && draw_winrate_mapping_line(h, xy, unit, g))
 }
 
 function current_board_type() {
@@ -336,6 +338,16 @@ function draw_suggest(h, xy, radius, g) {
     g.fillText(kilo_str(h.data.playouts), x, next_y , max_width)
 }
 
+function draw_winrate_mapping_line(h, xy, unit, g) {
+    const canvas = g.lizgoban_canvas, b_winrate = flip_maybe(h.data.winrate)
+    const x1 = canvas.width * b_winrate / 100, y1 = canvas.height, d = unit * 0.3
+    g.lineWidth = 0.3 / (h.next_move ? 1 : (h.data.winrate_order + 1))
+    g.strokeStyle = RED
+    line(xy, [x1, y1 - d], [x1, y1], g)
+}
+
+function flip_maybe(x) {return R.bturn ? x : 100 - x}
+
 function hsla(h, s, l, alpha) {
     return 'hsla(' + h + ',' + s + '%,' + l + '%,' + (alpha === undefined ? 1 : alpha) + ')'
 }
@@ -407,7 +419,6 @@ function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
 
 function draw_winrate_bar_suggestions(h, xfor, vline, g) {
     g.lineWidth = 1
-    const flip_maybe = x => R.bturn ? x : 100 - x
     const wr = flip_maybe(b_winrate())
     const is_next_move = move => {
         [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
@@ -503,8 +514,10 @@ function clear_canvas(canvas, bg_color, g) {
     g.clearRect(0, 0, canvas.width, canvas.height)
 }
 
-function line([x0, y0], [x1, y1], g) {
-    g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke()
+function line(...args) {
+    // usage: line([x0, y0], [x1, y1], ..., [xn, yn], g)
+    const g = args.pop(), [[x0, y0], ...xys] = args
+    g.beginPath(); g.moveTo(x0, y0); xys.forEach(xy => g.lineTo(...xy)); g.stroke()
 }
 
 function drawers_trio(gen) {
