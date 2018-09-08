@@ -559,7 +559,7 @@ document.onkeydown = e => {
         toggle_auto_analyze(); return
     }
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {
-        (key === "Escape") && e.target.blur(); return
+        (key === "Escape" || key === "C-[") && e.target.blur(); return
     }
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     switch (key) {
