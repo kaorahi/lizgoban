@@ -104,7 +104,8 @@ function showboard_command_p(command) {return command.match(/^showboard/)}
 // stdout reader
 
 // suggest = [suggestion_data, ..., suggestion_data]
-// suggestion_data = {move: "Q16", visits: 17, winrate: 52.99, pv: v} etc.
+// suggestion_data =
+//   {move: "Q16", visits: 17, winrate: 52.99, order: 4, winrate_order: 3, pv: v} etc.
 // v = ["Q16", "D4", "Q3", ..., "R17"] etc.
 
 function stdout_reader(s) {
