@@ -516,23 +516,25 @@ function update_menu() {
 
 function menu_template(win) {
     const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
+    const item = (label, accelerator, click, standalone_only) =>
+          !(standalone_only && attached) && {label, accelerator, click}
     const file_menu = menu('File', [
-        {label: 'New window', accelerator: 'CmdOrCtrl+N',
-         click: (item, win) =>
-         new_window(win.lizgoban_board_type === 'suggest' ? 'variation' : 'suggest')},
-        {label: 'Open SGF...', accelerator: 'CmdOrCtrl+O', click: open_sgf},
-        {label: 'Save SGF...', accelerator: 'CmdOrCtrl+S', click: save_sgf},
+        item('New window', 'CmdOrCtrl+N',
+             (this_item, win) => new_window(win.lizgoban_board_type === 'suggest' ?
+                                            'variation' : 'suggest')),
+        item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
+        item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         {type: 'separator'},
-        {label: 'Reset', accelerator: 'CmdOrCtrl+R', click: restart},
+        item('Reset', 'CmdOrCtrl+R', restart),
         {type: 'separator'},
         {role: 'close'},
         {role: 'quit'},
     ])
     const edit_menu = menu('Edit', [
-        {label: 'Copy SGF', accelerator: 'CmdOrCtrl+C', click: copy_sgf_to_clipboard},
-        {label: 'Paste SGF', accelerator: 'CmdOrCtrl+V', click: paste_sgf_from_clipboard},
+        item('Copy SGF', 'CmdOrCtrl+C', copy_sgf_to_clipboard, true),
+        item('Paste SGF', 'CmdOrCtrl+V', paste_sgf_from_clipboard, true),
         {type: 'separator'},
-        {label: 'Cut variation (&& Copy SGF)', accelerator: 'CmdOrCtrl+X', click: cut_sequence},
+        item('Cut variation (&& Copy SGF)', 'CmdOrCtrl+X', cut_sequence, true),
     ])
     const view_menu = menu('View', [
         board_type_menu_item('Two boards', 'double_boards', win),
@@ -547,7 +549,7 @@ function menu_template(win) {
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
-        {label: 'Help', click: help},
+        item('Help', undefined, help),
     ])
     return [file_menu, edit_menu, view_menu, tool_menu, help_menu]
 }
