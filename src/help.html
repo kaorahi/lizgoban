@@ -4,7 +4,7 @@
  <meta charset="UTF-8" />
  <title>LizGoban Help</title>
  <style type="text/css">
- body {color: black; background-color: #eee; white-space: nowrap;}
+ body {color: black; background-color: #eee;}
  .ext {color: blue; text-decoration: underline; cursor: pointer;}
  </style>
  <script>
@@ -16,27 +16,24 @@
 
 <h1>LizGoban Help</h1>
 
-<h2>UI layout</h2>
+<h2>Display</h2>
 
-You can switch landscape / portrait layout by changing window size.
-(Portrait may be preferable when it is attached to Sabaki. See also "View" menu.)
-
-<h2>Suggested moves in the board</h2>
+<h3>Suggested moves in the board</h3>
 
 <ul>
- <li>color, top number (%): winrate
- <li>opacity, bottom number: visits
+ <li>color, top number (%): winrate</li>
+ <li>opacity, bottom number: visits</li>
 </ul>
 
-<h2>Winrate bar</h2>
+<h3>Winrate bar</h3>
 
 <ul>
  <li>black/white area: winrate of the current board</li>
  <li>green/red rectangle: evaluation of the last move (green = good, red = bad)</li>
- <li>triangles: evaluations of suggested moves (size = visits ratio, yellow = next move)</li>
+ <li>triangles: evaluations of suggested next moves (size = visits ratio, yellow = next move)</li>
 </ul>
 
-<h2>Winrate graph</h2>
+<h3>Winrate graph</h3>
 
 <ul>
  <li>green segment: good move (increase winrate)</li>
@@ -45,26 +42,57 @@ You can switch landscape / portrait layout by changing window size.
  <li>yellow vertical line: evaluation error (difference between evaluations of the move before/after it was played)</li>
 </ul>
 
+<hr>
+
+<h2>Tips</h2>
+
+<h3>UI layout</h3>
+
+You can switch landscape / portrait layout by changing window size.
+(Portrait may be preferable when it is attached to Sabaki.)
+See also "View" menu in LizGoban.
+
+<h3>Trial board</h3>
+
+A new board is created when you try to modify an existing game.
+Light color of this board indicates that it is a "trial" board;
+you can delete it quickly by "q" key (undelete: Ctrl+v).
+Uncheck "trial board" in "Edit" menu to turn it to a normal board.
+You can use "Ctrl + click" instead of "click" to play a move
+in a new trial board.
+
+<hr>
+
 <h2>Shortcut keys</h2>
 
 Game
 <ul>
- <li>up/left arrow: previous move (shift = 15 moves)</li>
- <li>down/right arrow: next move (shift = 15 moves)</li>
+ <li>up/left arrow: previous move (Shift = 15 moves)</li>
+ <li>down/right arrow: next move (Shift = 15 moves)</li>
  <li>Home: first move</li>
  <li>End: last move</li>
  <li>BS/Del: undo</li>
  <li>p: pass</li>
- <li>[: previous variation</li>
- <li>]: next variation</li>
- <li>Ctrl+x: delete variation (use Ctrl-v to undelete)</li>
+</ul>
+
+Boards
+<ul>
+ <li>Ctrl+n: new empty board</li>
+ <li>Ctrl+d: duplicate board</li>
+ <li>[: previous board</li>
+ <li>]: next board</li>
+ <li>Ctrl+x: delete board (Ctrl+z: undelete)</li>
+ <li>Ctrl+w: delete board / close window</li>
+ <li>q: same as Ctrl+x (only for "trial" board)</li>
 </ul>
 
 Analysis
 <ul>
  <li>Space: pause/resume analysis</li>
  <li>a: start/stop auto-analysis (input playouts and hit Enter to start)</li>
- <li>Enter: play the best move (shift = 5 moves)</li>
+ <li>Enter: play the best move (Shift = 5 moves)</li>
+ <li>` (backquote): play the best move in another board</li>
+ <li>Tab: play the principal variation</li>
  <li>Ctrl+r: reset leela zero</li>
 </ul>
 
@@ -72,7 +100,16 @@ View
 <ul>
  <li>z (keep holding down): show raw board without suggestions, marks, etc.</li>
  <li>x (keep holding down): enlarge winrate graph</li>
- <li>Ctrl+n: new window</li>
+ <li>1, 2, ..., 9 (keep holding down): show nth variation
+      <ul>
+       <li>+Enter: play this move</li>
+       <li>+` (backquote): play this move in another board</li>
+       <li>+Tab: play this variation</li>
+      </ul>
+ </li>
+ <li>b, c, d, ... (keep holding down): hide stones after tag letter
+      (+Enter: go to this move)</li>
+ <li>Ctrl+Shift+n: new window</li>
 </ul>
 
 SGF
@@ -85,8 +122,7 @@ SGF
 
 Sabaki
 <ul>
- <li>Ctrl+a: attach to Sabaki</li>
- <li>Ctrl+d: detach from Sabaki</li>
+ <li>Ctrl+t: attach/detach Sabaki</li>
 </ul>
 
 <hr>

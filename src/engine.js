@@ -1,14 +1,16 @@
 /////////////////////////////////////////////////
 // setup
 
+const pondering_delay_millisec = 50
+
 let leelaz_process, start_args, the_analyze_interval_centisec
 let command_queue, last_command_id, last_response_id, pondering = true
 
 // game state
-let b_prison = 0, w_prison = 0, bturn = true
+let b_prison = 0, w_prison = 0, last_passes = 0, bturn = true
 
 // util
-const {to_i, to_f, xor, truep, clone, merge, last, flatten, each_key_value, array2hash, seq, do_ntimes}
+const {to_i, to_f, xor, truep, clone, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -31,7 +33,7 @@ function start(...args) {
     command_queue = []; last_command_id = -1; last_response_id = -1
     clear_leelaz_board() // for restart
 }
-function restart() {kill(); start(...start_args)}
+function restart(...args) {kill(); start(...(empty(args) ? start_args : args))}
 function kill() {
     if (!leelaz_process) {return}
     ['stdin', 'stdout', 'stderr']
@@ -53,12 +55,12 @@ function toggle_ponder() {pondering = !pondering; pondering ? start_ponder() : s
 // stateless wrapper of leelaz
 let leelaz_previous_history = []
 function set_board(history) {
-    if (history.length === 0) {clear_leelaz_board(); return}
+    if (empty(history)) {clear_leelaz_board(); return}
     const beg = common_header_length(history, leelaz_previous_history)
     const back = leelaz_previous_history.length - beg
     const rest = history.slice(beg)
     do_ntimes(back, undo1); rest.map(play1)
-    if (back > 0 || rest.length > 0) {update()}
+    if (back > 0 || !empty(rest)) {update()}
     leelaz_previous_history = clone(history)
 }
 function common_header_length(a, b) {
@@ -87,7 +89,15 @@ function send_to_queue(s) {
 }
 
 function try_send_from_queue() {
-    if (command_queue.length === 0 || !up_to_date_response()) {return}
+    pondering_command_p(command_queue[0] || '') ?
+        send_from_queue_later() : send_from_queue()
+}
+
+const [send_from_queue_later] =
+      deferred_procs([send_from_queue, pondering_delay_millisec])
+
+function send_from_queue() {
+    if (empty(command_queue) || !up_to_date_response()) {return}
     send_to_leelaz(command_queue.shift())
 }
 
@@ -119,7 +129,7 @@ function stdout_reader(s) {
 function suggest_reader(s) {
     const suggest = s.split(/info/).slice(1).map(suggest_parser)
           .sort((a, b) => (a.order - b.order))
-    const [wsum, playouts] = suggest.map(h => [h.winrate, h.playouts])
+    const [wsum, playouts] = suggest.map(h => [h.winrate, h.visits])
           .reduce(([ws, ps], [w, p]) => [ws + w * p, ps + p], [0, 0])
     const winrate = wsum / playouts, b_winrate = bturn ? winrate : 100 - winrate
     const wrs = suggest.map(h => h.winrate)
@@ -140,7 +150,6 @@ function suggest_parser(s) {
     const [a, b] = s.split(/pv/), h = array2hash(a.trim().split(/\s+/))
     h.pv = b.trim().split(/\s+/)
     h.visits = to_i(h.visits); h.order = to_i(h.order); h.winrate = to_f(h.winrate) / 100
-    h.playouts = h.visits; h.variation = h.pv  // for compatibility
     return h
 }
 
@@ -153,6 +162,7 @@ function reader(s) {log('stderr|', s); current_reader(s)}
 
 function main_reader(s) {
     let m, c;
+    (m = s.match(/Passes: *([0-9]+)/)) && (last_passes = to_i(m[1]));
     (m = s.match(/\((.)\) to move/)) && (bturn = m[1] === 'X');
     (m = s.match(/\((.)\) Prisoners: *([0-9]+)/)) &&
         (c = to_i(m[2]), m[1] === 'X' ? b_prison = c : w_prison = c)
@@ -178,7 +188,8 @@ function board_reader(s) {
 }
 
 function finish_board_reader(stones) {
-    const move_count = b_prison + w_prison + flatten(stones).filter(x => x.stone).length
+    const move_count = b_prison + w_prison + last_passes +
+          flatten(stones).filter(x => x.stone).length
     the_board_handler({bturn, move_count, stones})
 }
 
@@ -201,7 +212,7 @@ function each_line(f) {
     let buf = ''
     return stream => {
         const a = stream.toString().split('\n'), rest = a.pop()
-        a.length > 0 && (a[0] = buf + a[0], buf = '', a.forEach(f))
+        !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
         buf += rest
     }
 }

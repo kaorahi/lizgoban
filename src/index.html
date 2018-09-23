@@ -5,23 +5,56 @@
  <title>LizGoban</title>
  <script defer src="renderer.js"></script>
  <style type="text/css">
+ * {margin : 0; padding: 0;}
  body {white-space: nowrap;}
  input, select {font-size: 100%;}
  .controller_row {margin-top: 2%; white-space: normal; text-align: left;}
  .small {font-size: 70%;}
+ #main_div {position: relative;}
  #winrate_graph {border: solid 1px #ccc;}
  #winrate_graph:hover {border: solid 1px green;}
+ .thumbbox img {border: solid 2px rgba(0,0,0,0); vertical-align: top;}
+ .thumbbox:hover:not(.current) img {border-color: green;}
+ .thumbbox.current img {border-color: red;}
+ .thumbbox[data-available='no'] img {border-style: dashed;}
+ .thumbbox[data-available='no']:not(.current) img {border-color: white;}
+ #thumbnails {text-align: left; vertical-align: top;}
+ #thumbnails:hover {position: relative; z-index: 9;}
+ #preview {
+  width: 0vw; transition-duration: 0.1s;
+  border: solid 0vw green; position: absolute; left: 0%; z-index: 8;
+ }
+ #preview.show {width: 40vw; border-width: 3vw;}
  @media (max-aspect-ratio: 13/10) {
-  #main_div {width: 96vmin; display: block;}
-  #rest_div {width: 96vmin; display: block; font-size: 3vw;}
+  body > * {width: 96vmin; display: block; margin: 1.5vmin; font-size: 3vw;}
+  .thumbbox {display: inline-block;}
+  .thumbbox img {width: 3vw; height: 3vw;}
  }
  @media (min-aspect-ratio: 13/10) {
-  body {text-align: center;}
+  body {display: table; text-align: center;}
+  body > * {margin-top: 1.5vmin; vertical-align: top;}
   #main_div {width: 96vmin; display: inline-block;}
   #rest_div {
-   width: calc(96vw - 96vh); display: inline-block; vertical-align: top;
+   width: calc(96vw - 100vh); display: inline-block;
    font-size: calc((96vw - 96vh) * 3/100);
    text-align: left;
+  }
+  #thumb_aligner {display: table-cell; text-align: left; width: 5vw;}
+  .thumbbox {width: 5vw; padding-left: 0.5vh;}
+  .thumbbox:hover {background-color: rgba(0,255,0,0.1);}
+  .thumbbox:nth-child(1) {padding-top: 1.5vmin;}
+  .thumbbox:nth-child(n+2) {padding-top: 3px;}
+  .thumbbox {padding-bottom: 3px;}
+  .thumbbox * {padding: 0;}
+  #thumbnails {height: 100vh; overflow-y: auto;}
+  #thumbnails[data-style='block'] {overflow-y: visible;}
+  #thumbnails[data-style='block'] .thumbbox img {width: 4.5vw; height: 4.5vw;}
+  #thumbnails[data-style='block'] .thumbbox:before {
+   content: attr(data-name); display: block; font-size: 2vmin;
+  }
+  #thumbnails[data-style='inline'] .thumbbox img {width: 2vmin; height: 2vmin;}
+  #thumbnails[data-style='inline'] .thumbbox:after {
+   content: attr(data-name); display: inline; font-size: 2vmin;
   }
  }
  </style>
@@ -35,8 +68,18 @@
 
 <body id="body">
 
+<div id="thumb_aligner"><div id="thumbnails"><div id="thumb_height_measurer">
+</div></div></div>
+
 <div id="main_div">
-<div><canvas id="goban"></canvas></div>
+<img id="preview"></img>
+<div style="position: relative;">
+ <canvas id="goban"></canvas>
+ <div id='trial' style="position: absolute; top: 0px; right: 0px;">
+  <input type='button' style="color: red; font-size: 150%;"
+   onclick="main('cut_sequence')" value=" × ">
+ </div>
+</div>
 <div><canvas id="winrate_bar"></canvas></div>
 </div>
 
@@ -56,16 +99,12 @@
 <input type='button' id='redo' onclick="main('redo')" value="&gt;">
 <input type='button' id='redo_ntimes' onclick="main('redo_ntimes', 15)" value="&gt;&gt;">
 <input type='button' id='redo_to_end' onclick="main('redo_to_end')" value="&gt;|">
-(
-board
-<input type='button' id='previous_sequence' onclick="main('previous_sequence')" value="[">
-<span id="sequence_cursor"></span>
-<input type='button' id='next_sequence' onclick="main('next_sequence')" value="]">
-)
 <span id="bturn" style="color: black">⬤</span>
 <span id="wturn" style="color: white">⬤</span>
 <input type='button' id='pass' onclick="main('pass')" value="pass">
 <input type='button' id='explicit_undo' onclick="main('explicit_undo')" value="undo">
+<input type='button' id='play_best' onclick="main('play_best')" value="best">
+<input type='button' id='play_best_x5' class='small' onclick="main('play_best', 5)" value="×5">
 </div>
 
 <div id="simple_ui" class="controller_row" style="text-align: right;">
@@ -90,8 +129,6 @@ board
 (playouts
 <input type='number' id='auto_analysis_playouts' value='1' min='1' style='width: 4em'>
 )
-<input type='button' onclick="main('play_best')" value="best">
-<input type='button' class='small' onclick="main('play_best', 5)" value="×5">
 </span>
 <!-------- end hide_when_attached2 ----------->
 <span id='detach'>

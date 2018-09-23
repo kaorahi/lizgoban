@@ -11,23 +11,27 @@ as subwindows.
 
 ![screenshot](screen.png)
 
-Though Lizzie is amazingly useful, its setup is not easy
-for many Go players because it needs Java.
-In this project, the core feature of Lizzie is transported to JavaScript
-so that they can taste the joy of real-time analysis.
+## Motivations
 
-Features:
+1. LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. "Easy" is important here. One redundant step can make a feature unusable practically.
+2. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis.
+
+## Features
 
 * Colored suggestions
 * Variation by mouse hover
 * Subboard that always shows the principal variation
 * Clickable & draggable win-rate graph with autoanalysis
 * Win-rate bar with evaluations of suggested moves
+* Trial boards that can be used like tabs in web browsers
+* Keyboard shortcuts, e.g. "3" key for the third variation
 
-Help needed:
+## Help needed
 
 * Graphic design
 * Windows support
+
+## Usage
 
 To try it (stand alone):
 
@@ -36,13 +40,19 @@ To try it (stand alone):
 3. Put Leela Zero binary as "external/leelaz" together with its network weight as "external/network.gz".
 4. Type "npx electron src".
 
+To set options for leelaz (experimental):
+
+    npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
+
 To attach it to Sabaki:
 
 1. Build a [customized Sabaki](https://github.com/kaorahi/Sabaki/tree/dump_state2) in "dump_state2" branch.
 2. Put Sabaki binary as "external/sabaki".
 3. Start LizGoban.
-4. Click "attach to sabaki" button on LizGoban and wait for Sabaki window.
+4. Click "Attach Sabaki" in "Tool" menu of LizGoban and wait for Sabaki window.
 5. Put a stone on Sabaki and see it appears on LizGoban.
+
+## Links
 
 [Project Home](https://github.com/kaorahi/lizgoban) /
 [License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
