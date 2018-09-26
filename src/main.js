@@ -451,9 +451,9 @@ function delete_sequence() {
     store_move_count(history)
     sequence.length === 1 && (sequence[1] = create_history())
     sequence.splice(sequence_cursor, 1)
-    const left = sequence_cursor > 0
+    const nextp = (sequence_cursor === 0)
     switch_to_nth_sequence(Math.max(sequence_cursor - 1, 0))
-    left ? previous_sequence_effect() : next_sequence_effect()
+    nextp ? next_sequence_effect() : previous_sequence_effect()
 }
 
 function insert_sequence(new_history, switch_to, before) {
@@ -471,8 +471,8 @@ function switch_to_nth_sequence(n) {
 
 function store_move_count(hist) {hist.move_count = R.move_count}
 function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
-function next_sequence_effect() {renderer('slide_in', 'left')}
-function previous_sequence_effect() {renderer('slide_in', 'right')}
+function next_sequence_effect() {renderer('slide_in', 'next')}
+function previous_sequence_effect() {renderer('slide_in', 'previous')}
 
 const deleted_sequences = []
 const max_deleted_sequences = 100
@@ -565,16 +565,17 @@ function history_to_sgf(hist) {
 
 function read_sgf(sgf_str) {
     try {
-        load_sabaki_gametree_on_new_history(parse_sgf(sgf_str)[0])
-        history.sgf_str = sgf_str
+        const clipped = clip_sgf(sgf_str)
+        load_sabaki_gametree_on_new_history(parse_sgf(clipped)[0])
+        history.sgf_str = clipped
     }
     catch (e) {dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"')}
 }
 
-function parse_sgf(sgf_str) {
-    // pick "(; ... ... ])...)"
-    return SGF.parse((sgf_str.match(/\(\s*;[^]*\][\s\)]*\)/))[0])
-}
+const parse_sgf = SGF.parse
+
+// pick "(; ... ... ])...)"
+function clip_sgf(sgf_str) {return sgf_str.match(/\(\s*;[^]*\][\s\)]*\)/)[0]}
 
 /////////////////////////////////////////////////
 // Sabaki gameTree
@@ -692,7 +693,7 @@ function menu_template(win) {
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
         item('Reset', 'CmdOrCtrl+R', restart),
-        item('Load weight', undefined, load_weight),
+        item('Load network weights', undefined, load_weight),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
@@ -721,7 +722,7 @@ function menu_template(win) {
     ])
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
-                       click: toggle_sabaki},
+                       accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         item('Info', 'CmdOrCtrl+I', info),
         {role: 'toggleDevTools'},
     ])

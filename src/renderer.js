@@ -77,14 +77,15 @@ function play_moves(moves) {
                                              (k === 0) && R.start_moves_tag_letter))
 }
 
-function main(channel, ...args) {ipc.send(channel, ...args); try_thumbnail()}
+function main(channel, ...args) {ipc.send(channel, ...args)}
 
 /////////////////////////////////////////////////
 // from main
 
 ipc.on('render', (e, h) => {
     merge(R, h)
-    setq('#move_count', '' + R.move_count + '/' + R.history_length)
+    setq('#move_count', R.move_count)
+    setq('#history_length', ' (' + R.history_length + ')')
     update_goban()
 })
 
@@ -98,9 +99,10 @@ ipc.on('update_ui', (e, availability, ui_only, board_type) => {
     update_board_type()
     update_all_thumbnails()
     update_title()
+    try_thumbnail()
 })
 
-ipc.on('slide_in', (e, direction) => (slide_in(direction), try_thumbnail()))
+ipc.on('slide_in', (e, direction) => slide_in(direction))
 
 let last_title = ''
 function update_title() {
@@ -713,6 +715,12 @@ function store_thumbnail(id, url, name) {
 
 // (2) show thumbnails
 
+// Try block style first. If it overflows vertically, try inline style.
+
+// Naive calculation of total height is wrong
+// because "font-size" seems to have some lower bound.
+// (ref) http://www.google.com/search?q=chrome%20minimum%20font%20size%20setting
+
 function update_all_thumbnails(style) {
     discard_unused_thumbnails()
     const div = Q("#thumbnails"), preview = Q("#preview")
@@ -757,7 +765,7 @@ function update_thumbnail_contents(ids, div, preview) {
         id === current_sequence_id() ? (set_current(), set_action()) :
             (unset_current(), set_action(true, true))
         box.dataset.name = (thumb && thumb.name) || ''
-        box.dataset.available = thumb ? 'yes' : 'no'
+        box.dataset.available = yes_no(thumb)
         !thumb && set_action(true)
     })
 }
@@ -768,6 +776,8 @@ function discard_unused_thumbnails() {
 }
 
 function current_sequence_id() {return R.sequence_ids[R.sequence_cursor]}
+
+function yes_no(z) {return z ? 'yes' : 'no'}
 
 /////////////////////////////////////////////////
 // graphics
@@ -854,7 +864,6 @@ document.onkeydown = e => {
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     switch (key) {
     case "C-c": m('copy_sgf_to_clipboard'); break;
-    case "C-t": m('toggle_sabaki'); break;
     case "z": f(set_temporary_board_type, "raw", "suggest"); break;
     case "x": f(set_temporary_board_type, "winrate_only", "suggest"); break;
     case " ": m('toggle_ponder'); break;
@@ -881,7 +890,10 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
-    reset_keyboard_moves(); reset_keyboard_tag(); set_temporary_board_type(false)
+    reset_keyboard_moves(); reset_keyboard_tag()
+    switch (e.key) {
+    case "z": case "x": set_temporary_board_type(false); break;
+    }
 }
 
 function set_keyboard_moves_maybe(n) {
@@ -949,9 +961,9 @@ function set_selection(elem, val) {
 // effect
 
 function slide_in(direction) {
-    const shift = {left: '30%', right: '-30%'}[direction]
+    const shift = {next: '30%', previous: '-30%'}[direction]
     Q('#goban').animate([
-        {transform: `translate(${shift}, 0%)`, opacity: 0},
+        {transform: `translate(0%, ${shift})`, opacity: 0},
         {transform: 'translate(0)', opacity: 1},
     ], 200)
 }

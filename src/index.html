@@ -19,7 +19,6 @@
  .thumbbox[data-available='no'] img {border-style: dashed;}
  .thumbbox[data-available='no']:not(.current) img {border-color: white;}
  #thumbnails {text-align: left; vertical-align: top;}
- #thumbnails:hover {position: relative; z-index: 9;}
  #preview {
   width: 0vw; transition-duration: 0.1s;
   border: solid 0vw green; position: absolute; left: 0%; z-index: 8;
@@ -33,28 +32,35 @@
  @media (min-aspect-ratio: 13/10) {
   body {display: table; text-align: center;}
   body > * {margin-top: 1.5vmin; vertical-align: top;}
-  #main_div {width: 96vmin; display: inline-block;}
+  #main_div {width: 96vmin; display: inline-block; position: fixed;}
   #rest_div {
-   width: calc(96vw - 100vh); display: inline-block;
+   width: calc(96vw - 100vh); display: inline-block; position: fixed; right: 0;
    font-size: calc((96vw - 96vh) * 3/100);
    text-align: left;
   }
   #thumb_aligner {display: table-cell; text-align: left; width: 5vw;}
+  #thumb_height_measurer:hover {position: relative; z-index: 9;}
   .thumbbox {width: 5vw; padding-left: 0.5vh;}
-  .thumbbox:hover {background-color: rgba(0,255,0,0.1);}
+  .thumbbox:hover {background-color: green;}
   .thumbbox:nth-child(1) {padding-top: 1.5vmin;}
   .thumbbox:nth-child(n+2) {padding-top: 3px;}
   .thumbbox {padding-bottom: 3px;}
   .thumbbox * {padding: 0;}
-  #thumbnails {height: 100vh; overflow-y: auto;}
+  #thumbnails {height: 100vh;}
   #thumbnails[data-style='block'] {overflow-y: visible;}
   #thumbnails[data-style='block'] .thumbbox img {width: 4.5vw; height: 4.5vw;}
   #thumbnails[data-style='block'] .thumbbox:before {
    content: attr(data-name); display: block; font-size: 2vmin;
   }
-  #thumbnails[data-style='inline'] .thumbbox img {width: 2vmin; height: 2vmin;}
+  #thumbnails[data-style='inline'] .thumbbox img {
+   width: 3vmin; height: 3vmin; vertical-align: middle;
+  }
   #thumbnails[data-style='inline'] .thumbbox:after {
    content: attr(data-name); display: inline; font-size: 2vmin;
+  }
+  #thumbnails[data-style='block'] #thumb_height_measurer:hover .thumbbox:before,
+  #thumbnails[data-style='inline'] #thumb_height_measurer:hover .thumbbox:after {
+   background-color: rgba(128,128,128,0.6); width: max-content;
   }
  }
  </style>
@@ -73,7 +79,7 @@
 
 <div id="main_div">
 <img id="preview"></img>
-<div style="position: relative;">
+<div style="position: relative; overflow-y: hidden;">
  <canvas id="goban"></canvas>
  <div id='trial' style="position: absolute; top: 0px; right: 0px;">
   <input type='button' style="color: red; font-size: 150%;"
@@ -95,7 +101,7 @@
 <input type='button' id='undo_to_start' onclick="main('undo_to_start')" value="|&lt;">
 <input type='button' id='undo_ntimes' onclick="main('undo_ntimes', 15)" value="&lt;&lt">
 <input type='button' id='undo' onclick="main('undo')" value="&lt;">
-(<span id="move_count"></span>)
+<span id="move_count"></span><span class='small' id="history_length"></span>
 <input type='button' id='redo' onclick="main('redo')" value="&gt;">
 <input type='button' id='redo_ntimes' onclick="main('redo_ntimes', 15)" value="&gt;&gt;">
 <input type='button' id='redo_to_end' onclick="main('redo_to_end')" value="&gt;|">
