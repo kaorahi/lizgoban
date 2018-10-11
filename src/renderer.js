@@ -6,7 +6,7 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
-const {to_i, to_f, xor, truep, clone, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
+const {to_i, to_f, xor, truep, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -72,6 +72,21 @@ function auto_analysis_playouts_setting () {
     return to_i(Q('#auto_analysis_playouts').value)
 }
 
+function start_auto_play() {
+    main('auto_play', to_f(Q('#auto_play_sec').value)); hide_dialog()
+}
+
+function set_weaken_percent() {
+    main('set_weaken_percent', to_f(Q('#weaken_percent').value)); hide_dialog()
+}
+
+function show_dialog(name) {
+    Q(name).style.visibility = "visible"; Q(`${name} input`).select()
+}
+function hide_dialog() {
+    document.querySelectorAll(".dialog").forEach(d => d.style.visibility = "hidden")
+}
+
 function play_moves(moves) {
     moves && moves.forEach((move, k) => main('play', move, false,
                                              (k === 0) && R.start_moves_tag_letter))
@@ -91,7 +106,7 @@ ipc.on('render', (e, h) => {
 
 ipc.on('update_ui', (e, availability, ui_only, board_type) => {
     R.pausing = availability.resume
-    R.auto_analyzing = availability.stop_auto_analyze
+    R.auto_analyzing = availability.stop_auto
     merge(R, {board_type})
     ui_only || update_goban()
     update_body_color()
@@ -101,6 +116,9 @@ ipc.on('update_ui', (e, availability, ui_only, board_type) => {
     update_title()
     try_thumbnail()
 })
+
+ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog'))
+ipc.on('ask_weaken_percent', (e) => show_dialog('#weaken_percent_dialog'))
 
 ipc.on('slide_in', (e, direction) => slide_in(direction))
 
@@ -282,7 +300,7 @@ function draw_grid(unit, idx2coord, g) {
 function draw_playouts(margin, canvas, g) {
     if (!truep(R.playouts)) {return}
     draw_playouts_text(margin, canvas, g)
-    R.auto_analyzing && draw_playouts_bar(margin, canvas, g)
+    draw_progress(margin, canvas, g)
 }
 
 function draw_playouts_text(margin, canvas, g) {
@@ -293,11 +311,11 @@ function draw_playouts_text(margin, canvas, g) {
     g.restore()
 }
 
-function draw_playouts_bar(margin, canvas, g) {
-    const progress = R.playouts / R.auto_analysis_playouts
+function draw_progress(margin, canvas, g) {
+    if (R.progress < 0) {return}
     g.fillStyle = R.bturn ? BLACK : WHITE
     fill_rect([0, canvas.height - margin / (verbose ? 10 : 24)],
-              [canvas.width * progress, canvas.height], g)
+              [canvas.width * R.progress, canvas.height], g)
 }
 
 function draw_mapping_text(text, at, margin, canvas, g) {
@@ -339,6 +357,14 @@ function set_temporary_board_type(btype, btype2) {
     const b = (R.board_type === btype) ? btype2 : btype
     if (temporary_board_type === b) {return}
     temporary_board_type = b; update_board_type()
+}
+
+let board_type_before_toggle = "double_boards"
+function toggle_raw_board() {
+    [R.board_type, board_type_before_toggle] = (R.board_type === "raw") ?
+        [board_type_before_toggle, "raw"] : ["raw", R.board_type]
+    update_board_type()
+    current_window.lizgoban_board_type = R.board_type; main('update_menu')
 }
 
 /////////////////////////////////////////////////
@@ -394,7 +420,8 @@ main_canvas.addEventListener("wheel", e => {
 
 function draw_stone(h, xy, radius, draw_last_p, g) {
     const [b_color, w_color] = h.displayed_colors ||
-          (h.maybe ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE])
+          (h.maybe ? [MAYBE_BLACK, MAYBE_WHITE] :
+           h.maybe_empty ? [PALE_BLACK, PALE_WHITE] : [BLACK, WHITE])
     g.lineWidth = 1; g.strokeStyle = b_color
     g.fillStyle = h.black ? b_color : w_color
     edged_fill_circle(xy, radius, g)
@@ -477,13 +504,15 @@ function draw_winrate_mapping_line(h, xy, unit, g) {
 function draw_suggestion_order(h, xy, radius, color, g) {
     if (h.data.order >= 9) {return}
     const [x, y] = xy, lizzie = R.lizzie_style
+    const both_champ = (h.data.order + h.data.winrate_order === 0)
+    const either_champ = (h.data.order * h.data.winrate_order === 0)
     const [fontsize, d, w] =
-          (lizzie ? [0.8, 0.3, 0.8] : [1, -0.1, 1]).map(c => c * radius)
+          (lizzie ? [0.8, 0.3, 0.8] :
+           both_champ ? [1.5, -0.5, 1.5] : [1, -0.1, 1]).map(c => c * radius)
     g.save()
     g.fillStyle = BLUE
     lizzie && fill_rect([x + d, y - d - w], [x + d + w, y - d], g)
-    g.fillStyle = lizzie ? WHITE :
-        h.data.order * h.data.winrate_order === 0 ? RED : color
+    g.fillStyle = lizzie ? WHITE : either_champ ? RED : color
     set_font(fontsize, g); g.textAlign = 'center'; g.textBaseline = 'middle'
     g.fillText(h.data.order + 1, x + d + w / 2, y - d - w / 2, w)
     g.restore()
@@ -622,6 +651,7 @@ function draw_winrate_graph(canvas) {
     draw_winrate_graph_curve(sr2coord, g)
     canvas.onmousedown = e => !R.attached && winrate_graph_goto(e, coord2sr)
     canvas.onmousemove = e => !R.attached && (e.buttons === 1) && winrate_graph_goto(e, coord2sr)
+    canvas.onmouseup = e => main('unset_busy')
 }
 
 function draw_winrate_graph_frame(w, h, tics, g) {
@@ -679,7 +709,8 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 
 function winrate_graph_goto(e, coord2sr) {
     const [s, r] = coord2sr(...mouse2coord(e))
-    s >= 0 && main('goto_move_count', Math.max(0, Math.min(s, R.history_length)))
+    s >= 0 && main('busy', 'goto_move_count',
+                   Math.max(0, Math.min(s, R.history_length)))
 }
 
 /////////////////////////////////////////////////
@@ -844,11 +875,15 @@ function set_canvas_size(canvas, width, height) {
 
 document.onkeydown = e => {
     const key = (e.ctrlKey ? 'C-' : '') + e.key
-    if (e.target.id === "auto_analysis_playouts" && key === "Enter") {
-        toggle_auto_analyze(); return
+    const escape = (key === "Escape" || key === "C-[")
+    if (escape) {hide_dialog()}
+    switch (key === "Enter" && e.target.id) {
+    case "auto_analysis_playouts": toggle_auto_analyze(); return
+    case "auto_play_sec": start_auto_play(); return
+    case "weaken_percent": set_weaken_percent(); return
     }
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {
-        (key === "Escape" || key === "C-[") && e.target.blur(); return
+        escape && e.target.blur(); return
     }
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     if (to_i(key) > 0) {f(set_keyboard_moves_maybe, to_i(key) - 1)}
@@ -863,17 +898,21 @@ document.onkeydown = e => {
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     switch (key) {
-    case "C-c": m('copy_sgf_to_clipboard'); break;
-    case "z": f(set_temporary_board_type, "raw", "suggest"); break;
-    case "x": f(set_temporary_board_type, "winrate_only", "suggest"); break;
-    case " ": m('toggle_ponder'); break;
+    case "C-c": m('copy_sgf_to_clipboard'); return
+    case "z": f(set_temporary_board_type, "raw", "suggest"); return
+    case "x": f(set_temporary_board_type, "winrate_only", "suggest"); return
+    case " ": m('toggle_pause'); return
+    case "Z": f(toggle_raw_board); return
     }
+    const busy = (...a) => m('busy', ...a)
     switch (!R.attached && key) {
     case "C-v": m('paste_sgf_from_clipboard'); break;
     case "C-x": m('cut_sequence'); break;
     case "C-w": m('close_window_or_cut_sequence'); break;
-    case "ArrowLeft": case "ArrowUp": m('undo_ntimes', e.shiftKey ? 15 : 1); break;
-    case "ArrowRight": case "ArrowDown": m('redo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "ArrowLeft": case "ArrowUp":
+        busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "ArrowRight": case "ArrowDown":
+        busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
     case "[": m('previous_sequence'); break;
     case "]": m('next_sequence'); break;
     case "p": m('pass'); break;
@@ -881,7 +920,7 @@ document.onkeydown = e => {
     case "`": f(play_it, false, true); break;
     case "Tab": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
         break;
-    case "Backspace": case "Delete": m('explicit_undo'); break;
+    case "Backspace": case "Delete": busy('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
     case "a": f(toggle_auto_analyze_playouts); break;
@@ -892,8 +931,9 @@ document.onkeydown = e => {
 document.onkeyup = e => {
     reset_keyboard_moves(); reset_keyboard_tag()
     switch (e.key) {
-    case "z": case "x": set_temporary_board_type(false); break;
+    case "z": case "x": set_temporary_board_type(false); return
     }
+    main('unset_busy')
 }
 
 function set_keyboard_moves_maybe(n) {
@@ -933,7 +973,7 @@ function update_button_etc(availability) {
     f('pause', 'pause play_best play_best_x5'); f('resume')
     f('bturn'); f('wturn'); f('auto_analyze')
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_playouts')
-    f('stop_auto_analyze')
+    f('stop_auto')
     f('normal_ui'); f('simple_ui'); f('trial')
 }
 

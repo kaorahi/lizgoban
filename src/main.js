@@ -22,10 +22,11 @@ const electron = require('electron')
 const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 
 // leelaz
-const leelaz = require('./engine.js')
+const {create_leelaz} = require('./engine.js')
+let leelaz = leelaz_for_black = create_leelaz(), leelaz_for_white = null
 
 // util
-const {to_i, to_f, xor, truep, clone, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
+const {to_i, to_f, xor, truep, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -38,7 +39,9 @@ let history = create_history()
 let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
 let auto_analysis_playouts = Infinity, play_best_count = 0
 const simple_ui = false
-let lizzie_style = config.get('lizzie_style', true)
+let lizzie_style = config.get('lizzie_style', false)
+let auto_play_sec = 0, weaken_percent = 0
+let pausing = false, busy = false
 
 // renderer state
 // (cf.) "set_and_render" in this file
@@ -86,7 +89,10 @@ app.on('ready', () => {
     leelaz.start(...leelaz_start_args()); update_menu(); new_window('double_boards')
 })
 app.on('window-all-closed', app.quit)
-app.on('quit', leelaz.kill)
+app.on('quit', () => each_leelaz(z => z.kill()))
+function each_leelaz(f) {
+    [leelaz_for_black, leelaz_for_white].forEach(z => z && f(z))
+}
 
 function renderer(channel, ...args) {
     // Caution [2018-08-08]
@@ -99,18 +105,25 @@ function renderer(channel, ...args) {
                                                       win.lizgoban_board_type))
 }
 
-function leelaz_start_args() {
-    return [option.leelaz_command, option.leelaz_args, option.analyze_interval_centisec,
+function leelaz_start_args(weight_file) {
+    const leelaz_args = option.leelaz_args.slice()
+    const weight_pos = leelaz_args.findIndex(z => z === "-w" || z === "--weights")
+    weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
+    return [option.leelaz_command, leelaz_args, option.analyze_interval_centisec,
             board_handler, suggest_handler, auto_restart]
 }
 
 /////////////////////////////////////////////////
 // from renderer
 
+// normal commands
+
 const api = {
-    restart, new_window, init_from_renderer, toggle_ponder, toggle_sabaki,
+    restart, new_window, init_from_renderer, toggle_sabaki,
+    toggle_pause, update_menu,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
-    goto_move_count, toggle_auto_analyze, play_best, stop_play_best,
+    goto_move_count, toggle_auto_analyze, play_best, auto_play, stop_auto,
+    set_weaken_percent,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
@@ -118,19 +131,31 @@ const api = {
     send_to_leelaz: leelaz.send_to_leelaz,
 }
 
-ipc.on('close_window_or_cut_sequence',
-       e => get_windows().forEach(win => (win.webContents === e.sender) &&
-                                  close_window_or_cut_sequence(win)))
-
-function api_handler(channel, handler) {
+function api_handler(channel, handler, busy) {
     return (e, ...args) => {
-        channel !== 'toggle_auto_analyze' && stop_auto_analyze()
-        channel !== 'play_best' && stop_play_best()
+        channel === 'toggle_auto_analyze' || stop_auto_analyze()
+        channel === 'play_best' || stop_play_best()
+        set_or_unset_busy(busy)
         handler(...args)
     }
 }
 
 each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(channel, handler)))
+
+// special commands
+
+function cached(f) {
+    let cache = {}; return key => cache[key] || (cache[key] = f(key))
+}
+const busy_handler_for =
+      cached(subchannel => api_handler(subchannel, api[subchannel], true))
+ipc.on('busy', (e, subchannel, ...args) => busy_handler_for(subchannel)(e, ...args))
+
+ipc.on('unset_busy', e => unset_busy())
+
+ipc.on('close_window_or_cut_sequence',
+       e => get_windows().forEach(win => (win.webContents === e.sender) &&
+                                  close_window_or_cut_sequence(win)))
 
 /////////////////////////////////////////////////
 // action
@@ -175,19 +200,50 @@ function redo_to_end() {redo_ntimes(Infinity)}
 
 // util
 function set_board(history) {
-    leelaz.set_board(history); R.move_count = history.length
+    each_leelaz(z => z.set_board(history)); R.move_count = history.length
     R.bturn = !(history[history.length - 1] || {}).is_black
     R.playouts = null
+    switch_leelaz()
 }
-function goto_move_count(count) {set_board(history.slice(0, Math.max(count, 0)))}
+function goto_move_count(count) {
+    const c = Math.max(0, Math.min(count, history.length))
+    if (c === R.move_count) {return}
+    update_state_to_move_count_tentatively(c)
+    set_board(history.slice(0, c))
+}
+function update_state_to_move_count_tentatively(count) {
+    const forward = (count > R.move_count)
+    const [from, to] = forward ? [R.move_count, count] : [count, R.move_count]
+    const set_stone_at = (move, stone_array, stone) => {
+        // fixme: duplicated with set_stone_at() in renderer.js
+        const [i, j] = move2idx(move); (i >= 0) && (stone_array[i][j] = stone)
+    }
+    history.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
+        stone: true, maybe: forward, maybe_empty: !forward, black: m.is_black
+    }))
+    const next_h = history[R.move_count]
+    const next_s = (next_h && stone_for_history_elem(next_h, R.stones)) || {}
+    next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
+    update_state()
+}
 function future_len() {return history.length - R.move_count}
-function restart(...args) {
+function restart() {restart_with_args()}
+function restart_with_args(...args) {
     leelaz.restart(...args); switch_to_nth_sequence(sequence_cursor)
     stop_auto_analyze(); stop_play_best(); update_ui()
 }
-function start_ponder() {!leelaz.is_pondering() && toggle_ponder()}
-function stop_ponder() {leelaz.is_pondering() && toggle_ponder()}
-function toggle_ponder() {leelaz.toggle_ponder(); update_ui()}
+function pause() {pausing = true; update_ponder_and_ui()}
+function resume() {pausing = false; update_ponder_and_ui()}
+function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
+function set_or_unset_busy(bool) {busy = bool; update_ponder()}
+function set_busy() {set_or_unset_busy(true)}
+function unset_busy() {set_or_unset_busy(false)}
+function update_ponder() {
+    const pondering = !pausing && !busy, b = (leelaz === leelaz_for_black)
+    leelaz_for_black.set_pondering(pondering && b)
+    leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
+}
+function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {leelaz.update()}
 
 // tag letter
@@ -209,7 +265,7 @@ function new_tag() {
 function try_auto_analyze(current_playouts) {
     (current_playouts >= auto_analysis_playouts) &&
         (R.move_count < history.length ? redo() :
-         (stop_ponder(), (auto_analysis_playouts = Infinity), update_ui()))
+         (pause(), (auto_analysis_playouts = Infinity), update_ui()))
 }
 function toggle_auto_analyze(playouts) {
     if (empty(history)) {return}
@@ -219,23 +275,69 @@ function toggle_auto_analyze(playouts) {
 }
 function start_auto_analyze(playouts) {
     future_len() === 0 && goto_move_count(0)
-    start_ponder(); auto_analysis_playouts = playouts; update_ui()
+    resume(); auto_analysis_playouts = playouts; update_ui()
 }
 function stop_auto_analyze() {auto_analysis_playouts = Infinity}
 function auto_analyzing() {return auto_analysis_playouts < Infinity}
+function auto_analysis_progress() {
+    return auto_analyzing() ? R.playouts / auto_analysis_playouts : -1
+}
 stop_auto_analyze()
 
 // play best move(s)
-function play_best(n) {
-    stop_auto_analyze(); play_best_count += (n || 1); try_play_best()
+let last_auto_play_time = 0
+function play_best(n, sec) {
+    auto_play_sec = sec || -1
+    play_best_count === Infinity && (play_best_count = 0)
+    stop_auto_analyze(); play_best_count += (n || 1); last_auto_play_time = Date.now()
+    resume(); try_play_best()
 }
+function auto_play(sec) {play_best(Infinity, sec); update_ui()}
 function try_play_best() {
-    finished_playing_best() ? stop_play_best() :
-        !empty(R.suggest) && (play_best_count--, play(R.suggest[0].move))
+    if (finished_playing_best()) {return}
+    const ready = !empty(R.suggest) &&
+          Date.now() - last_auto_play_time >= auto_play_sec * 1000
+    const move = ready && (weaken_percent > 0 ? weak_move(weaken_percent) : best_move())
+    move === 'pass' ? (stop_play_best(), pause()) :
+        ready && (play_best_count--, (last_auto_play_time = Date.now()), play(move))
+}
+function best_move() {return R.suggest[0].move}
+function weak_move(weaken_percent) {
+    const r = weaken_percent / 100, final_target = 20 * 10**(- r)
+    const flip_maybe = x => R.bturn ? x : 100 - x
+    const current_winrate = flip_maybe(winrate_after(R.move_count))
+    const next_target = current_winrate * (1 - r) + final_target * r
+    return nearest_move_to_winrate(next_target)
+}
+function nearest_move_to_winrate(target_winrate) {
+    const min_by = (f, a) => {
+        const b = a.map(f), m = Math.min(...b); return a[b.indexOf(m)]
+    }
+    const not_too_bad = R.suggest.filter(s => s.winrate >= target_winrate)
+    const selected = min_by(s => Math.abs(s.winrate - target_winrate),
+                  empty(not_too_bad) ? R.suggest : not_too_bad)
+    console.log(`weak_move: target_winrate=${target_winrate} ` +
+                `move=${selected.move} winrate=${selected.winrate} ` +
+                `visits=${selected.visits} order=${selected.order} ` +
+                `winrate_order=${selected.winrate_order}`)
+    return selected.move
 }
 function stop_play_best() {play_best_count = 0}
 function finished_playing_best() {return play_best_count <= 0}
+function auto_play_progress() {
+    return (finished_playing_best() || play_best_count < Infinity) ? -1 :
+        (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
+}
+function ask_auto_play_sec(win) {win.webContents.send('ask_auto_play_sec')}
+function ask_weaken_percent(win) {win.webContents.send('ask_weaken_percent')}
+function set_weaken_percent(p) {weaken_percent = p; update_ui()}
 stop_play_best()
+
+// auto-analyze & auto-play
+function auto_progress() {
+    return Math.max(auto_analysis_progress(), auto_play_progress())
+}
+function stop_auto() {stop_auto_analyze(); stop_play_best(); update_ui()}
 
 // auto-restart
 let last_restart_time = 0
@@ -252,11 +354,8 @@ function auto_restart() {
 // load weight file for leelaz
 function load_weight() {
     const weight_file = select_files('Select weight file for leela zero')[0]
-    const weight_pos =
-          option.leelaz_args.findIndex(z => z === "-w" || z === "--weights")
-    if (!weight_file || weight_pos < 0) {return}
-    option.leelaz_args[weight_pos + 1] = weight_file
-    restart(...leelaz_start_args())
+    weight_file && restart_with_args(...leelaz_start_args(weight_file))
+    return weight_file
 }
 function select_files(title) {
     return files = dialog.showOpenDialog(null, {
@@ -285,7 +384,7 @@ function info() {
     const f = (label, s) => s ?
           `<${label}>\n` + fold_text(JSON.stringify(s), 80, 5) + '\n\n' : ''
     const message =
-          f("option", option) +
+          f("leelaz", leelaz.start_args()) +
           f("sgf file", history.sgf_file) +
           f("sgf", history.sgf_str)
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
@@ -304,7 +403,8 @@ function set_renderer_state(...args) {
     const winrate_history = winrate_from_history(history)
     const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
           start_moves_tag_letter
-    merge(R, {winrate_history, auto_analysis_playouts, lizzie_style,
+    const progress = auto_progress()
+    merge(R, {winrate_history, auto_analysis_playouts, lizzie_style, progress,
               tag_letters, start_moves_tag_letter}, ...args)
 }
 function set_and_render(...args) {set_renderer_state(...args); renderer('render', R)}
@@ -523,13 +623,13 @@ function availability() {
         redo: future_len() > 0,
         attach: !attached,
         detach: attached,
-        pause: leelaz.is_pondering(),
-        resume: !leelaz.is_pondering(),
+        pause: !pausing,
+        resume: pausing,
         bturn: R.bturn,
         wturn: !R.bturn,
         auto_analyze: !empty(history),
-        start_auto_analyze: !auto_analyzing(),
-        stop_auto_analyze: auto_analyzing(),
+        start_auto_analyze: !auto_analyzing() && finished_playing_best(),
+        stop_auto: auto_progress() >= 0,
         simple_ui: simple_ui, normal_ui: !simple_ui,
         trial: history.trial,
     }
@@ -658,15 +758,50 @@ function attach_to_sabaki() {
     console.log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_history()
     start_sabaki(sgf_file.name + '#' + R.move_count)
-    attached = true; leelaz.update()
+    attached = true; leelaz.update(); update_state()
 }
 
 function detach_from_sabaki() {
     if (!attached || !has_sabaki) {return}
-    stop_sabaki(); attached = false; leelaz.update()
+    stop_sabaki(); attached = false; leelaz.update(); update_state()
 }
 
 function toggle_sabaki() {attached ? detach_from_sabaki() : attach_to_sabaki()}
+
+/////////////////////////////////////////////////
+// another leelaz for white (experimental)
+
+// fixme: global variable "option" is tainted
+
+function load_leelaz_for_white() {
+    const old_leelaz = leelaz
+    leelaz = leelaz_for_white = create_leelaz(); leelaz_for_white.activate(false)
+    load_weight() || (leelaz_for_white.kill(), (leelaz_for_white = null))
+    leelaz = leelaz_for_black; switch_leelaz(); update_state()
+}
+
+function unload_leelaz_for_white() {
+    switch_to_another_leelaz(leelaz_for_black)
+    leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
+    update_state()
+}
+
+function switch_leelaz() {
+    switch_to_another_leelaz(R.bturn ? leelaz_for_black : leelaz_for_white)
+}
+
+function switch_to_another_leelaz(next_leelaz) {
+    next_leelaz && next_leelaz !== leelaz &&
+        (leelaz = next_leelaz) && update_ponder()
+}
+
+function swap_leelaz_for_black_and_white() {
+    if (!leelaz_for_white) {return}
+    const old_black = leelaz_for_black
+    leelaz_for_black = leelaz_for_white; leelaz_for_white = old_black
+    leelaz_for_black.activate(true); leelaz_for_white.activate(false)
+    switch_leelaz(); update_ui()
+}
 
 /////////////////////////////////////////////////
 // menu
@@ -681,7 +816,8 @@ function menu_template(win) {
     const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
     const item = (label, accelerator, click, standalone_only, enabled) =>
           !(standalone_only && attached) && {
-              label, accelerator, click, enabled: enabled || (enabled === undefined)
+              label, accelerator, click: (...a) => {stop_auto(); click(...a)},
+              enabled: enabled || (enabled === undefined)
           }
     const sep = {type: 'separator'}
     const file_menu = menu('File', [
@@ -693,7 +829,7 @@ function menu_template(win) {
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
         item('Reset', 'CmdOrCtrl+R', restart),
-        item('Load network weights', undefined, load_weight),
+        item('Load network weights', 'Shift+L', load_weight),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
@@ -723,6 +859,14 @@ function menu_template(win) {
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
+        item('Auto play', 'Shift+A', (this_item, win) => ask_auto_play_sec(win), true),
+        {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
+         type: 'checkbox', checked: !!leelaz_for_white,
+         click: leelaz_for_white ? unload_leelaz_for_white : load_leelaz_for_white},
+        item('Swap black/white weights', 'Shift+S', swap_leelaz_for_black_and_white,
+             false, !!leelaz_for_white),
+        item(`Weaken (${weaken_percent}%)`, 'Shift+W',
+             (this_item, win) => ask_weaken_percent(win), true),
         item('Info', 'CmdOrCtrl+I', info),
         {role: 'toggleDevTools'},
     ])

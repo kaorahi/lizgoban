@@ -5,7 +5,7 @@
 // move: "A19" = left top, "T19" = right top
 // sgfpos: "aa" = left top, "sa" = right top
 
-const {to_i, to_f, xor, truep, clone, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
+const {to_i, to_f, xor, truep, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
       = require('./util.js')
 
 /////////////////////////////////////////////////

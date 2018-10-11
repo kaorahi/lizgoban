@@ -7,7 +7,7 @@ E.to_f = x => (x - 0)
 E.xor = (a, b) => (!a === !!b)
 E.truep = x => (x || x === 0 || x === '')
 // E.sum = a => a.reduce((r,x) => r + x, 0)
-E.clone = x => JSON.parse(JSON.stringify(x))
+// E.clone = x => JSON.parse(JSON.stringify(x))
 E.merge = Object.assign
 E.empty = a => !a || (a.length === 0)
 E.last = a => a[a.length - 1]

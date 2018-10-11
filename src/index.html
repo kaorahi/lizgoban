@@ -24,6 +24,15 @@
   border: solid 0vw green; position: absolute; left: 0%; z-index: 8;
  }
  #preview.show {width: 40vw; border-width: 3vw;}
+ .dialog {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(255, 255, 255, 0.5); visibility: hidden;
+  display: flex; justify-content: center; align-items: center;
+ }
+ .dialog p {
+  color: white; background-color: #444; padding: 3em; z-index: 9; position: relative;
+ }
+ .close_button {position: absolute; top: 0px; right: 0px;}
  @media (max-aspect-ratio: 13/10) {
   body > * {width: 96vmin; display: block; margin: 1.5vmin; font-size: 3vw;}
   .thumbbox {display: inline-block;}
@@ -119,18 +128,18 @@
 
 <div id="normal_ui" class="controller_row">
 <span id='pause'>
-<input type='button' onclick="main('toggle_ponder')" value="pause">
+<input type='button' onclick="main('toggle_pause')" value="pause">
 </span>
 <span id='resume'>
-<input type='button' onclick="main('toggle_ponder')" value="resume" style="color: red;">
+<input type='button' onclick="main('toggle_pause')" value="resume" style="color: red;">
 </span>
 <!-------- begin hide_when_attached2 ----------->
 <span id="hide_when_attached2">
 <span id='start_auto_analyze'>
 <input type='button' id='auto_analyze' onclick="toggle_auto_analyze()" value="auto analysis">
 </span>
-<span id='stop_auto_analyze'>
-<input type='button' style='color: red' onclick="toggle_auto_analyze()" value="stop auto">
+<span id='stop_auto'>
+<input type='button' style='color: red' onclick="stop_auto()" value="stop auto">
 </span>
 (playouts
 <input type='number' id='auto_analysis_playouts' value='1' min='1' style='width: 4em'>
@@ -146,6 +155,25 @@
 
 </div>
 <!-------- end rest_div ----------->
+
+<div class='dialog' id='auto_play_sec_dialog'>
+ <p>
+  Auto play seconds:
+  <input type='number' id='auto_play_sec' value='1' min='1' style='width: 4em'>
+  <input type='button' onclick="start_auto_play()" value=" ok ">
+  <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
+ </p>
+</div>
+
+<div class='dialog' id='weaken_percent_dialog'>
+ <p>
+  Weaken Leela Zero:
+  <input type='number' id='weaken_percent' value='20' min='0' max='100' style='width: 4em'>
+  % <input type='button' onclick="set_weaken_percent()" value=" ok "><br>
+  (0% = best move)
+  <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
+ </p>
+</div>
 
 </body>
 </html>
