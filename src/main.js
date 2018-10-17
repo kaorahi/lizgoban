@@ -126,9 +126,10 @@ function leelaz_weight_option_pos_in_args() {
 
 // normal commands
 
-const api = {
+const simple_api = {unset_busy, update_menu}
+const api = merge({}, simple_api, {
     restart, new_window, init_from_renderer, toggle_sabaki,
-    toggle_pause, update_menu,
+    toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     goto_move_count, toggle_auto_analyze, play_best, auto_play, stop_auto,
     set_weaken_percent,
@@ -137,7 +138,7 @@ const api = {
     help,
     // for debug
     send_to_leelaz: leelaz.send_to_leelaz,
-}
+})
 
 function api_handler(channel, handler, busy) {
     return (e, ...args) => {
@@ -148,7 +149,11 @@ function api_handler(channel, handler, busy) {
     }
 }
 
-each_key_value(api, (channel, handler) => ipc.on(channel, api_handler(channel, handler)))
+each_key_value(api, (channel, handler) => {
+    const simple = Object.keys(simple_api).indexOf(channel) >= 0
+    ipc.on(channel,
+           simple ? (e, ...a) => handler(...a) : api_handler(channel, handler))
+})
 
 // special commands
 
@@ -158,8 +163,6 @@ function cached(f) {
 const busy_handler_for =
       cached(subchannel => api_handler(subchannel, api[subchannel], true))
 ipc.on('busy', (e, subchannel, ...args) => busy_handler_for(subchannel)(e, ...args))
-
-ipc.on('unset_busy', e => unset_busy())
 
 ipc.on('close_window_or_cut_sequence',
        e => get_windows().forEach(win => (win.webContents === e.sender) &&
