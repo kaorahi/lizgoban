@@ -793,7 +793,9 @@ function detach_from_sabaki() {
     stop_sabaki(); attached = false; leelaz.update(); update_state()
 }
 
-function toggle_sabaki() {attached ? detach_from_sabaki() : attach_to_sabaki()}
+function toggle_sabaki() {
+    stop_auto(); attached ? detach_from_sabaki() : attach_to_sabaki()
+}
 
 /////////////////////////////////////////////////
 // another leelaz for white (experimental)
@@ -841,9 +843,10 @@ function update_menu() {
 
 function menu_template(win) {
     const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
+    const stop_auto_and = f => ((...a) => {stop_auto(); f(...a)})
     const item = (label, accelerator, click, standalone_only, enabled) =>
           !(standalone_only && attached) && {
-              label, accelerator, click: (...a) => {stop_auto(); click(...a)},
+              label, accelerator, click: stop_auto_and(click),
               enabled: enabled || (enabled === undefined)
           }
     const sep = {type: 'separator'}
@@ -889,7 +892,8 @@ function menu_template(win) {
         item('Auto play', 'Shift+A', (this_item, win) => ask_auto_play_sec(win), true),
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
          type: 'checkbox', checked: !!leelaz_for_white,
-         click: leelaz_for_white ? unload_leelaz_for_white : load_leelaz_for_white},
+         click: stop_auto_and(leelaz_for_white ?
+                              unload_leelaz_for_white : load_leelaz_for_white)},
         leelaz_for_white ?
             item('Swap black/white weights', 'Shift+S',
                  swap_leelaz_for_black_and_white) :
