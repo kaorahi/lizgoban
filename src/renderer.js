@@ -154,7 +154,9 @@ function update_body_color() {
 function update_goban() {
     const btype = current_board_type(), do_nothing = truep
     const draw_raw_unclickable = c => draw_goban(c, null, {draw_last_p: true, read_only: true})
-    const draw_raw_clickable = c => draw_goban(c, null, {draw_playouts_p: true})
+    const draw_raw_clickable = c => draw_goban(c, null, {
+        draw_playouts_p: true, draw_last_p: R.board_type === "raw"
+    })
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_winrate_graph)(winrate_graph_canvas),
                             (s || do_nothing)(sub_canvas),
