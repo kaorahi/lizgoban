@@ -303,11 +303,16 @@ function try_play_best() {
 }
 function best_move() {return R.suggest[0].move}
 function weak_move(weaken_percent) {
-    const r = weaken_percent / 100, initial_target_winrate = 40 * 10**(- r)
-    const target = initial_target_winrate * 2**(- R.move_count / 100)
+    // (1) Converge winrate to 0 with move counts
+    // (2) Occasionally play good moves with low probability
+    // (3) Do not play too bad moves
+    const r = Math.max(0, Math.min(weaken_percent / 100, 1))
+    const initial_target_winrate = 40 * 10**(- r)
+    const target = initial_target_winrate * 2**(- R.move_count / 100)  // (1)
     const flip_maybe = x => R.bturn ? x : 100 - x
     const current_winrate = flip_maybe(winrate_after(R.move_count))
-    const next_target = current_winrate * (1 - r) + target * r
+    const u = Math.random()**(1 - r) * r  // (2)
+    const next_target = current_winrate * (1 - u) + target * u  // (3)
     return nearest_move_to_winrate(next_target)
 }
 function nearest_move_to_winrate(target_winrate) {
