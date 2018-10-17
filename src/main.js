@@ -383,8 +383,11 @@ function help() {
 function info() {
     const f = (label, s) => s ?
           `<${label}>\n` + fold_text(JSON.stringify(s), 80, 5) + '\n\n' : ''
-    const message =
-          f("leelaz", leelaz.start_args()) +
+    const lz = leelaz_for_white ?
+          (f("leelaz (black)", leelaz_for_black.start_args()) +
+           f("leelaz (white)", leelaz_for_white.start_args())) :
+          f("leelaz", leelaz.start_args())
+    const message = lz +
           f("sgf file", history.sgf_file) +
           f("sgf", history.sgf_str)
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
