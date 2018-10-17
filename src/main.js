@@ -9,7 +9,8 @@ const option = {
     leelaz_args: ["-g", "-w", __dirname + "/../external/network.gz"],
     analyze_interval_centisec: 10,
     sabaki_command: __dirname + '/../external/sabaki',
-    minimum_auto_restart_millisec: 5000
+    minimum_auto_restart_millisec: 5000,
+    weight_dir: undefined,
 }
 process.argv.forEach((x, i, a) => (x === "-j") && Object.assign(option, JSON.parse(a[i + 1])))
 console.log("option: " + JSON.stringify(option))
@@ -368,7 +369,7 @@ function load_weight() {
 function select_files(title) {
     return files = dialog.showOpenDialog(null, {
         properties: ['openFile'], title: title,
-        // defaultPath: '.',
+        defaultPath: option.weight_dir,
     }) || []
 }
 
