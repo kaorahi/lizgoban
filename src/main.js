@@ -303,10 +303,11 @@ function try_play_best() {
 }
 function best_move() {return R.suggest[0].move}
 function weak_move(weaken_percent) {
-    const r = weaken_percent / 100, final_target = 20 * 10**(- r)
+    const r = weaken_percent / 100, initial_target_winrate = 40 * 10**(- r)
+    const target = initial_target_winrate * 2**(- R.move_count / 100)
     const flip_maybe = x => R.bturn ? x : 100 - x
     const current_winrate = flip_maybe(winrate_after(R.move_count))
-    const next_target = current_winrate * (1 - r) + final_target * r
+    const next_target = current_winrate * (1 - r) + target * r
     return nearest_move_to_winrate(next_target)
 }
 function nearest_move_to_winrate(target_winrate) {
