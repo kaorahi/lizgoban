@@ -108,10 +108,17 @@ function renderer(channel, ...args) {
 
 function leelaz_start_args(weight_file) {
     const leelaz_args = option.leelaz_args.slice()
-    const weight_pos = leelaz_args.findIndex(z => z === "-w" || z === "--weights")
+    const weight_pos = leelaz_weight_option_pos_in_args()
     weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
     return [option.leelaz_command, leelaz_args, option.analyze_interval_centisec,
             board_handler, suggest_handler, auto_restart]
+}
+function leelaz_weight_file() {
+    const k = leelaz_weight_option_pos_in_args(), args = leelaz.start_args()
+    return (k >= 0) && args && args[1][k + 1]
+}
+function leelaz_weight_option_pos_in_args() {
+    return option.leelaz_args.findIndex(z => z === "-w" || z === "--weights")
 }
 
 /////////////////////////////////////////////////
@@ -361,9 +368,16 @@ function auto_restart() {
 }
 
 // load weight file for leelaz
+let previous_weight_file = null
 function load_weight() {
-    const weight_file = select_files('Select weight file for leela zero')[0]
-    weight_file && restart_with_args(...leelaz_start_args(weight_file))
+    return load_weight_file(select_files('Select weight file for leela zero')[0])
+}
+function load_weight_file(weight_file) {
+    const current_weight_file = leelaz_weight_file()
+    if (!weight_file) {return false}
+    weight_file !== current_weight_file &&
+        (previous_weight_file = current_weight_file)
+    restart_with_args(...leelaz_start_args(weight_file))
     return weight_file
 }
 function select_files(title) {
@@ -372,6 +386,7 @@ function select_files(title) {
         defaultPath: option.weight_dir,
     }) || []
 }
+function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 
 // misc.
 function toggle_trial() {history.trial = !history.trial; update_state()}
@@ -875,8 +890,11 @@ function menu_template(win) {
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
          type: 'checkbox', checked: !!leelaz_for_white,
          click: leelaz_for_white ? unload_leelaz_for_white : load_leelaz_for_white},
-        item('Swap black/white weights', 'Shift+S', swap_leelaz_for_black_and_white,
-             false, !!leelaz_for_white),
+        leelaz_for_white ?
+            item('Swap black/white weights', 'Shift+S',
+                 swap_leelaz_for_black_and_white) :
+            item('Switch to previous weights', 'Shift+S',
+                 switch_to_previous_weight, false, !!previous_weight_file),
         item(`Weaken (${weakening_summary()})`, 'Shift+W',
              (this_item, win) => ask_weaken_percent(win), true),
         item('Info', 'CmdOrCtrl+I', info),
