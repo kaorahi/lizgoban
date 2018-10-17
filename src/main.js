@@ -40,7 +40,7 @@ let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
 let auto_analysis_playouts = Infinity, play_best_count = 0
 const simple_ui = false
 let lizzie_style = config.get('lizzie_style', false)
-let auto_play_sec = 0, weaken_percent = 0
+let auto_play_sec = 0, weaken_percent = 0, weaken_randomly = true
 let pausing = false, busy = false
 
 // renderer state
@@ -311,7 +311,7 @@ function weak_move(weaken_percent) {
     const target = initial_target_winrate * 2**(- R.move_count / 100)  // (1)
     const flip_maybe = x => R.bturn ? x : 100 - x
     const current_winrate = flip_maybe(winrate_after(R.move_count))
-    const u = Math.random()**(1 - r) * r  // (2)
+    const u = (weaken_randomly ? Math.random()**(1 - r) : 1) * r  // (2)
     const next_target = current_winrate * (1 - u) + target * u  // (3)
     return nearest_move_to_winrate(next_target)
 }
@@ -336,7 +336,9 @@ function auto_play_progress() {
 }
 function ask_auto_play_sec(win) {win.webContents.send('ask_auto_play_sec')}
 function ask_weaken_percent(win) {win.webContents.send('ask_weaken_percent')}
-function set_weaken_percent(p) {weaken_percent = p; update_ui()}
+function set_weaken_percent(p, randomly) {
+    weaken_percent = p; weaken_randomly = randomly, update_ui()
+}
 stop_play_best()
 
 // auto-analyze & auto-play
@@ -874,7 +876,7 @@ function menu_template(win) {
          click: leelaz_for_white ? unload_leelaz_for_white : load_leelaz_for_white},
         item('Swap black/white weights', 'Shift+S', swap_leelaz_for_black_and_white,
              false, !!leelaz_for_white),
-        item(`Weaken (${weaken_percent}%)`, 'Shift+W',
+        item(`Weaken (${weakening_summary()})`, 'Shift+W',
              (this_item, win) => ask_weaken_percent(win), true),
         item('Info', 'CmdOrCtrl+I', info),
         {role: 'toggleDevTools'},
@@ -888,4 +890,9 @@ function menu_template(win) {
 function board_type_menu_item(label, btype, win) {
     return {label, type: 'radio', checked: win.lizgoban_board_type === btype,
             click: () => {win.lizgoban_board_type = btype; update_ui()}}
+}
+
+function weakening_summary() {
+    return `${weaken_percent}%` +
+        `${weaken_percent <= 0 ? "" : weaken_randomly ? " randomly" : " always"}`
 }

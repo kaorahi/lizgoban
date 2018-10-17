@@ -77,7 +77,10 @@ function start_auto_play() {
 }
 
 function set_weaken_percent() {
-    main('set_weaken_percent', to_f(Q('#weaken_percent').value)); hide_dialog()
+    const mode = Q('#weaken_randomly').value
+    main('set_weaken_percent', mode === 'off' ? 0 : to_f(Q('#weaken_percent').value),
+         mode === 'randomly')
+    hide_dialog()
 }
 
 function show_dialog(name) {

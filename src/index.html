@@ -32,7 +32,9 @@
  .dialog p {
   color: white; background-color: #444; padding: 3em; z-index: 9; position: relative;
  }
+ #weaken_percent_part[data-mode="off"] {opacity: 0.5;}
  .close_button {position: absolute; top: 0px; right: 0px;}
+ .ok_button {display: block; text-align: center;}
  @media (max-aspect-ratio: 13/10) {
   body > * {width: 96vmin; display: block; margin: 1.5vmin; font-size: 3vw;}
   .thumbbox {display: inline-block;}
@@ -167,11 +169,22 @@
 
 <div class='dialog' id='weaken_percent_dialog'>
  <p>
-  Weaken Leela Zero:
-  <input type='number' id='weaken_percent' value='50' min='0' max='100' style='width: 4em'>
-  % <input type='button' onclick="set_weaken_percent()" value=" ok "><br>
+  Weaken Leela Zero:<br>
+  <select id="weaken_randomly"
+   onchange="Q('#weaken_percent_part').dataset.mode = Q('#weaken_randomly').value">
+   <option value="always">Always play bad moves</option>
+   <option value="randomly" selected="selected">Randomly play good/bad moves</option>
+   <option value="off">Off (Play the best move)</option>
+  </select><br><br>
+  <span id="weaken_percent_part">
+  Badness:
+  <input type='number' id='weaken_percent' value='50' min='0' max='100' style='width: 4em'>%
   (0% = best move)
-  <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
+  </span><br><br>
+  <span class="ok_button">
+   <input type='button' onclick="set_weaken_percent()" value=" ok ">
+  </span>
+ <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
  </p>
 </div>
 
