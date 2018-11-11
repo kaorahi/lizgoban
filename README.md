@@ -34,9 +34,8 @@ as subwindows.
 To try it (stand alone):
 
 1. Install [Node.js](https://nodejs.org/) and type "npm install electron electron-config tmp @sabaki/sgf".
-2. Build unreleased Leela Zero in "next" branch (or copy leelaz.exe in Lizzie-0.5 for Windows).
-3. Put Leela Zero binary as "external/leelaz" together with its network weight as "external/network.gz".
-4. Type "npx electron src".
+2. Put Leela Zero binary (version 0.16 or later) as "external/leelaz" together with its network weight as "external/network.gz".
+3. Type "npx electron src".
 
 To set options for leelaz (experimental):
 
