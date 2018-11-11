@@ -41,7 +41,6 @@ const R = {
 }
 let temporary_board_type = false
 let hovered_suggest = null, keyboard_moves = [], keyboard_tag_data = {}
-let verbose = false
 let thumbnails = []
 
 // handler
@@ -310,7 +309,7 @@ function draw_playouts(margin, canvas, g) {
 
 function draw_playouts_text(margin, canvas, g) {
     g.save()
-    g.fillStyle = verbose ? BLACK : PALE_BLACK; set_font(margin / 3, g)
+    g.fillStyle = BLACK; set_font(margin / 3, g)
     g.textAlign = 'left'; g.textBaseline = 'middle'
     g.fillText(`  playouts = ${R.playouts}`, 0, margin / 4)
     g.restore()
@@ -319,7 +318,7 @@ function draw_playouts_text(margin, canvas, g) {
 function draw_progress(margin, canvas, g) {
     if (R.progress < 0) {return}
     g.fillStyle = R.bturn ? BLACK : WHITE
-    fill_rect([0, canvas.height - margin / (verbose ? 10 : 24)],
+    fill_rect([0, canvas.height - margin / 10],
               [canvas.width * R.progress, canvas.height], g)
 }
 
@@ -383,14 +382,12 @@ function play_here(e, coord2idx) {
 }
 
 function hover_here(e, coord2idx, canvas) {
-    verbose = (canvas === main_canvas)
     const old = canvas.lizgoban_hovered_move
     canvas.lizgoban_hovered_move = mouse2move(e, coord2idx)
     if (canvas.lizgoban_hovered_move != old) {update_goban()}
 }
 
 function hover_off(canvas) {
-    verbose = false
     canvas.lizgoban_hovered_move = undefined; update_goban()
 }
 
@@ -489,8 +486,7 @@ function draw_suggest(h, xy, radius, g) {
         g.fillStyle = h.data.order === 0 ? champ_color : normal_color
         g.fillText(playouts_text, x, next_y , max_width)
     }
-    (verbose || !R.lizzie_style) &&
-        draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
+    draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
 }
 
 function suggest_texts(suggest) {
@@ -501,7 +497,7 @@ function draw_winrate_mapping_line(h, xy, unit, g) {
     const canvas = g.lizgoban_canvas, b_winrate = flip_maybe(h.data.winrate)
     const x1 = canvas.width * b_winrate / 100, y1 = canvas.height, d = unit * 0.3
     const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
-    g.lineWidth = (verbose ? 1.5 : 0.3) / (order * 2 + 1)
+    g.lineWidth = 1.5 / (order * 2 + 1)
     g.strokeStyle = RED
     line(xy, [x1, y1 - d], [x1, y1], g)
 }
@@ -565,8 +561,8 @@ function draw_winrate_bar(canvas) {
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
     draw_winrate_bar_text(w, h, g)
     draw_winrate_bar_suggestions(h, xfor, vline, g)
-    canvas.onmouseenter = e => {verbose = true; update_goban()}
-    canvas.onmouseleave = e => {verbose = false; update_goban()}
+    canvas.onmouseenter = e => {update_goban()}
+    canvas.onmouseleave = e => {update_goban()}
 }
 
 function draw_winrate_bar_text(w, h, g) {
