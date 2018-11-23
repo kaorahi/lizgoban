@@ -559,8 +559,8 @@ function draw_winrate_bar(canvas) {
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
     draw_winrate_bar_tics(b_wr, tics, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
-    draw_winrate_bar_text(w, h, g)
     draw_winrate_bar_suggestions(h, xfor, vline, g)
+    draw_winrate_bar_text(w, h, g)
     canvas.onmouseenter = e => {update_goban()}
     canvas.onmouseleave = e => {update_goban()}
 }
