@@ -235,13 +235,14 @@ function draw_goban_with_variation(canvas, suggest, opts) {
             variation: true, movenums: [k + 1], variation_last: k === variation.length - 1
         })
     })
-    const [winrate_text, playouts_text] = suggest_texts(suggest) || []
-    const mapping_text =
-          winrate_text && (canvas === main_canvas) ?
+    const [winrate_text, playouts_text, prior_text] = suggest_texts(suggest) || []
+    const text = winrate_text && (canvas === main_canvas) ?
           `${winrate_text} (${playouts_text})` : undefined
-    const mapping_text_at = flip_maybe(suggest.winrate)
+    const subtext = text && ` prior = ${prior_text} `
+    const at = flip_maybe(suggest.winrate)
+    const mapping_to_winrate_bar = text && {text, subtext, at}
     draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, mapping_text, mapping_text_at, ...opts})
+               {draw_last_p: true, mapping_to_winrate_bar, ...opts})
 }
 
 function draw_goban_with_principal_variation(canvas) {
@@ -268,7 +269,7 @@ function set_stone_at(move, stone_array, stone) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_playouts_p, read_only,
-           mapping_text, mapping_text_at} = opts || {}
+           mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
@@ -280,7 +281,8 @@ function draw_goban(canvas, stones, opts) {
     // draw
     draw_grid(unit, idx2coord, g)
     draw_playouts_p && draw_playouts(margin, canvas, g)
-    mapping_text && draw_mapping_text(mapping_text, mapping_text_at, margin, canvas, g)
+    mapping_to_winrate_bar &&
+        draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     draw_on_board(stones || R.stones,
                   draw_last_p, draw_next_p, unit, idx2coord, g)
@@ -322,10 +324,17 @@ function draw_progress(margin, canvas, g) {
               [canvas.width * R.progress, canvas.height], g)
 }
 
-function draw_mapping_text(text, at, margin, canvas, g) {
+function draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g) {
+    const {text, subtext, at} = mapping_to_winrate_bar
+    const y = canvas.height - margin / 6
     g.fillStyle = RED; set_font(margin / 3, g)
+    // main text
     g.textAlign = at < 10 ? 'left' : at < 90 ? 'center' : 'right'
-    g.fillText(text, canvas.width * at / 100, canvas.height - margin / 6)
+    g.fillText(text, canvas.width * at / 100, y)
+    // subtext
+    const [sub_at, sub_align] = at > 50 ? [0, 'left'] : [100, 'right']
+    g.fillStyle = 'rgba(255,0,0,0.5)'; g.textAlign = sub_align
+    g.fillText(subtext, canvas.width * sub_at / 100, y)
 }
 
 function draw_cursor(hovered_move, unit, idx2coord, g) {
@@ -490,7 +499,8 @@ function draw_suggest(h, xy, radius, g) {
 }
 
 function suggest_texts(suggest) {
-    return ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits)]
+    return ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits),
+            ('' + suggest.prior).slice(0, 5)]
 }
 
 function draw_winrate_mapping_line(h, xy, unit, g) {
