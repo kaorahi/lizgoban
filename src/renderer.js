@@ -620,12 +620,13 @@ function draw_winrate_bar_suggestions(h, xfor, vline, g) {
         [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
     }
     R.suggest.forEach(s => {
-        const {move, visits, winrate} = s
+        const {move, visits, winrate, prior} = s
         // fan
         g.lineWidth = 1; g.strokeStyle = BLUE
         g.fillStyle = (s === hovered_suggest) ? ORANGE :
             is_next_move(move) ? YELLOW : PALE_BLUE
-        const x = xfor(flip_maybe(winrate)), y = h / 2
+        const x = xfor(flip_maybe(winrate))
+        const p_margin = 0.2, y = ((1 - p_margin) * (1 - prior) + p_margin * prior) * h
         const radius = Math.sqrt(visits / R.playouts) * h
         const degs = R.bturn ? [150, 210] : [-30, 30]
         edged_fill_fan([x, y], radius, degs, g)

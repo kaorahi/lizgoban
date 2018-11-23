@@ -167,6 +167,7 @@ function create_leelaz () {
         const [a, b] = s.split(/pv/), h = array2hash(a.trim().split(/\s+/))
         h.pv = b.trim().split(/\s+/)
         h.visits = to_i(h.visits); h.order = to_i(h.order); h.winrate = to_f(h.winrate) / 100
+        h.prior = to_f(h.prior) / 10000
         return h
     }
 
