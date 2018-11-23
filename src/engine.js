@@ -159,10 +159,9 @@ function create_leelaz () {
     }
 
     // (sample of leelaz output for "lz-analyze 10")
-    // info move D16 visits 3 winrate 4665 order 0 pv D16 D4 Q16 info move D4 visits 3 winrate 4658 order 1 pv D4 Q4 D16 info move Q16 visits 2 winrate 4673 order 2 pv Q16 Q4
-
+    // info move D16 visits 23 winrate 4668 prior 2171 order 0 pv D16 Q16 D4 Q3 R5 R4 Q5 O3 info move D4 visits 22 winrate 4670 prior 2198 order 1 pv D4 Q4 D16 Q17 R15 R16 Q15 O17 info move Q16 visits 21 winrate 4663 prior 2147 order 2 pv Q16 D16 Q4 D3 C5 C4 D5 F3
     // (sample with "pass")
-    // info move pass visits 2 winrate 683 order 159 pv pass Q7
+    // info move pass visits 65 winrate 0 prior 340 order 0 pv pass H4 pass H5 pass G3 pass G1 pass
 
     const suggest_parser = (s) => {
         const [a, b] = s.split(/pv/), h = array2hash(a.trim().split(/\s+/))
