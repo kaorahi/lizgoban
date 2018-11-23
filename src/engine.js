@@ -158,7 +158,7 @@ function create_leelaz () {
         the_suggest_handler({suggest, playouts, b_winrate, min_winrate, max_winrate})
     }
 
-    // (sample of leelaz output for "lz-analize 10")
+    // (sample of leelaz output for "lz-analyze 10")
     // info move D16 visits 3 winrate 4665 order 0 pv D16 D4 Q16 info move D4 visits 3 winrate 4658 order 1 pv D4 Q4 D16 info move Q16 visits 2 winrate 4673 order 2 pv Q16 Q4
 
     // (sample with "pass")
