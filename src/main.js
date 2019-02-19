@@ -801,9 +801,20 @@ function toggle_sabaki() {
 
 // fixme: global variable "option" is tainted
 
+function load_leelaz_for_black() {
+    with_temporary_leelaz(leelaz_for_black, load_weight)
+}
+
 function load_leelaz_for_white() {
-    leelaz = leelaz_for_white = create_leelaz(); leelaz_for_white.activate(false)
-    load_weight() || (leelaz_for_white.kill(), (leelaz_for_white = null))
+    const proc = () => {
+        leelaz_for_white.activate(false)
+        load_weight() || (leelaz_for_white.kill(), (leelaz_for_white = null))
+    }
+    with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
+}
+
+function with_temporary_leelaz(leelaz_for_black_or_white, proc) {
+    leelaz = leelaz_for_black_or_white; proc()
     leelaz = leelaz_for_black; switch_leelaz(); update_state()
 }
 
@@ -857,7 +868,9 @@ function menu_template(win) {
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
         item('Reset', 'CmdOrCtrl+R', restart),
-        item('Load network weights', 'Shift+L', load_weight),
+        leelaz_for_white ?
+            item('Load weights for black', 'Shift+L', load_leelaz_for_black) :
+            item('Load network weights', 'Shift+L', load_weight),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
