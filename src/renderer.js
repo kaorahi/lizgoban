@@ -881,7 +881,10 @@ function set_canvas_size(canvas, width, height) {
 /////////////////////////////////////////////////
 // keyboard operation
 
+let keydown = false
+
 document.onkeydown = e => {
+    const repeated_keydown = keydown; keydown = true
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const escape = (key === "Escape" || key === "C-[")
     if (escape) {hide_dialog()}
@@ -901,7 +904,8 @@ document.onkeydown = e => {
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     if (to_i(key) > 0) {
-        (R.board_type === "raw" && current_board_type() === "raw" && !R.attached) ?
+        (R.board_type === "raw" && current_board_type() === "raw" && !R.attached
+         && !repeated_keydown) ?
             m('play_best', 1, -1, to_i(key) * 10) :
             f(set_keyboard_moves_maybe, to_i(key) - 1)
     }
@@ -940,6 +944,7 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
+    keydown = false
     reset_keyboard_moves(); reset_keyboard_tag()
     switch (e.key) {
     case "z": case "x": set_temporary_board_type(false); return
