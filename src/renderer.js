@@ -472,10 +472,11 @@ function draw_next_move(h, xy, radius, g) {
 
 function draw_suggest(h, xy, radius, g) {
     const epsilon = 1e-8, green_hue = 120
-    const c = (h.data.winrate - R.min_winrate + epsilon) / (R.max_winrate - R.min_winrate + epsilon)
+    const suggest = h.data
+    const c = (suggest.winrate - R.min_winrate + epsilon) / (R.max_winrate - R.min_winrate + epsilon)
     const hue = to_i(green_hue * c)
     const max_alpha = 0.5
-    const visits_ratio = h.data.visits / (R.visits + 1)
+    const visits_ratio = suggest.visits / (R.visits + 1)
     const alpha_emphasis = emph => max_alpha * visits_ratio ** (1 - emph)
     const hsl_e = (h, s, l, emphasis) => hsla(h, s, l, alpha_emphasis(emphasis))
     g.lineWidth = 1
@@ -485,12 +486,12 @@ function draw_suggest(h, xy, radius, g) {
         const [x, y] = xy, max_width = radius * 1.8
         const fontsize = to_i(radius * 0.8), next_y = y + fontsize
         const normal_color = hsl_e(0, 0, 0, 0.75), champ_color = RED
-        const [winrate_text, visits_text] = suggest_texts(h.data)
+        const [winrate_text, visits_text] = suggest_texts(suggest)
         g.strokeStyle = hsl_e(0, 0, 0, 0.75)
-        g.fillStyle = h.data.winrate_order === 0 ? champ_color : normal_color
+        g.fillStyle = suggest.winrate_order === 0 ? champ_color : normal_color
         set_font(fontsize, g); g.textAlign = 'center'
         g.fillText(winrate_text, x, y, max_width)
-        g.fillStyle = h.data.order === 0 ? champ_color : normal_color
+        g.fillStyle = suggest.order === 0 ? champ_color : normal_color
         g.fillText(visits_text, x, next_y , max_width)
     }
     draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
