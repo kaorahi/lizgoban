@@ -297,18 +297,19 @@ stop_auto_analyze()
 
 // play best move(s)
 let last_auto_play_time = 0
-function play_best(n, sec) {
+function play_best(n, sec, temporary_weaken_percent) {
     auto_play_sec = sec || -1
     play_best_count === Infinity && (play_best_count = 0)
     stop_auto_analyze(); play_best_count += (n || 1); last_auto_play_time = Date.now()
-    resume(); try_play_best()
+    resume(); try_play_best(temporary_weaken_percent)
 }
 function auto_play(sec) {play_best(Infinity, sec); update_ui()}
-function try_play_best() {
+function try_play_best(temporary_weaken_percent) {
     if (finished_playing_best()) {return}
     const ready = !empty(R.suggest) &&
           Date.now() - last_auto_play_time >= auto_play_sec * 1000
-    const move = ready && (weaken_percent > 0 ? weak_move(weaken_percent) : best_move())
+    const weaken = temporary_weaken_percent || weaken_percent
+    const move = ready && (weaken > 0 ? weak_move(weaken) : best_move())
     move === 'pass' ? (stop_play_best(), pause()) :
         ready && (play_best_count--, (last_auto_play_time = Date.now()), play(move))
 }

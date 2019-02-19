@@ -902,10 +902,6 @@ document.onkeydown = e => {
         escape && e.target.blur(); return
     }
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
-    if (to_i(key) > 0) {f(set_keyboard_moves_maybe, to_i(key) - 1)}
-    if (key.length === 1 && R.tag_letters.indexOf(key) >= 0) {
-        f(set_keyboard_tag_maybe, key)
-    }
     const play_it = (steps, another_board) =>
           keyboard_moves[0] ? m('play', keyboard_moves[0], another_board) :
           keyboard_tag_data.move_count ? (duplicate_if(another_board),
@@ -913,6 +909,14 @@ document.onkeydown = e => {
                                             keyboard_tag_data.move_count - 1)) :
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
+    if (to_i(key) > 0) {
+        (R.board_type === "raw" && current_board_type() === "raw" && !R.attached) ?
+            m('play_best', 1, -1, to_i(key) * 10) :
+            f(set_keyboard_moves_maybe, to_i(key) - 1)
+    }
+    if (key.length === 1 && R.tag_letters.indexOf(key) >= 0) {
+        f(set_keyboard_tag_maybe, key)
+    }
     switch (key) {
     case "C-c": m('copy_sgf_to_clipboard'); return
     case "z": f(set_temporary_board_type, "raw", "suggest"); return
