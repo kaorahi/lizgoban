@@ -55,6 +55,7 @@ function create_leelaz () {
         ['stdin', 'stdout', 'stderr']
             .forEach(k => leelaz_process[k].removeAllListeners())
         leelaz_process.removeAllListeners()
+        set_error_handler(leelaz_process, e => {})
         leelaz_process.kill('SIGKILL')
     }
     const set_error_handler = (process, handler) => {

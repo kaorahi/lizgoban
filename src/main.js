@@ -114,8 +114,9 @@ function leelaz_start_args(weight_file) {
     return [option.leelaz_command, leelaz_args, option.analyze_interval_centisec,
             board_handler, suggest_handler, auto_restart]
 }
-function leelaz_weight_file() {
-    const k = leelaz_weight_option_pos_in_args(), args = leelaz.start_args()
+function leelaz_weight_file(leelaz_for_black_or_white) {
+    const k = leelaz_weight_option_pos_in_args()
+    const args = (leelaz_for_black_or_white || leelaz).start_args()
     return (k >= 0) && args && args[1][k + 1]
 }
 function leelaz_weight_option_pos_in_args() {
@@ -431,12 +432,19 @@ function set_renderer_state(...args) {
     const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
           start_moves_tag_letter
     const progress = auto_progress()
-    const weight_file = PATH.basename(leelaz_weight_file())
+    const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
     merge(R, {winrate_history, auto_analysis_visits, lizzie_style, progress,
-              weight_file, network_size, tag_letters, start_moves_tag_letter}, ...args)
+              weight_info, network_size, tag_letters, start_moves_tag_letter}, ...args)
 }
 function set_and_render(...args) {set_renderer_state(...args); renderer('render', R)}
+
+function weight_info_text() {
+    const f = lz =>
+          `${PATH.basename(leelaz_weight_file(lz)) || ''} ${lz.network_size() || ''}`
+    return leelaz_for_white ?
+        `${f(leelaz_for_black)} / ${f(leelaz_for_white)}` : f(leelaz)
+}
 
 // board
 function board_handler(h) {
