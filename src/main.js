@@ -802,7 +802,6 @@ function toggle_sabaki() {
 // fixme: global variable "option" is tainted
 
 function load_leelaz_for_white() {
-    const old_leelaz = leelaz
     leelaz = leelaz_for_white = create_leelaz(); leelaz_for_white.activate(false)
     load_weight() || (leelaz_for_white.kill(), (leelaz_for_white = null))
     leelaz = leelaz_for_black; switch_leelaz(); update_state()
