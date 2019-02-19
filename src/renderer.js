@@ -123,7 +123,8 @@ function update_title() {
     const names = (b || w) ? `(B: ${n(b)} / W: ${n(w)})` : ''
     const tags = current_tag_letters()
     const tag_text = tags ? `[${tags}]` : ''
-    const title = `LizGoban ${names} ${tag_text} ${R.weight_file || ""}`
+    const weight = `${R.weight_file || ''} ${R.network_size || ''}`
+    const title = `LizGoban ${names} ${tag_text} ${weight}`
     if (title !== last_title) {current_window.setTitle(title); last_title = title}
 }
 

@@ -17,7 +17,7 @@ function create_leelaz () {
     let leelaz_process, the_start_args, the_analyze_interval_centisec
     let the_board_handler, the_suggest_handler
     let command_queue, last_command_id, last_response_id, pondering = true
-    let suggest_only = false
+    let network_size_text = '', suggest_only = false
 
     // game state
     let b_prison = 0, w_prison = 0, last_passes = 0, bturn = true
@@ -47,7 +47,9 @@ function create_leelaz () {
         command_queue = []; last_command_id = -1; last_response_id = -1
         clear_leelaz_board() // for restart
     }
-    const restart = (...args) => {kill(); start(...(empty(args) ? the_start_args : args))}
+    const restart = (...args) => {
+        kill(); network_size_text = ''; start(...(empty(args) ? the_start_args : args))
+    }
     const kill = () => {
         if (!leelaz_process) {return}
         ['stdin', 'stdout', 'stderr']
@@ -92,6 +94,7 @@ function create_leelaz () {
     const update = () => {showboard(); start_analysis()}
     const clear_leelaz_board = () => {leelaz("clear_board"); leelaz_previous_history = []; update()}
     const start_args = () => the_start_args
+    const network_size = () => network_size_text
     const activate = bool => (suggest_only = !bool)
 
     /////////////////////////////////////////////////
@@ -180,6 +183,8 @@ function create_leelaz () {
 
     const main_reader = (s) => {
         let m, c;
+        (m = s.match(/Detecting residual layers.*?([0-9]+) channels.*?([0-9]+) blocks/)) &&
+            (network_size_text = `${m[1]}x${m[2]}`);
         (m = s.match(/Passes: *([0-9]+)/)) && (last_passes = to_i(m[1]));
         (m = s.match(/\((.)\) to move/)) && (bturn = m[1] === 'X');
         (m = s.match(/\((.)\) Prisoners: *([0-9]+)/)) &&
@@ -237,7 +242,7 @@ function create_leelaz () {
 
     return {
         start, restart, kill, set_board, update, set_pondering,
-        start_args, activate,
+        start_args, activate, network_size,
         // utility
         common_header_length, each_line, set_error_handler,
         // for debug
