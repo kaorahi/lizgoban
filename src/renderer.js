@@ -23,6 +23,7 @@ const RED = "#f00", GREEN = "#0c0", BLUE = "#88f", YELLOW = "#ff0"
 const ORANGE = "#fc8d49"
 const DARK_YELLOW = "#c9a700", TRANSPARENT = "rgba(0,0,0,0)"
 const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
+const VAGUE_BLACK = 'rgba(0,0,0,0.3)', VAGUE_WHITE = 'rgba(255,255,255,0.3)'
 const PALE_BLUE = "rgba(128,128,255,0.3)"
 const PALE_BLACK = "rgba(0,0,0,0.1)", PALE_WHITE = "rgba(255,255,255,0.3)"
 const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
@@ -217,6 +218,7 @@ function draw_goban_with_suggest(canvas, opts) {
 }
 
 function draw_goban_with_variation(canvas, suggest, opts) {
+    const reliable_moves = 7
     const variation = suggest.pv || []
     const displayed_stones = copy_stones_for_display()
     canvas === main_canvas && (hovered_suggest = suggest)
@@ -224,7 +226,8 @@ function draw_goban_with_variation(canvas, suggest, opts) {
         const b = xor(R.bturn, k % 2 === 1), w = !b
         set_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
-            variation: true, movenums: [k + 1], variation_last: k === variation.length - 1
+            variation: true, movenums: [k + 1],
+            variation_last: k === variation.length - 1, is_vague: k >= reliable_moves
         })
     })
     const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
@@ -424,7 +427,9 @@ main_canvas.addEventListener("wheel", e => {
 function draw_stone(h, xy, radius, draw_last_p, g) {
     const [b_color, w_color] = h.displayed_colors ||
           (h.maybe ? [MAYBE_BLACK, MAYBE_WHITE] :
-           h.maybe_empty ? [PALE_BLACK, PALE_WHITE] : [BLACK, WHITE])
+           h.maybe_empty ? [PALE_BLACK, PALE_WHITE] :
+           h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
+           [BLACK, WHITE])
     g.lineWidth = 1; g.strokeStyle = b_color
     g.fillStyle = h.black ? b_color : w_color
     edged_fill_circle(xy, radius, g)
@@ -434,8 +439,9 @@ function draw_stone(h, xy, radius, draw_last_p, g) {
 
 function draw_movenums(h, xy, radius, g) {
     const movenums = h.movenums.slice().sort((a, b) => a - b)
+    const bw = h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
     const color = (movenums[0] === 1) ? GREEN : h.variation_last ? RED :
-          (!h.black ? BLACK : WHITE)
+          bw[h.black ? 1 : 0]
     draw_text_on_stone(movenums.join(','), color, xy, radius, g)
 }
 
