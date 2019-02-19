@@ -147,15 +147,15 @@ function create_leelaz () {
     const suggest_reader = (s) => {
         const suggest = s.split(/info/).slice(1).map(suggest_parser)
               .sort((a, b) => (a.order - b.order))
-        const [wsum, playouts] = suggest.map(h => [h.winrate, h.visits])
-              .reduce(([ws, ps], [w, p]) => [ws + w * p, ps + p], [0, 0])
-        const winrate = wsum / playouts, b_winrate = bturn ? winrate : 100 - winrate
+        const [wsum, visits] = suggest.map(h => [h.winrate, h.visits])
+              .reduce(([ws, vs], [w, v]) => [ws + w * v, vs + v], [0, 0])
+        const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
         const wrs = suggest.map(h => h.winrate)
         const min_winrate = Math.min(...wrs), max_winrate = Math.max(...wrs)
         // winrate is NaN if suggest = []
         suggest.slice().sort((a, b) => (b.winrate - a.winrate))
             .forEach((h, i) => (h.winrate_order = i))
-        the_suggest_handler({suggest, playouts, b_winrate, min_winrate, max_winrate})
+        the_suggest_handler({suggest, visits, b_winrate, min_winrate, max_winrate})
     }
 
     // (sample of leelaz output for "lz-analyze 10")

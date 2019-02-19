@@ -31,10 +31,10 @@ const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"
 
 // renderer state
 const R = {
-    stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], playouts: 1,
+    stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
     min_winrate: 50, max_winrate: 50, winrate_history: [],
     attached: false, pausing: false, auto_analyzing: false,
-    auto_analysis_playouts: Infinity,
+    auto_analysis_visits: Infinity,
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [],
     tag_letters: '',
@@ -62,13 +62,13 @@ function send_to_leelaz(cmd) {main('send_to_leelaz', cmd)}
 
 function new_window() {main('new_window', R.board_type === 'suggest' ? 'variation' : 'suggest')}
 function toggle_auto_analyze() {
-    main('toggle_auto_analyze', auto_analysis_playouts_setting())
+    main('toggle_auto_analyze', auto_analysis_visits_setting())
 }
-function toggle_auto_analyze_playouts() {
-    R.auto_analyzing ? toggle_auto_analyze() : Q('#auto_analysis_playouts').select()
+function toggle_auto_analyze_visits() {
+    R.auto_analyzing ? toggle_auto_analyze() : Q('#auto_analysis_visits').select()
 }
-function auto_analysis_playouts_setting () {
-    return to_i(Q('#auto_analysis_playouts').value)
+function auto_analysis_visits_setting () {
+    return to_i(Q('#auto_analysis_visits').value)
 }
 
 function start_auto_play() {
@@ -146,7 +146,7 @@ function update_goban() {
     const btype = current_board_type(), do_nothing = truep
     const draw_raw_unclickable = c => draw_goban(c, null, {draw_last_p: true, read_only: true})
     const draw_raw_clickable = c => draw_goban(c, null, {
-        draw_playouts_p: true, draw_last_p: R.board_type === "raw"
+        draw_visits_p: true, draw_last_p: R.board_type === "raw"
     })
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_winrate_graph)(winrate_graph_canvas),
@@ -176,7 +176,7 @@ function draw_main_goban(canvas) {
     const kbd_move = keyboard_moves[0]
     const h = hovered_suggest =
           R.suggest.find(h => h.move === kbd_move || h.move === hovered_move)
-    const opts = {draw_playouts_p: true, read_only: R.attached}
+    const opts = {draw_visits_p: true, read_only: R.attached}
     // case I: "variation"
     if (h) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
@@ -227,9 +227,9 @@ function draw_goban_with_variation(canvas, suggest, opts) {
             variation: true, movenums: [k + 1], variation_last: k === variation.length - 1
         })
     })
-    const [winrate_text, playouts_text, prior_text] = suggest_texts(suggest) || []
+    const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
     const text = winrate_text && (canvas === main_canvas) ?
-          `${winrate_text} (${playouts_text})` : undefined
+          `${winrate_text} (${visits_text})` : undefined
     const subtext = text && ` prior = ${prior_text} `
     const at = flip_maybe(suggest.winrate)
     const mapping_to_winrate_bar = text && {text, subtext, at}
@@ -260,7 +260,7 @@ function set_stone_at(move, stone_array, stone) {
 }
 
 function draw_goban(canvas, stones, opts) {
-    const {draw_last_p, draw_next_p, draw_playouts_p, read_only,
+    const {draw_last_p, draw_next_p, draw_visits_p, read_only,
            mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
@@ -272,7 +272,7 @@ function draw_goban(canvas, stones, opts) {
     edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
     // draw
     draw_grid(unit, idx2coord, g)
-    draw_playouts_p && draw_playouts(margin, canvas, g)
+    draw_visits_p && draw_visits(margin, canvas, g)
     mapping_to_winrate_bar &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
@@ -295,17 +295,17 @@ function draw_grid(unit, idx2coord, g) {
     stars.forEach(i => stars.forEach(j => fill_circle(idx2coord(i, j), star_radius, g)))
 }
 
-function draw_playouts(margin, canvas, g) {
-    if (!truep(R.playouts)) {return}
-    draw_playouts_text(margin, canvas, g)
+function draw_visits(margin, canvas, g) {
+    if (!truep(R.visits)) {return}
+    draw_visits_text(margin, canvas, g)
     draw_progress(margin, canvas, g)
 }
 
-function draw_playouts_text(margin, canvas, g) {
+function draw_visits_text(margin, canvas, g) {
     g.save()
     g.fillStyle = BLACK; set_font(margin / 3, g)
     g.textAlign = 'left'; g.textBaseline = 'middle'
-    g.fillText(`  playouts = ${R.playouts}`, 0, margin / 4)
+    g.fillText(`  visits = ${R.visits}`, 0, margin / 4)
     g.restore()
 }
 
@@ -469,8 +469,8 @@ function draw_suggest(h, xy, radius, g) {
     const c = (h.data.winrate - R.min_winrate + epsilon) / (R.max_winrate - R.min_winrate + epsilon)
     const hue = to_i(green_hue * c)
     const max_alpha = 0.5
-    const playouts_ratio = h.data.visits / (R.playouts + 1)
-    const alpha_emphasis = emph => max_alpha * playouts_ratio ** (1 - emph)
+    const visits_ratio = h.data.visits / (R.visits + 1)
+    const alpha_emphasis = emph => max_alpha * visits_ratio ** (1 - emph)
     const hsl_e = (h, s, l, emphasis) => hsla(h, s, l, alpha_emphasis(emphasis))
     g.lineWidth = 1
     g.strokeStyle = hsl_e(hue, 100, 20, 0.85); g.fillStyle = hsl_e(hue, 100, 50, 0.4)
@@ -479,13 +479,13 @@ function draw_suggest(h, xy, radius, g) {
         const [x, y] = xy, max_width = radius * 1.8
         const fontsize = to_i(radius * 0.8), next_y = y + fontsize
         const normal_color = hsl_e(0, 0, 0, 0.75), champ_color = RED
-        const [winrate_text, playouts_text] = suggest_texts(h.data)
+        const [winrate_text, visits_text] = suggest_texts(h.data)
         g.strokeStyle = hsl_e(0, 0, 0, 0.75)
         g.fillStyle = h.data.winrate_order === 0 ? champ_color : normal_color
         set_font(fontsize, g); g.textAlign = 'center'
         g.fillText(winrate_text, x, y, max_width)
         g.fillStyle = h.data.order === 0 ? champ_color : normal_color
-        g.fillText(playouts_text, x, next_y , max_width)
+        g.fillText(visits_text, x, next_y , max_width)
     }
     draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
 }
@@ -629,7 +629,7 @@ function draw_winrate_bar_suggestions(h, xfor, vline, g) {
             is_next_move(move) ? YELLOW : PALE_BLUE
         const x = xfor(flip_maybe(winrate))
         const p_margin = 0.2, y = ((1 - p_margin) * (1 - prior) + p_margin * prior) * h
-        const radius = Math.sqrt(visits / R.playouts) * h
+        const radius = Math.sqrt(visits / R.visits) * h
         const degs = R.bturn ? [150, 210] : [-30, 30]
         edged_fill_fan([x, y], radius, degs, g)
         // vertical line
@@ -886,7 +886,7 @@ document.onkeydown = e => {
     const escape = (key === "Escape" || key === "C-[")
     if (escape) {hide_dialog()}
     switch (key === "Enter" && e.target.id) {
-    case "auto_analysis_playouts": toggle_auto_analyze(); return
+    case "auto_analysis_visits": toggle_auto_analyze(); return
     case "auto_play_sec": start_auto_play(); return
     }
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {
@@ -934,7 +934,7 @@ document.onkeydown = e => {
     case "Backspace": case "Delete": busy('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
-    case "a": f(toggle_auto_analyze_playouts); break;
+    case "a": f(toggle_auto_analyze_visits); break;
     case "q": R.trial && m('cut_sequence'); break;
     }
 }
@@ -983,7 +983,7 @@ function update_button_etc(availability) {
     f('attach', 'hide_when_attached1 hide_when_attached2'); f('detach')
     f('pause', 'pause play_best play_best_x5'); f('resume')
     f('bturn'); f('wturn'); f('auto_analyze')
-    f('start_auto_analyze', 'start_auto_analyze auto_analysis_playouts')
+    f('start_auto_analyze', 'start_auto_analyze auto_analysis_visits')
     f('stop_auto')
     f('normal_ui'); f('simple_ui'); f('trial')
 }

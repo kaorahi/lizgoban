@@ -38,7 +38,7 @@ const config = new (require('electron-config'))({name: 'lizgoban'})
 let next_history_id = 0
 let history = create_history()
 let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
-let auto_analysis_playouts = Infinity, play_best_count = 0
+let auto_analysis_visits = Infinity, play_best_count = 0
 const simple_ui = false
 let lizzie_style = config.get('lizzie_style', false)
 let auto_play_sec = 0
@@ -212,7 +212,7 @@ function redo_to_end() {redo_ntimes(Infinity)}
 function set_board(history) {
     each_leelaz(z => z.set_board(history)); R.move_count = history.length
     R.bturn = !(history[history.length - 1] || {}).is_black
-    R.playouts = null
+    R.visits = null
     switch_leelaz()
 }
 function goto_move_count(count) {
@@ -272,25 +272,25 @@ function new_tag() {
 }
 
 // auto-analyze
-function try_auto_analyze(current_playouts) {
-    (current_playouts >= auto_analysis_playouts) &&
+function try_auto_analyze(current_visits) {
+    (current_visits >= auto_analysis_visits) &&
         (R.move_count < history.length ? redo() :
-         (pause(), (auto_analysis_playouts = Infinity), update_ui()))
+         (pause(), (auto_analysis_visits = Infinity), update_ui()))
 }
-function toggle_auto_analyze(playouts) {
+function toggle_auto_analyze(visits) {
     if (empty(history)) {return}
-    (auto_analysis_playouts === playouts) ?
+    (auto_analysis_visits === visits) ?
         (stop_auto_analyze(), update_ui()) :
-        start_auto_analyze(playouts)
+        start_auto_analyze(visits)
 }
-function start_auto_analyze(playouts) {
+function start_auto_analyze(visits) {
     future_len() === 0 && goto_move_count(0)
-    resume(); auto_analysis_playouts = playouts; update_ui()
+    resume(); auto_analysis_visits = visits; update_ui()
 }
-function stop_auto_analyze() {auto_analysis_playouts = Infinity}
-function auto_analyzing() {return auto_analysis_playouts < Infinity}
+function stop_auto_analyze() {auto_analysis_visits = Infinity}
+function auto_analyzing() {return auto_analysis_visits < Infinity}
 function auto_analysis_progress() {
-    return auto_analyzing() ? R.playouts / auto_analysis_playouts : -1
+    return auto_analyzing() ? R.visits / auto_analysis_visits : -1
 }
 stop_auto_analyze()
 
@@ -430,7 +430,7 @@ function set_renderer_state(...args) {
     const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
           start_moves_tag_letter
     const progress = auto_progress()
-    merge(R, {winrate_history, auto_analysis_playouts, lizzie_style, progress,
+    merge(R, {winrate_history, auto_analysis_visits, lizzie_style, progress,
               tag_letters, start_moves_tag_letter}, ...args)
 }
 function set_and_render(...args) {set_renderer_state(...args); renderer('render', R)}
@@ -487,8 +487,8 @@ function suggest_handler(h) {
                          h.suggest.map(z => pick_properties(z, ['move', 'winrate'])))
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
         : (initial_b_winrate = h.b_winrate)
-    set_and_render(h, show_suggest_p() ? {} : {suggest: [], playouts: null})
-    try_play_best(); try_auto_analyze(h.playouts)
+    set_and_render(h, show_suggest_p() ? {} : {suggest: [], visits: null})
+    try_play_best(); try_auto_analyze(h.visits)
 }
 
 function pick_properties(orig, keys) {
@@ -496,7 +496,7 @@ function pick_properties(orig, keys) {
 }
 
 function show_suggest_p() {
-    return !finished_playing_best() || auto_analysis_playouts >= 10
+    return !finished_playing_best() || auto_analysis_visits >= 10
 }  // fixme: customize
 
 /////////////////////////////////////////////////
