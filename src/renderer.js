@@ -75,13 +75,6 @@ function start_auto_play() {
     main('auto_play', to_f(Q('#auto_play_sec').value)); hide_dialog()
 }
 
-function set_weaken_percent() {
-    const mode = Q('#weaken_randomly').value
-    main('set_weaken_percent', mode === 'off' ? 0 : to_f(Q('#weaken_percent').value),
-         mode === 'randomly')
-    hide_dialog()
-}
-
 function show_dialog(name) {
     Q(name).style.visibility = "visible"; Q(`${name} input`).select()
 }
@@ -120,7 +113,6 @@ ipc.on('update_ui', (e, availability, ui_only, board_type) => {
 })
 
 ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog'))
-ipc.on('ask_weaken_percent', (e) => show_dialog('#weaken_percent_dialog'))
 
 ipc.on('slide_in', (e, direction) => slide_in(direction))
 
@@ -896,7 +888,6 @@ document.onkeydown = e => {
     switch (key === "Enter" && e.target.id) {
     case "auto_analysis_playouts": toggle_auto_analyze(); return
     case "auto_play_sec": start_auto_play(); return
-    case "weaken_percent": set_weaken_percent(); return
     }
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {
         escape && e.target.blur(); return

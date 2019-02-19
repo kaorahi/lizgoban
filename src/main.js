@@ -41,7 +41,7 @@ let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
 let auto_analysis_playouts = Infinity, play_best_count = 0
 const simple_ui = false
 let lizzie_style = config.get('lizzie_style', false)
-let auto_play_sec = 0, weaken_percent = 0, weaken_randomly = true
+let auto_play_sec = 0
 let pausing = false, busy = false
 
 // renderer state
@@ -132,7 +132,6 @@ const api = merge({}, simple_api, {
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     goto_move_count, toggle_auto_analyze, play_best, auto_play, stop_auto,
-    set_weaken_percent,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
@@ -297,19 +296,19 @@ stop_auto_analyze()
 
 // play best move(s)
 let last_auto_play_time = 0
-function play_best(n, sec, temporary_weaken_percent) {
+function play_best(n, sec, weaken_percent) {
     auto_play_sec = sec || -1
     play_best_count === Infinity && (play_best_count = 0)
     stop_auto_analyze(); play_best_count += (n || 1); last_auto_play_time = Date.now()
-    resume(); try_play_best(temporary_weaken_percent)
+    resume(); try_play_best(weaken_percent)
 }
 function auto_play(sec) {play_best(Infinity, sec); update_ui()}
-function try_play_best(temporary_weaken_percent) {
+function try_play_best(weaken_percent) {
     if (finished_playing_best()) {return}
     const ready = !empty(R.suggest) &&
           Date.now() - last_auto_play_time >= auto_play_sec * 1000
-    const weaken = temporary_weaken_percent || weaken_percent
-    const move = ready && (weaken > 0 ? weak_move(weaken) : best_move())
+    // (undefined > 0) is false
+    const move = ready && (weaken_percent > 0 ? weak_move(weaken_percent) : best_move())
     move === 'pass' ? (stop_play_best(), pause()) :
         ready && (play_best_count--, (last_auto_play_time = Date.now()), play(move))
 }
@@ -318,12 +317,12 @@ function weak_move(weaken_percent) {
     // (1) Converge winrate to 0 with move counts
     // (2) Occasionally play good moves with low probability
     // (3) Do not play too bad moves
-    const r = Math.max(0, Math.min(weaken_percent / 100, 1))
+    const r = Math.max(0, Math.min((weaken_percent || 0) / 100, 1))
     const initial_target_winrate = 40 * 10**(- r)
     const target = initial_target_winrate * 2**(- R.move_count / 100)  // (1)
     const flip_maybe = x => R.bturn ? x : 100 - x
     const current_winrate = flip_maybe(winrate_after(R.move_count))
-    const u = (weaken_randomly ? Math.random()**(1 - r) : 1) * r  // (2)
+    const u = Math.random()**(1 - r) * r  // (2)
     const next_target = current_winrate * (1 - u) + target * u  // (3)
     return nearest_move_to_winrate(next_target)
 }
@@ -347,10 +346,6 @@ function auto_play_progress() {
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
 }
 function ask_auto_play_sec(win) {win.webContents.send('ask_auto_play_sec')}
-function ask_weaken_percent(win) {win.webContents.send('ask_weaken_percent')}
-function set_weaken_percent(p, randomly) {
-    weaken_percent = p; weaken_randomly = randomly, update_ui()
-}
 stop_play_best()
 
 // auto-analyze & auto-play
@@ -903,8 +898,6 @@ function menu_template(win) {
                  swap_leelaz_for_black_and_white) :
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
-        item(`Weaken (${weakening_summary()})`, 'Shift+W',
-             (this_item, win) => ask_weaken_percent(win), true),
         item('Info', 'CmdOrCtrl+I', info),
         {role: 'toggleDevTools'},
     ])
@@ -917,9 +910,4 @@ function menu_template(win) {
 function board_type_menu_item(label, btype, win) {
     return {label, type: 'radio', checked: win.lizgoban_board_type === btype,
             click: () => {win.lizgoban_board_type = btype; update_ui()}}
-}
-
-function weakening_summary() {
-    return `${weaken_percent}%` +
-        `${weaken_percent <= 0 ? "" : weaken_randomly ? " randomly" : " always"}`
 }
