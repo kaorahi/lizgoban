@@ -6,6 +6,7 @@ E.to_i = x => (x | 0)
 E.to_f = x => (x - 0)
 E.xor = (a, b) => (!a === !!b)
 E.truep = x => (x || x === 0 || x === '')
+E.clip = (x, lower, upper) => Math.max(lower, Math.min(x, upper))
 // E.sum = a => a.reduce((r,x) => r + x, 0)
 // E.clone = x => JSON.parse(JSON.stringify(x))
 E.merge = Object.assign

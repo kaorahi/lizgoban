@@ -6,7 +6,7 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
-const {to_i, to_f, xor, truep, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
+const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -730,7 +730,7 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 function winrate_graph_goto(e, coord2sr) {
     const [s, r] = coord2sr(...mouse2coord(e))
     s >= 0 && main('busy', 'goto_move_count',
-                   Math.max(0, Math.min(s, R.history_length)))
+                   clip(s, 0, R.history_length))
 }
 
 /////////////////////////////////////////////////

@@ -27,7 +27,7 @@ const {create_leelaz} = require('./engine.js')
 let leelaz = leelaz_for_black = create_leelaz(), leelaz_for_white = null
 
 // util
-const {to_i, to_f, xor, truep, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
+const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -218,7 +218,7 @@ function set_board(history) {
     switch_leelaz()
 }
 function goto_move_count(count) {
-    const c = Math.max(0, Math.min(count, history.length))
+    const c = clip(count, 0, history.length)
     if (c === R.move_count) {return}
     update_state_to_move_count_tentatively(c)
     set_board(history.slice(0, c))
@@ -319,7 +319,7 @@ function weak_move(weaken_percent) {
     // (1) Converge winrate to 0 with move counts
     // (2) Occasionally play good moves with low probability
     // (3) Do not play too bad moves
-    const r = Math.max(0, Math.min((weaken_percent || 0) / 100, 1))
+    const r = clip((weaken_percent || 0) / 100, 0, 1)
     const initial_target_winrate = 40 * 10**(- r)
     const target = initial_target_winrate * 2**(- R.move_count / 100)  // (1)
     const flip_maybe = x => R.bturn ? x : 100 - x

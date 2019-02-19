@@ -1,4 +1,4 @@
-const {to_i, to_f, xor, truep, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
+const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
