@@ -33,7 +33,7 @@ const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"
 // renderer state
 const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
-    min_winrate: 50, max_winrate: 50, winrate_history: [],
+    winrate_history: [],
     attached: false, pausing: false, auto_analyzing: false,
     auto_analysis_visits: Infinity,
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
@@ -128,10 +128,12 @@ function update_title() {
     if (title !== last_title) {current_window.setTitle(title); last_title = title}
 }
 
-function b_winrate() {return winrate_history_ref('r')}
+function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
 function last_move_b_eval() {return winrate_history_ref('move_b_eval')}
 function last_move_eval() {return winrate_history_ref('move_eval')}
-function winrate_history_ref(key) {return (R.winrate_history[R.move_count] || {})[key]}
+function winrate_history_ref(key, nth_prev) {
+    return (R.winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
+}
 function current_tag_letters() {return R.history_tags.map(x => x.tag).join('')}
 
 function update_body_color() {
@@ -471,11 +473,8 @@ function draw_next_move(h, xy, radius, g) {
 // See "suggestion reader" section in engine.js for suggestion_data.
 
 function draw_suggest(h, xy, radius, g) {
-    const epsilon = 1e-8, green_hue = 120
-    const suggest = h.data
-    const c = (suggest.winrate - R.min_winrate + epsilon) / (R.max_winrate - R.min_winrate + epsilon)
-    const hue = to_i(green_hue * c)
     const max_alpha = 0.5
+    const suggest = h.data, hue = suggest_color_hue(suggest)
     const visits_ratio = suggest.visits / (R.visits + 1)
     const alpha_emphasis = emph => max_alpha * visits_ratio ** (1 - emph)
     const hsl_e = (h, s, l, emphasis) => hsla(h, s, l, alpha_emphasis(emphasis))
@@ -495,6 +494,14 @@ function draw_suggest(h, xy, radius, g) {
         g.fillText(visits_text, x, next_y , max_width)
     }
     draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
+}
+
+function suggest_color_hue(suggest) {
+    const cyan_hue = 180, green_hue = 120, yellow_hue = 60, red_hue = 0
+    const unit_delta_points = 5, unit_delta_hue = green_hue - yellow_hue
+    const wr = suggest.winrate, wr0 = flip_maybe(b_winrate(1) || b_winrate())
+    const delta_hue = (wr - wr0) * unit_delta_hue / unit_delta_points
+    return to_i(clip(yellow_hue + delta_hue, red_hue, cyan_hue))
 }
 
 function suggest_texts(suggest) {
