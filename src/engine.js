@@ -6,6 +6,7 @@ const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
 // util
 function shallow_copy_array(a) {return a.slice()}
 function shallow_copy_hash(b) {return Object.assign({}, b)}
+function NOP() {}
 
 function create_leelaz () {
 
@@ -97,16 +98,25 @@ function create_leelaz () {
     const start_args = () => the_start_args
     const network_size = () => network_size_text
     const activate = bool => (suggest_only = !bool)
+    const peek_value = (move, cont) => {
+        the_nn_eval_reader = value => {the_nn_eval_reader = NOP; cont(value); update()}
+        leelaz(join_commands('lz-setoption name visits value 1',
+                             `play ${bturn ? 'b' : 'w'} ${move}`,
+                             'lz-analyze interval 0',
+                             'lz-setoption name visits value 0', 'undo'))
+    }
 
     /////////////////////////////////////////////////
     // command queue
 
     const send_to_queue = (s) => {
-        // remove useless lz-analyze that will be canceled immediately
-        command_queue = command_queue.filter(x => !pondering_command_p(x))
-        // remove duplicated showboard
-        showboard_command_p(s) &&
-            (command_queue = command_queue.filter(x => !showboard_command_p(x)))
+        const remove = f => {command_queue = command_queue.filter(x => !f(x))}
+        // useless lz-analyze that will be canceled immediately
+        remove(pondering_command_p)
+        // duplicated showboard
+        showboard_command_p(s) && remove(showboard_command_p)
+        // obsolete showboard / peek
+        changer_command_p(s) && [showboard_command_p, peek_command_p].map(remove)
         command_queue.push(s); try_send_from_queue()
     }
 
@@ -117,7 +127,7 @@ function create_leelaz () {
 
     const send_from_queue = () => {
         if (empty(command_queue) || !up_to_date_response()) {return}
-        send_to_leelaz(command_queue.shift())
+        split_commands(command_queue.shift()).map(send_to_leelaz)
     }
 
     const [send_from_queue_later] =
@@ -128,9 +138,15 @@ function create_leelaz () {
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
     }
 
+    const join_commands = (...a) => a.join(';')
+    const split_commands = s => s.split(';')
     const up_to_date_response = () => {return last_response_id >= last_command_id}
-    const pondering_command_p = (command) => {return command.match(/^lz-analyze/)}
-    const showboard_command_p = (command) => {return command.match(/^showboard/)}
+
+    const command_matcher = re => (command => command.match(re))
+    const pondering_command_p = command_matcher(/^lz-analyze/)
+    const showboard_command_p = command_matcher(/^showboard/)
+    const peek_command_p = command_matcher(/play.*undo/)
+    const changer_command_p = command_matcher(/play|undo|clear_board/)
 
     /////////////////////////////////////////////////
     // stdout reader
@@ -177,7 +193,7 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // stderr reader
 
-    let current_reader
+    let current_reader, the_nn_eval_reader = NOP
 
     const reader = (s) => {log('stderr|', s); current_reader(s)}
 
@@ -185,6 +201,7 @@ function create_leelaz () {
         let m, c;
         (m = s.match(/Detecting residual layers.*?([0-9]+) channels.*?([0-9]+) blocks/)) &&
             (network_size_text = `${m[1]}x${m[2]}`);
+        (m = s.match(/NN eval=([0-9.]+)/)) && the_nn_eval_reader(to_f(m[1]));
         (m = s.match(/Passes: *([0-9]+)/)) && (last_passes = to_i(m[1]));
         (m = s.match(/\((.)\) to move/)) && (bturn = m[1] === 'X');
         (m = s.match(/\((.)\) Prisoners: *([0-9]+)/)) &&
@@ -242,7 +259,7 @@ function create_leelaz () {
 
     return {
         start, restart, kill, set_board, update, set_pondering,
-        start_args, activate, network_size,
+        start_args, activate, network_size, peek_value,
         // utility
         common_header_length, each_line, set_error_handler,
         // for debug

@@ -311,10 +311,18 @@ function try_play_best(weaken_percent) {
           Date.now() - last_auto_play_time >= auto_play_sec * 1000
     // (undefined > 0) is false
     const move = ready && (weaken_percent > 0 ? weak_move(weaken_percent) : best_move())
+    const pass_maybe =
+          () => leelaz.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
     move === 'pass' ? (stop_play_best(), pause()) :
-        ready && (play_best_count--, (last_auto_play_time = Date.now()), play(move))
+        ready && (play_best_count--, (last_auto_play_time = Date.now()),
+                  weaken_percent === 'pass_maybe' ? pass_maybe() : play(move))
 }
 function best_move() {return R.suggest[0].move}
+function pass_maybe(move) {
+    const enough_winrate = 10
+    const pass_winrate = (R.suggest.find(h => h.move === 'pass') || {}).winrate || 0
+    return pass_winrate > enough_winrate ? 'pass' : move
+}
 function weak_move(weaken_percent) {
     // (1) Converge winrate to 0 with move counts
     // (2) Occasionally play good moves with low probability
