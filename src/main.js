@@ -635,12 +635,15 @@ function winrate_after(move_count) {
 function winrate_from_history(history) {
     const winrates = history.map(m => m.b_winrate)
     return [initial_b_winrate, ...winrates].map((r, s, a) => {
-        const tag = (history[s - 1] || {}).tag
+        const h = history[s - 1] || {}
+        const tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * (history[s - 1].is_black ? 1 : -1)
         const predict = winrate_suggested(s)
-        return {r, move_b_eval, move_eval, predict, tag}
+        const pass = (h.is_black === (history[s - 2] || {}).is_black)
+        // drop "pass" to save data size for IPC
+        return merge({r, move_b_eval, move_eval, predict, tag}, pass ? {pass} : {})
     })
 }
 
