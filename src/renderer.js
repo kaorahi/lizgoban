@@ -654,7 +654,7 @@ function draw_winrate_graph(canvas) {
     clear_canvas(canvas, BLACK, g)
     draw_winrate_graph_frame(w, h, tics, g)
     draw_winrate_graph_move_count(smax, fontsize, sr2coord, g)
-    draw_winrate_graph_future(w, sr2coord, g)
+    draw_winrate_graph_future(w, h, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     canvas.onmousedown = e => !R.attached && winrate_graph_goto(e, coord2sr)
@@ -674,9 +674,16 @@ function draw_winrate_graph_frame(w, h, tics, g) {
     line([0, h / 2], [w, h / 2], g)
 }
 
-function draw_winrate_graph_future(w, sr2coord, g) {
-    g.fillStyle = 'rgba(255,255,255,0.2)'
-    fill_rect(sr2coord(R.move_count, 0), [w, 0], g)
+function draw_winrate_graph_future(w, h, sr2coord, g) {
+    const [x, y] = sr2coord(R.move_count, 50)
+    const paint = (partial, l_alpha, r_alpha, y0, y1) => {
+        const c = a => `rgba(255,255,255,${a})`
+        const grad = g.createLinearGradient(x, 0, (1 - partial) * x + partial * w, 0)
+        grad.addColorStop(0, c(l_alpha)); grad.addColorStop(1, c(r_alpha))
+        g.fillStyle = grad; fill_rect([x, y0], [w, y1], g)
+    }
+    const alpha = 0.2
+    paint(0.5, alpha, 0, 0, y); paint(1, alpha, alpha, y, h)
 }
 
 function draw_winrate_graph_move_count(smax, fontsize, sr2coord, g) {
