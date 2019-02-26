@@ -1,4 +1,4 @@
-# LizGoban - Attachable Leela Zero GUI
+# LizGoban - Leela Zero visualizer
 
 LizGoban is an analysis tool of the game Go with
 [Leela Zero](https://github.com/gcp/leela-zero).
@@ -9,7 +9,7 @@ Instead of having a full-featured board editor by itself,
 it is attachable to [Sabaki](https://sabaki.yichuanshen.de/)
 as subwindows.
 
-![screenshot](screen.png)
+![screenshot](screen.gif)
 
 ## Motivations
 
@@ -24,7 +24,7 @@ as subwindows.
 * Variation by mouse hover
 * Subboard that always shows the principal variation
 * Clickable & draggable win-rate graph with autoanalysis
-* Win-rate bar with evaluations of suggested moves
+* Win-rate bar with scatter plot of (visits, winrate, prior)
 * Trial boards that can be used like tabs in web browsers
 * Keyboard shortcuts, e.g. "3" key for the third variation
 * Watch Leela Zero vs. Leela Zero with different network weights

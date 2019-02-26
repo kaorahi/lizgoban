@@ -32,6 +32,10 @@ green (good) moves.
 </p>
 
 <p>
+Push "z" key (keep holding down) to hide suggestions.
+</p>
+
+<p>
 You can also select "Lizzie style" in "View" menu
 (top number = winrate, bottom number = visits).
 </p>
@@ -41,8 +45,12 @@ You can also select "Lizzie style" in "View" menu
 <ul>
  <li>black/white area: winrate of the current board</li>
  <li>green/red rectangle: evaluation of the last move (green = good, red = bad)</li>
- <li>triangles: evaluations of suggested next moves (size = visits ratio, height = prior probability, yellow = next move)</li>
+ <li>triangles: evaluations of suggested next moves (height = visits, size = prior probability, yellow = next move)</li>
+ <li>gray number: visits of the best suggestion (= top of winrate bar)</li>
+ <li>gray horizontal line: height of 10, 100, 1000, ... visits</li>
+ <li>gray curves (option "Winrate trail" in "Tool" menu): trails of evaluations through the progress of the search process</li>
 </ul>
+Push "x" key (keep holding down) to enlarge winrate bar.
 
 <h3>Winrate graph</h3>
 
@@ -52,16 +60,11 @@ You can also select "Lizzie style" in "View" menu
  <li>yellow segment: unexpected good move that was missed by leela zero</li>
  <li>yellow vertical line: evaluation error (difference between evaluations of the move before/after it was played)</li>
 </ul>
+Push "x" key (keep holding down) to enlarge winrate graph.
 
 <hr>
 
 <h2>Tips</h2>
-
-<h3>UI layout</h3>
-
-You can switch landscape / portrait layout by changing window size.
-(Portrait may be preferable when it is attached to Sabaki.)
-See also "View" menu in LizGoban.
 
 <h3>Trial board</h3>
 
@@ -84,6 +87,12 @@ in a new trial board.
       Or, hit "0" key (play pass when there is enough margin of winrate).</li>
 </ol>
 Push "z" key (keep holding down) to peek suggestions.
+
+<h3>UI layout</h3>
+
+You can switch landscape / portrait layout by changing window size.
+(Portrait may be preferable when it is attached to Sabaki.)
+See also "View" menu in LizGoban.
 
 <hr>
 

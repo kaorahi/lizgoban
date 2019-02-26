@@ -41,7 +41,6 @@ let history = create_history()
 let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
 let auto_analysis_visits = Infinity, play_best_count = 0
 const simple_ui = false
-let lizzie_style = config.get('lizzie_style', false)
 let auto_play_sec = 0
 let pausing = false, busy = false
 
@@ -318,11 +317,6 @@ function try_play_best(weaken_percent) {
                   weaken_percent === 'pass_maybe' ? pass_maybe() : play(move))
 }
 function best_move() {return R.suggest[0].move}
-function pass_maybe(move) {
-    const enough_winrate = 10
-    const pass_winrate = (R.suggest.find(h => h.move === 'pass') || {}).winrate || 0
-    return pass_winrate > enough_winrate ? 'pass' : move
-}
 function weak_move(weaken_percent) {
     // (1) Converge winrate to 0 with move counts
     // (2) Occasionally play good moves with low probability
@@ -399,7 +393,6 @@ function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 
 // misc.
 function toggle_trial() {history.trial = !history.trial; update_state()}
-function toggle_lizzie_style() {config.set('lizzie_style', (lizzie_style = !lizzie_style))}
 function close_window_or_cut_sequence(win) {
     get_windows().length > 1 ? win.close() :
         attached ? null :
@@ -442,8 +435,12 @@ function set_renderer_state(...args) {
     const progress = auto_progress()
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
+    const [lizzie_style, winrate_trail, expand_winrate_bar] =
+          ['lizzie_style', 'winrate_trail', 'expand_winrate_bar']
+          .map(key => config.get(key, false))
     merge(R, {winrate_history, auto_analysis_visits, lizzie_style, progress,
-              weight_info, network_size, tag_letters, start_moves_tag_letter}, ...args)
+              weight_info, network_size, tag_letters, start_moves_tag_letter,
+              winrate_trail, expand_winrate_bar}, ...args)
 }
 function set_and_render(...args) {set_renderer_state(...args); renderer('render', R)}
 
@@ -916,8 +913,10 @@ function menu_template(win) {
         board_type_menu_item('Raw board', 'raw', win),
         board_type_menu_item('Winrate graph', 'winrate_only', win),
         sep,
-        {label: 'Lizzie style', type: 'checkbox', checked: lizzie_style,
-         click: toggle_lizzie_style},
+        config_toggler_menu_item('Lizzie style', 'lizzie_style'),
+        config_toggler_menu_item('Winrate trail', 'winrate_trail',
+                                 'Shift+T'),
+        config_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
     ])
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
@@ -944,4 +943,10 @@ function menu_template(win) {
 function board_type_menu_item(label, btype, win) {
     return {label, type: 'radio', checked: win.lizgoban_board_type === btype,
             click: () => {win.lizgoban_board_type = btype; update_ui()}}
+}
+
+function config_toggler_menu_item(label, key, accelerator) {
+    return {label, accelerator, type: 'checkbox', checked: config.get(key),
+            click: () => {config.set(key, !config.get(key)); update_state()},
+           }
 }

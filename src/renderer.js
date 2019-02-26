@@ -24,9 +24,10 @@ const ORANGE = "#fc8d49"
 const DARK_YELLOW = "#c9a700", TRANSPARENT = "rgba(0,0,0,0)"
 const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 const VAGUE_BLACK = 'rgba(0,0,0,0.3)', VAGUE_WHITE = 'rgba(255,255,255,0.3)'
-const PALE_BLUE = "rgba(128,128,255,0.3)"
+const PALE_BLUE = "rgba(128,128,255,0.5)"
 const PALE_BLACK = "rgba(0,0,0,0.1)", PALE_WHITE = "rgba(255,255,255,0.3)"
 const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
+const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)'
 // p: pausing, t: trial
 const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
 
@@ -34,14 +35,14 @@ const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"
 const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
     winrate_history: [],
-    attached: false, pausing: false, auto_analyzing: false,
-    auto_analysis_visits: Infinity,
+    attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
+    auto_analysis_visits: Infinity, max_visits: 1,
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [],
     tag_letters: '',
 }
 let temporary_board_type = false
-let hovered_suggest = null, keyboard_moves = [], keyboard_tag_data = {}
+let keyboard_moves = [], keyboard_tag_data = {}
 let thumbnails = []
 
 // handler
@@ -97,6 +98,7 @@ ipc.on('render', (e, h) => {
     merge(R, h)
     setq('#move_count', R.move_count)
     setq('#history_length', ' (' + R.history_length + ')')
+    R.max_visits = (R.suggest.find(s => (s.order === 0)) || {}).visits
     update_goban()
 })
 
@@ -104,6 +106,7 @@ ipc.on('update_ui', (e, availability, ui_only, board_type) => {
     R.pausing = availability.resume
     R.auto_analyzing = availability.stop_auto
     merge(R, {board_type})
+    set_all_canvas_size()
     ui_only || update_goban()
     update_body_color()
     update_button_etc(availability)
@@ -145,6 +148,11 @@ function update_body_color() {
 /////////////////////////////////////////////////
 // draw goban etc.
 
+// for smooth interaction on auto-repeated undo/redo
+const sub_canvas_deferring_millisec = 10
+const [do_on_sub_canvas_when_idle] =
+      deferred_procs([f => f(sub_canvas), sub_canvas_deferring_millisec])
+
 function update_goban() {
     const btype = current_board_type(), do_nothing = truep
     const draw_raw_unclickable = c => draw_goban(c, null, {draw_last_p: true, read_only: true})
@@ -153,7 +161,7 @@ function update_goban() {
     })
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_winrate_graph)(winrate_graph_canvas),
-                            (s || do_nothing)(sub_canvas),
+                            do_on_sub_canvas_when_idle(s || do_nothing),
                             draw_winrate_bar(winrate_bar_canvas))
     if (R.board_type === "double_boards") {
         switch (btype) {
@@ -175,16 +183,12 @@ function update_goban() {
 }
 
 function draw_main_goban(canvas) {
-    const hovered_move = canvas.lizgoban_hovered_move
-    const kbd_move = keyboard_moves[0]
-    const h = hovered_suggest =
-          R.suggest.find(h => h.move === kbd_move || h.move === hovered_move)
+    const h = selected_suggest(canvas)
     const opts = {draw_visits_p: true, read_only: R.attached}
     // case I: "variation"
-    if (h) {draw_goban_with_variation(canvas, h, opts); return}
+    if (h.move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
-    const [i, j] = kbd_move ? move2idx(kbd_move) :
-          hovered_move ? move2idx(hovered_move) : [-1, -1]
+    const [i, j] = h.move ? move2idx(h.move) : [-1, -1]
     const s = (i >= 0 && R.stones[i] && R.stones[i][j]) || {}
     const show_until = keyboard_tag_data.move_count ||
           (s.stone && s.tag && (s.move_count !== R.move_count) && s.move_count)
@@ -223,7 +227,6 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const reliable_moves = 7
     const variation = suggest.pv || []
     const displayed_stones = copy_stones_for_display()
-    canvas === main_canvas && (hovered_suggest = suggest)
     variation.forEach((move, k) => {
         const b = xor(R.bturn, k % 2 === 1), w = !b
         set_stone_at(move, displayed_stones, {
@@ -246,6 +249,11 @@ function draw_goban_with_principal_variation(canvas) {
     draw_goban_with_variation(canvas, R.suggest[0] || {}, {read_only: true})
 }
 
+function selected_suggest(canvas) {
+    const target_move = keyboard_moves[0] || canvas.lizgoban_hovered_move
+    return R.suggest.find(h => h.move === target_move) || {}
+}
+
 function copy_stones_for_display() {
     return R.stones.map(row => row.map(s => merge({}, s)))
 }
@@ -265,8 +273,8 @@ function set_stone_at(move, stone_array, stone) {
 }
 
 function draw_goban(canvas, stones, opts) {
-    const {draw_last_p, draw_next_p, draw_visits_p, read_only,
-           mapping_to_winrate_bar} = opts || {}
+    const {draw_last_p, draw_next_p, draw_visits_p, draw_winrate_trail_p,
+           read_only, mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
@@ -566,6 +574,7 @@ function draw_winrate_bar(canvas) {
     const xfor = percent => w * percent / 100
     const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
     const b_wr0 = b_winrate(), b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
+    const target_move = selected_suggest(canvas).move
     winrate_bar_prev = b_wr
     if (R.pausing && !truep(b_wr0)) {
         draw_winrate_bar_unavailable(w, h, g)
@@ -573,27 +582,36 @@ function draw_winrate_bar(canvas) {
         return
     }
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
+    draw_winrate_bar_horizontal_line(w, h, g)
     draw_winrate_bar_tics(b_wr, tics, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
-    draw_winrate_bar_suggestions(h, xfor, vline, g)
+    R.winrate_trail && draw_winrate_trail(canvas)
+    draw_winrate_bar_suggestions(target_move, h, xfor, vline, g)
     draw_winrate_bar_text(w, h, g)
     canvas.onmouseenter = e => {update_goban()}
     canvas.onmouseleave = e => {update_goban()}
 }
 
 function draw_winrate_bar_text(w, h, g) {
-    const b_wr = b_winrate(), eval = last_move_eval(), y = h / 2
+    const b_wr = b_winrate(), eval = last_move_eval()
+    const visits = R.max_visits && kilo_str(R.max_visits)
+    const fontsize = Math.min(h * 0.5, w * 0.04)
     if (!truep(b_wr)) {return}
     g.save()
-    set_font(h * 0.5, g); g.textBaseline = 'middle'
-    const f = (wr, x, color, align, ev) => {
-        g.fillStyle = color; g.textAlign = align
-        const w = ` ${f2s(wr)}% `
-        const e = truep(ev) ? ` (${eval > 0 ? '+' : ''}${f2s(eval)}) ` : ''
-        g.fillText(w, x, y - h / 4); g.fillText(e, x, y + h / 4)
+    set_font(fontsize, g); g.textBaseline = 'middle'
+    const f = (wr, x, align, myturn) => {
+        const cond = (pred, s) => (pred ? ` ${s} ` : '')
+        const vis = cond(visits, visits)
+        const ev = cond(truep(eval), `(${eval > 0 ? '+' : ''}${f2s(eval)})`)
+        const win = cond(true, `${f2s(wr)}%`)
+        g.textAlign = align
+        g.fillStyle = GREEN; g.fillText(win, x, fontsize * 0.5)
+        myturn && (g.fillStyle = WINRATE_TRAIL_COLOR)
+        // myturn && (g.fillStyle = '#888')
+        g.fillText(myturn ? vis : ev, x, fontsize * 1.5)
     }
-    f(b_wr, 0, GREEN, 'left', !R.bturn && eval)
-    f(100 - b_wr, w, GREEN, 'right', R.bturn && eval)
+    f(b_wr, 0, 'left', R.bturn)
+    f(100 - b_wr, w, 'right', !R.bturn)
     g.restore()
 }
 
@@ -610,6 +628,13 @@ function draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g) {
     // white area
     g.fillStyle = R.bturn ? "#fff" : WHITE
     g.strokeStyle = BLACK; edged_fill_rect([wrx, 0], [w, h], g)
+}
+
+function draw_winrate_bar_horizontal_line(w, h, g) {
+    const v = Math.pow(10, Math.floor(Math.log(R.max_visits) / Math.log(10)))
+    const y = h * (1 - v / R.max_visits)
+    g.strokeStyle = WINRATE_TRAIL_COLOR; g.lineWidth = 1
+    line([0, y], [w, y], g)
 }
 
 function draw_winrate_bar_tics(b_wr, tics, vline, g) {
@@ -629,29 +654,37 @@ function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
     edged_fill_rect([x1, lw / 2], [x2, h - lw / 2], g)
 }
 
-function draw_winrate_bar_suggestions(h, xfor, vline, g) {
+function draw_winrate_bar_suggestions(target_move, h, xfor, vline, g) {
     g.lineWidth = 1
     const wr = flip_maybe(b_winrate())
     const is_next_move = move => {
         [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
     }
+    const max_radius = Math.min(h, xfor(100) * 0.05)
     R.suggest.forEach(s => {
-        const {move, visits, winrate, prior} = s
+        const {move, winrate} = s, target_p = (move === target_move)
         // fan
         g.lineWidth = 1; g.strokeStyle = BLUE
-        g.fillStyle = (s === hovered_suggest) ? ORANGE :
+        g.fillStyle = target_p ? ORANGE :
             is_next_move(move) ? YELLOW : PALE_BLUE
-        const x = xfor(flip_maybe(winrate))
-        const p_margin = 0.2, y = ((1 - p_margin) * (1 - prior) + p_margin * prior) * h
-        const radius = Math.sqrt(visits / R.visits) * h
+        const [x, y, r] = winrate_bar_xy(s, xfor(100), h, true)
         const degs = R.bturn ? [150, 210] : [-30, 30]
-        edged_fill_fan([x, y], radius, degs, g)
+        edged_fill_fan([x, y], r, degs, g)
         // vertical line
         g.lineWidth = 3
-        g.strokeStyle = (s === hovered_suggest) ? ORANGE :
+        g.strokeStyle = target_p ? ORANGE :
             is_next_move(move) ? DARK_YELLOW : TRANSPARENT
         vline(flip_maybe(winrate))
     })
+}
+
+function winrate_bar_xy(suggest, w, h, and_r) {
+    const max_radius = Math.min(h * 1, w * 0.1)
+    const hmin = max_radius * 0.1, hmax = h - hmin
+    const relative_visits = suggest.visits / R.max_visits
+    const x = w * flip_maybe(suggest.winrate) / 100
+    const y = hmin * relative_visits + hmax * (1 - relative_visits)
+    return and_r ? [x, y, max_radius * Math.sqrt(suggest.prior)] : [x, y]
 }
 
 /////////////////////////////////////////////////
@@ -739,6 +772,42 @@ function winrate_graph_goto(e, coord2sr) {
     const [s, r] = coord2sr(...mouse2coord(e))
     s >= 0 && main('busy', 'goto_move_count',
                    clip(s, 0, R.history_length))
+}
+
+/////////////////////////////////////////////////
+// winrate trail
+
+const winrate_trail_max_length = 50
+const winrate_trail_max_suggestions = 10
+const winrate_trail_limit_relative_visits = 0.3
+let winrate_trail = {}
+let winrate_trail_move_count = 0
+
+function update_winrate_trail() {
+    winrate_trail_move_count !== R.move_count && (winrate_trail = {})
+    winrate_trail_move_count = R.move_count
+    R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
+        const move = s.move, wt = winrate_trail
+        const trail = wt[move] || (wt[move] = []), len = trail.length
+        trail.unshift(s)
+        len > winrate_trail_max_length &&
+            trail.splice(1 + Math.floor(Math.random() * (len - 2)), 1)
+            // never delete first and last element
+    })
+}
+
+function draw_winrate_trail(canvas) {
+    const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
+    const target_move = selected_suggest(canvas).move
+    const xy_for = s => winrate_bar_xy(s, w, h)
+    const limit_visits = R.max_visits * winrate_trail_limit_relative_visits
+    update_winrate_trail()
+    g.lineWidth = 2
+    g.strokeStyle = target_move ? 'rgba(0,192,255,0.8)' : WINRATE_TRAIL_COLOR
+    each_key_value(winrate_trail, (move, a, count) => {
+        const ok = target_move ? (move === target_move) : (a[0].visits >= limit_visits)
+        ok && line(...a.map(xy_for), g)
+    })
 }
 
 /////////////////////////////////////////////////
@@ -876,25 +945,30 @@ function set_font(fontsize, g) {g.font = '' + fontsize + 'px sans-serif'}
 // canvas
 
 function set_all_canvas_size() {
+    const wr_only = (current_board_type() === "winrate_only")
     const main_size = Q('#main_div').clientWidth
     const rest_size = Q('#rest_div').clientWidth
-    const main_board_ratio = 0.96, main_board_size = main_size * main_board_ratio
-    const sub_board_size = Math.min(main_board_size * 0.65, rest_size * 0.85)
+    const main_board_ratio = 0.96
+    const main_board_max_size = main_size * main_board_ratio
+    const main_board_size = main_board_max_size *
+          (R.expand_winrate_bar && !wr_only ? 0.85 : 1)
+    const main_board_height = wr_only ? main_board_max_size * 0.7 : main_board_size
+    const sub_board_size = Math.min(main_board_max_size * 0.65, rest_size * 0.85)
     // use main_board_ratio in winrate_graph_width for portrait layout
     const winrate_graph_width = rest_size * main_board_ratio
-    const winrate_graph_height = main_board_size * 0.25
-    set_canvas_square_size(main_canvas, main_board_size)
+    const winrate_graph_height = main_board_max_size * 0.25
+    set_canvas_size(main_canvas, main_board_size, main_board_height)
     set_canvas_size(winrate_bar_canvas,
-                    main_board_size, main_size * (1 - main_board_ratio))
+                    main_board_size, main_size - main_board_height)
     set_canvas_square_size(sub_canvas, sub_board_size)
-    set_canvas_size(winrate_graph_canvas,
-                    winrate_graph_width, winrate_graph_height)
+    set_canvas_size(winrate_graph_canvas, winrate_graph_width, winrate_graph_height)
     update_all_thumbnails()
 }
 
 function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, size)}
 
 function set_canvas_size(canvas, width, height) {
+    if (to_i(width) === canvas.width && to_i(height) === canvas.height) {return}
     canvas.setAttribute('width', width); canvas.setAttribute('height', height)
 }
 
@@ -995,7 +1069,10 @@ function reset_keyboard_tag() {keyboard_tag_data = {}; update_goban()}
 // board type selector
 
 function update_board_type() {
+    const new_board_type = current_board_type()
     update_ui_element("#sub_goban_container", R.board_type === "double_boards")
+    set_all_canvas_size()
+    previous_board_type = new_board_type
     update_goban()
 }
 
