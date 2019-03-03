@@ -698,9 +698,13 @@ function draw_winrate_bar_suggestions(target_move, w, h, xfor, vline, g) {
     }
     const max_radius = Math.min(h, w * 0.05)
     R.suggest.forEach(s => {
-        const {move, winrate} = s, target_p = (move === target_move)
+        const {move, winrate} = s
+        const target_p = (move === target_move), next_p = is_next_move(move)
         const [fan_color, vline_color] = target_p ? [ORANGE, ORANGE] :
-              is_next_move(move) ? [YELLOW, DARK_YELLOW] : [PALE_BLUE, TRANSPARENT]
+              next_p ? [YELLOW, DARK_YELLOW] : [PALE_BLUE, TRANSPARENT]
+        const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
+              s.order < 3 || s.winrate_order < 3 || target_p || next_p
+        major && large_winrate_bar_p() && draw_winrate_bar_order(s, w, h, g)
         draw_winrate_bar_fan(s, w, h, fan_color, g)
         g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
     })
@@ -716,6 +720,15 @@ function draw_winrate_bar_fan(s, w, h, fill_color, g) {
     edged_fill_fan([x, y], r, degs, g)
 }
 
+function draw_winrate_bar_order(s, w, h, g) {
+    const fontsize = w * 0.03, [x, y] = winrate_bar_xy(s, w, h)
+    g.save()
+    g.fillStyle = RED; set_font(fontsize, g)
+    g.textAlign = R.bturn ? 'left' : 'right'; g.textBaseline = 'middle'
+    g.fillText(` ${s.order + 1} `, x, y)
+    g.restore()
+}
+
 function winrate_bar_xy(suggest, w, h, and_r, bturn) {
     const max_radius = Math.min(h * 1, w * 0.1)
     const hmin = max_radius * 0.1, hmax = h - hmin
@@ -724,6 +737,10 @@ function winrate_bar_xy(suggest, w, h, and_r, bturn) {
     // relative_visits > 1 can happen for R.previous_suggest
     const y = clip(hmin * relative_visits + hmax * (1 - relative_visits), 0, h)
     return and_r ? [x, y, max_radius * Math.sqrt(suggest.prior)] : [x, y]
+}
+
+function large_winrate_bar_p() {
+    return R.expand_winrate_bar || current_board_type() === 'winrate_only'
 }
 
 /////////////////////////////////////////////////
