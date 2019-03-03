@@ -621,7 +621,7 @@ function draw_winrate_bar(canvas) {
         return
     }
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
-    draw_winrate_bar_horizontal_line(w, h, g)
+    large_winrate_bar_p() && draw_winrate_bar_horizontal_line(w, h, g)
     draw_winrate_bar_tics(b_wr, tics, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
     R.winrate_trail && draw_winrate_trail(canvas)
