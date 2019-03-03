@@ -36,6 +36,7 @@ const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
     winrate_history: [],
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
+    expand_winrate_bar: false,
     auto_analysis_visits: Infinity, max_visits: 1,
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [],
