@@ -710,7 +710,9 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
         const vline_color = (target_p || next_p) ? fan_color : null
         const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
               s.order < 3 || s.winrate_order < 3 || target_p || next_p
-        major && large_winrate_bar_p() && draw_winrate_bar_order(s, w, h, g)
+        const eliminated = target_move && !target_p
+        major && !eliminated && large_winrate_bar_p() &&
+            draw_winrate_bar_order(s, w, h, g)
         draw_winrate_bar_fan(s, w, h, edge_color, fan_color, g)
         if (vline_color) {
             g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
