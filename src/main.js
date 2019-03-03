@@ -432,6 +432,7 @@ function set_renderer_state(...args) {
     const winrate_history = winrate_from_history(history)
     const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
           start_moves_tag_letter
+    const previous_suggest = get_previous_suggest()
     const progress = auto_progress()
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
@@ -440,9 +441,16 @@ function set_renderer_state(...args) {
           .map(key => config.get(key, false))
     merge(R, {winrate_history, auto_analysis_visits, lizzie_style, progress,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
-              winrate_trail, expand_winrate_bar}, ...args)
+              previous_suggest, winrate_trail, expand_winrate_bar}, ...args)
 }
 function set_and_render(...args) {set_renderer_state(...args); renderer('render', R)}
+
+function get_previous_suggest() {
+    const [p1, p2] = [1, 2].map(k => history[R.move_count - k] || {})
+    const ret = (p2.suggest || []).find(h => h.move === (p1.move || '')) || null
+    ret && (ret.bturn = !p2.is_black)
+    return ret
+}
 
 function weight_info_text() {
     const f = lz =>
@@ -499,8 +507,7 @@ function stone_for_history_elem(h, stones) {
 
 // suggest
 function suggest_handler(h) {
-    R.move_count > 0 && (history[R.move_count - 1].suggest =
-                         h.suggest.map(z => pick_properties(z, ['move', 'winrate'])))
+    R.move_count > 0 && (history[R.move_count - 1].suggest = h.suggest)
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
         : (initial_b_winrate = h.b_winrate)
     set_and_render(h, show_suggest_p() ? {} : {suggest: [], visits: null})

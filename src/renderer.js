@@ -34,7 +34,7 @@ const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"
 // renderer state
 const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
-    winrate_history: [],
+    winrate_history: [], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
     expand_winrate_bar: false,
     auto_analysis_visits: Infinity, max_visits: 1,
@@ -544,7 +544,9 @@ function draw_suggestion_order(h, xy, radius, color, g) {
     g.restore()
 }
 
-function flip_maybe(x) {return R.bturn ? x : 100 - x}
+function flip_maybe(x, bturn) {
+    return (bturn === undefined ? R.bturn : bturn) ? x : 100 - x
+}
 
 function hsla(h, s, l, alpha) {
     return 'hsla(' + h + ',' + s + '%,' + l + '%,' + (alpha === undefined ? 1 : alpha) + ')'
@@ -587,7 +589,7 @@ function draw_winrate_bar(canvas) {
     draw_winrate_bar_tics(b_wr, tics, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
     R.winrate_trail && draw_winrate_trail(canvas)
-    draw_winrate_bar_suggestions(target_move, h, xfor, vline, g)
+    draw_winrate_bar_suggestions(target_move, w, h, xfor, vline, g)
     draw_winrate_bar_text(w, h, g)
     canvas.onmouseenter = e => {update_goban()}
     canvas.onmouseleave = e => {update_goban()}
@@ -655,36 +657,39 @@ function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
     edged_fill_rect([x1, lw / 2], [x2, h - lw / 2], g)
 }
 
-function draw_winrate_bar_suggestions(target_move, h, xfor, vline, g) {
+function draw_winrate_bar_suggestions(target_move, w, h, xfor, vline, g) {
     g.lineWidth = 1
     const wr = flip_maybe(b_winrate())
     const is_next_move = move => {
         [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
     }
-    const max_radius = Math.min(h, xfor(100) * 0.05)
+    const max_radius = Math.min(h, w * 0.05)
     R.suggest.forEach(s => {
         const {move, winrate} = s, target_p = (move === target_move)
-        // fan
-        g.lineWidth = 1; g.strokeStyle = BLUE
-        g.fillStyle = target_p ? ORANGE :
-            is_next_move(move) ? YELLOW : PALE_BLUE
-        const [x, y, r] = winrate_bar_xy(s, xfor(100), h, true)
-        const degs = R.bturn ? [150, 210] : [-30, 30]
-        edged_fill_fan([x, y], r, degs, g)
-        // vertical line
-        g.lineWidth = 3
-        g.strokeStyle = target_p ? ORANGE :
-            is_next_move(move) ? DARK_YELLOW : TRANSPARENT
-        vline(flip_maybe(winrate))
+        const [fan_color, vline_color] = target_p ? [ORANGE, ORANGE] :
+              is_next_move(move) ? [YELLOW, DARK_YELLOW] : [PALE_BLUE, TRANSPARENT]
+        draw_winrate_bar_fan(s, w, h, fan_color, g)
+        g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
     })
+    R.previous_suggest &&
+        draw_winrate_bar_fan(R.previous_suggest, w, h, TRANSPARENT, g)
 }
 
-function winrate_bar_xy(suggest, w, h, and_r) {
+function draw_winrate_bar_fan(s, w, h, fill_color, g) {
+    g.lineWidth = 1; g.strokeStyle = BLUE; g.fillStyle = fill_color
+    const bturn = s.bturn === undefined ? R.bturn : s.bturn
+    const [x, y, r] = winrate_bar_xy(s, w, h, true, bturn)
+    const degs = bturn ? [150, 210] : [-30, 30]
+    edged_fill_fan([x, y], r, degs, g)
+}
+
+function winrate_bar_xy(suggest, w, h, and_r, bturn) {
     const max_radius = Math.min(h * 1, w * 0.1)
     const hmin = max_radius * 0.1, hmax = h - hmin
     const relative_visits = suggest.visits / R.max_visits
-    const x = w * flip_maybe(suggest.winrate) / 100
-    const y = hmin * relative_visits + hmax * (1 - relative_visits)
+    const x = w * flip_maybe(suggest.winrate, bturn) / 100
+    // relative_visits > 1 can happen for R.previous_suggest
+    const y = clip(hmin * relative_visits + hmax * (1 - relative_visits), 0, h)
     return and_r ? [x, y, max_radius * Math.sqrt(suggest.prior)] : [x, y]
 }
 
