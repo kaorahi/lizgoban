@@ -672,7 +672,7 @@ function draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g) {
 
 function draw_winrate_bar_horizontal_line(w, h, g) {
     const v = Math.pow(10, Math.floor(Math.log(R.max_visits) / Math.log(10)))
-    const y = h * (1 - v / R.max_visits)
+    const y = winrate_bar_y(v, w, h)
     g.strokeStyle = WINRATE_TRAIL_COLOR; g.lineWidth = 1
     line([0, y], [w, y], g)
 }
@@ -742,14 +742,21 @@ function draw_winrate_bar_order(s, w, h, g) {
 }
 
 function winrate_bar_xy(suggest, w, h, and_r, bturn) {
-    const max_radius = Math.min(h * 1, w * 0.1)
-    const hmin = max_radius * 0.1, hmax = h - hmin
-    const relative_visits = suggest.visits / R.max_visits
     const x = w * flip_maybe(suggest.winrate, bturn) / 100
-    // relative_visits > 1 can happen for R.previous_suggest
-    const y = clip(hmin * relative_visits + hmax * (1 - relative_visits), 0, h)
+    const max_radius = winrate_bar_max_radius(w, h)
+    const y = winrate_bar_y(suggest.visits, w, h, max_radius)
     return and_r ? [x, y, max_radius * Math.sqrt(suggest.prior)] : [x, y]
 }
+
+function winrate_bar_y(visits, w, h, max_radius) {
+    const mr = max_radius || winrate_bar_max_radius(w, h)
+    const hmin = mr * 0.1, hmax = h - hmin
+    const relative_visits = visits / R.max_visits
+    // relative_visits > 1 can happen for R.previous_suggest
+    return clip(hmin * relative_visits + hmax * (1 - relative_visits), 0, h)
+}
+
+function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
 
 function large_winrate_bar_p() {
     return R.expand_winrate_bar || current_board_type() === 'winrate_only'
