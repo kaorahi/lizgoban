@@ -532,11 +532,11 @@ function draw_suggest(h, xy, radius, g) {
     draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
 }
 
-function suggest_color(suggest) {
+function suggest_color(suggest, alpha) {
     const max_alpha = 0.5, hue = suggest_color_hue(suggest)
     const visits_ratio = suggest.visits / (R.visits + 1)
     const alpha_emphasis = emph => max_alpha * visits_ratio ** (1 - emph)
-    const hsl_e = (h, s, l, emphasis) => hsla(h, s, l, alpha_emphasis(emphasis))
+    const hsl_e = (h, s, l, emph) => hsla(h, s, l, alpha || alpha_emphasis(emph))
     const stroke = hsl_e(hue, 100, 20, 0.85), fill = hsl_e(hue, 100, 50, 0.4)
     const lizzie_text_color = hsl_e(0, 0, 0, 0.75)
     return {stroke, fill, lizzie_text_color}
@@ -700,24 +700,28 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
         [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
     }
     const max_radius = Math.min(h, w * 0.05)
+    const next_color = '#48f', prev_color = 'rgba(64,128,255,0.8)'
     R.suggest.forEach(s => {
+        const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
         const {move, winrate} = s
         const target_p = (move === target_move), next_p = is_next_move(move)
-        const [fan_color, vline_color] = target_p ? [ORANGE, ORANGE] :
-              next_p ? [YELLOW, DARK_YELLOW] : [PALE_BLUE, TRANSPARENT]
+        const {fill} = suggest_color(s, target_p ? 1.0 : target_move ? 0.1 : 0.8)
+        const fan_color = (!target_move && next_p) ? next_color : fill
+        const vline_color = (target_p || next_p) ? fan_color : null
         const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
               s.order < 3 || s.winrate_order < 3 || target_p || next_p
         major && large_winrate_bar_p() && draw_winrate_bar_order(s, w, h, g)
-        draw_winrate_bar_fan(s, w, h, BLUE, fan_color, g)
-        g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
+        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, g)
+        if (vline_color) {
+            g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
+        }
     })
     R.previous_suggest &&
-        draw_winrate_bar_fan(R.previous_suggest, w, h,
-                             'rgba(0,192,192,0.5)', TRANSPARENT, g)
+        draw_winrate_bar_fan(R.previous_suggest, w, h, prev_color, TRANSPARENT, g)
 }
 
 function draw_winrate_bar_fan(s, w, h, stroke, fill, g) {
-    g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
+    [g.strokeStyle, g.fillStyle] = [stroke, fill]; g.lineWidth = 1
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
     const [x, y, r] = winrate_bar_xy(s, w, h, true, bturn)
     const d = winrate_trail_rising(s) * 30
@@ -1021,7 +1025,7 @@ function set_all_canvas_size() {
     const wr_only = (current_board_type() === "winrate_only")
     const main_size = Q('#main_div').clientWidth
     const rest_size = Q('#rest_div').clientWidth
-    const main_board_ratio = 0.96
+    const main_board_ratio = 0.95
     const main_board_max_size = main_size * main_board_ratio
     const main_board_size = main_board_max_size *
           (R.expand_winrate_bar && !wr_only ? 0.85 : 1)
