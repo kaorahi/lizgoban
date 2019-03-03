@@ -28,7 +28,7 @@ const PALE_BLUE = "rgba(128,128,255,0.5)"
 const PALE_BLACK = "rgba(0,0,0,0.1)", PALE_WHITE = "rgba(255,255,255,0.3)"
 const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
 const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)'
-const EXPECTED_COLOR = PALE_BLUE, UNEXPECTED_COLOR = 'rgba(255,0,0,0.3)'
+const EXPECTED_COLOR = 'rgba(0,0,255,0.3)', UNEXPECTED_COLOR = 'rgba(255,0,0,0.8)'
 // p: pausing, t: trial
 const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
 
@@ -224,8 +224,7 @@ function draw_goban_with_suggest(canvas, opts) {
     const s0 = R.suggest.find(s => s.order === 0)
     const expected_move = ((R.previous_suggest || {}).pv || [])[1]
     expected_move && !empty(R.suggest) && s0.move !== expected_move &&
-        [[expected_move, {expected_move: true}], [s0.move, {unexpected: true}]]
-        .forEach(([m, s]) => set_stone_at(m, displayed_stones, s))
+        set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true, ...opts})
 }
@@ -233,14 +232,20 @@ function draw_goban_with_suggest(canvas, opts) {
 function draw_goban_with_variation(canvas, suggest, opts) {
     const reliable_moves = 7
     const variation = suggest.pv || []
+    const expected = ((R.previous_suggest || {}).pv || []).slice(1)
+    let mark_unexpected_p = (expected[0] === variation[0]) || opts.force_draw_expected_p
     const displayed_stones = copy_stones_for_display()
     variation.forEach((move, k) => {
-        const b = xor(R.bturn, k % 2 === 1), w = !b
+        const b = xor(R.bturn, k % 2 === 1), w = !b, expected_move = expected[k]
         set_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
             variation: true, movenums: [k + 1],
             variation_last: k === variation.length - 1, is_vague: k >= reliable_moves
         })
+        if (mark_unexpected_p && expected_move && expected_move !== move) {
+            set_expected_stone(expected[k], move, displayed_stones)
+            mark_unexpected_p = false
+        }
     })
     const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
     const text = winrate_text && (canvas === main_canvas) ?
@@ -249,11 +254,13 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const at = flip_maybe(suggest.winrate)
     const mapping_to_winrate_bar = text && {text, subtext, at}
     draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, mapping_to_winrate_bar, ...opts})
+               {draw_last_p: true, draw_expected_p: true,
+                mapping_to_winrate_bar, ...opts})
 }
 
 function draw_goban_with_principal_variation(canvas) {
-    draw_goban_with_variation(canvas, R.suggest[0] || {}, {read_only: true})
+    draw_goban_with_variation(canvas, R.suggest[0] || {},
+                              {read_only: true, force_draw_expected_p: true})
 }
 
 function selected_suggest(canvas) {
@@ -277,6 +284,11 @@ function set_stone_at(move, stone_array, stone) {
               {movenums: ary_or_undef(flatten([stone0, stone1].map(get_movenums)))})
     // do nothing if move is pass
     const [i, j] = move2idx(move); (i >= 0) && merge_stone(stone_array[i][j], stone)
+}
+
+function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
+    set_stone_at(expected_move, displayed_stones, {expected_move: true})
+    set_stone_at(unexpected_move, displayed_stones, {unexpected_move: true})
 }
 
 function draw_goban(canvas, stones, opts) {
@@ -359,14 +371,16 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 function draw_on_board(stones, draw_last_p, draw_next_p, draw_expected_p,
                        unit, idx2coord, g) {
     const stone_radius = unit * 0.5
+    const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
+          draw_expected_mark(h, xy, exp_p, stone_radius, g)
     const each_coord =
           proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx)))
     each_coord((h, xy) => {
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
-        draw_expected_p && h.expected_move &&
-            draw_expected_mark(h, xy, true, stone_radius, g)
+        draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
+                            draw_exp(h.unexpected_move, false, h, xy))
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
     })
     each_coord((h, xy) => h.suggest && draw_winrate_mapping_line(h, xy, unit, g))
@@ -517,7 +531,6 @@ function draw_suggest(h, xy, radius, g) {
         g.fillText(visits_text, x, next_y , max_width)
     }
     draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
-    h.unexpected && draw_expected_mark(h, xy, false, radius, g)
 }
 
 function suggest_color_hue(suggest) {

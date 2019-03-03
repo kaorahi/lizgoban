@@ -15,7 +15,7 @@ as subwindows.
 
 1. LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. "Easy" is important here. One redundant step can make a feature unusable practically.
 2. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis.
-3. Flexibility of JavaScript also enables quick experiments of fun features, e.g. watching Leela Zero vs. [ELF](https://facebook.ai/developers/tools/elf) with real-time inspection of each player's plan.
+3. Flexibility of JavaScript also enables quick experiments of fun features, e.g. watching Leela Zero vs. [ELF](https://facebook.ai/developers/tools/elf) with real-time detection of the difference between their plans.
 4. Leela Zero's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose.
 
 ## Features
@@ -27,7 +27,7 @@ as subwindows.
 * Win-rate bar with scatter plot of (visits, winrate, prior)
 * Trial boards that can be used like tabs in web browsers
 * Keyboard shortcuts, e.g. "3" key for the third variation
-* Watch Leela Zero vs. Leela Zero with different network weights
+* Watch Leela Zero vs. Leela Zero with different network weights (with real-time comparison of their plans)
 * Play against weakened Leela Zero
 
 ## Usage
