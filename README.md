@@ -13,22 +13,29 @@ as subwindows.
 
 ## Motivations
 
-1. LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. "Easy" is important here. One redundant step can make a feature unusable practically.
+1. Leela Zero does not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can discard the trial and return to the original board by a single key.
 2. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis.
 3. Flexibility of JavaScript also enables quick experiments of fun features, e.g. watching Leela Zero vs. [ELF](https://facebook.ai/developers/tools/elf) with real-time detection of the difference between their plans.
 4. Leela Zero's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose.
 
+See below for corresponding features.
+
 ## Features
 
-* Colored suggestions
-* Variation by mouse hover
-* Subboard that always shows the principal variation
-* Clickable & draggable win-rate graph with autoanalysis
-* Win-rate bar with scatter plot of (visits, winrate, prior)
-* Trial boards that can be used like tabs in web browsers
-* Keyboard shortcuts, e.g. "3" key for the third variation
-* Watch Leela Zero vs. Leela Zero with different network weights (with real-time comparison of their plans)
-* Play against weakened Leela Zero
+Like Lizzie...
+
+* Colored suggestions / Variation by mouse hover [2]
+* Subboard that always shows the principal variation [2]
+* Clickable & draggable win-rate graph with autoanalysis [2]
+
+And more...
+
+* Visualization of search progress via scatter plot of (visits, winrate, prior) [4]
+* Detection of inconsistency between analyses before/after a move [4]
+* Trial boards that can be used like tabs in web browsers [1]
+* Keyboard shortcuts, e.g. "3" key for the third variation [1]
+* Watch Leela Zero vs. Leela Zero with different network weights (with real-time comparison of their plans) [3]
+* Play against weakened Leela Zero [3]
 
 ## Usage
 
