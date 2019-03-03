@@ -715,7 +715,8 @@ function draw_winrate_bar_fan(s, w, h, fill_color, g) {
     g.lineWidth = 1; g.strokeStyle = BLUE; g.fillStyle = fill_color
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
     const [x, y, r] = winrate_bar_xy(s, w, h, true, bturn)
-    const degs = bturn ? [150, 210] : [-30, 30]
+    const d = winrate_trail_rising(s) * 30
+    const degs = bturn ? [150 - d, 210 - d] : [-30 + d, 30 + d]
     edged_fill_fan([x, y], r, degs, g)
 }
 
@@ -845,6 +846,7 @@ function update_winrate_trail() {
     R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
         const move = s.move, wt = winrate_trail
         const trail = wt[move] || (wt[move] = []), len = trail.length
+        s.relative_visits = s.visits / R.max_visits
         trail.unshift(s)
         len > winrate_trail_max_length &&
             trail.splice(1 + Math.floor(Math.random() * (len - 2)), 1)
@@ -863,6 +865,13 @@ function draw_winrate_trail(canvas) {
         const ok = target_move ? (move === target_move) : (a[0].visits >= limit_visits)
         ok && line(...a.map(xy_for), g)
     })
+}
+
+function winrate_trail_rising(suggest) {
+    const unit = 0.005, delta = 5
+    const a = winrate_trail[suggest.move] || []
+    return (a.length < delta + 1) ? 0 :
+        clip((a[0].relative_visits - a[delta].relative_visits) / (delta * unit), -1, 1)
 }
 
 /////////////////////////////////////////////////
