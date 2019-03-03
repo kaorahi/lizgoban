@@ -43,7 +43,7 @@ const R = {
     history_tags: [],
     tag_letters: '',
 }
-let temporary_board_type = false, target_move = null
+let temporary_board_type = null, target_move = null
 let keyboard_moves = [], keyboard_tag_data = {}
 let thumbnails = []
 
@@ -1111,7 +1111,7 @@ document.onkeyup = e => {
     keydown = false
     reset_keyboard_moves(); reset_keyboard_tag()
     switch (e.key) {
-    case "z": case "x": set_temporary_board_type(false); return
+    case "z": case "x": set_temporary_board_type(null); return
     }
     main('unset_busy')
 }
