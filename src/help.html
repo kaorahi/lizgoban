@@ -21,14 +21,22 @@
 <h3>Suggested moves in the board</h3>
 
 <ul>
- <li>colored circles: suggested moves (color = winrate, opacity: visits)</li>
- <li>blue square: predicted next move in the suggestion before the last move</li>
+ <li>color: winrate</li>
+ <li>opacity: visits</li>
 </ul>
 
 <p>
 You see yellow (normal), orange (bad), and red (very bad) circles usually.
 When the opponent plays a bad move, you will see cyan (very good) and
 green (good) circles.
+</p>
+
+<p>
+When the best suggested move is different from the opponent's expectation,
+they are marked as red and blue squares respectively.
+This is useful when you are watching
+Leela Zero vs. Leela Zero with different network weights
+("Alternative weights for white" and "Auto play" in "Tool" menu).
 </p>
 
 <p>

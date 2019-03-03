@@ -28,6 +28,7 @@ const PALE_BLUE = "rgba(128,128,255,0.5)"
 const PALE_BLACK = "rgba(0,0,0,0.1)", PALE_WHITE = "rgba(255,255,255,0.3)"
 const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
 const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)'
+const EXPECTED_COLOR = PALE_BLUE, UNEXPECTED_COLOR = 'rgba(255,0,0,0.3)'
 // p: pausing, t: trial
 const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
 
@@ -219,11 +220,14 @@ function draw_goban_until(canvas, show_until, opts) {
 function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
     R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
-    R.previous_suggest &&
-        set_stone_at(R.previous_suggest.pv[1], displayed_stones, {predicted_move: true})
     each_stone(displayed_stones, (h, idx) => (h.displayed_tag = h.tag && h.stone))
+    const s0 = R.suggest.find(s => s.order === 0)
+    const expected_move = ((R.previous_suggest || {}).pv || [])[1]
+    expected_move && !empty(R.suggest) && s0.move !== expected_move &&
+        [[expected_move, {expected_move: true}], [s0.move, {unexpected: true}]]
+        .forEach(([m, s]) => set_stone_at(m, displayed_stones, s))
     draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, draw_next_p: true, draw_predicted_p: true, ...opts})
+               {draw_last_p: true, draw_next_p: true, draw_expected_p: true, ...opts})
 }
 
 function draw_goban_with_variation(canvas, suggest, opts) {
@@ -277,7 +281,7 @@ function set_stone_at(move, stone_array, stone) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_winrate_trail_p,
-           draw_predicted_p,
+           draw_expected_p,
            read_only, mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
@@ -294,7 +298,7 @@ function draw_goban(canvas, stones, opts) {
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     draw_on_board(stones || R.stones,
-                  draw_last_p, draw_next_p, draw_predicted_p, unit, idx2coord, g)
+                  draw_last_p, draw_next_p, draw_expected_p, unit, idx2coord, g)
     // mouse events
     canvas.onmousedown = e => (!read_only && !R.attached &&
                                (play_here(e, coord2idx), hover_off(canvas)))
@@ -352,7 +356,7 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
     fill_circle(xy, unit / 4, g)
 }
 
-function draw_on_board(stones, draw_last_p, draw_next_p, draw_predicted_p,
+function draw_on_board(stones, draw_last_p, draw_next_p, draw_expected_p,
                        unit, idx2coord, g) {
     const stone_radius = unit * 0.5
     const each_coord =
@@ -361,8 +365,8 @@ function draw_on_board(stones, draw_last_p, draw_next_p, draw_predicted_p,
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
-        draw_predicted_p && h.predicted_move &&
-            draw_predicted_move(h, xy, stone_radius, g)
+        draw_expected_p && h.expected_move &&
+            draw_expected_mark(h, xy, true, stone_radius, g)
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
     })
     each_coord((h, xy) => h.suggest && draw_winrate_mapping_line(h, xy, unit, g))
@@ -483,9 +487,9 @@ function draw_next_move(h, xy, radius, g) {
     g.strokeStyle = h.next_is_black ? BLACK : WHITE; g.lineWidth = 3; circle(xy, radius, g)
 }
 
-function draw_predicted_move(h, [x, y], radius, g) {
-    g.strokeStyle = BLUE; g.lineWidth = 1
-    rect([x - radius, y - radius], [x + radius, y + radius], g)
+function draw_expected_mark(h, xy, expected_p, radius, g) {
+    g.strokeStyle = expected_p ? EXPECTED_COLOR : UNEXPECTED_COLOR; g.lineWidth = 2
+    square_around(xy, radius, g)
 }
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
@@ -513,6 +517,7 @@ function draw_suggest(h, xy, radius, g) {
         g.fillText(visits_text, x, next_y , max_width)
     }
     draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
+    h.unexpected && draw_expected_mark(h, xy, false, radius, g)
 }
 
 function suggest_color_hue(suggest) {
@@ -537,9 +542,9 @@ function draw_winrate_mapping_line(h, xy, unit, g) {
     line(xy, [x1, y1 - d], [x1, y1], g)
 }
 
-function draw_suggestion_order(h, xy, radius, color, g) {
+function draw_suggestion_order(h, [x, y], radius, color, g) {
     if (h.data.order >= 9) {return}
-    const [x, y] = xy, lizzie = R.lizzie_style
+    const lizzie = R.lizzie_style
     const both_champ = (h.data.order + h.data.winrate_order === 0)
     const either_champ = (h.data.order * h.data.winrate_order === 0)
     const [fontsize, d, w] =
@@ -955,6 +960,10 @@ function fan_gen([x, y], r, [deg1, deg2], g) {
 const [rect, fill_rect, edged_fill_rect] = drawers_trio(rect_gen)
 const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
 const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
+
+function square_around([x, y], radius, g) {
+    rect([x - radius, y - radius], [x + radius, y + radius], g)
+}
 
 function set_font(fontsize, g) {g.font = '' + fontsize + 'px sans-serif'}
 
