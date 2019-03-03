@@ -222,7 +222,7 @@ function draw_goban_with_suggest(canvas, opts) {
     R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     each_stone(displayed_stones, (h, idx) => (h.displayed_tag = h.tag && h.stone))
     const s0 = R.suggest.find(s => s.order === 0)
-    const expected_move = ((R.previous_suggest || {}).pv || [])[1]
+    const expected_move = expected_pv()[0]
     expected_move && !empty(R.suggest) && s0.move !== expected_move &&
         set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
@@ -232,7 +232,7 @@ function draw_goban_with_suggest(canvas, opts) {
 function draw_goban_with_variation(canvas, suggest, opts) {
     const reliable_moves = 7
     const variation = suggest.pv || []
-    const expected = ((R.previous_suggest || {}).pv || []).slice(1)
+    const expected = expected_pv()
     let mark_unexpected_p = (expected[0] === variation[0]) || opts.force_draw_expected_p
     const displayed_stones = copy_stones_for_display()
     variation.forEach((move, k) => {
@@ -285,6 +285,8 @@ function set_stone_at(move, stone_array, stone) {
     // do nothing if move is pass
     const [i, j] = move2idx(move); (i >= 0) && merge_stone(stone_array[i][j], stone)
 }
+
+function expected_pv() {return ((R.previous_suggest || {}).pv || []).slice(1)}
 
 function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
     set_stone_at(expected_move, displayed_stones, {expected_move: true})

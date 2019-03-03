@@ -447,6 +447,7 @@ function set_and_render(...args) {set_renderer_state(...args); renderer('render'
 
 function get_previous_suggest() {
     const [p1, p2] = [1, 2].map(k => history[R.move_count - k] || {})
+    // avoid "undefined" and use "null" for merge in set_renderer_state
     const ret = (p2.suggest || []).find(h => h.move === (p1.move || '')) || null
     ret && (ret.bturn = !p2.is_black)
     return ret
