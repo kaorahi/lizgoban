@@ -219,9 +219,11 @@ function draw_goban_until(canvas, show_until, opts) {
 function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
     R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
+    R.previous_suggest &&
+        set_stone_at(R.previous_suggest.pv[1], displayed_stones, {predicted_move: true})
     each_stone(displayed_stones, (h, idx) => (h.displayed_tag = h.tag && h.stone))
     draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, draw_next_p: true, ...opts})
+               {draw_last_p: true, draw_next_p: true, draw_predicted_p: true, ...opts})
 }
 
 function draw_goban_with_variation(canvas, suggest, opts) {
@@ -275,6 +277,7 @@ function set_stone_at(move, stone_array, stone) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_winrate_trail_p,
+           draw_predicted_p,
            read_only, mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
@@ -291,7 +294,7 @@ function draw_goban(canvas, stones, opts) {
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     draw_on_board(stones || R.stones,
-                  draw_last_p, draw_next_p, unit, idx2coord, g)
+                  draw_last_p, draw_next_p, draw_predicted_p, unit, idx2coord, g)
     // mouse events
     canvas.onmousedown = e => (!read_only && !R.attached &&
                                (play_here(e, coord2idx), hover_off(canvas)))
@@ -349,7 +352,7 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
     fill_circle(xy, unit / 4, g)
 }
 
-function draw_on_board(stones, draw_last_p, draw_next_p,
+function draw_on_board(stones, draw_last_p, draw_next_p, draw_predicted_p,
                        unit, idx2coord, g) {
     const stone_radius = unit * 0.5
     const each_coord =
@@ -358,6 +361,8 @@ function draw_on_board(stones, draw_last_p, draw_next_p,
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
+        draw_predicted_p && h.predicted_move &&
+            draw_predicted_move(h, xy, stone_radius, g)
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
     })
     each_coord((h, xy) => h.suggest && draw_winrate_mapping_line(h, xy, unit, g))
@@ -476,6 +481,11 @@ function draw_last_move(h, xy, radius, g) {
 
 function draw_next_move(h, xy, radius, g) {
     g.strokeStyle = h.next_is_black ? BLACK : WHITE; g.lineWidth = 3; circle(xy, radius, g)
+}
+
+function draw_predicted_move(h, [x, y], radius, g) {
+    g.strokeStyle = BLUE; g.lineWidth = 1
+    rect([x - radius, y - radius], [x + radius, y + radius], g)
 }
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
