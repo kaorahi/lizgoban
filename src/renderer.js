@@ -704,15 +704,16 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
         const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
               s.order < 3 || s.winrate_order < 3 || target_p || next_p
         major && large_winrate_bar_p() && draw_winrate_bar_order(s, w, h, g)
-        draw_winrate_bar_fan(s, w, h, fan_color, g)
+        draw_winrate_bar_fan(s, w, h, BLUE, fan_color, g)
         g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
     })
     R.previous_suggest &&
-        draw_winrate_bar_fan(R.previous_suggest, w, h, TRANSPARENT, g)
+        draw_winrate_bar_fan(R.previous_suggest, w, h,
+                             'rgba(0,192,192,0.5)', TRANSPARENT, g)
 }
 
-function draw_winrate_bar_fan(s, w, h, fill_color, g) {
-    g.lineWidth = 1; g.strokeStyle = BLUE; g.fillStyle = fill_color
+function draw_winrate_bar_fan(s, w, h, stroke, fill, g) {
+    g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
     const [x, y, r] = winrate_bar_xy(s, w, h, true, bturn)
     const d = winrate_trail_rising(s) * 30
