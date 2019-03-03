@@ -515,27 +515,31 @@ function draw_expected_mark(h, [x, y], expected_p, radius, g) {
 // See "suggestion reader" section in engine.js for suggestion_data.
 
 function draw_suggest(h, xy, radius, g) {
-    const max_alpha = 0.5
-    const suggest = h.data, hue = suggest_color_hue(suggest)
+    const suggest = h.data, {stroke, fill, lizzie_text_color} = suggest_color(suggest)
+    g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
+    edged_fill_circle(xy, radius, g)
+    if (R.lizzie_style) {
+        const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
+        const fontsize = to_i(radius * 0.8), next_y = y + fontsize
+        const [winrate_text, visits_text] = suggest_texts(suggest)
+        g.save(); set_font(fontsize, g); g.textAlign = 'center'
+        g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
+        g.fillText(winrate_text, x, y, max_width)
+        g.fillStyle = suggest.order === 0 ? champ_color : lizzie_text_color
+        g.fillText(visits_text, x, next_y , max_width)
+        g.restore()
+    }
+    draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
+}
+
+function suggest_color(suggest) {
+    const max_alpha = 0.5, hue = suggest_color_hue(suggest)
     const visits_ratio = suggest.visits / (R.visits + 1)
     const alpha_emphasis = emph => max_alpha * visits_ratio ** (1 - emph)
     const hsl_e = (h, s, l, emphasis) => hsla(h, s, l, alpha_emphasis(emphasis))
-    g.lineWidth = 1
-    g.strokeStyle = hsl_e(hue, 100, 20, 0.85); g.fillStyle = hsl_e(hue, 100, 50, 0.4)
-    edged_fill_circle(xy, radius, g)
-    if (R.lizzie_style) {
-        const [x, y] = xy, max_width = radius * 1.8
-        const fontsize = to_i(radius * 0.8), next_y = y + fontsize
-        const normal_color = hsl_e(0, 0, 0, 0.75), champ_color = RED
-        const [winrate_text, visits_text] = suggest_texts(suggest)
-        g.strokeStyle = hsl_e(0, 0, 0, 0.75)
-        g.fillStyle = suggest.winrate_order === 0 ? champ_color : normal_color
-        set_font(fontsize, g); g.textAlign = 'center'
-        g.fillText(winrate_text, x, y, max_width)
-        g.fillStyle = suggest.order === 0 ? champ_color : normal_color
-        g.fillText(visits_text, x, next_y , max_width)
-    }
-    draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
+    const stroke = hsl_e(hue, 100, 20, 0.85), fill = hsl_e(hue, 100, 50, 0.4)
+    const lizzie_text_color = hsl_e(0, 0, 0, 0.75)
+    return {stroke, fill, lizzie_text_color}
 }
 
 function suggest_color_hue(suggest) {
