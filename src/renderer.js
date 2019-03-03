@@ -781,12 +781,13 @@ function winrate_graph_goto(e, coord2sr) {
 const winrate_trail_max_length = 50
 const winrate_trail_max_suggestions = 10
 const winrate_trail_limit_relative_visits = 0.3
-let winrate_trail = {}
-let winrate_trail_move_count = 0
+let winrate_trail = {}, winrate_trail_move_count = 0, winrate_trail_visits = 0
 
 function update_winrate_trail() {
-    winrate_trail_move_count !== R.move_count && (winrate_trail = {})
-    winrate_trail_move_count = R.move_count
+    // check visits for detecting restart of leelaz
+    (winrate_trail_move_count !== R.move_count ||
+     winrate_trail_visits > R.visits) && (winrate_trail = {});
+    [winrate_trail_move_count, winrate_trail_visits] = [R.move_count, R.visits]
     R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
         const move = s.move, wt = winrate_trail
         const trail = wt[move] || (wt[move] = []), len = trail.length
