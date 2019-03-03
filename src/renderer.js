@@ -43,7 +43,7 @@ const R = {
     history_tags: [],
     tag_letters: '',
 }
-let temporary_board_type = false
+let temporary_board_type = false, target_move = null
 let keyboard_moves = [], keyboard_tag_data = {}
 let thumbnails = []
 
@@ -185,10 +185,10 @@ function update_goban() {
 }
 
 function draw_main_goban(canvas) {
-    const h = selected_suggest(canvas)
     const opts = {draw_visits_p: true, read_only: R.attached}
+    const h = selected_suggest(canvas); target_move = h.move
     // case I: "variation"
-    if (h.move) {draw_goban_with_variation(canvas, h, opts); return}
+    if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
     const [i, j] = h.move ? move2idx(h.move) : [-1, -1]
     const s = (i >= 0 && R.stones[i] && R.stones[i][j]) || {}
@@ -264,8 +264,8 @@ function draw_goban_with_principal_variation(canvas) {
 }
 
 function selected_suggest(canvas) {
-    const target_move = keyboard_moves[0] || canvas.lizgoban_hovered_move
-    return R.suggest.find(h => h.move === target_move) || {}
+    const m = keyboard_moves[0] || canvas.lizgoban_hovered_move
+    return R.suggest.find(h => h.move === m) || {}
 }
 
 function copy_stones_for_display() {
@@ -610,7 +610,6 @@ function draw_winrate_bar(canvas) {
     const xfor = percent => w * percent / 100
     const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
     const b_wr0 = b_winrate(), b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
-    const target_move = selected_suggest(canvas).move
     winrate_bar_prev = b_wr
     if (R.pausing && !truep(b_wr0)) {
         draw_winrate_bar_unavailable(w, h, g)
@@ -622,7 +621,7 @@ function draw_winrate_bar(canvas) {
     draw_winrate_bar_tics(b_wr, tics, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
     R.winrate_trail && draw_winrate_trail(canvas)
-    draw_winrate_bar_suggestions(target_move, w, h, xfor, vline, g)
+    draw_winrate_bar_suggestions(w, h, xfor, vline, g)
     draw_winrate_bar_text(w, h, g)
     canvas.onmouseenter = e => {update_goban()}
     canvas.onmouseleave = e => {update_goban()}
@@ -690,7 +689,7 @@ function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
     edged_fill_rect([x1, lw / 2], [x2, h - lw / 2], g)
 }
 
-function draw_winrate_bar_suggestions(target_move, w, h, xfor, vline, g) {
+function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
     g.lineWidth = 1
     const wr = flip_maybe(b_winrate())
     const is_next_move = move => {
@@ -855,7 +854,6 @@ function update_winrate_trail() {
 
 function draw_winrate_trail(canvas) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    const target_move = selected_suggest(canvas).move
     const xy_for = s => winrate_bar_xy(s, w, h)
     const limit_visits = R.max_visits * winrate_trail_limit_relative_visits
     update_winrate_trail()
