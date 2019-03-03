@@ -643,10 +643,11 @@ function draw_winrate_bar_text(w, h, g) {
         const vis = cond(visits, visits)
         const ev = cond(truep(eval), `(${eval > 0 ? '+' : ''}${f2s(eval)})`)
         const win = cond(true, `${f2s(wr)}%`)
-        g.textAlign = align
-        g.fillStyle = GREEN; g.fillText(win, x, fontsize * 0.5)
-        myturn && (g.fillStyle = WINRATE_TRAIL_COLOR)
-        // myturn && (g.fillStyle = '#888')
+        const [wr_color, vis_color] = (current_board_type() === 'winrate_only') ?
+              ['rgba(0,192,0,0.3)', 'rgba(160,160,160,0.3)'] :
+              [GREEN, WINRATE_TRAIL_COLOR]
+        g.textAlign = align; g.fillStyle = wr_color; g.fillText(win, x, fontsize * 0.5)
+        myturn && (g.fillStyle = vis_color)
         g.fillText(myturn ? vis : ev, x, fontsize * 1.5)
     }
     f(b_wr, 0, 'left', R.bturn)
