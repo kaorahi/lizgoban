@@ -501,9 +501,12 @@ function draw_next_move(h, xy, radius, g) {
     g.strokeStyle = h.next_is_black ? BLACK : WHITE; g.lineWidth = 3; circle(xy, radius, g)
 }
 
-function draw_expected_mark(h, xy, expected_p, radius, g) {
+function draw_expected_mark(h, [x, y], expected_p, radius, g) {
+    const x1 = x - radius, y1 = y + radius, d = radius / 2
+    g.fillStyle = xor(R.bturn, expected_p) ? BLACK : WHITE  // whose plan?
+    fill_line([x1, y1 - d], [x1, y1], [x1 + d, y1], g)
     g.strokeStyle = expected_p ? EXPECTED_COLOR : UNEXPECTED_COLOR; g.lineWidth = 2
-    square_around(xy, radius, g)
+    square_around([x, y], radius, g)
 }
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
@@ -950,12 +953,6 @@ function clear_canvas(canvas, bg_color, g) {
     g.clearRect(0, 0, canvas.width, canvas.height)
 }
 
-function line(...args) {
-    // usage: line([x0, y0], [x1, y1], ..., [xn, yn], g)
-    const g = args.pop(), [[x0, y0], ...xys] = args
-    g.beginPath(); g.moveTo(x0, y0); xys.forEach(xy => g.lineTo(...xy)); g.stroke()
-}
-
 function drawers_trio(gen) {
     const edged = (...a) => {gen(...a); last(a).stroke()}
     const filled = (...a) => {gen(...a); last(a).fill()}
@@ -963,6 +960,11 @@ function drawers_trio(gen) {
     return [edged, filled, both]
 }
 
+function line_gen(...args) {
+    // usage: line([x0, y0], [x1, y1], ..., [xn, yn], g)
+    const g = args.pop(), [[x0, y0], ...xys] = args
+    g.beginPath(); g.moveTo(x0, y0); xys.forEach(xy => g.lineTo(...xy))
+}
 function rect_gen([x0, y0], [x1, y1], g) {g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0)}
 function circle_gen([x, y], r, g) {g.beginPath(); g.arc(x, y, r, 0, 2 * Math.PI)}
 function fan_gen([x, y], r, [deg1, deg2], g) {
@@ -970,6 +972,7 @@ function fan_gen([x, y], r, [deg1, deg2], g) {
     g.arc(x, y, r, deg1 * Math.PI / 180, deg2 * Math.PI / 180); g.closePath()
 }
 
+const [line, fill_line, edged_fill_line] = drawers_trio(line_gen)
 const [rect, fill_rect, edged_fill_rect] = drawers_trio(rect_gen)
 const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
 const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
