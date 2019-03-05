@@ -1102,7 +1102,7 @@ document.onkeydown = e => {
     }
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     const play_it = (steps, another_board) =>
-          keyboard_moves[0] ? m('play', keyboard_moves[0], another_board) :
+          target_move ? m('play', target_move, another_board) :
           keyboard_tag_data.move_count ? (duplicate_if(another_board),
                                           m('goto_move_count',
                                             keyboard_tag_data.move_count - 1)) :
