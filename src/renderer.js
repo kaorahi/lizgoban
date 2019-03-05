@@ -808,8 +808,8 @@ function draw_winrate_graph_future(w, h, sr2coord, g) {
     const [x, y] = sr2coord(R.move_count, 50)
     const paint = (partial, l_alpha, r_alpha, y0, y1) => {
         const c = a => `rgba(255,255,255,${a})`
-        const grad = g.createLinearGradient(x, 0, (1 - partial) * x + partial * w, 0)
-        grad.addColorStop(0, c(l_alpha)); grad.addColorStop(1, c(r_alpha))
+        const grad = side_gradation(x, (1 - partial) * x + partial * w,
+                                    c(l_alpha), c(r_alpha), g)
         g.fillStyle = grad; fill_rect([x, y0], [w, y1], g)
     }
     const alpha = 0.2
@@ -1035,6 +1035,12 @@ function square_around([x, y], radius, g) {
 }
 
 function set_font(fontsize, g) {g.font = '' + fontsize + 'px sans-serif'}
+
+function side_gradation(x0, x1, color0, color1, g) {
+    const grad = g.createLinearGradient(x0, 0, x1, 0)
+    grad.addColorStop(0, color0); grad.addColorStop(1, color1)
+    return grad
+}
 
 /////////////////////////////////////////////////
 // canvas
