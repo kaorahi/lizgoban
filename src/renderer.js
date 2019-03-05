@@ -730,9 +730,11 @@ function draw_winrate_bar_fan(s, w, h, stroke, fill, g) {
     [g.strokeStyle, g.fillStyle] = [stroke, fill]; g.lineWidth = 1
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
     const [x, y, r] = winrate_bar_xy(s, w, h, true, bturn)
-    const d = winrate_trail_rising(s) * 30
-    const degs = bturn ? [150 - d, 210 - d] : [-30 + d, 30 + d]
-    edged_fill_fan([x, y], r, degs, g)
+    const taper = winrate_trail_searched(s) + 1
+    const center_angle = 60 / taper, radius = r * Math.sqrt(taper)
+    const direction = (bturn ? 180 : 0) + winrate_trail_rising(s) * 45 * (bturn ? -1 : 1)
+    const degs = [direction - center_angle / 2, direction + center_angle / 2]
+    edged_fill_fan([x, y], radius, degs, g)
 }
 
 function draw_winrate_bar_order(s, w, h, g) {
@@ -866,6 +868,7 @@ const winrate_trail_limit_relative_visits = 0.3
 let winrate_trail = {}, winrate_trail_move_count = 0, winrate_trail_visits = 0
 
 function update_winrate_trail() {
+    const total_visits_increase = R.visits - winrate_trail_visits;
     // check visits for detecting restart of leelaz
     (winrate_trail_move_count !== R.move_count ||
      winrate_trail_visits > R.visits) && (winrate_trail = {});
@@ -874,6 +877,7 @@ function update_winrate_trail() {
         const move = s.move, wt = winrate_trail
         const trail = wt[move] || (wt[move] = []), len = trail.length
         s.relative_visits = s.visits / R.max_visits
+        len > 0 && (s.searched = (s.visits - trail[0].visits) / total_visits_increase)
         trail.unshift(s)
         len > winrate_trail_max_length &&
             trail.splice(1 + Math.floor(Math.random() * (len - 2)), 1)
@@ -900,6 +904,8 @@ function winrate_trail_rising(suggest) {
     return (a.length < delta + 1) ? 0 :
         clip((a[0].relative_visits - a[delta].relative_visits) / (delta * unit), -1, 1)
 }
+
+function winrate_trail_searched(suggest) {return suggest.searched || 0}
 
 /////////////////////////////////////////////////
 // thmubnails
