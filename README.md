@@ -11,12 +11,13 @@ as subwindows.
 
 ![screenshot](screen.gif)
 
-## Motivations
+## Highlights
 
-1. Leela Zero does not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can discard the trial and return to the original board by a single key.
+1. Leela Zero does not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can use any number of trial boards in parallel, discard a needless one by a single action, and restore the deleted one if necessary.
 2. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis.
-3. Flexibility of JavaScript also enables quick experiments of fun features, e.g. watching Leela Zero vs. [ELF](https://facebook.ai/developers/tools/elf) with real-time detection of the difference between their plans.
-4. Leela Zero's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose.
+3. Flexibility of JavaScript also enables quick experiments of fun features, e.g. watching Leela Zero vs. [ELF](https://facebook.ai/developers/tools/elf) with real-time detection of the difference between their plans before they play the move actually.
+4. Leela Zero's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose. We can notice the case when we should wait for a little more analysis, and will never miss a new rising candidate like the one in the above screenshot.
+5. Additionally, various small ideas are implemented, e.g. translucent stones for too long variations, different colors for good/bad/unexpected moves in the win-rate graph, etc.
 
 See below for corresponding features.
 
@@ -33,7 +34,7 @@ And more...
 * Visualization of search progress via scatter plot of (visits, winrate, prior) [4]
 * Detection of inconsistency between analyses before/after a move [4]
 * Trial boards that can be used like tabs in web browsers [1]
-* Keyboard shortcuts, e.g. "3" key for the third variation [1]
+* Keyboard shortcuts, e.g. "3" key for the third variation [5]
 * Watch Leela Zero vs. Leela Zero with different network weights (with real-time comparison of their plans) [3]
 * Play against weakened Leela Zero [3]
 
