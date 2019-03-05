@@ -715,9 +715,9 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
         const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
               s.order < 3 || s.winrate_order < 3 || target_p || next_p
         const eliminated = target_move && !target_p
+        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, g)
         major && !eliminated && large_winrate_bar_p() &&
             draw_winrate_bar_order(s, w, h, g)
-        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, g)
         if (vline_color) {
             g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
         }
@@ -727,14 +727,17 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
 }
 
 function draw_winrate_bar_fan(s, w, h, stroke, fill, g) {
-    [g.strokeStyle, g.fillStyle] = [stroke, fill]; g.lineWidth = 1
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
-    const [x, y, r] = winrate_bar_xy(s, w, h, true, bturn)
-    const taper = winrate_trail_searched(s) + 1
-    const center_angle = 60 / taper, radius = r * Math.sqrt(taper)
+    const [x, y, r, max_radius] = winrate_bar_xy(s, w, h, true, bturn)
+    const center_angle = 60
     const direction = (bturn ? 180 : 0) + winrate_trail_rising(s) * 45 * (bturn ? -1 : 1)
     const degs = [direction - center_angle / 2, direction + center_angle / 2]
-    edged_fill_fan([x, y], radius, degs, g)
+    if (large_winrate_bar_p()) {
+        g.fillStyle = 'rgba(235,148,0,0.9)'
+        fill_circle([x, y], max_radius * 0.15 * Math.sqrt(winrate_trail_searched(s)), g)
+    }
+    g.lineWidth = 1; [g.strokeStyle, g.fillStyle] = [stroke, fill]
+    edged_fill_fan([x, y], r, degs, g)
 }
 
 function draw_winrate_bar_order(s, w, h, g) {
@@ -750,7 +753,7 @@ function winrate_bar_xy(suggest, w, h, and_r, bturn) {
     const x = w * flip_maybe(suggest.winrate, bturn) / 100
     const max_radius = winrate_bar_max_radius(w, h)
     const y = winrate_bar_y(suggest.visits, w, h, max_radius)
-    return and_r ? [x, y, max_radius * Math.sqrt(suggest.prior)] : [x, y]
+    return and_r ? [x, y, max_radius * Math.sqrt(suggest.prior), max_radius] : [x, y]
 }
 
 function winrate_bar_y(visits, w, h, max_radius) {
