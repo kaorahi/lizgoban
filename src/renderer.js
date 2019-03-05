@@ -621,7 +621,7 @@ function draw_winrate_bar(canvas) {
         return
     }
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
-    large_winrate_bar_p() && draw_winrate_bar_horizontal_line(w, h, g)
+    large_winrate_bar_p() && draw_winrate_bar_horizontal_lines(w, h, g)
     draw_winrate_bar_tics(b_wr, tics, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
     R.winrate_trail && draw_winrate_trail(canvas)
@@ -670,11 +670,14 @@ function draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g) {
     g.strokeStyle = BLACK; edged_fill_rect([wrx, 0], [w, h], g)
 }
 
-function draw_winrate_bar_horizontal_line(w, h, g) {
-    const v = Math.pow(10, Math.floor(Math.log(R.max_visits) / Math.log(10)))
-    const y = winrate_bar_y(v, w, h)
+function draw_winrate_bar_horizontal_lines(w, h, g) {
+    const mv = R.max_visits
+    const v = Math.pow(10, Math.floor(Math.log(mv) / Math.log(10)))
+    const unit_v = (mv > v * 5) ? v * 2 : (mv > v * 2) ? v : v / 2
+    const iota = n => [...Array(n).keys()]  // [0, 1, 2, ..., n - 1]
+    const vs = iota(to_i(mv / unit_v + 2)).map(k => unit_v * k)  // +1 for margin
     g.strokeStyle = WINRATE_TRAIL_COLOR; g.lineWidth = 1
-    line([0, y], [w, y], g)
+    winrate_bar_ys(vs, w, h).map(y => line([0, y], [w, y], g))
 }
 
 function draw_winrate_bar_tics(b_wr, tics, vline, g) {
@@ -754,6 +757,11 @@ function winrate_bar_y(visits, w, h, max_radius) {
     const relative_visits = visits / R.max_visits
     // relative_visits > 1 can happen for R.previous_suggest
     return clip(hmin * relative_visits + hmax * (1 - relative_visits), 0, h)
+}
+
+function winrate_bar_ys(vs, w, h) {
+    const max_radius = winrate_bar_max_radius(w, h)
+    return vs.map(v => winrate_bar_y(v, w, h, max_radius))
 }
 
 function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
