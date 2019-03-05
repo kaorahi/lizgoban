@@ -881,6 +881,7 @@ function update_winrate_trail() {
         const trail = wt[move] || (wt[move] = []), len = trail.length
         s.relative_visits = s.visits / R.max_visits
         len > 0 && (s.searched = (s.visits - trail[0].visits) / total_visits_increase)
+        s.searched === 0 && trail.shift()
         trail.unshift(s)
         len > winrate_trail_max_length &&
             trail.splice(1 + Math.floor(Math.random() * (len - 2)), 1)
