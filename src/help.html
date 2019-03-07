@@ -92,9 +92,9 @@ in a new trial board.
 
 <h3>Play against (weakened) leela zero</h3>
 
+<p>
 <ol>
  <li>Select "Raw board" in "View" menu.</li>
- <!-- <li>Set "Weaken" in "Tool" menu if you like.</li> -->
  <li>Click any point in your turn.</li>
  <li>Hit Enter key in leela zero's turn.<br>
       Or, hit "1", "2", ..., "9" key
@@ -102,6 +102,20 @@ in a new trial board.
       Or, hit "0" key (play pass when there is enough margin of winrate).</li>
 </ol>
 Push "z" key (keep holding down) to peek suggestions.
+</p>
+
+<p>
+As another handicap,
+you can also play against leela zero with a random mixture of different network weights.
+<ol>
+ <li>Select "Raw board" in "View" menu.</li>
+ <li>Select a weights file (ex. LZ38) from "Load network weights" in "File" menu.</li>
+ <li>Select another weights file (ex. LZ157) from "Alternative weights for white" in "Tool" menu.</li>
+</ol>
+Then LZ157 is used normally for white if you hit Enter key.
+But, if you hit "1" key, LZ38 is used instead for white with 10% probability.
+It is 20% by "2" key, 30% by "3" key, ..., and 90% by "9" key.
+</p>
 
 <h3>UI layout</h3>
 

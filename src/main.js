@@ -132,7 +132,7 @@ const api = merge({}, simple_api, {
     restart, new_window, init_from_renderer, toggle_sabaki,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
-    goto_move_count, toggle_auto_analyze, play_best, auto_play, stop_auto,
+    goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
@@ -297,24 +297,37 @@ stop_auto_analyze()
 
 // play best move(s)
 let last_auto_play_time = 0
-function play_best(n, sec, weaken_percent) {
+function play_best(n, sec, weaken_method, ...weaken_args) {
     auto_play_sec = sec || -1
     play_best_count === Infinity && (play_best_count = 0)
     stop_auto_analyze(); play_best_count += (n || 1); last_auto_play_time = Date.now()
-    resume(); try_play_best(weaken_percent)
+    resume(); try_play_best(weaken_method, ...weaken_args)
+}
+function play_weak(percent) {
+    play_best(undefined, undefined,
+              leelaz_for_white ? 'random_leelaz' : 'random_candidate', percent)
 }
 function auto_play(sec) {play_best(Infinity, sec); update_ui()}
-function try_play_best(weaken_percent) {
+function try_play_best(weaken_method, ...weaken_args) {
+    // (ex)
+    // try_play_best()
+    // try_play_best('pass_maybe')
+    // try_play_best('random_candidate', 30)
+    // try_play_best('random_leelaz', 30)
     if (finished_playing_best()) {return}
+    const switch_to_random_leelaz = percent => {
+        switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
+    }
+    weaken_method === 'random_leelaz' && switch_to_random_leelaz(...weaken_args)
     const ready = !empty(R.suggest) &&
           Date.now() - last_auto_play_time >= auto_play_sec * 1000
-    // (undefined > 0) is false
-    const move = ready && (weaken_percent > 0 ? weak_move(weaken_percent) : best_move())
+    const move = ready && (weaken_method === 'random_candidate' ?
+                           weak_move(...weaken_args) : best_move())
     const pass_maybe =
           () => leelaz.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
     move === 'pass' ? (stop_play_best(), pause()) :
         ready && (play_best_count--, (last_auto_play_time = Date.now()),
-                  weaken_percent === 'pass_maybe' ? pass_maybe() : play(move))
+                  weaken_method === 'pass_maybe' ? pass_maybe() : play(move))
 }
 function best_move() {return R.suggest[0].move}
 function weak_move(weaken_percent) {
@@ -851,8 +864,9 @@ function unload_leelaz_for_white() {
     update_state()
 }
 
-function switch_leelaz() {
-    switch_to_another_leelaz(R.bturn ? leelaz_for_black : leelaz_for_white)
+function switch_leelaz(bturn) {
+    switch_to_another_leelaz((bturn === undefined ? R.bturn : bturn) ?
+                             leelaz_for_black : leelaz_for_white)
 }
 
 function switch_to_another_leelaz(next_leelaz) {

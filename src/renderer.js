@@ -1114,8 +1114,7 @@ document.onkeydown = e => {
     if (to_i(key) > 0) {
         (R.board_type === "raw" && current_board_type() === "raw" && !R.attached
          && !repeated_keydown) ?
-            m('play_best', 1, -1, to_i(key) * 10) :
-            f(set_keyboard_moves_maybe, to_i(key) - 1)
+            m('play_weak', to_i(key) * 10) : f(set_keyboard_moves_maybe, to_i(key) - 1)
     }
     if (key.length === 1 && R.tag_letters.indexOf(key) >= 0) {
         f(set_keyboard_tag_maybe, key)
@@ -1143,7 +1142,7 @@ document.onkeydown = e => {
     case "`": f(play_it, false, true); break;
     case "Tab": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
         break;
-    case "0": m('play_best', 1, -1, 'pass_maybe'); break;
+    case "0": m('play_best', undefined, undefined, 'pass_maybe'); break;
     case "Backspace": case "Delete": busy('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;

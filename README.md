@@ -36,7 +36,7 @@ And more...
 * Trial boards that can be used like tabs in web browsers [1]
 * Keyboard shortcuts, e.g. "3" key for the third variation [5]
 * Watch Leela Zero vs. Leela Zero with different network weights (with real-time comparison of their plans) [3]
-* Play against weakened Leela Zero [3]
+* Play against weakened Leela Zero in several ways [3]
 
 ## Usage
 
