@@ -903,9 +903,9 @@ function draw_winrate_trail(canvas) {
 }
 
 function winrate_trail_rising(suggest) {
-    const unit = 0.005, delta = 5
-    const a = winrate_trail[suggest.move] || []
-    return (a.length < delta + 1) ? 0 :
+    const unit = 0.005, max_delta = 5, a = winrate_trail[suggest.move] || []
+    const delta = clip(a.length - 1, 0, max_delta)
+    return (delta < 1) ? 0 :
         clip((a[0].relative_visits - a[delta].relative_visits) / (delta * unit), -1, 1)
 }
 
