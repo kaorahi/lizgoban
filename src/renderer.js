@@ -728,11 +728,13 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
 
 function draw_winrate_bar_fan(s, w, h, stroke, fill, g) {
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
+    const large_bar = large_winrate_bar_p()
     const [x, y, r, max_radius] = winrate_bar_xy(s, w, h, true, bturn)
-    const half_center_angle = 60 / 2
-    const direction = (bturn ? 180 : 0) + winrate_trail_rising(s) * 45 * (bturn ? -1 : 1)
+    const half_center_angle = 60 / 2, max_slant = large_bar ? 45 : 30
+    const direction =
+          (bturn ? 180 : 0) + winrate_trail_rising(s) * max_slant * (bturn ? -1 : 1)
     const degs = [direction - half_center_angle, direction + half_center_angle]
-    if (large_winrate_bar_p()) {
+    if (large_bar) {
         g.fillStyle = 'rgba(235,148,0,0.9)'
         fill_circle([x, y], max_radius * 0.15 * Math.sqrt(winrate_trail_searched(s)), g)
     }
