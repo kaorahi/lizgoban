@@ -909,7 +909,10 @@ function winrate_trail_rising(suggest) {
         clip((a[0].relative_visits - a[delta].relative_visits) / (delta * unit), -1, 1)
 }
 
-function winrate_trail_searched(suggest) {return suggest.searched || 0}
+function winrate_trail_searched(suggest) {
+    // suggest.searched > 1 can happen for some reason
+    return clip(suggest.searched || 0, 0, 1)
+}
 
 /////////////////////////////////////////////////
 // thmubnails
