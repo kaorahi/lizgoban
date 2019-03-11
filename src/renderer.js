@@ -338,7 +338,7 @@ function draw_visits(margin, canvas, g) {
 
 function draw_visits_text(margin, canvas, g) {
     g.save()
-    g.fillStyle = BLACK; set_font(margin / 3, g)
+    g.fillStyle = MAYBE_BLACK; set_font(margin / 2, g)
     g.textAlign = 'left'; g.textBaseline = 'middle'
     g.fillText(`  visits = ${R.visits}`, 0, margin / 4)
     g.restore()
@@ -354,7 +354,7 @@ function draw_progress(margin, canvas, g) {
 function draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g) {
     const {text, subtext, at} = mapping_to_winrate_bar
     const y = canvas.height - margin / 6
-    g.fillStyle = RED; set_font(margin / 3, g)
+    g.fillStyle = RED; set_font(margin / 2, g)
     // main text
     g.textAlign = at < 10 ? 'left' : at < 90 ? 'center' : 'right'
     g.fillText(text, canvas.width * at / 100, y)
