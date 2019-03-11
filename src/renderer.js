@@ -100,7 +100,7 @@ ipc.on('render', (e, h) => {
     merge(R, h)
     setq('#move_count', R.move_count)
     setq('#history_length', ' (' + R.history_length + ')')
-    R.max_visits = (R.suggest.find(s => (s.order === 0)) || {}).visits
+    R.max_visits = (R.suggest[0] || {}).visits
     update_goban()
 })
 
@@ -221,7 +221,7 @@ function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
     R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     each_stone(displayed_stones, (h, idx) => (h.displayed_tag = h.tag && h.stone))
-    const s0 = R.suggest.find(s => s.order === 0)
+    const s0 = R.suggest[0]
     const expected_move = expected_pv()[0]
     expected_move && !empty(R.suggest) && s0.move !== expected_move &&
         set_expected_stone(expected_move, s0.move, displayed_stones)
