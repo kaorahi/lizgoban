@@ -706,6 +706,7 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
     }
     const max_radius = Math.min(h, w * 0.05)
     const next_color = '#48f', prev_color = 'rgba(64,128,255,0.8)'
+    const aura_color = 'rgba(235,148,0,0.9)'
     R.suggest.forEach(s => {
         const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
         const {move, winrate} = s
@@ -716,7 +717,8 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
         const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
               s.order < 3 || s.winrate_order < 3 || target_p || next_p
         const eliminated = target_move && !target_p
-        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, g)
+        draw_winrate_bar_fan(s, w, h, edge_color, fan_color,
+                             target_p ? GREEN : aura_color, target_p, g)
         major && !eliminated && large_winrate_bar_p() &&
             draw_winrate_bar_order(s, w, h, g)
         if (vline_color) {
@@ -724,39 +726,55 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
         }
     })
     R.previous_suggest &&
-        draw_winrate_bar_fan(R.previous_suggest, w, h, prev_color, TRANSPARENT, g)
+        draw_winrate_bar_fan(R.previous_suggest, w, h,
+                             prev_color, TRANSPARENT, null, false, g)
 }
 
-function draw_winrate_bar_fan(s, w, h, stroke, fill, g) {
+function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color, force_aura_p, g) {
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
     const large_bar = large_winrate_bar_p()
-    const [x, y, r, max_radius] = winrate_bar_xy(s, w, h, true, bturn)
+    const plot_params = winrate_bar_xy(s, w, h, true, bturn)
+    const [x, y, r, max_radius, x_puct, y_puct] = plot_params
     const half_center_angle = 60 / 2, max_slant = large_bar ? 45 : 30
     const direction =
           (bturn ? 180 : 0) + winrate_trail_rising(s) * max_slant * (bturn ? -1 : 1)
     const degs = [direction - half_center_angle, direction + half_center_angle]
-    if (large_bar) {
-        g.fillStyle = 'rgba(235,148,0,0.9)'
-        fill_circle([x, y], max_radius * 0.15 * Math.sqrt(winrate_trail_searched(s)), g)
-    }
+    large_bar && draw_aura(s, h, plot_params, aura_color, force_aura_p, g)
     g.lineWidth = 1; [g.strokeStyle, g.fillStyle] = [stroke, fill]
     edged_fill_fan([x, y], r, degs, g)
+}
+
+function draw_aura(s, h, [x, y, r, max_radius, x_puct, y_puct],
+                   aura_color, force_aura_p, g) {
+    if (!aura_color) {return}
+    const searched = winrate_trail_searched(s), rel_dy = (y - y_puct) / h
+    const draw_aura_p = force_aura_p || s.order === 0 ||
+          (Math.abs(rel_dy) > 0.05 && s.visits > R.max_visits * 0.3) ||
+          (rel_dy > 0.2 && s.visits > R.max_visits * 0.05)
+    g.strokeStyle = g.fillStyle = aura_color
+    fill_circle([x, y], max_radius * 0.15 * Math.sqrt(searched), g)
+    g.lineWidth = 2
+    draw_aura_p && line([x, y], [x_puct, clip(y_puct, 0, h)], g)
 }
 
 function draw_winrate_bar_order(s, w, h, g) {
     const fontsize = w * 0.03, [x, y] = winrate_bar_xy(s, w, h)
     g.save()
-    g.fillStyle = RED; set_font(fontsize, g)
+    g.fillStyle = '#d00'; set_font(fontsize, g)
     g.textAlign = R.bturn ? 'left' : 'right'; g.textBaseline = 'middle'
     g.fillText(` ${s.order + 1} `, x, y)
     g.restore()
 }
 
-function winrate_bar_xy(suggest, w, h, and_r, bturn) {
-    const x = w * flip_maybe(suggest.winrate, bturn) / 100
-    const max_radius = winrate_bar_max_radius(w, h)
-    const y = winrate_bar_y(suggest.visits, w, h, max_radius)
-    return and_r ? [x, y, max_radius * Math.sqrt(suggest.prior), max_radius] : [x, y]
+function winrate_bar_xy(suggest, w, h, supplementary, bturn) {
+    const wr = suggest.winrate, max_radius = winrate_bar_max_radius(w, h)
+    const x_for = winrate => w * flip_maybe(winrate, bturn) / 100
+    const y_for = visits => winrate_bar_y(visits, w, h, max_radius)
+    const x = x_for(wr), y = y_for(suggest.visits)
+    if (!supplementary) {return [x, y]}
+    const [puct, equilibrium_visits] = puct_info(suggest)
+    return [x, y, max_radius * Math.sqrt(suggest.prior), max_radius,
+            x_for(wr + puct), y_for(equilibrium_visits)]
 }
 
 function winrate_bar_y(visits, w, h, max_radius) {
@@ -770,6 +788,23 @@ function winrate_bar_y(visits, w, h, max_radius) {
 function winrate_bar_ys(vs, w, h) {
     const max_radius = winrate_bar_max_radius(w, h)
     return vs.map(v => winrate_bar_y(v, w, h, max_radius))
+}
+
+function puct_info(suggest) {
+    const s0 = R.suggest[0]; if (!s0) {return []}
+    // (ref.) UCTNode.cpp and GTP.cpp in Leela Zero source
+    // fixme: should check --puct option etc. of leelaz
+    const cfg_puct = 0.5, cfg_logpuct = 0.015, cfg_logconst = 1.7
+    const parentvisits = R.visits, psa = suggest.prior, denom = 1 + suggest.visits
+    const numerator = Math.sqrt(parentvisits *
+                                Math.log(cfg_logpuct * parentvisits + cfg_logconst))
+    const puct = cfg_puct * psa * (numerator / denom) * 100
+    // wr0 - wr = cfg_puct * (numerator * (psa/denom - psa0/denom0)) * 100
+    // ==> psa/denom = psa0/denom0 + (wr0 - wr) / (cfg_puct * numerator * 100)
+    const psa_per_denom = s0.prior / (1 + s0.visits) +
+          (s0.winrate - suggest.winrate) / (cfg_puct * numerator * 100)
+    const equilibrium_visits = psa / clip(psa_per_denom, 1e-10, Infinity) - 1
+    return [puct, equilibrium_visits]
 }
 
 function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
