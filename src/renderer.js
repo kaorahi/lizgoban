@@ -248,8 +248,8 @@ function draw_goban_with_variation(canvas, suggest, opts) {
         }
     })
     const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
-    const text = winrate_text && (canvas === main_canvas) ?
-          `${winrate_text} (${visits_text})` : undefined
+    const text = winrate_text && !opts.hide_mapping_text_p &&
+          `${winrate_text} (${visits_text})`
     const subtext = text && ` prior = ${prior_text} `
     const at = flip_maybe(suggest.winrate)
     const mapping_to_winrate_bar = text && {text, subtext, at}
@@ -259,8 +259,9 @@ function draw_goban_with_variation(canvas, suggest, opts) {
 }
 
 function draw_goban_with_principal_variation(canvas) {
-    draw_goban_with_variation(canvas, R.suggest[0] || {},
-                              {read_only: true, force_draw_expected_p: true})
+    const opts = {read_only: true, force_draw_expected_p: true,
+                  hide_mapping_text_p: true}
+    draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
 }
 
 function selected_suggest(canvas) {
