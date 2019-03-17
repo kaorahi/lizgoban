@@ -405,7 +405,7 @@ function fold_text(str, n, max_lines) {
 // common
 function try_auto(visits) {
     finished_auto_playing() ? try_auto_analyze(visits) :
-        (auto_play_time_ready() &&
+        (auto_play_ready() &&
          (auto_replaying ? try_auto_replay() : try_play_best()))
 }
 function auto_progress() {
@@ -446,7 +446,7 @@ function auto_play(sec, explicitly_playing_best) {
     update_auto_play_time(); resume(); update_ui()
 }
 function try_auto_replay() {do_as_auto_play(redoable(), redo)}
-function auto_play_time_ready() {
+function auto_play_ready() {
     return !empty(R.suggest) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
 function do_as_auto_play(playable, proc) {
