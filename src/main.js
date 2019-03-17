@@ -418,7 +418,7 @@ function try_auto_analyze(current_visits) {
     auto_bturn = R.bturn;
     (current_visits >= auto_analysis_visits) &&
         (R.move_count < history.length ? redo() :
-         (pause(), (auto_analysis_visits = Infinity), update_ui()))
+         (pause(), stop_auto_analyze(), update_ui()))
 }
 function toggle_auto_analyze(visits) {
     if (empty(history)) {return}
