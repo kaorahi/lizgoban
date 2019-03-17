@@ -143,7 +143,7 @@ const api = merge({}, simple_api, {
 function api_handler(channel, handler, busy) {
     return (e, ...args) => {
         channel === 'toggle_auto_analyze' || stop_auto_analyze()
-        channel === 'play_best' || stop_play_best()
+        channel === 'play_best' || stop_auto_play()
         set_or_unset_busy(busy)
         handler(...args)
     }
@@ -243,7 +243,7 @@ function redoable() {return history.length > R.move_count}
 function restart() {restart_with_args()}
 function restart_with_args(...args) {
     leelaz.restart(...args); switch_to_nth_sequence(sequence_cursor)
-    stop_auto_analyze(); stop_play_best(); update_ui()
+    stop_auto_analyze(); stop_auto_play(); update_ui()
 }
 function pause() {pausing = true; update_ponder_and_ui()}
 function resume() {pausing = false; update_ponder_and_ui()}
@@ -327,7 +327,7 @@ function try_play_best(weaken_method, ...weaken_args) {
                            weak_move(...weaken_args) : best_move())
     const pass_maybe =
           () => leelaz.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
-    move === 'pass' ? (stop_play_best(), pause()) :
+    move === 'pass' ? (stop_auto_play(), pause()) :
         ready && (auto_play_count--, (last_auto_play_time = Date.now()),
                   weaken_method === 'pass_maybe' ? pass_maybe() : play(move))
 }
@@ -358,20 +358,20 @@ function nearest_move_to_winrate(target_winrate) {
                 `winrate_order=${selected.winrate_order}`)
     return selected.move
 }
-function stop_play_best() {auto_play_count = 0}
+function stop_auto_play() {auto_play_count = 0}
 function finished_playing_best() {return auto_play_count <= 0}
 function auto_play_progress() {
     return (finished_playing_best() || auto_play_count < Infinity) ? -1 :
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
 }
 function ask_auto_play_sec(win) {win.webContents.send('ask_auto_play_sec')}
-stop_play_best()
+stop_auto_play()
 
 // auto-analyze & auto-play
 function auto_progress() {
     return Math.max(auto_analysis_progress(), auto_play_progress())
 }
-function stop_auto() {stop_auto_analyze(); stop_play_best(); update_ui()}
+function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
 
 // auto-restart
 let last_restart_time = 0
