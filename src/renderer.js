@@ -69,7 +69,7 @@ function toggle_auto_analyze() {
     main('toggle_auto_analyze', auto_analysis_visits_setting())
 }
 function toggle_auto_analyze_visits() {
-    R.auto_analyzing ? toggle_auto_analyze() : Q('#auto_analysis_visits').select()
+    R.auto_analyzing ? main('stop_auto') : Q('#auto_analysis_visits').select()
 }
 function auto_analysis_visits_setting () {
     return to_i(Q('#auto_analysis_visits').value)
