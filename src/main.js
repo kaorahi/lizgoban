@@ -956,6 +956,7 @@ function menu_template(win) {
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
         item('Info', 'CmdOrCtrl+I', info),
+        sep,
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
