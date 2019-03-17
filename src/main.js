@@ -274,30 +274,6 @@ function new_tag() {
     return normal_tag_letters[tag_count]
 }
 
-// auto-analyze (auto-redo after given visits)
-function try_auto_analyze(current_visits) {
-    auto_bturn = R.bturn;
-    (current_visits >= auto_analysis_visits) &&
-        (R.move_count < history.length ? redo() :
-         (pause(), (auto_analysis_visits = Infinity), update_ui()))
-}
-function toggle_auto_analyze(visits) {
-    if (empty(history)) {return}
-    (auto_analysis_visits === visits) ?
-        (stop_auto_analyze(), update_ui()) :
-        start_auto_analyze(visits)
-}
-function start_auto_analyze(visits) {
-    rewind_maybe(); resume(); auto_analysis_visits = visits; update_ui()
-}
-function stop_auto_analyze() {auto_analysis_visits = Infinity}
-function auto_analyzing() {return auto_analysis_visits < Infinity}
-function auto_analysis_progress() {
-    return auto_analyzing() ? R.visits / auto_analysis_visits : -1
-}
-function rewind_maybe() {redoable() || goto_move_count(0)}
-stop_auto_analyze()
-
 // play best move(s)
 function play_best(n, sec, weaken_method, ...weaken_args) {
     auto_play(sec, true); increment_auto_play_count(n)
@@ -355,22 +331,6 @@ function nearest_move_to_winrate(target_winrate) {
                 `winrate_order=${selected.winrate_order}`)
     return selected.move
 }
-function stop_auto_play() {auto_play_count = 0}
-function finished_auto_playing() {return auto_play_count <= 0}
-function auto_play_progress() {
-    return (finished_auto_playing() || auto_play_count < Infinity) ? -1 :
-        (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
-}
-function ask_auto_play_sec(win, replaying) {
-    auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
-}
-stop_auto_play()
-
-// auto-analyze & auto-play
-function auto_progress() {
-    return Math.max(auto_analysis_progress(), auto_play_progress())
-}
-function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
 
 // auto-restart
 let last_restart_time = 0
@@ -448,8 +408,36 @@ function try_auto(visits) {
         (auto_play_time_ready() &&
          (auto_replaying ? try_auto_replay() : try_play_best()))
 }
+function auto_progress() {
+    return Math.max(auto_analysis_progress(), auto_play_progress())
+}
+function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
 
-// auto-play (auto-redo or self-play in every XX seconds)
+// auto-analyze (redo after given visits)
+function try_auto_analyze(current_visits) {
+    auto_bturn = R.bturn;
+    (current_visits >= auto_analysis_visits) &&
+        (R.move_count < history.length ? redo() :
+         (pause(), (auto_analysis_visits = Infinity), update_ui()))
+}
+function toggle_auto_analyze(visits) {
+    if (empty(history)) {return}
+    (auto_analysis_visits === visits) ?
+        (stop_auto_analyze(), update_ui()) :
+        start_auto_analyze(visits)
+}
+function start_auto_analyze(visits) {
+    rewind_maybe(); resume(); auto_analysis_visits = visits; update_ui()
+}
+function stop_auto_analyze() {auto_analysis_visits = Infinity}
+function auto_analyzing() {return auto_analysis_visits < Infinity}
+function auto_analysis_progress() {
+    return auto_analyzing() ? R.visits / auto_analysis_visits : -1
+}
+function rewind_maybe() {redoable() || goto_move_count(0)}
+stop_auto_analyze()
+
+// auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
 let last_auto_play_time = 0
 function auto_play(sec, explicitly_playing_best) {
     explicitly_playing_best ? (auto_replaying = false) : (auto_play_count = Infinity)
@@ -465,11 +453,21 @@ function do_as_auto_play(playable, proc) {
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
 }
 function update_auto_play_time() {last_auto_play_time = Date.now(); auto_bturn = R.bturn}
+function auto_play_progress() {
+    return (finished_auto_playing() || auto_play_count < Infinity) ? -1 :
+        (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
+}
+function ask_auto_play_sec(win, replaying) {
+    auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
+}
 function increment_auto_play_count(n) {
     auto_play_count === Infinity && (auto_play_count = 0)
     auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
 }
 function decrement_auto_play_count() {auto_play_count--}
+function stop_auto_play() {auto_play_count = 0}
+function finished_auto_playing() {return auto_play_count <= 0}
+stop_auto_play()
 
 /////////////////////////////////////////////////
 // from leelaz to renderer
