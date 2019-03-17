@@ -239,7 +239,7 @@ function update_state_to_move_count_tentatively(count) {
     next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
     update_state()
 }
-function future_len() {return history.length - R.move_count}
+function redoable() {return history.length > R.move_count}
 function restart() {restart_with_args()}
 function restart_with_args(...args) {
     leelaz.restart(...args); switch_to_nth_sequence(sequence_cursor)
@@ -287,7 +287,7 @@ function toggle_auto_analyze(visits) {
         start_auto_analyze(visits)
 }
 function start_auto_analyze(visits) {
-    future_len() === 0 && goto_move_count(0)
+    redoable() || goto_move_count(0)
     resume(); auto_analysis_visits = visits; update_ui()
 }
 function stop_auto_analyze() {auto_analysis_visits = Infinity}
@@ -688,7 +688,7 @@ function winrate_suggested(move_count) {
 function availability() {
     return {
         undo: R.move_count > 0,
-        redo: future_len() > 0,
+        redo: redoable(),
         attach: !attached,
         detach: attached,
         pause: !pausing,
