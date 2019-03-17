@@ -164,9 +164,11 @@ const busy_handler_for =
       cached(subchannel => api_handler(subchannel, api[subchannel], true))
 ipc.on('busy', (e, subchannel, ...args) => busy_handler_for(subchannel)(e, ...args))
 
-ipc.on('close_window_or_cut_sequence',
-       e => get_windows().forEach(win => (win.webContents === e.sender) &&
-                                  close_window_or_cut_sequence(win)))
+ipc.on('close_window_or_cut_sequence', e => {
+           stop_auto()
+           get_windows().forEach(win => (win.webContents === e.sender) &&
+                                 close_window_or_cut_sequence(win))
+       })
 
 /////////////////////////////////////////////////
 // action
