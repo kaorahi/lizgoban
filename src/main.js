@@ -242,8 +242,7 @@ function update_state_to_move_count_tentatively(count) {
 function redoable() {return history.length > R.move_count}
 function restart() {restart_with_args()}
 function restart_with_args(...args) {
-    leelaz.restart(...args); switch_to_nth_sequence(sequence_cursor)
-    stop_auto_analyze(); stop_auto_play(); update_ui()
+    leelaz.restart(...args); switch_to_nth_sequence(sequence_cursor); stop_auto()
 }
 function pause() {pausing = true; update_ponder_and_ui()}
 function resume() {pausing = false; update_ponder_and_ui()}
