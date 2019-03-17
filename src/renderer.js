@@ -923,11 +923,21 @@ function update_winrate_trail() {
         s.relative_visits = s.visits / R.max_visits
         len > 0 && (s.searched = (s.visits - trail[0].visits) / total_visits_increase)
         s.searched === 0 && trail.shift()
-        trail.unshift(s)
-        len > winrate_trail_max_length &&
-            trail.splice(1 + Math.floor(Math.random() * (len - 2)), 1)
-            // never delete first and last element
+        trail.unshift(s); thin_winrate_trail(trail)
     })
+}
+
+function thin_winrate_trail(trail) {
+    const len = trail.length
+    if (len <= winrate_trail_max_length) {return}
+    const v_now = trail[0].visits, v_init = trail[len - 1].visits
+    const ideal_interval = (v_now - v_init) / (winrate_trail_max_length - 1)
+    const interval_around = (_, k) => (1 < k && k < len - 1) ?  // except 0, 1, and last
+          trail[k - 1].visits - trail[k + 1].visits : Infinity
+    const min_index = a => a.indexOf(Math.min(...a))
+    const victim = trail[1].visits - trail[2].visits < ideal_interval ? 1 :
+          min_index(trail.map(interval_around))
+    victim >= 0 && trail.splice(victim, 1)
 }
 
 function draw_winrate_trail(canvas) {
@@ -940,6 +950,7 @@ function draw_winrate_trail(canvas) {
     each_key_value(winrate_trail, (move, a, count) => {
         const ok = target_move ? (move === target_move) : (a[0].visits >= limit_visits)
         ok && line(...a.map(xy_for), g)
+        // ok && a.map(xy_for).map(xy => circle(xy, 3, g))  // for debug
     })
 }
 
