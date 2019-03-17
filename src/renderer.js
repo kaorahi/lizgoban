@@ -706,19 +706,22 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
     }
     const max_radius = Math.min(h, w * 0.05)
     const next_color = '#48f', prev_color = 'rgba(64,128,255,0.8)'
-    const aura_color = 'rgba(235,148,0,0.9)'
+    const next_vline_color = 'rgba(64,128,255,0.5)'
+    const target_vline_color = 'rgba(255,64,64,0.5)'
+    const aura_color = 'rgba(235,148,0,0.8)', target_aura_color = 'rgba(0,192,0,0.8)'
     R.suggest.forEach(s => {
         const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
         const {move, winrate} = s
         const target_p = (move === target_move), next_p = is_next_move(move)
         const {fill} = suggest_color(s, target_p ? 1.0 : target_move ? 0.1 : 0.8)
         const fan_color = (!target_move && next_p) ? next_color : fill
-        const vline_color = (target_p || next_p) ? fan_color : null
+        const vline_color = target_p ? target_vline_color :
+              next_p ? next_vline_color : null
         const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
               s.order < 3 || s.winrate_order < 3 || target_p || next_p
         const eliminated = target_move && !target_p
         draw_winrate_bar_fan(s, w, h, edge_color, fan_color,
-                             target_p ? GREEN : aura_color, target_p, g)
+                             target_p ? target_aura_color : aura_color, target_p, g)
         major && !eliminated && large_winrate_bar_p() &&
             draw_winrate_bar_order(s, w, h, g)
         if (vline_color) {
