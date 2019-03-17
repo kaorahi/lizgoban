@@ -1107,8 +1107,9 @@ function set_all_canvas_size() {
     const main_board_height = wr_only ? main_board_max_size * 0.7 : main_board_size
     const sub_board_size = Math.min(main_board_max_size * 0.65, rest_size * 0.85)
     // use main_board_ratio in winrate_graph_width for portrait layout
-    const winrate_graph_width = rest_size * main_board_ratio
     const winrate_graph_height = main_board_max_size * 0.25
+    const winrate_graph_width =
+          wr_only ? winrate_graph_height : rest_size * main_board_ratio
     set_canvas_size(main_canvas, main_board_size, main_board_height)
     set_canvas_size(winrate_bar_canvas,
                     main_board_size, main_size - main_board_height)
