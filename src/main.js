@@ -945,7 +945,7 @@ function menu_template(win) {
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
-        item('Auto play', 'Shift+A', (this_item, win) => ask_auto_play_sec(win), true),
+        item('Self play', 'Shift+P', (this_item, win) => ask_auto_play_sec(win), true),
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
          type: 'checkbox', checked: !!leelaz_for_white,
          click: stop_auto_and(leelaz_for_white ?
