@@ -41,7 +41,7 @@ let history = create_history()
 let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
 let auto_analysis_visits = Infinity, auto_play_count = 0
 const simple_ui = false
-let auto_play_sec = 0
+let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
 let pausing = false, busy = false
 
 // renderer state
@@ -274,8 +274,9 @@ function new_tag() {
     return normal_tag_letters[tag_count]
 }
 
-// auto-analyze
+// auto-analyze (auto-redo after given visits)
 function try_auto_analyze(current_visits) {
+    auto_bturn = R.bturn;
     (current_visits >= auto_analysis_visits) &&
         (R.move_count < history.length ? redo() :
          (pause(), (auto_analysis_visits = Infinity), update_ui()))
@@ -287,49 +288,45 @@ function toggle_auto_analyze(visits) {
         start_auto_analyze(visits)
 }
 function start_auto_analyze(visits) {
-    redoable() || goto_move_count(0)
-    resume(); auto_analysis_visits = visits; update_ui()
+    rewind_maybe(); resume(); auto_analysis_visits = visits; update_ui()
 }
 function stop_auto_analyze() {auto_analysis_visits = Infinity}
 function auto_analyzing() {return auto_analysis_visits < Infinity}
 function auto_analysis_progress() {
     return auto_analyzing() ? R.visits / auto_analysis_visits : -1
 }
+function rewind_maybe() {redoable() || goto_move_count(0)}
 stop_auto_analyze()
 
 // play best move(s)
-let last_auto_play_time = 0
 function play_best(n, sec, weaken_method, ...weaken_args) {
-    auto_play_sec = sec || -1
-    auto_play_count === Infinity && (auto_play_count = 0)
-    stop_auto_analyze(); auto_play_count += (n || 1); last_auto_play_time = Date.now()
-    resume(); try_play_best(weaken_method, ...weaken_args)
+    auto_play(sec, true); increment_auto_play_count(n)
+    try_play_best(weaken_method, ...weaken_args)
 }
 function play_weak(percent) {
     play_best(undefined, undefined,
               leelaz_for_white ? 'random_leelaz' : 'random_candidate', percent)
 }
-function auto_play(sec) {play_best(Infinity, sec); update_ui()}
 function try_play_best(weaken_method, ...weaken_args) {
     // (ex)
     // try_play_best()
     // try_play_best('pass_maybe')
     // try_play_best('random_candidate', 30)
     // try_play_best('random_leelaz', 30)
-    if (finished_auto_playing()) {return}
+    if (empty(R.suggest)) {return}
     const switch_to_random_leelaz = percent => {
         switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
     }
     weaken_method === 'random_leelaz' && switch_to_random_leelaz(...weaken_args)
-    const ready = !empty(R.suggest) &&
-          Date.now() - last_auto_play_time >= auto_play_sec * 1000
-    const move = ready && (weaken_method === 'random_candidate' ?
-                           weak_move(...weaken_args) : best_move())
+    const move = (weaken_method === 'random_candidate' ?
+                  weak_move(...weaken_args) : best_move())
     const pass_maybe =
           () => leelaz.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
-    move === 'pass' ? (stop_auto_play(), pause()) :
-        ready && (auto_play_count--, (last_auto_play_time = Date.now()),
-                  weaken_method === 'pass_maybe' ? pass_maybe() : play(move))
+    const play_it = () => {
+        decrement_auto_play_count()
+        weaken_method === 'pass_maybe' ? pass_maybe() : play(move)
+    }
+    do_as_auto_play(move !== 'pass', play_it)
 }
 function best_move() {return R.suggest[0].move}
 function weak_move(weaken_percent) {
@@ -364,7 +361,9 @@ function auto_play_progress() {
     return (finished_auto_playing() || auto_play_count < Infinity) ? -1 :
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
 }
-function ask_auto_play_sec(win) {win.webContents.send('ask_auto_play_sec')}
+function ask_auto_play_sec(win, replaying) {
+    auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
+}
 stop_auto_play()
 
 // auto-analyze & auto-play
@@ -441,6 +440,38 @@ function fold_text(str, n, max_lines) {
 }
 
 /////////////////////////////////////////////////
+// auto-analyze / auto-play
+
+// common
+function try_auto(visits) {
+    finished_auto_playing() ? try_auto_analyze(visits) :
+        (auto_play_time_ready() &&
+         (auto_replaying ? try_auto_replay() : try_play_best()))
+}
+
+// auto-play (auto-redo or self-play in every XX seconds)
+let last_auto_play_time = 0
+function auto_play(sec, explicitly_playing_best) {
+    explicitly_playing_best ? (auto_replaying = false) : (auto_play_count = Infinity)
+    auto_replaying && rewind_maybe()
+    auto_play_sec = sec || -1; stop_auto_analyze()
+    update_auto_play_time(); resume(); update_ui()
+}
+function try_auto_replay() {do_as_auto_play(redoable(), redo)}
+function auto_play_time_ready() {
+    return !empty(R.suggest) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
+}
+function do_as_auto_play(playable, proc) {
+    playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
+}
+function update_auto_play_time() {last_auto_play_time = Date.now(); auto_bturn = R.bturn}
+function increment_auto_play_count(n) {
+    auto_play_count === Infinity && (auto_play_count = 0)
+    auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
+}
+function decrement_auto_play_count() {auto_play_count--}
+
+/////////////////////////////////////////////////
 // from leelaz to renderer
 
 function set_renderer_state(...args) {
@@ -449,12 +480,14 @@ function set_renderer_state(...args) {
           start_moves_tag_letter
     const previous_suggest = get_previous_suggest()
     const progress = auto_progress()
+    const progress_bturn = auto_bturn
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
     const [lizzie_style, winrate_trail, expand_winrate_bar] =
           ['lizzie_style', 'winrate_trail', 'expand_winrate_bar']
           .map(key => config.get(key, false))
     merge(R, {winrate_history, auto_analysis_visits, lizzie_style, progress,
+              progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
               previous_suggest, winrate_trail, expand_winrate_bar}, ...args)
 }
@@ -527,7 +560,7 @@ function suggest_handler(h) {
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
         : (initial_b_winrate = h.b_winrate)
     set_and_render(h, show_suggest_p() ? {} : {suggest: [], visits: null})
-    try_play_best(); try_auto_analyze(h.visits)
+    try_auto(h.visits)
 }
 
 function pick_properties(orig, keys) {
@@ -896,6 +929,7 @@ function update_menu() {
 function menu_template(win) {
     const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
     const stop_auto_and = f => ((...a) => {stop_auto(); f(...a)})
+    const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
     const item = (label, accelerator, click, standalone_only, enabled) =>
           !(standalone_only && attached) && {
               label, accelerator, click: stop_auto_and(click),
@@ -945,7 +979,8 @@ function menu_template(win) {
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
-        item('Self play', 'Shift+P', (this_item, win) => ask_auto_play_sec(win), true),
+        item('Auto replay', 'Shift+A', ask_sec(true), true),
+        item('Self play', 'Shift+P', ask_sec(false), true),
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
          type: 'checkbox', checked: !!leelaz_for_white,
          click: stop_auto_and(leelaz_for_white ?
