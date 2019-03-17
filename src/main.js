@@ -402,11 +402,7 @@ function fold_text(str, n, max_lines) {
 // auto-analyze / auto-play
 
 // common
-function try_auto(visits) {
-    finished_auto_playing() ? try_auto_analyze(visits) :
-        (auto_play_ready() &&
-         (auto_replaying ? try_auto_replay() : try_play_best()))
-}
+function try_auto(visits) {auto_playing() ? try_auto_play() : try_auto_analyze(visits)}
 function auto_progress() {
     return Math.max(auto_analysis_progress(), auto_play_progress())
 }
@@ -444,6 +440,9 @@ function auto_play(sec, explicitly_playing_best) {
     auto_play_sec = sec || -1; stop_auto_analyze()
     update_auto_play_time(); resume(); update_ui()
 }
+function try_auto_play() {
+    auto_play_ready() && (auto_replaying ? try_auto_replay() : try_play_best())
+}
 function try_auto_replay() {do_as_auto_play(redoable(), redo)}
 function auto_play_ready() {
     return !empty(R.suggest) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
@@ -453,19 +452,21 @@ function do_as_auto_play(playable, proc) {
 }
 function update_auto_play_time() {last_auto_play_time = Date.now(); auto_bturn = R.bturn}
 function auto_play_progress() {
-    return (finished_auto_playing() || auto_play_count < Infinity) ? -1 :
-        (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
+    return auto_playing(true) ?
+        (Date.now() - last_auto_play_time) / (auto_play_sec * 1000) : -1
 }
 function ask_auto_play_sec(win, replaying) {
     auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
 }
 function increment_auto_play_count(n) {
-    auto_play_count === Infinity && (auto_play_count = 0)
+    auto_playing(true) && stop_auto_play()
     auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
 }
 function decrement_auto_play_count() {auto_play_count--}
 function stop_auto_play() {auto_play_count = 0}
-function finished_auto_playing() {return auto_play_count <= 0}
+function auto_playing(forever) {
+    return auto_play_count >= (forever ? Infinity : 1)
+}
 stop_auto_play()
 
 /////////////////////////////////////////////////
@@ -564,9 +565,7 @@ function pick_properties(orig, keys) {
     const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
 }
 
-function show_suggest_p() {
-    return !finished_auto_playing() || auto_analysis_visits >= 10
-}  // fixme: customize
+function show_suggest_p() {return auto_playing() || auto_analysis_visits >= 10}
 
 /////////////////////////////////////////////////
 // history
@@ -726,7 +725,7 @@ function availability() {
         bturn: R.bturn,
         wturn: !R.bturn,
         auto_analyze: !empty(history),
-        start_auto_analyze: !auto_analyzing() && finished_auto_playing(),
+        start_auto_analyze: !auto_analyzing() && !auto_playing(),
         stop_auto: auto_progress() >= 0,
         simple_ui: simple_ui, normal_ui: !simple_ui,
         trial: history.trial,
