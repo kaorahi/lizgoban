@@ -39,7 +39,7 @@ const config = new (require('electron-config'))({name: 'lizgoban'})
 let next_history_id = 0
 let history = create_history()
 let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
-let auto_analysis_visits = Infinity, play_best_count = 0
+let auto_analysis_visits = Infinity, auto_play_count = 0
 const simple_ui = false
 let auto_play_sec = 0
 let pausing = false, busy = false
@@ -301,8 +301,8 @@ stop_auto_analyze()
 let last_auto_play_time = 0
 function play_best(n, sec, weaken_method, ...weaken_args) {
     auto_play_sec = sec || -1
-    play_best_count === Infinity && (play_best_count = 0)
-    stop_auto_analyze(); play_best_count += (n || 1); last_auto_play_time = Date.now()
+    auto_play_count === Infinity && (auto_play_count = 0)
+    stop_auto_analyze(); auto_play_count += (n || 1); last_auto_play_time = Date.now()
     resume(); try_play_best(weaken_method, ...weaken_args)
 }
 function play_weak(percent) {
@@ -328,7 +328,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const pass_maybe =
           () => leelaz.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
     move === 'pass' ? (stop_play_best(), pause()) :
-        ready && (play_best_count--, (last_auto_play_time = Date.now()),
+        ready && (auto_play_count--, (last_auto_play_time = Date.now()),
                   weaken_method === 'pass_maybe' ? pass_maybe() : play(move))
 }
 function best_move() {return R.suggest[0].move}
@@ -358,10 +358,10 @@ function nearest_move_to_winrate(target_winrate) {
                 `winrate_order=${selected.winrate_order}`)
     return selected.move
 }
-function stop_play_best() {play_best_count = 0}
-function finished_playing_best() {return play_best_count <= 0}
+function stop_play_best() {auto_play_count = 0}
+function finished_playing_best() {return auto_play_count <= 0}
 function auto_play_progress() {
-    return (finished_playing_best() || play_best_count < Infinity) ? -1 :
+    return (finished_playing_best() || auto_play_count < Infinity) ? -1 :
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
 }
 function ask_auto_play_sec(win) {win.webContents.send('ask_auto_play_sec')}
