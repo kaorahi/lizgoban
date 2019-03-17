@@ -316,7 +316,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     // try_play_best('pass_maybe')
     // try_play_best('random_candidate', 30)
     // try_play_best('random_leelaz', 30)
-    if (finished_playing_best()) {return}
+    if (finished_auto_playing()) {return}
     const switch_to_random_leelaz = percent => {
         switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
     }
@@ -359,9 +359,9 @@ function nearest_move_to_winrate(target_winrate) {
     return selected.move
 }
 function stop_auto_play() {auto_play_count = 0}
-function finished_playing_best() {return auto_play_count <= 0}
+function finished_auto_playing() {return auto_play_count <= 0}
 function auto_play_progress() {
-    return (finished_playing_best() || auto_play_count < Infinity) ? -1 :
+    return (finished_auto_playing() || auto_play_count < Infinity) ? -1 :
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000)
 }
 function ask_auto_play_sec(win) {win.webContents.send('ask_auto_play_sec')}
@@ -535,7 +535,7 @@ function pick_properties(orig, keys) {
 }
 
 function show_suggest_p() {
-    return !finished_playing_best() || auto_analysis_visits >= 10
+    return !finished_auto_playing() || auto_analysis_visits >= 10
 }  // fixme: customize
 
 /////////////////////////////////////////////////
@@ -696,7 +696,7 @@ function availability() {
         bturn: R.bturn,
         wturn: !R.bturn,
         auto_analyze: !empty(history),
-        start_auto_analyze: !auto_analyzing() && finished_playing_best(),
+        start_auto_analyze: !auto_analyzing() && finished_auto_playing(),
         stop_auto: auto_progress() >= 0,
         simple_ui: simple_ui, normal_ui: !simple_ui,
         trial: history.trial,
