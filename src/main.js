@@ -769,7 +769,9 @@ function read_sgf(sgf_str) {
     catch (e) {dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"')}
 }
 
-const parse_sgf = SGF.parse
+function parse_sgf(sgf_str) {
+    return convert_to_sabaki_sgf_v131_maybe(SGF.parse(sgf_str))
+}
 
 // pick "(; ... ... ])...)"
 function clip_sgf(sgf_str) {return sgf_str.match(/\(\s*;[^]*\][\s\)]*\)/)[0]}
@@ -817,6 +819,19 @@ function history_from_sabaki_nodes(nodes) {
 function nodes_from_sabaki_gametree(gametree) {
     return (gametree === null) ? [] :
         nodes_from_sabaki_gametree(gametree.parent).concat(gametree.nodes)
+}
+
+function convert_to_sabaki_sgf_v131_maybe(parsed) {
+    // convert v3.0.0-style to v1.3.1-style for the result of parse() of @sabaki/sgf
+    // (ref.) incompatible change in @sabaki/sgf v3.0.0
+    // https://github.com/SabakiHQ/sgf/commit/a57dfe36634190ca995755bd83f677375d543b80
+    const first = parsed[0]; if (!first) {return null}
+    const is_v131 = first.nodes; if (is_v131) {return parsed}
+    let nodes = []
+    const recur = n => n && (nodes.push(n.data), recur(n.children[0]))
+    recur(first)
+    const parent = null, minimum_v131_gametree = {nodes, parent}
+    return [minimum_v131_gametree]
 }
 
 /////////////////////////////////////////////////
