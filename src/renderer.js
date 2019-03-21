@@ -535,7 +535,7 @@ function draw_suggest(h, xy, radius, g) {
 }
 
 function suggest_color(suggest, alpha) {
-    const hue = suggest_color_hue(suggest)
+    const hue = winrate_color_hue(suggest.winrate)
     const alpha_emphasis = emph => {
         const max_alpha = 0.5, visits_ratio = suggest.visits / (R.visits + 1)
         return max_alpha * visits_ratio ** (1 - emph)
@@ -546,11 +546,11 @@ function suggest_color(suggest, alpha) {
     return {stroke, fill, lizzie_text_color}
 }
 
-function suggest_color_hue(suggest) {
+function winrate_color_hue(winrate) {
     const cyan_hue = 180, green_hue = 120, yellow_hue = 60, red_hue = 0
     const unit_delta_points = 5, unit_delta_hue = green_hue - yellow_hue
-    const wr = suggest.winrate, wr0 = flip_maybe(b_winrate(1) || b_winrate())
-    const delta_hue = (wr - wr0) * unit_delta_hue / unit_delta_points
+    const wr0 = flip_maybe(b_winrate(1) || b_winrate())
+    const delta_hue = (winrate - wr0) * unit_delta_hue / unit_delta_points
     return to_i(clip(yellow_hue + delta_hue, red_hue, cyan_hue))
 }
 
