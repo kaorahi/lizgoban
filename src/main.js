@@ -45,7 +45,7 @@ let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
 let pausing = false, busy = false
 
 // renderer state
-// (cf.) "set_and_render" in this file
+// (cf.) "set_renderer_state" in this file
 // (cf.) "the_board_handler" and "the_suggest_handler" in engine.js
 let R = {stones: [[]]}
 
