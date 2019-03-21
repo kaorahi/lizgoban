@@ -981,8 +981,9 @@ function menu_template(win) {
          click: toggle_trial},
     ])
     const view_menu = menu('View', [
-        board_type_menu_item('Two boards (+PV)', 'double_boards', win),
-        board_type_menu_item('Two boards (+raw)', 'double_boards_raw', win),
+        board_type_menu_item('Two boards A (main+PV)', 'double_boards', win),
+        board_type_menu_item('Two boards B (main+raw)', 'double_boards_raw', win),
+        board_type_menu_item('Two boards C (raw+sub)', 'double_boards_swap', win),
         board_type_menu_item('Suggestions', 'suggest', win),
         board_type_menu_item('Principal variation', 'variation', win),
         board_type_menu_item('Raw board', 'raw', win),

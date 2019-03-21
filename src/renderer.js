@@ -158,23 +158,35 @@ const [do_on_sub_canvas_when_idle] =
 
 function update_goban() {
     const btype = current_board_type(), do_nothing = truep
-    const draw_raw_unclickable = c => draw_goban(c, null, {draw_last_p: true, read_only: true})
-    const draw_raw_clickable = c => draw_goban(c, null, {
-        draw_visits_p: true, draw_last_p: R.board_type === "raw" || c === sub_canvas
-    })
+    const draw_raw_gen = opts => c => draw_goban(c, null, opts)
+    const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
+    const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
+    const draw_raw_pure = draw_raw_gen({})
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_winrate_graph)(winrate_graph_canvas),
                             do_on_sub_canvas_when_idle(s || do_nothing),
                             draw_winrate_bar(winrate_bar_canvas))
+    const double_boards_rule = {
+        double_boards: {  // [on main_canvas, on sub_canvas]
+            normal: [draw_main_goban, draw_goban_with_principal_variation],
+            raw: [draw_raw_pure, draw_goban_with_principal_variation]
+        },
+        double_boards_raw: {
+            normal: [draw_main_goban, draw_raw_clickable],
+            raw: [draw_raw_pure, draw_goban_with_principal_variation]
+        },
+        double_boards_swap: {
+            normal: [draw_raw_clickable, draw_main_goban],
+            raw: [draw_main_goban, draw_goban_with_principal_variation]
+        },
+    }
     if (double_boards_p()) {
+        const {normal, raw} = double_boards_rule[R.board_type]
         switch (btype) {
         case "winrate_only":
             f(draw_winrate_graph, draw_visits_trail, draw_main_goban); break;
-        case "raw":
-            f(draw_raw_clickable, null, draw_goban_with_principal_variation); break;
-        default:
-            f(draw_main_goban, null, R.board_type === "double_boards_raw" ?
-              draw_raw_clickable : draw_goban_with_principal_variation); break;
+        case "raw": f(raw[0], null, raw[1]); break;
+        default: f(normal[0], null, normal[1]); break;
         }
     } else {
         switch (btype) {
@@ -431,9 +443,7 @@ function toggle_raw_board() {
     current_window.lizgoban_board_type = R.board_type; main('update_menu')
 }
 
-function double_boards_p() {
-    return R.board_type === "double_boards" || R.board_type === "double_boards_raw"
-}
+function double_boards_p() {return R.board_type.match(/^double_boards/)}
 
 /////////////////////////////////////////////////
 // mouse action
