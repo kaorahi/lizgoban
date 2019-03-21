@@ -160,20 +160,21 @@ function update_goban() {
     const btype = current_board_type(), do_nothing = truep
     const draw_raw_unclickable = c => draw_goban(c, null, {draw_last_p: true, read_only: true})
     const draw_raw_clickable = c => draw_goban(c, null, {
-        draw_visits_p: true, draw_last_p: R.board_type === "raw"
+        draw_visits_p: true, draw_last_p: R.board_type === "raw" || c === sub_canvas
     })
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_winrate_graph)(winrate_graph_canvas),
                             do_on_sub_canvas_when_idle(s || do_nothing),
                             draw_winrate_bar(winrate_bar_canvas))
-    if (R.board_type === "double_boards") {
+    if (double_boards_p()) {
         switch (btype) {
         case "winrate_only":
             f(draw_winrate_graph, draw_visits_trail, draw_main_goban); break;
         case "raw":
             f(draw_raw_clickable, null, draw_goban_with_principal_variation); break;
         default:
-            f(draw_main_goban, null, draw_goban_with_principal_variation); break;
+            f(draw_main_goban, null, R.board_type === "double_boards_raw" ?
+              draw_raw_clickable : draw_goban_with_principal_variation); break;
         }
     } else {
         switch (btype) {
@@ -428,6 +429,10 @@ function toggle_raw_board() {
         [board_type_before_toggle, "raw"] : ["raw", R.board_type]
     update_board_type()
     current_window.lizgoban_board_type = R.board_type; main('update_menu')
+}
+
+function double_boards_p() {
+    return R.board_type === "double_boards" || R.board_type === "double_boards_raw"
 }
 
 /////////////////////////////////////////////////
@@ -1216,7 +1221,7 @@ function set_all_canvas_size() {
     const sub_board_size = Math.min(main_board_max_size * 0.65, rest_size * 0.85)
     // use main_board_ratio in winrate_graph_width for portrait layout
     const winrate_graph_height = main_board_max_size * 0.25
-    const winrate_graph_width = (wr_only && R.board_type !== "double_boards") ?
+    const winrate_graph_width = (wr_only && !double_boards_p()) ?
           winrate_graph_height : rest_size * main_board_ratio
     set_canvas_size(main_canvas, main_board_size, main_board_height)
     set_canvas_size(winrate_bar_canvas,
@@ -1330,7 +1335,7 @@ function reset_keyboard_tag() {keyboard_tag_data = {}; update_goban()}
 
 function update_board_type() {
     const new_board_type = current_board_type()
-    update_ui_element("#sub_goban_container", R.board_type === "double_boards")
+    update_ui_element("#sub_goban_container", double_boards_p())
     set_all_canvas_size()
     previous_board_type = new_board_type
     update_goban()
