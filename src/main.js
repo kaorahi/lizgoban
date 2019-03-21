@@ -483,7 +483,7 @@ function set_renderer_state(...args) {
     const [lizzie_style, winrate_trail, expand_winrate_bar] =
           ['lizzie_style', 'winrate_trail', 'expand_winrate_bar']
           .map(key => config.get(key, false))
-    merge(R, {winrate_history, auto_analysis_visits, lizzie_style,
+    merge(R, {winrate_history, lizzie_style,
               progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
               previous_suggest, winrate_trail, expand_winrate_bar}, ...args)

@@ -38,7 +38,7 @@ const R = {
     winrate_history: [], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
     expand_winrate_bar: false,
-    auto_analysis_visits: Infinity, max_visits: 1,
+    max_visits: 1,
     progress: 0.0, progress_bturn: true, weight_info: '', network_size: '',
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [],
