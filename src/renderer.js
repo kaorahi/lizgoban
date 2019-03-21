@@ -535,9 +535,11 @@ function draw_suggest(h, xy, radius, g) {
 }
 
 function suggest_color(suggest, alpha) {
-    const max_alpha = 0.5, hue = suggest_color_hue(suggest)
-    const visits_ratio = suggest.visits / (R.visits + 1)
-    const alpha_emphasis = emph => max_alpha * visits_ratio ** (1 - emph)
+    const hue = suggest_color_hue(suggest)
+    const alpha_emphasis = emph => {
+        const max_alpha = 0.5, visits_ratio = suggest.visits / (R.visits + 1)
+        return max_alpha * visits_ratio ** (1 - emph)
+    }
     const hsl_e = (h, s, l, emph) => hsla(h, s, l, alpha || alpha_emphasis(emph))
     const stroke = hsl_e(hue, 100, 20, 0.85), fill = hsl_e(hue, 100, 50, 0.4)
     const lizzie_text_color = hsl_e(0, 0, 0, 0.75)
