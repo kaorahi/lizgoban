@@ -296,8 +296,7 @@ function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
 }
 
 function draw_goban(canvas, stones, opts) {
-    const {draw_last_p, draw_next_p, draw_visits_p, draw_winrate_trail_p,
-           draw_expected_p,
+    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p,
            read_only, mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
