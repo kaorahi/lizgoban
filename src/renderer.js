@@ -101,7 +101,6 @@ ipc.on('render', (e, h) => {
     merge(R, h)
     setq('#move_count', R.move_count)
     setq('#history_length', ' (' + R.history_length + ')')
-    R.max_visits = (R.suggest[0] || {}).visits
     update_goban()
 })
 

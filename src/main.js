@@ -402,16 +402,16 @@ function fold_text(str, n, max_lines) {
 // auto-analyze / auto-play
 
 // common
-function try_auto(visits) {auto_playing() ? try_auto_play() : try_auto_analyze(visits)}
+function try_auto() {auto_playing() ? try_auto_play() : try_auto_analyze()}
 function auto_progress() {
     return Math.max(auto_analysis_progress(), auto_play_progress())
 }
 function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
 
 // auto-analyze (redo after given visits)
-function try_auto_analyze(current_visits) {
+function try_auto_analyze() {
     auto_bturn = R.bturn;
-    (current_visits >= auto_analysis_visits) &&
+    (R.max_visits >= auto_analysis_visits) &&
         (R.move_count < history.length ? redo() :
          (pause(), stop_auto_analyze(), update_ui()))
 }
@@ -427,7 +427,7 @@ function start_auto_analyze(visits) {
 function stop_auto_analyze() {auto_analysis_visits = Infinity}
 function auto_analyzing() {return auto_analysis_visits < Infinity}
 function auto_analysis_progress() {
-    return auto_analyzing() ? R.visits / auto_analysis_visits : -1
+    return auto_analyzing() ? R.max_visits / auto_analysis_visits : -1
 }
 function rewind_maybe() {redoable() || goto_move_count(0)}
 stop_auto_analyze()
@@ -477,19 +477,25 @@ function set_renderer_state(...args) {
     const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
           start_moves_tag_letter
     const previous_suggest = get_previous_suggest()
-    const progress = auto_progress()
     const progress_bturn = auto_bturn
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
     const [lizzie_style, winrate_trail, expand_winrate_bar] =
           ['lizzie_style', 'winrate_trail', 'expand_winrate_bar']
           .map(key => config.get(key, false))
-    merge(R, {winrate_history, auto_analysis_visits, lizzie_style, progress,
+    merge(R, {winrate_history, auto_analysis_visits, lizzie_style,
               progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
               previous_suggest, winrate_trail, expand_winrate_bar}, ...args)
+    // clean me: R.max_visits is needed for auto_progress()
+    R.max_visits = ((R.suggest || [])[0] || {}).visits || 0
+    R.progress = auto_progress()
 }
-function set_and_render(...args) {set_renderer_state(...args); renderer('render', R)}
+function set_and_render(...args) {
+    set_renderer_state(...args)
+    const masked_R = merge({}, R, show_suggest_p() ? {} : {suggest: [], visits: null})
+    renderer('render', masked_R)
+}
 
 function get_previous_suggest() {
     const [p1, p2] = [1, 2].map(k => history[R.move_count - k] || {})
@@ -557,8 +563,7 @@ function suggest_handler(h) {
     R.move_count > 0 && (history[R.move_count - 1].suggest = h.suggest)
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
         : (initial_b_winrate = h.b_winrate)
-    set_and_render(h, show_suggest_p() ? {} : {suggest: [], visits: null})
-    try_auto(h.visits)
+    set_and_render(h); try_auto()
 }
 
 function pick_properties(orig, keys) {
