@@ -735,7 +735,8 @@ function winrate_bar_suggest_prop(s) {
     const {move, winrate} = s
     const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
     const target_p = (move === target_move), next_p = is_next_move(move)
-    const {fill} = suggest_color(s, target_p ? 1.0 : target_move ? 0.3 : 0.8)
+    const alpha = target_p ? 1.0 : target_move ? 0.3 : 0.8
+    const {fill} = suggest_color(s, alpha)
     const fan_color = (!target_move && next_p) ? next_color : fill
     const vline_color = target_p ? target_vline_color :
           next_p ? next_vline_color : null
@@ -744,8 +745,8 @@ function winrate_bar_suggest_prop(s) {
           s.order < 3 || s.winrate_order < 3 || target_p || next_p
     const eliminated = target_move && !target_p
     const draw_order_p = major && !eliminated
-    return {edge_color, fan_color, vline_color, aura_color,
-            target_p, draw_order_p, winrate}
+    return {edge_color, fan_color, vline_color, aura_color, alpha,
+            target_p, draw_order_p, next_p, winrate}
 }
 
 function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color, force_aura_p, g) {
@@ -1016,9 +1017,17 @@ function draw_visits_trail_grid(fontsize, w, h, v2x, v2y, g) {
 function draw_visits_trail_curve(s, fontsize, h, xy_for, g) {
     const {move} = s, a = winrate_trail[move]
     if (!a) {return}
-    const {fan_color, target_p, draw_order_p} = winrate_bar_suggest_prop(s)
-    g.lineWidth = 1; g.strokeStyle = fan_color
-    line(...a.map(xy_for), g)
+    const {fan_color, alpha, target_p, draw_order_p, next_p} =
+          winrate_bar_suggest_prop(s)
+    const xy = a.map(xy_for)
+    g.lineWidth = 2
+    a.forEach((fake_suggest, k) => {  // only use fake_suggest.winrate
+        if (k === 0) {return}
+        g.strokeStyle = (next_p && !target_p) ? fan_color :
+            suggest_color(fake_suggest, alpha).fill
+        line(xy[k], xy[k - 1], g)
+        // circle(xy[k], 3, g)  // for debug
+    })
     draw_order_p && draw_visits_trail_order(s, a, target_p, fontsize, h, xy_for, g)
 }
 
