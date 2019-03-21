@@ -1017,16 +1017,14 @@ function draw_visits_trail_grid(fontsize, w, h, v2x, v2y, g) {
 function draw_visits_trail_curve(s, fontsize, h, xy_for, g) {
     const {move} = s, a = winrate_trail[move]
     if (!a) {return}
-    const {fan_color, alpha, target_p, draw_order_p, next_p} =
-          winrate_bar_suggest_prop(s)
+    const {alpha, target_p, draw_order_p, next_p} = winrate_bar_suggest_prop(s)
     const xy = a.map(xy_for)
     g.lineWidth = 2
     a.forEach((fake_suggest, k) => {  // only use fake_suggest.winrate
         if (k === 0) {return}
-        g.strokeStyle = (next_p && !target_p) ? fan_color :
-            suggest_color(fake_suggest, alpha).fill
+        g.strokeStyle = g.fillStyle = suggest_color(fake_suggest, alpha).fill
         line(xy[k], xy[k - 1], g)
-        // circle(xy[k], 3, g)  // for debug
+        next_p && !target_p && fill_circle(xy[k], 4, g)
     })
     draw_order_p && draw_visits_trail_order(s, a, target_p, fontsize, h, xy_for, g)
 }
