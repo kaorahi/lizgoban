@@ -227,7 +227,8 @@ function draw_goban_with_suggest(canvas, opts) {
     expected_move && !empty(R.suggest) && s0.move !== expected_move &&
         set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, draw_next_p: true, draw_expected_p: true, ...opts})
+               {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
+                mapping_tics_p: canvas !== main_canvas, ...opts})
 }
 
 function draw_goban_with_variation(canvas, suggest, opts) {
@@ -297,7 +298,7 @@ function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p,
-           read_only, mapping_to_winrate_bar} = opts || {}
+           read_only, mapping_tics_p, mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
@@ -308,6 +309,7 @@ function draw_goban(canvas, stones, opts) {
     edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
     // draw
     draw_grid(unit, idx2coord, g)
+    mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(margin, canvas, g)
     mapping_to_winrate_bar &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
@@ -329,6 +331,22 @@ function draw_grid(unit, idx2coord, g) {
     })
     const star_radius = unit * 0.1, stars = [3, 9, 15]
     stars.forEach(i => stars.forEach(j => fill_circle(idx2coord(i, j), star_radius, g)))
+}
+
+function draw_mapping_tics(unit, canvas, g) {
+    // background
+    const [[w0, w1], [mw0, mw1], [mb0, mb1], [b0, b1]] =
+          [0, 20, 80, 100].map(wr => mapping_line_coords(wr, unit, canvas))
+    const [wx, mwx, mbx, bx] = [w0, mw0, mb0, b0].map(a => a[0])
+    g.fillStyle = side_gradation(wx, mwx, MAYBE_WHITE, 'rgba(255,255,255,0)', g)
+    fill_rect(w0, mw1, g)
+    g.fillStyle = side_gradation(mbx, bx, 'rgba(0,0,0,0)', MAYBE_BLACK, g)
+    fill_rect(mb0, b1, g)
+    // tics
+    seq(9, 1).forEach(k => {
+        g.strokeStyle = BLACK, g.lineWidth = (k === 5 ? 3 : 1)
+        line(...mapping_line_coords(k * 10, unit, canvas), g)
+    })
 }
 
 function draw_visits(margin, canvas, g) {
@@ -560,11 +578,15 @@ function suggest_texts(suggest) {
 
 function draw_winrate_mapping_line(h, xy, unit, g) {
     const canvas = g.lizgoban_canvas, b_winrate = flip_maybe(h.data.winrate)
-    const x1 = canvas.width * b_winrate / 100, y1 = canvas.height, d = unit * 0.3
     const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
     g.lineWidth = 1.5 / (order * 2 + 1)
     g.strokeStyle = RED
-    line(xy, [x1, y1 - d], [x1, y1], g)
+    line(xy, ...mapping_line_coords(b_winrate, unit, canvas), g)
+}
+
+function mapping_line_coords(b_winrate, unit, canvas) {
+    const x1 = canvas.width * b_winrate / 100, y1 = canvas.height, d = unit * 0.3
+    return [[x1, y1 - d], [x1, y1]]
 }
 
 function draw_suggestion_order(h, [x, y], radius, color, g) {
