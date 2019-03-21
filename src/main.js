@@ -410,10 +410,10 @@ function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
 
 // auto-analyze (redo after given visits)
 function try_auto_analyze() {
-    auto_bturn = R.bturn;
-    (R.max_visits >= auto_analysis_visits) &&
-        (R.move_count < history.length ? redo() :
-         (pause(), stop_auto_analyze(), update_ui()))
+    const done = R.max_visits >= auto_analysis_visits
+    auto_bturn = xor(R.bturn, done)
+    done && (R.move_count < history.length ? redo() :
+             (pause(), stop_auto_analyze(), update_ui()))
 }
 function toggle_auto_analyze(visits) {
     if (empty(history)) {return}
