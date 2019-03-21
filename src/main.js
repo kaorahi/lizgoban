@@ -984,6 +984,7 @@ function menu_template(win) {
         board_type_menu_item('Two boards A (main+PV)', 'double_boards', win),
         board_type_menu_item('Two boards B (main+raw)', 'double_boards_raw', win),
         board_type_menu_item('Two boards C (raw+sub)', 'double_boards_swap', win),
+        board_type_menu_item('Two boards D (raw+PV)', 'double_boards_raw_pv', win),
         board_type_menu_item('Suggestions', 'suggest', win),
         board_type_menu_item('Principal variation', 'variation', win),
         board_type_menu_item('Raw board', 'raw', win),

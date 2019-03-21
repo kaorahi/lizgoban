@@ -162,6 +162,7 @@ function update_goban() {
     const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
     const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
     const draw_raw_pure = draw_raw_gen({})
+    const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_winrate_graph)(winrate_graph_canvas),
                             do_on_sub_canvas_when_idle(s || do_nothing),
@@ -177,6 +178,10 @@ function update_goban() {
         },
         double_boards_swap: {
             normal: [draw_raw_clickable, draw_main_goban],
+            raw: [draw_main_goban, draw_goban_with_principal_variation]
+        },
+        double_boards_raw_pv: {
+            normal: [draw_raw_main, draw_goban_with_principal_variation],
             raw: [draw_main_goban, draw_goban_with_principal_variation]
         },
     }
