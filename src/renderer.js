@@ -27,7 +27,7 @@ const VAGUE_BLACK = 'rgba(0,0,0,0.3)', VAGUE_WHITE = 'rgba(255,255,255,0.3)'
 const PALE_BLUE = "rgba(128,128,255,0.5)"
 const PALE_BLACK = "rgba(0,0,0,0.1)", PALE_WHITE = "rgba(255,255,255,0.3)"
 const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
-const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)'
+const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)', WINRATE_BAR_ORDER_COLOR = '#d00'
 const EXPECTED_COLOR = 'rgba(0,0,255,0.3)', UNEXPECTED_COLOR = 'rgba(255,0,0,0.8)'
 // p: pausing, t: trial
 const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
@@ -101,6 +101,7 @@ ipc.on('render', (e, h) => {
     merge(R, h)
     setq('#move_count', R.move_count)
     setq('#history_length', ' (' + R.history_length + ')')
+    update_winrate_trail()
     update_goban()
 })
 
@@ -168,7 +169,7 @@ function update_goban() {
     if (R.board_type === "double_boards") {
         switch (btype) {
         case "winrate_only":
-            f(draw_winrate_graph, draw_raw_unclickable, draw_main_goban); break;
+            f(draw_winrate_graph, draw_visits_trail, draw_main_goban); break;
         case "raw":
             f(draw_raw_clickable, null, draw_goban_with_principal_variation); break;
         default:
@@ -672,13 +673,15 @@ function draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g) {
 }
 
 function draw_winrate_bar_horizontal_lines(w, h, g) {
-    const mv = R.max_visits
-    const v = Math.pow(10, Math.floor(Math.log(mv) / Math.log(10)))
-    const unit_v = (mv > v * 5) ? v * 2 : (mv > v * 2) ? v : v / 2
-    const iota = n => [...Array(n).keys()]  // [0, 1, 2, ..., n - 1]
-    const vs = iota(to_i(mv / unit_v + 2)).map(k => unit_v * k)  // +1 for margin
+    const vs = tics_until(R.max_visits)
     g.strokeStyle = WINRATE_TRAIL_COLOR; g.lineWidth = 1
     winrate_bar_ys(vs, w, h).map(y => line([0, y], [w, y], g))
+}
+
+function tics_until(max) {
+    const v = Math.pow(10, Math.floor(Math.log(max) / Math.log(10)))
+    const unit_v = (max > v * 5) ? v * 2 : (max > v * 2) ? v : v / 2
+    return seq(to_i(max / unit_v + 2)).map(k => unit_v * k)  // +1 for margin
 }
 
 function draw_winrate_bar_tics(b_wr, tics, vline, g) {
@@ -700,30 +703,13 @@ function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
 
 function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
     g.lineWidth = 1
-    const wr = flip_maybe(b_winrate())
-    const is_next_move = move => {
-        [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
-    }
     const max_radius = Math.min(h, w * 0.05)
-    const next_color = '#48f', prev_color = 'rgba(64,128,255,0.8)'
-    const next_vline_color = 'rgba(64,128,255,0.5)'
-    const target_vline_color = 'rgba(255,64,64,0.5)'
-    const aura_color = 'rgba(235,148,0,0.8)', target_aura_color = 'rgba(0,192,0,0.8)'
+    const prev_color = 'rgba(64,128,255,0.8)'
     R.suggest.forEach(s => {
-        const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
-        const {move, winrate} = s
-        const target_p = (move === target_move), next_p = is_next_move(move)
-        const {fill} = suggest_color(s, target_p ? 1.0 : target_move ? 0.1 : 0.8)
-        const fan_color = (!target_move && next_p) ? next_color : fill
-        const vline_color = target_p ? target_vline_color :
-              next_p ? next_vline_color : null
-        const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
-              s.order < 3 || s.winrate_order < 3 || target_p || next_p
-        const eliminated = target_move && !target_p
-        draw_winrate_bar_fan(s, w, h, edge_color, fan_color,
-                             target_p ? target_aura_color : aura_color, target_p, g)
-        major && !eliminated && large_winrate_bar_p() &&
-            draw_winrate_bar_order(s, w, h, g)
+        const {edge_color, fan_color, vline_color, aura_color,
+               target_p, draw_order_p, winrate} = winrate_bar_suggest_prop(s)
+        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, aura_color, target_p, g)
+        draw_order_p && large_winrate_bar_p() && draw_winrate_bar_order(s, w, h, g)
         if (vline_color) {
             g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
         }
@@ -731,6 +717,33 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
     R.previous_suggest &&
         draw_winrate_bar_fan(R.previous_suggest, w, h,
                              prev_color, TRANSPARENT, null, false, g)
+}
+
+function winrate_bar_suggest_prop(s) {
+    // const
+    const next_color = '#48f'
+    const next_vline_color = 'rgba(64,128,255,0.5)'
+    const target_vline_color = 'rgba(255,64,64,0.5)'
+    const normal_aura_color = 'rgba(235,148,0,0.8)'
+    const target_aura_color = 'rgba(0,192,0,0.8)'
+    const is_next_move = move => {
+        [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
+    }
+    // main
+    const {move, winrate} = s
+    const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
+    const target_p = (move === target_move), next_p = is_next_move(move)
+    const {fill} = suggest_color(s, target_p ? 1.0 : target_move ? 0.3 : 0.8)
+    const fan_color = (!target_move && next_p) ? next_color : fill
+    const vline_color = target_p ? target_vline_color :
+          next_p ? next_vline_color : null
+    const aura_color = target_p ? target_aura_color : normal_aura_color
+    const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
+          s.order < 3 || s.winrate_order < 3 || target_p || next_p
+    const eliminated = target_move && !target_p
+    const draw_order_p = major && !eliminated
+    return {edge_color, fan_color, vline_color, aura_color,
+            target_p, draw_order_p, winrate}
 }
 
 function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color, force_aura_p, g) {
@@ -763,7 +776,7 @@ function draw_aura(s, h, [x, y, r, max_radius, x_puct, y_puct],
 function draw_winrate_bar_order(s, w, h, g) {
     const fontsize = w * 0.03, [x, y] = winrate_bar_xy(s, w, h)
     g.save()
-    g.fillStyle = '#d00'; set_font(fontsize, g)
+    g.fillStyle = WINRATE_BAR_ORDER_COLOR; set_font(fontsize, g)
     g.textAlign = R.bturn ? 'left' : 'right'; g.textBaseline = 'middle'
     g.fillText(` ${s.order + 1} `, x, y)
     g.restore()
@@ -920,7 +933,8 @@ function update_winrate_trail() {
     R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
         const move = s.move, wt = winrate_trail
         const trail = wt[move] || (wt[move] = []), len = trail.length
-        s.relative_visits = s.visits / R.max_visits
+        const relative_visits = s.visits / R.max_visits, total_visits = R.visits
+        merge(s, {relative_visits, total_visits})
         len > 0 && (s.searched = (s.visits - trail[0].visits) / total_visits_increase)
         s.searched === 0 && trail.shift()
         trail.unshift(s); thin_winrate_trail(trail)
@@ -944,7 +958,6 @@ function draw_winrate_trail(canvas) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const xy_for = s => winrate_bar_xy(s, w, h)
     const limit_visits = R.max_visits * winrate_trail_limit_relative_visits
-    update_winrate_trail()
     g.lineWidth = 2
     g.strokeStyle = target_move ? 'rgba(0,192,255,0.8)' : WINRATE_TRAIL_COLOR
     each_key_value(winrate_trail, (move, a, count) => {
@@ -964,6 +977,57 @@ function winrate_trail_rising(suggest) {
 function winrate_trail_searched(suggest) {
     // suggest.searched > 1 can happen for some reason
     return clip(suggest.searched || 0, 0, 1)
+}
+
+/////////////////////////////////////////////////
+// visits trail
+
+function draw_visits_trail(canvas) {
+    const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
+    const fontsize = h / 10, top_margin = 3
+    const v2x = v => v / R.visits * w
+    const v2y = v => (1 - v / R.max_visits) * (h - top_margin) + top_margin
+    const xy_for = z => [v2x(z.total_visits), v2y(z.visits)]
+    canvas.onmousedown = canvas.onmousemove = canvas.onmouseup = e => {}
+    g.fillStyle = BLACK; fill_rect([0, 0], [w, h], g)
+    if (!R.visits || !R.max_visits) {return}
+    draw_visits_trail_grid(fontsize, w, h, v2x, v2y, g)
+    R.suggest.forEach(s => draw_visits_trail_curve(s, fontsize, h, xy_for, g))
+}
+
+function draw_visits_trail_grid(fontsize, w, h, v2x, v2y, g) {
+    const kilo = (v, x, y) => g.fillText(' ' + kilo_str(v).replace('.0', ''), x, y)
+    g.save()
+    g.lineWidth = 1; set_font(fontsize, g)
+    g.strokeStyle = g.fillStyle = WINRATE_TRAIL_COLOR; g.textAlign = 'left'
+    g.textBaseline = 'top'
+    tics_until(R.visits).forEach(v => {
+        if (!v) {return}; const x = v2x(v); line([x, 0], [x, h], g); kilo(v, x, 0)
+    })
+    g.textBaseline = 'bottom'
+    tics_until(R.max_visits).forEach(v => {
+        if (!v) {return}; const y = v2y(v); line([0, y], [w, y], g); kilo(v, 0, y)
+    })
+    g.restore()
+}
+
+function draw_visits_trail_curve(s, fontsize, h, xy_for, g) {
+    const {move} = s, a = winrate_trail[move]
+    if (!a) {return}
+    const {fan_color, target_p, draw_order_p} = winrate_bar_suggest_prop(s)
+    g.lineWidth = 1; g.strokeStyle = fan_color
+    line(...a.map(xy_for), g)
+    draw_order_p && draw_visits_trail_order(s, a, target_p, fontsize, h, xy_for, g)
+}
+
+function draw_visits_trail_order(s, a, forcep, fontsize, h, xy_for, g) {
+    const [x, y] = xy_for(a[0]), low = y > 0.8 * h
+    if (low && !forcep) {return}
+    g.save()
+    g.textAlign = 'right'; g.textBaseline = low ? 'bottom' : 'top'
+    g.fillStyle = WINRATE_BAR_ORDER_COLOR; set_font(fontsize, g)
+    g.fillText(`${s.order + 1} `, x, y)
+    g.restore()
 }
 
 /////////////////////////////////////////////////
@@ -1122,8 +1186,8 @@ function set_all_canvas_size() {
     const sub_board_size = Math.min(main_board_max_size * 0.65, rest_size * 0.85)
     // use main_board_ratio in winrate_graph_width for portrait layout
     const winrate_graph_height = main_board_max_size * 0.25
-    const winrate_graph_width =
-          wr_only ? winrate_graph_height : rest_size * main_board_ratio
+    const winrate_graph_width = (wr_only && R.board_type !== "double_boards") ?
+          winrate_graph_height : rest_size * main_board_ratio
     set_canvas_size(main_canvas, main_board_size, main_board_height)
     set_canvas_size(winrate_bar_canvas,
                     main_board_size, main_size - main_board_height)
