@@ -505,11 +505,12 @@ function increment_auto_play_count(n) {
     auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
 }
 function decrement_auto_play_count() {auto_play_count--}
-function stop_auto_play() {auto_play_count = 0}
+function stop_auto_play() {
+    auto_playing() && ((auto_play_count = 0), let_me_think_exit_autoplay())
+}
 function auto_playing(forever) {
     return auto_play_count >= (forever ? Infinity : 1)
 }
-stop_auto_play()
 
 /////////////////////////////////////////////////
 // let-me-think-first mode
@@ -526,8 +527,13 @@ function update_let_me_think(only_when_stage_is_changed) {
     let_me_think_switch_board_type(only_when_stage_is_changed)
 }
 function let_me_think_switch_board_type(only_when_stage_is_changed) {
-    const stage = auto_play_progress() < 0.5 ? 'first_half' : 'latter_half'
+    let progress = auto_play_progress()
+    if (progress < 0 && !let_me_think_anyway_p()) {return}
+    const stage = progress < 0.5 ? 'first_half' : 'latter_half'
     if (only_when_stage_is_changed && stage === let_me_think_previous_stage) {return}
+    let_me_think_set_board_type_for(stage)
+}
+function let_me_think_set_board_type_for(stage) {
     set_board_type(let_me_think_board_type[let_me_think_previous_stage = stage],
                    let_me_think_window(), true)
 }
@@ -539,6 +545,9 @@ function toggle_board_type_in_let_me_think() {
     const other_type = all_types.find(type => type != current_type)
     set_board_type(other_type, win, true)
 }
+function let_me_think_exit_autoplay() {
+    let_me_think_anyway_p() || let_me_think_set_board_type_for('latter_half')
+}
 
 function toggle_let_me_think() {set_let_me_think(!let_me_think_p())}
 function stop_let_me_think() {set_let_me_think(false)}
@@ -546,6 +555,7 @@ function set_let_me_think(val) {
     store.set('let_me_think', val); update_let_me_think(); update_state()
 }
 function let_me_think_p() {return store.get('let_me_think')}
+function let_me_think_anyway_p() {return store.get('let_me_think_anyway')}
 
 /////////////////////////////////////////////////
 // from leelaz to renderer
@@ -1066,8 +1076,10 @@ function menu_template(win) {
         board_type_menu_item('Principal variation', 'variation', win),
         board_type_menu_item('Raw board', 'raw', win),
         board_type_menu_item('Winrate graph', 'winrate_only', win),
+        sep,
         store_toggler_menu_item('Let me think first', 'let_me_think', null,
                                 toggle_let_me_think),
+        store_toggler_menu_item('...even outside autoplay', 'let_me_think_anyway'),
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
