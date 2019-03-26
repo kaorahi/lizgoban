@@ -1345,12 +1345,14 @@ function reset_keyboard_tag() {keyboard_tag_data = {}; update_goban()}
 
 // board type selector
 
-let last_board_type = previous_board_type = 'double_boards'
+let last_board_type = current_window.lizgoban_board_type
+let previous_board_type = current_window.lizgoban_previous_board_type
 function update_board_type(new_type) {
     new_type && ((R.board_type = current_window.lizgoban_board_type = new_type),
                  main('update_menu'))
     R.board_type !== last_board_type &&
         ([last_board_type, previous_board_type] = [R.board_type, last_board_type])
+    current_window.lizgoban_previous_board_type = previous_board_type
     update_ui_element("#sub_goban_container", double_boards_p())
     set_all_canvas_size()
     update_goban()

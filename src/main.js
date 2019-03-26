@@ -78,15 +78,18 @@ function get_new_window(file_name, opt) {
 function new_window(default_board_type) {
     const id = ++last_window_id, conf_key = 'window.id' + id
     const ss = electron.screen.getPrimaryDisplay().size
-    const {board_type, position, size} = store.get(conf_key) || {}
+    const {board_type, previous_board_type, position, size} = store.get(conf_key) || {}
     const [x, y] = position || [0, 0]
     const [width, height] = size || [ss.height, ss.height * 0.6]
     const win = get_new_window('index.html', {x, y, width, height, show: false})
     win.lizgoban_window_id = id
     win.lizgoban_board_type = board_type || default_board_type
-    win.on('close',
-           () => store.set(conf_key, {board_type: win.lizgoban_board_type,
-                                      position: win.getPosition(), size: win.getSize()}))
+    win.lizgoban_previous_board_type = previous_board_type
+    win.on('close', () => store.set(conf_key, {
+        board_type: win.lizgoban_board_type,
+        previous_board_type: win.lizgoban_previous_board_type,
+        position: win.getPosition(), size: win.getSize()
+    }))
     windows.push(win)
     win.once('ready-to-show', () => {update_ui(); win.show()})
 }
