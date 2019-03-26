@@ -31,7 +31,7 @@ Like Lizzie...
 
 And more...
 
-* Visualization of search progress via scatter plot of (visits, winrate, prior) [4]
+* Visualization of search progress via plots of (visits, winrate, prior) [4]
 * Detection of inconsistency between analyses before/after a move [4]
 * Trial boards that can be used like tabs in web browsers [1]
 * Keyboard shortcuts, e.g. "3" key for the third variation [5]
