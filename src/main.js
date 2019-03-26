@@ -114,15 +114,20 @@ function each_leelaz(f) {
     [leelaz_for_black, leelaz_for_white].forEach(z => z && f(z))
 }
 
-function renderer(channel, ...args) {
+function renderer(channel, ...args) {renderer_gen(channel, false, ...args)}
+function renderer_with_window_prop(channel, ...args) {
+    renderer_gen(channel, true, ...args)
+}
+function renderer_gen(channel, win_prop_p, ...args) {
     // Caution [2018-08-08]
     // (1) JSON.stringify(NaN) is 'null' (2) ipc converts {foo: NaN} to {}
     // example:
     // [main.js] renderer('foo', {bar: NaN, baz: null, qux: 3})
     // [renderer.js] ipc.on('foo', (e, x) => tmp = x)
     // [result] tmp is {baz: null, qux: 3}
-    get_windows().forEach(win =>
-                          win.webContents.send(channel, ...args, window_prop(win)))
+    get_windows().forEach(win => win.webContents
+                          .send(channel, ...(win_prop_p ? [window_prop(win)] : []),
+                                ...args))
 }
 
 function leelaz_start_args(weight_file) {
@@ -563,7 +568,7 @@ function update_state() {
 }
 
 function update_ui(ui_only) {
-    update_menu(); renderer('update_ui', availability(), ui_only)
+    update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
 }
 
 function add_next_mark_to_stones(stones, history, move_count) {

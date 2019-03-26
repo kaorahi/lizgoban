@@ -106,7 +106,7 @@ ipc.on('render', (e, h) => {
     update_goban()
 })
 
-ipc.on('update_ui', (e, availability, ui_only, win_prop) => {
+ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     R.pausing = availability.resume
     R.auto_analyzing = availability.stop_auto
     merge(R, win_prop)
