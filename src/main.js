@@ -705,7 +705,7 @@ function winrate_from_history(history) {
         const predict = winrate_suggested(s)
         const pass = (h.is_black === (history[s - 2] || {}).is_black)
         // drop "pass" to save data size for IPC
-        return merge({r, move_b_eval, move_eval, predict, tag}, pass ? {pass} : {})
+        return merge({r, move_b_eval, move_eval, tag}, pass ? {pass} : {predict})
     })
 }
 
