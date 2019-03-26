@@ -783,9 +783,6 @@ function winrate_bar_suggest_prop(s) {
     const target_vline_color = 'rgba(255,64,64,0.5)'
     const normal_aura_color = 'rgba(235,148,0,0.8)'
     const target_aura_color = 'rgba(0,192,0,0.8)'
-    const is_next_move = move => {
-        [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
-    }
     // main
     const {move, winrate} = s
     const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
@@ -1309,6 +1306,8 @@ document.onkeydown = e => {
     case " ": m('toggle_pause'); return
     case "Z": f(toggle_board_type, 'raw'); return
     case "Tab": f(toggle_board_type, null, e.shiftKey); return
+    case "0": challenging ? m('play_best', null, 'pass_maybe') :
+            f(set_keyboard_moves_for_next_move); return
     }
     const busy = (...a) => m('busy', ...a)
     switch (!R.attached && key) {
@@ -1326,7 +1325,6 @@ document.onkeydown = e => {
     case "`": f(play_it, false, true); break;
     case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
         break;
-    case "0": challenging && m('play_best', null, 'pass_maybe'); break;
     case "Backspace": case "Delete": busy('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
@@ -1347,6 +1345,13 @@ document.onkeyup = e => {
 function set_keyboard_moves_maybe(n) {
     const h = R.suggest[n]
     h && !keyboard_moves[0] && (keyboard_moves = h.pv) && update_goban()
+}
+function set_keyboard_moves_for_next_move() {
+    const hit = R.suggest.find(h => is_next_move(h.move))
+    hit && !keyboard_moves[0] && (keyboard_moves = hit.pv) && update_goban()
+}
+function is_next_move(move) {
+    [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
 }
 function reset_keyboard_moves() {keyboard_moves = []; update_goban()}
 
