@@ -1307,7 +1307,7 @@ document.onkeydown = e => {
     case "p": m('pass'); break;
     case "Enter": play_it(e.shiftKey ? 5 : 1); break;
     case "`": f(play_it, false, true); break;
-    case "Tab": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
+    case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
         break;
     case "0": m('play_best', null, 'pass_maybe'); break;
     case "Backspace": case "Delete": busy('explicit_undo'); break;
