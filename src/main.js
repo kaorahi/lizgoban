@@ -45,7 +45,7 @@ let next_history_id = 0
 let history = create_history()
 let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
 let auto_analysis_visits = Infinity, auto_play_count = 0
-const simple_ui = false
+const simple_ui = false, winrate_trail = true
 let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
 let pausing = false, busy = false
 
@@ -558,12 +558,12 @@ function set_renderer_state(...args) {
     const progress_bturn = auto_bturn
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
-    const stored_keys = ['lizzie_style', 'winrate_trail', 'expand_winrate_bar', 'let_me_think']
+    const stored_keys = ['lizzie_style', 'expand_winrate_bar', 'let_me_think']
     stored_keys.forEach(key => R[key] = store.get(key, false))
     merge(R, {winrate_history,
               progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
-              previous_suggest}, ...args)
+              previous_suggest, winrate_trail}, ...args)
     // clean me: R.max_visits is needed for auto_progress()
     R.max_visits = ((R.suggest || [])[0] || {}).visits || 0
     R.progress = auto_progress()
@@ -1070,8 +1070,6 @@ function menu_template(win) {
                                 toggle_let_me_think),
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
-        store_toggler_menu_item('Winrate trail', 'winrate_trail',
-                                'Shift+T'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
     ])
     const tool_menu = menu('Tool', [
