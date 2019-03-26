@@ -279,13 +279,12 @@ function new_tag() {
 }
 
 // play best move(s)
-function play_best(n, sec, weaken_method, ...weaken_args) {
-    auto_play(sec, true); increment_auto_play_count(n)
+function play_best(n, weaken_method, ...weaken_args) {
+    auto_play(null, true); increment_auto_play_count(n)
     try_play_best(weaken_method, ...weaken_args)
 }
 function play_weak(percent) {
-    play_best(undefined, undefined,
-              leelaz_for_white ? 'random_leelaz' : 'random_candidate', percent)
+    play_best(null, leelaz_for_white ? 'random_leelaz' : 'random_candidate', percent)
 }
 function try_play_best(weaken_method, ...weaken_args) {
     // (ex)

@@ -1309,7 +1309,7 @@ document.onkeydown = e => {
     case "`": f(play_it, false, true); break;
     case "Tab": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
         break;
-    case "0": m('play_best', undefined, undefined, 'pass_maybe'); break;
+    case "0": m('play_best', null, 'pass_maybe'); break;
     case "Backspace": case "Delete": busy('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
