@@ -440,12 +440,8 @@ function set_temporary_board_type(btype, btype2) {
     temporary_board_type = b; update_board_type()
 }
 
-let board_type_before_toggle = "double_boards"
-function toggle_raw_board() {
-    [R.board_type, board_type_before_toggle] = (R.board_type === "raw") ?
-        [board_type_before_toggle, "raw"] : ["raw", R.board_type]
-    update_board_type()
-    current_window.lizgoban_board_type = R.board_type; main('update_menu')
+function toggle_board_type(type) {
+    update_board_type((type && R.board_type !== type) ? type : previous_board_type)
 }
 
 function double_boards_p() {return R.board_type.match(/^double_boards/)}
@@ -1291,7 +1287,8 @@ document.onkeydown = e => {
     case "z": f(set_temporary_board_type, "raw", "suggest"); return
     case "x": f(set_temporary_board_type, "winrate_only", "suggest"); return
     case " ": m('toggle_pause'); return
-    case "Z": f(toggle_raw_board); return
+    case "Z": f(toggle_board_type, 'raw'); return
+    case "Tab": f(toggle_board_type); return
     }
     const busy = (...a) => m('busy', ...a)
     switch (!R.attached && key) {
@@ -1348,7 +1345,12 @@ function reset_keyboard_tag() {keyboard_tag_data = {}; update_goban()}
 
 // board type selector
 
-function update_board_type() {
+let last_board_type = previous_board_type = 'double_boards'
+function update_board_type(new_type) {
+    new_type && ((R.board_type = current_window.lizgoban_board_type = new_type),
+                 main('update_menu'))
+    R.board_type !== last_board_type &&
+        ([last_board_type, previous_board_type] = [R.board_type, last_board_type])
     update_ui_element("#sub_goban_container", double_boards_p())
     set_all_canvas_size()
     update_goban()
