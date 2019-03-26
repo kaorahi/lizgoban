@@ -158,6 +158,7 @@ const [do_on_sub_canvas_when_idle] =
       deferred_procs([f => f(sub_canvas), sub_canvas_deferring_millisec])
 
 function update_goban() {
+    will_draw_progress_on_first_board()
     const btype = current_board_type(), do_nothing = truep
     const draw_raw_gen = opts => c => draw_goban(c, null, opts)
     const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
@@ -330,6 +331,7 @@ function draw_goban(canvas, stones, opts) {
     draw_grid(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(margin, canvas, g)
+    draw_progress_if_not_yet(margin, canvas, g)
     mapping_to_winrate_bar &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
@@ -371,7 +373,6 @@ function draw_mapping_tics(unit, canvas, g) {
 function draw_visits(margin, canvas, g) {
     if (!truep(R.visits)) {return}
     draw_visits_text(margin, canvas, g)
-    draw_progress(margin, canvas, g)
 }
 
 function draw_visits_text(margin, canvas, g) {
@@ -382,6 +383,12 @@ function draw_visits_text(margin, canvas, g) {
     g.restore()
 }
 
+let done_to_draw_progress = false
+function draw_progress_if_not_yet(margin, canvas, g) {
+    done_to_draw_progress || (draw_progress(margin, canvas, g),
+                              (done_to_draw_progress = true))
+}
+function will_draw_progress_on_first_board() {done_to_draw_progress = false}
 function draw_progress(margin, canvas, g) {
     if (R.progress < 0) {return}
     g.fillStyle = R.progress_bturn ? BLACK : WHITE
