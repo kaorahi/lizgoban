@@ -610,9 +610,13 @@ function draw_suggestion_order(h, [x, y], radius, color, g) {
     const lizzie = R.lizzie_style
     const both_champ = (h.data.order + h.data.winrate_order === 0)
     const either_champ = (h.data.order * h.data.winrate_order === 0)
-    const [fontsize, d, w] =
-          (lizzie ? [0.8, 0.3, 0.8] :
-           both_champ ? [1.5, -0.5, 1.5] : [1, -0.1, 1]).map(c => c * radius)
+    const huge = [2, -1], large = [1.5, -0.5], normal = [1, -0.1], small = [0.8, 0.3]
+    const large_font_p = g.canvas !== main_canvas
+    const either = (champ, other) => both_champ ? champ : other
+    const [fontsize, d] =
+          (lizzie ? small : large_font_p ? either(huge, large) : either(large, normal))
+          .map(c => c * radius)
+    const w = fontsize
     g.save()
     g.fillStyle = BLUE
     lizzie && fill_rect([x + d, y - d - w], [x + d + w, y - d], g)
