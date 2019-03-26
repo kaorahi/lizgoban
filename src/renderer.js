@@ -1349,10 +1349,8 @@ function reset_keyboard_tag() {keyboard_tag_data = {}; update_goban()}
 // board type selector
 
 function update_board_type() {
-    const new_board_type = current_board_type()
     update_ui_element("#sub_goban_container", double_boards_p())
     set_all_canvas_size()
-    previous_board_type = new_board_type
     update_goban()
 }
 
