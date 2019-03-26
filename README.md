@@ -37,6 +37,7 @@ And more...
 * Keyboard shortcuts, e.g. "3" key for the third variation [5]
 * Watch Leela Zero vs. Leela Zero with different network weights (with real-time comparison of their plans) [3]
 * Play against weakened Leela Zero in several ways [3]
+* Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move [3]
 
 ## Usage
 

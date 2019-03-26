@@ -37,7 +37,7 @@ const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
     winrate_history: [], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
-    expand_winrate_bar: false,
+    expand_winrate_bar: false, let_me_think: false,
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',
     progress: 0.0, progress_bturn: true, weight_info: '', network_size: '',
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
@@ -145,7 +145,8 @@ function current_tag_letters() {return R.history_tags.map(x => x.tag).join('')}
 
 function update_body_color() {
     [Q('#body').style.color, Q('#body').style.backgroundColor] =
-        R.attached ? ['white', '#111'] : ['white', '#444']
+        R.attached ? ['white', '#111'] :
+        R.let_me_think ? ['white', '#223'] : ['white', '#444']
 }
 
 /////////////////////////////////////////////////
@@ -447,7 +448,10 @@ function set_temporary_board_type(btype, btype2) {
     temporary_board_type = b; update_board_type()
 }
 
-function toggle_board_type(type) {main('toggle_board_type', R.window_id, type)}
+function toggle_board_type(type, toggle_let_me_think_p) {
+    main('toggle_board_type', R.window_id, type)
+    toggle_let_me_think_p && main('toggle_let_me_think')
+}
 
 function double_boards_p() {return R.board_type.match(/^double_boards/)}
 
@@ -1298,7 +1302,7 @@ document.onkeydown = e => {
     case "x": f(set_temporary_board_type, "winrate_only", "suggest"); return
     case " ": m('toggle_pause'); return
     case "Z": f(toggle_board_type, 'raw'); return
-    case "Tab": f(toggle_board_type); return
+    case "Tab": f(toggle_board_type, null, e.shiftKey); return
     }
     const busy = (...a) => m('busy', ...a)
     switch (!R.attached && key) {

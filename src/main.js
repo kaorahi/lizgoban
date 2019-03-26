@@ -151,7 +151,7 @@ function leelaz_weight_option_pos_in_args() {
 
 // normal commands
 
-const simple_api = {unset_busy, update_menu, toggle_board_type}
+const simple_api = {unset_busy, update_menu, toggle_board_type, toggle_let_me_think}
 const api = merge({}, simple_api, {
     restart, new_window, init_from_renderer, toggle_sabaki,
     toggle_pause,
@@ -241,7 +241,10 @@ function set_board(history) {
     R.bturn = !(history[history.length - 1] || {}).is_black
     R.visits = null
     switch_leelaz()
+    board_state_is_changed()
 }
+function board_state_is_changed() {update_let_me_think()}
+
 function goto_move_count(count) {
     const c = clip(count, 0, history.length)
     if (c === R.move_count) {return}
@@ -356,6 +359,7 @@ function nearest_move_to_winrate(target_winrate) {
 
 // board type
 function toggle_board_type(window_id, type) {
+    if (let_me_think_p() && !type) {toggle_board_type_in_let_me_think(); return}
     const win = window_for_id(window_id)
     const {board_type, previous_board_type} = window_prop(win)
     set_board_type((type && board_type !== type) ? type : previous_board_type, win)
@@ -473,10 +477,11 @@ function auto_play(sec, explicitly_playing_best) {
     explicitly_playing_best ? (auto_replaying = false) : (auto_play_count = Infinity)
     auto_replaying && rewind_maybe()
     auto_play_sec = sec || -1; stop_auto_analyze()
-    update_auto_play_time(); resume(); update_ui()
+    update_auto_play_time(); update_let_me_think(); resume(); update_ui()
 }
 function try_auto_play() {
     auto_play_ready() && (auto_replaying ? try_auto_replay() : try_play_best())
+    update_let_me_think(true)
 }
 function try_auto_replay() {do_as_auto_play(redoable(), redo)}
 function auto_play_ready() {
@@ -505,6 +510,42 @@ function auto_playing(forever) {
 stop_auto_play()
 
 /////////////////////////////////////////////////
+// let-me-think-first mode
+
+// fixme: this mode uses the first window even if it is requested from other windows
+function let_me_think_window() {return get_windows()[0]}
+
+const let_me_think_board_type =
+      {first_half: 'double_boards_swap', latter_half: 'double_boards'}
+let let_me_think_previous_stage = null
+
+function update_let_me_think(only_when_stage_is_changed) {
+    if (!let_me_think_p()) {let_me_think_previous_stage = null; return}
+    let_me_think_switch_board_type(only_when_stage_is_changed)
+}
+function let_me_think_switch_board_type(only_when_stage_is_changed) {
+    const stage = auto_play_progress() < 0.5 ? 'first_half' : 'latter_half'
+    if (only_when_stage_is_changed && stage === let_me_think_previous_stage) {return}
+    set_board_type(let_me_think_board_type[let_me_think_previous_stage = stage],
+                   let_me_think_window())
+}
+
+function toggle_board_type_in_let_me_think() {
+    const win = let_me_think_window()
+    const current_type = window_prop(win).board_type
+    const all_types = Object.values(let_me_think_board_type)
+    const other_type = all_types.find(type => type != current_type)
+    set_board_type(other_type, win)
+}
+
+function toggle_let_me_think() {set_let_me_think(!let_me_think_p())}
+function stop_let_me_think() {set_let_me_think(false)}
+function set_let_me_think(val) {
+    store.set('let_me_think', val); update_let_me_think(); update_state()
+}
+function let_me_think_p() {return store.get('let_me_think')}
+
+/////////////////////////////////////////////////
 // from leelaz to renderer
 
 function set_renderer_state(...args) {
@@ -515,13 +556,12 @@ function set_renderer_state(...args) {
     const progress_bturn = auto_bturn
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
-    const [lizzie_style, winrate_trail, expand_winrate_bar] =
-          ['lizzie_style', 'winrate_trail', 'expand_winrate_bar']
-          .map(key => store.get(key, false))
-    merge(R, {winrate_history, lizzie_style,
+    const stored_keys = ['lizzie_style', 'winrate_trail', 'expand_winrate_bar', 'let_me_think']
+    stored_keys.forEach(key => R[key] = store.get(key, false))
+    merge(R, {winrate_history,
               progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
-              previous_suggest, winrate_trail, expand_winrate_bar}, ...args)
+              previous_suggest}, ...args)
     // clean me: R.max_visits is needed for auto_progress()
     R.max_visits = ((R.suggest || [])[0] || {}).visits || 0
     R.progress = auto_progress()
@@ -1024,6 +1064,8 @@ function menu_template(win) {
         board_type_menu_item('Principal variation', 'variation', win),
         board_type_menu_item('Raw board', 'raw', win),
         board_type_menu_item('Winrate graph', 'winrate_only', win),
+        store_toggler_menu_item('Let me think first', 'let_me_think', null,
+                                toggle_let_me_think),
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Winrate trail', 'winrate_trail',
@@ -1056,11 +1098,12 @@ function menu_template(win) {
 
 function board_type_menu_item(label, type, win) {
     return {label, type: 'radio', checked: window_prop(win).board_type === type,
-            click: (this_item, win) => set_board_type(type, win)}
+            click: (this_item, win) =>
+            (stop_let_me_think(), set_board_type(type, win, true))}
 }
 
-function store_toggler_menu_item(label, key, accelerator) {
+function store_toggler_menu_item(label, key, accelerator, on_click) {
+    const toggle_it = () => {store.set(key, !store.get(key)); update_state()}
     return {label, accelerator, type: 'checkbox', checked: store.get(key),
-            click: () => {store.set(key, !store.get(key)); update_state()},
-           }
+            click: on_click || toggle_it}
 }
