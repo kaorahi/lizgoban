@@ -360,6 +360,7 @@ function nearest_move_to_winrate(target_winrate) {
 // board type
 function toggle_board_type(window_id, type) {
     if (let_me_think_p() && !type) {toggle_board_type_in_let_me_think(); return}
+    type && stop_let_me_think()
     const win = window_for_id(window_id)
     const {board_type, previous_board_type} = window_prop(win)
     set_board_type((type && board_type !== type) ? type : previous_board_type, win)
