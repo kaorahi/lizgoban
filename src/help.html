@@ -4,8 +4,9 @@
  <meta charset="UTF-8" />
  <title>LizGoban Help</title>
  <style type="text/css">
- body {color: black; background-color: #eee;}
+ body, .nav {color: black; background-color: #eee; margin-bottom: 0;}
  .ext {color: blue; text-decoration: underline; cursor: pointer;}
+ .nav {position: -webkit-sticky; position: sticky; z-index: 1; bottom: 0;}
  </style>
  <script>
  function open_ext(url) {require('electron').shell.openExternal(url)}
@@ -14,9 +15,11 @@
 
 <body>
 
-<h1>LizGoban Help</h1>
+<h1><a name="top">LizGoban Help</a></h1>
 
-<h2>Display</h2>
+<hr>
+
+<h2><a name="Display">Display</a></h2>
 
 <h3>Suggested moves in the board</h3>
 
@@ -87,7 +90,7 @@ you also see another graph of visits progress in place of the winrate graph
 
 <hr>
 
-<h2>Tips</h2>
+<h2><a name="Tips">Tips</a></h2>
 
 <h3>Trial board</h3>
 
@@ -133,7 +136,7 @@ See also "View" menu in LizGoban.
 
 <hr>
 
-<h2>Shortcut keys</h2>
+<h2><a name="Shortcut">Shortcut keys</a></h2>
 
 <h3>Game</h3>
 <ul>
@@ -199,7 +202,17 @@ See also "View" menu in LizGoban.
 
 <hr>
 
+<a name="Misc"></a>
 <span class="ext" onclick="open_ext('https://github.com/kaorahi/lizgoban')">Project Home</span>
 <span class="ext" onclick="open_ext('https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt')">License (GPL3)</span>
+
+<hr>
+
+<div class="nav">
+ <a href="#Display">Display</a> |
+ <a href="#Tips">Tips</a> |
+ <a href="#Shortcut">Shortcut keys</a> |
+ <a href="#Misc">Link &amp; License</a>
+</div>
 
 </body>
