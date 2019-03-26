@@ -612,16 +612,17 @@ function draw_suggestion_order(h, [x, y], radius, color, g) {
     const either_champ = (h.data.order * h.data.winrate_order === 0)
     const huge = [2, -1], large = [1.5, -0.5], normal = [1, -0.1], small = [0.8, 0.3]
     const large_font_p = g.canvas !== main_canvas
+    const font_modifier = large_font_p && both_champ ? 'bold ' : ''
     const either = (champ, other) => both_champ ? champ : other
-    const [fontsize, d] =
-          (lizzie ? small : large_font_p ? either(huge, large) : either(large, normal))
+    const [fontsize, d] = (lizzie ? small : large_font_p ? huge : either(large, normal))
           .map(c => c * radius)
     const w = fontsize
     g.save()
     g.fillStyle = BLUE
     lizzie && fill_rect([x + d, y - d - w], [x + d + w, y - d], g)
     g.fillStyle = lizzie ? WHITE : either_champ ? RED : color
-    set_font(fontsize, g); g.textAlign = 'center'; g.textBaseline = 'middle'
+    set_font(font_modifier + fontsize, g)
+    g.textAlign = 'center'; g.textBaseline = 'middle'
     g.fillText(h.data.order + 1, x + d + w / 2, y - d - w / 2, w)
     g.restore()
 }
