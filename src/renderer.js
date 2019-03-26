@@ -1286,6 +1286,8 @@ document.onkeydown = e => {
         escape && e.target.blur(); return
     }
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
+    const challenging = (R.board_type === "raw" && current_board_type() === "raw" &&
+                         !R.attached && !repeated_keydown)
     const play_it = (steps, another_board) =>
           target_move ? m('play', target_move, another_board) :
           keyboard_tag_data.move_count ? (duplicate_if(another_board),
@@ -1294,8 +1296,7 @@ document.onkeydown = e => {
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     if (to_i(key) > 0) {
-        (R.board_type === "raw" && current_board_type() === "raw" && !R.attached
-         && !repeated_keydown) ?
+        challenging ?
             m('play_weak', to_i(key) * 10) : f(set_keyboard_moves_maybe, to_i(key) - 1)
     }
     if (key.length === 1 && R.tag_letters.indexOf(key) >= 0) {
@@ -1325,7 +1326,7 @@ document.onkeydown = e => {
     case "`": f(play_it, false, true); break;
     case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
         break;
-    case "0": m('play_best', null, 'pass_maybe'); break;
+    case "0": challenging && m('play_best', null, 'pass_maybe'); break;
     case "Backspace": case "Delete": busy('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
