@@ -145,8 +145,7 @@ function current_tag_letters() {return R.history_tags.map(x => x.tag).join('')}
 
 function update_body_color() {
     [Q('#body').style.color, Q('#body').style.backgroundColor] =
-        R.attached ? ['white', '#111'] :
-        R.auto_analyzing ? ['black', '#aaa'] : ['white', '#444']
+        R.attached ? ['white', '#111'] : ['white', '#444']
 }
 
 /////////////////////////////////////////////////
