@@ -33,7 +33,7 @@ const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
 const SGF = require('@sabaki/sgf')
 const PATH = require('path'), fs = require('fs'), TMP = require('tmp')
-const config = new (require('electron-config'))({name: 'lizgoban'})
+const store = new (require('electron-store'))({name: 'lizgoban'})
 
 // state
 let next_history_id = 0
@@ -73,15 +73,15 @@ function get_new_window(file_name, opt) {
 function new_window(default_board_type) {
     const id = ++last_window_id, conf_key = 'window.id' + id
     const ss = electron.screen.getPrimaryDisplay().size
-    const {board_type, position, size} = config.get(conf_key) || {}
+    const {board_type, position, size} = store.get(conf_key) || {}
     const [x, y] = position || [0, 0]
     const [width, height] = size || [ss.height, ss.height * 0.6]
     const win = get_new_window('index.html', {x, y, width, height, show: false})
     win.lizgoban_window_id = id
     win.lizgoban_board_type = board_type || default_board_type
     win.on('close',
-           () => config.set(conf_key, {board_type: win.lizgoban_board_type,
-                                       position: win.getPosition(), size: win.getSize()}))
+           () => store.set(conf_key, {board_type: win.lizgoban_board_type,
+                                      position: win.getPosition(), size: win.getSize()}))
     windows.push(win)
     win.once('ready-to-show', () => {update_ui(); win.show()})
 }
@@ -482,7 +482,7 @@ function set_renderer_state(...args) {
     const network_size = leelaz.network_size()
     const [lizzie_style, winrate_trail, expand_winrate_bar] =
           ['lizzie_style', 'winrate_trail', 'expand_winrate_bar']
-          .map(key => config.get(key, false))
+          .map(key => store.get(key, false))
     merge(R, {winrate_history, lizzie_style,
               progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
@@ -990,10 +990,10 @@ function menu_template(win) {
         board_type_menu_item('Raw board', 'raw', win),
         board_type_menu_item('Winrate graph', 'winrate_only', win),
         sep,
-        config_toggler_menu_item('Lizzie style', 'lizzie_style'),
-        config_toggler_menu_item('Winrate trail', 'winrate_trail',
-                                 'Shift+T'),
-        config_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
+        store_toggler_menu_item('Lizzie style', 'lizzie_style'),
+        store_toggler_menu_item('Winrate trail', 'winrate_trail',
+                                'Shift+T'),
+        store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
     ])
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
@@ -1024,8 +1024,8 @@ function board_type_menu_item(label, btype, win) {
             click: () => {win.lizgoban_board_type = btype; update_ui()}}
 }
 
-function config_toggler_menu_item(label, key, accelerator) {
-    return {label, accelerator, type: 'checkbox', checked: config.get(key),
-            click: () => {config.set(key, !config.get(key)); update_state()},
+function store_toggler_menu_item(label, key, accelerator) {
+    return {label, accelerator, type: 'checkbox', checked: store.get(key),
+            click: () => {store.set(key, !store.get(key)); update_state()},
            }
 }
