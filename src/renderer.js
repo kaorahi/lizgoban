@@ -165,7 +165,7 @@ function if_first_board(proc, ...args) {
 }
 
 function update_goban() {
-    will_do_something_on_first_board()
+    first_board_canvas = null; will_do_something_on_first_board()
     const btype = current_board_type(), do_nothing = truep
     const draw_raw_gen = opts => c => draw_goban(c, null, opts)
     const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
@@ -331,6 +331,9 @@ function draw_goban(canvas, stones, opts) {
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
     const hovered_move = canvas.lizgoban_hovered_move
+    const draw_progress_and_memorize_canvas = (margin, canvas, g) => {
+        draw_progress(margin, canvas, g); first_board_canvas = canvas
+    }
     // clear
     g.strokeStyle = BLACK; g.fillStyle = goban_bg(); g.lineWidth = 1
     edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
@@ -338,7 +341,7 @@ function draw_goban(canvas, stones, opts) {
     draw_grid(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(margin, canvas, g)
-    if_first_board(draw_progress, margin, canvas, g)
+    if_first_board(draw_progress_and_memorize_canvas, margin, canvas, g)
     mapping_to_winrate_bar &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
@@ -1106,8 +1109,9 @@ const [try_thumbnail, store_thumbnail_later] =
                      [store_thumbnail, thumbnail_deferring_millisec])
 
 function take_thumbnail() {
+    if (!first_board_canvas) {return}
     let fired = false
-    main_canvas.toBlob(blob => {
+    first_board_canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???
         const tags = current_tag_letters()
         const players = (R.player_black || R.player_white) ?
