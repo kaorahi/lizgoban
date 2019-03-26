@@ -38,11 +38,12 @@ const R = {
     winrate_history: [], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
     expand_winrate_bar: false,
-    max_visits: 1, board_type: 'double_boards',
+    max_visits: 1, board_type: 'double_boards', previous_board_type: '',
     progress: 0.0, progress_bturn: true, weight_info: '', network_size: '',
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [],
     tag_letters: '', start_moves_tag_letter: '', lizzie_style: false,
+    window_id: -1,
 }
 let temporary_board_type = null, target_move = null
 let keyboard_moves = [], keyboard_tag_data = {}
@@ -105,10 +106,10 @@ ipc.on('render', (e, h) => {
     update_goban()
 })
 
-ipc.on('update_ui', (e, availability, ui_only, board_type) => {
+ipc.on('update_ui', (e, availability, ui_only, win_prop) => {
     R.pausing = availability.resume
     R.auto_analyzing = availability.stop_auto
-    merge(R, {board_type})
+    merge(R, win_prop)
     set_all_canvas_size()
     ui_only || update_goban()
     update_body_color()
@@ -440,9 +441,7 @@ function set_temporary_board_type(btype, btype2) {
     temporary_board_type = b; update_board_type()
 }
 
-function toggle_board_type(type) {
-    update_board_type((type && R.board_type !== type) ? type : previous_board_type)
-}
+function toggle_board_type(type) {main('toggle_board_type', R.window_id, type)}
 
 function double_boards_p() {return R.board_type.match(/^double_boards/)}
 
@@ -1350,14 +1349,7 @@ function reset_keyboard_tag() {keyboard_tag_data = {}; update_goban()}
 
 // board type selector
 
-let last_board_type = current_window.lizgoban_board_type
-let previous_board_type = current_window.lizgoban_previous_board_type
-function update_board_type(new_type) {
-    new_type && ((R.board_type = current_window.lizgoban_board_type = new_type),
-                 main('update_menu'))
-    R.board_type !== last_board_type &&
-        ([last_board_type, previous_board_type] = [R.board_type, last_board_type])
-    current_window.lizgoban_previous_board_type = previous_board_type
+function update_board_type() {
     update_ui_element("#sub_goban_container", double_boards_p())
     set_all_canvas_size()
     update_goban()

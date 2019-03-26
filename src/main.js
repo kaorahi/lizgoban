@@ -65,6 +65,17 @@ fs.access(option.sabaki_command, null,
 
 let windows = [], last_window_id = -1
 
+function window_prop(win) {  // fixme: adding private data impolitely
+    const private_key = 'lizgoban_window_prop'
+    return win[private_key] || (win[private_key] = {
+        window_id: -1, board_type: '', previous_board_type: ''
+    })
+}
+
+function window_for_id(window_id) {
+    return get_windows().find(win => window_prop(win).window_id === window_id)
+}
+
 function get_windows() {
     return windows = windows.filter(win => !win.isDestroyed())
 }
@@ -76,18 +87,18 @@ function get_new_window(file_name, opt) {
 }
 
 function new_window(default_board_type) {
-    const id = ++last_window_id, conf_key = 'window.id' + id
+    const window_id = ++last_window_id, conf_key = 'window.id' + window_id
     const ss = electron.screen.getPrimaryDisplay().size
     const {board_type, previous_board_type, position, size} = store.get(conf_key) || {}
     const [x, y] = position || [0, 0]
     const [width, height] = size || [ss.height, ss.height * 0.6]
     const win = get_new_window('index.html', {x, y, width, height, show: false})
-    win.lizgoban_window_id = id
-    win.lizgoban_board_type = board_type || default_board_type
-    win.lizgoban_previous_board_type = previous_board_type
+    const prop = window_prop(win)
+    merge(prop, {
+        window_id, board_type: board_type || default_board_type, previous_board_type
+    })
     win.on('close', () => store.set(conf_key, {
-        board_type: win.lizgoban_board_type,
-        previous_board_type: win.lizgoban_previous_board_type,
+        board_type: prop.board_type, previous_board_type: prop.previous_board_type,
         position: win.getPosition(), size: win.getSize()
     }))
     windows.push(win)
@@ -110,8 +121,8 @@ function renderer(channel, ...args) {
     // [main.js] renderer('foo', {bar: NaN, baz: null, qux: 3})
     // [renderer.js] ipc.on('foo', (e, x) => tmp = x)
     // [result] tmp is {baz: null, qux: 3}
-    get_windows().forEach(win => win.webContents.send(channel, ...args,
-                                                      win.lizgoban_board_type))
+    get_windows().forEach(win =>
+                          win.webContents.send(channel, ...args, window_prop(win)))
 }
 
 function leelaz_start_args(weight_file) {
@@ -135,7 +146,7 @@ function leelaz_weight_option_pos_in_args() {
 
 // normal commands
 
-const simple_api = {unset_busy, update_menu}
+const simple_api = {unset_busy, update_menu, toggle_board_type}
 const api = merge({}, simple_api, {
     restart, new_window, init_from_renderer, toggle_sabaki,
     toggle_pause,
@@ -336,6 +347,18 @@ function nearest_move_to_winrate(target_winrate) {
                 `visits=${selected.visits} order=${selected.order} ` +
                 `winrate_order=${selected.winrate_order}`)
     return selected.move
+}
+
+// board type
+function toggle_board_type(window_id, type) {
+    const win = window_for_id(window_id)
+    const {board_type, previous_board_type} = window_prop(win)
+    set_board_type((type && board_type !== type) ? type : previous_board_type, win)
+}
+function set_board_type(type, win) {
+    const prop = window_prop(win), {board_type, previous_board_type} = prop
+    if (!type || type === board_type) {return}
+    merge(prop, {board_type: type, previous_board_type: board_type}); update_ui()
 }
 
 // auto-restart
@@ -962,7 +985,7 @@ function menu_template(win) {
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
         item('New window', 'CmdOrCtrl+Shift+N',
-             (this_item, win) => new_window(win.lizgoban_board_type === 'suggest' ?
+             (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
                                             'variation' : 'suggest')),
         item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
@@ -1026,9 +1049,9 @@ function menu_template(win) {
     return [file_menu, edit_menu, view_menu, tool_menu, help_menu]
 }
 
-function board_type_menu_item(label, btype, win) {
-    return {label, type: 'radio', checked: win.lizgoban_board_type === btype,
-            click: () => {win.lizgoban_board_type = btype; update_ui()}}
+function board_type_menu_item(label, type, win) {
+    return {label, type: 'radio', checked: window_prop(win).board_type === type,
+            click: (this_item, win) => set_board_type(type, win)}
 }
 
 function store_toggler_menu_item(label, key, accelerator) {
