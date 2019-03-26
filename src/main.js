@@ -360,14 +360,15 @@ function nearest_move_to_winrate(target_winrate) {
 // board type
 function toggle_board_type(window_id, type) {
     if (let_me_think_p() && !type) {toggle_board_type_in_let_me_think(); return}
-    type && stop_let_me_think()
     const win = window_for_id(window_id)
     const {board_type, previous_board_type} = window_prop(win)
-    set_board_type((type && board_type !== type) ? type : previous_board_type, win)
+    const new_type = (type && board_type !== type) ? type : previous_board_type
+    set_board_type(new_type, win, !type)
 }
-function set_board_type(type, win) {
+function set_board_type(type, win, keep_let_me_think) {
     const prop = window_prop(win), {board_type, previous_board_type} = prop
     if (!type || type === board_type) {return}
+    keep_let_me_think || stop_let_me_think()
     merge(prop, {board_type: type, previous_board_type: board_type}); update_ui()
 }
 
@@ -528,7 +529,7 @@ function let_me_think_switch_board_type(only_when_stage_is_changed) {
     const stage = auto_play_progress() < 0.5 ? 'first_half' : 'latter_half'
     if (only_when_stage_is_changed && stage === let_me_think_previous_stage) {return}
     set_board_type(let_me_think_board_type[let_me_think_previous_stage = stage],
-                   let_me_think_window())
+                   let_me_think_window(), true)
 }
 
 function toggle_board_type_in_let_me_think() {
@@ -536,7 +537,7 @@ function toggle_board_type_in_let_me_think() {
     const current_type = window_prop(win).board_type
     const all_types = Object.values(let_me_think_board_type)
     const other_type = all_types.find(type => type != current_type)
-    set_board_type(other_type, win)
+    set_board_type(other_type, win, true)
 }
 
 function toggle_let_me_think() {set_let_me_think(!let_me_think_p())}
@@ -1099,8 +1100,7 @@ function menu_template(win) {
 
 function board_type_menu_item(label, type, win) {
     return {label, type: 'radio', checked: window_prop(win).board_type === type,
-            click: (this_item, win) =>
-            (stop_let_me_think(), set_board_type(type, win, true))}
+            click: (this_item, win) => set_board_type(type, win)}
 }
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
