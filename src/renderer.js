@@ -27,7 +27,8 @@ const VAGUE_BLACK = 'rgba(0,0,0,0.3)', VAGUE_WHITE = 'rgba(255,255,255,0.3)'
 const PALE_BLUE = "rgba(128,128,255,0.5)"
 const PALE_BLACK = "rgba(0,0,0,0.1)", PALE_WHITE = "rgba(255,255,255,0.3)"
 const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
-const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)', WINRATE_BAR_ORDER_COLOR = '#d00'
+const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)'
+const WINRATE_BAR_ORDER_COLOR = '#d00', WINRATE_BAR_FIRST_ORDER_COLOR = '#0a0'
 const EXPECTED_COLOR = 'rgba(0,0,255,0.3)', UNEXPECTED_COLOR = 'rgba(255,0,0,0.8)'
 // p: pausing, t: trial
 const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
@@ -831,10 +832,16 @@ function draw_aura(s, h, [x, y, r, max_radius, x_puct, y_puct],
 function draw_winrate_bar_order(s, w, h, g) {
     const fontsize = w * 0.03, [x, y] = winrate_bar_xy(s, w, h)
     g.save()
-    g.fillStyle = WINRATE_BAR_ORDER_COLOR; set_font(fontsize, g)
+    winrate_bar_order_set_style(s, fontsize, g)
     g.textAlign = R.bturn ? 'left' : 'right'; g.textBaseline = 'middle'
     g.fillText(` ${s.order + 1} `, x, y)
     g.restore()
+}
+
+function winrate_bar_order_set_style(s, fontsize, g) {
+    const firstp = (s.order === 0)
+    set_font(fontsize * (firstp ? 1.5 : 1), g)
+    g.fillStyle = firstp ? WINRATE_BAR_FIRST_ORDER_COLOR : WINRATE_BAR_ORDER_COLOR
 }
 
 function winrate_bar_xy(suggest, w, h, supplementary, bturn) {
@@ -850,7 +857,7 @@ function winrate_bar_xy(suggest, w, h, supplementary, bturn) {
 
 function winrate_bar_y(visits, w, h, max_radius) {
     const mr = max_radius || winrate_bar_max_radius(w, h)
-    const hmin = mr * 0.1, hmax = h - hmin
+    const hmin = mr * 0.15, hmax = h - mr * 0.1
     const relative_visits = visits / R.max_visits
     // relative_visits > 1 can happen for R.previous_suggest
     return clip(hmin * relative_visits + hmax * (1 - relative_visits), 0, h)
@@ -1086,7 +1093,7 @@ function draw_visits_trail_order(s, a, forcep, fontsize, h, xy_for, g) {
     if (low && !forcep) {return}
     g.save()
     g.textAlign = 'right'; g.textBaseline = low ? 'bottom' : 'top'
-    g.fillStyle = WINRATE_BAR_ORDER_COLOR; set_font(fontsize, g)
+    winrate_bar_order_set_style(s, fontsize, g)
     g.fillText(`${s.order + 1} `, x, y)
     g.restore()
 }
