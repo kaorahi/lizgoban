@@ -31,9 +31,14 @@ const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
+function safely(proc, ...args) {try {return proc(...args)} catch(e) {return null}}
 const SGF = require('@sabaki/sgf')
 const PATH = require('path'), fs = require('fs'), TMP = require('tmp')
-const store = new (require('electron-store'))({name: 'lizgoban'})
+const store = new (safely(require, 'electron-store') ||
+                   // try old name for backward compatibility
+                   safely(require, 'electron-config') ||
+                   // ... and throw the original error when both fail
+                   require('electron-store'))({name: 'lizgoban'})
 
 // state
 let next_history_id = 0
@@ -854,11 +859,11 @@ function start_sabaki(...sabaki_args) {
 
 function stop_sabaki() {
     // avoid "Error: kill ESRCH" when sabaki_process is down
-    try {
+    safely(() => {
         sabaki_process && (process.platform === 'win32' ? sabaki_process.kill() :
                            // ref. https://azimi.me/2014/12/31/kill-child_process-node-js.html
                            process.kill(- sabaki_process.pid))
-    } catch (e) {}
+    })
 }
 
 function sabaki_reader(line) {
