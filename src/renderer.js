@@ -802,7 +802,7 @@ function winrate_bar_suggest_prop(s) {
             target_p, draw_order_p, next_p, winrate}
 }
 
-function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color, force_aura_p, g) {
+function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color, force_puct_p, g) {
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
     const large_bar = large_winrate_bar_p()
     const plot_params = winrate_bar_xy(s, w, h, true, bturn)
@@ -811,22 +811,33 @@ function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color, force_aura_p, g
     const direction =
           (bturn ? 180 : 0) + winrate_trail_rising(s) * max_slant * (bturn ? -1 : 1)
     const degs = [direction - half_center_angle, direction + half_center_angle]
-    large_bar && draw_aura(s, h, plot_params, aura_color, force_aura_p, g)
-    g.lineWidth = 1; [g.strokeStyle, g.fillStyle] = [stroke, fill]
-    edged_fill_fan([x, y], r, degs, g)
+    const draw_fan = () => {
+        g.lineWidth = 1; [g.strokeStyle, g.fillStyle] = [stroke, fill]
+        edged_fill_fan([x, y], r, degs, g)
+    }
+    draw_with_aura(draw_fan,
+                   s, h, plot_params, large_bar && aura_color, force_puct_p, g)
 }
 
-function draw_aura(s, h, [x, y, r, max_radius, x_puct, y_puct],
-                   aura_color, force_aura_p, g) {
-    if (!aura_color) {return}
+function draw_with_aura(proc,
+                        s, h, [x, y, r, max_radius, x_puct, y_puct, x_lcb],
+                        aura_color, force_puct_p, g) {
+    if (!aura_color) {proc(); return}
     const searched = winrate_trail_searched(s), rel_dy = (y - y_puct) / h
-    const draw_aura_p = force_aura_p || s.order === 0 ||
+    const draw_puct_p = force_puct_p || s.visits_order === 0 ||
           (Math.abs(rel_dy) > 0.05 && s.visits > R.max_visits * 0.3) ||
           (rel_dy > 0.2 && s.visits > R.max_visits * 0.05)
+    const draw_lcb_p = force_puct_p || s.visits > R.max_visits * 0.1 ||
+          (s.order < 3 && s.winrate - s.lcb < 0.3)
+    // circle
     g.strokeStyle = g.fillStyle = aura_color
     fill_circle([x, y], max_radius * 0.15 * Math.sqrt(searched), g)
+    // proc
+    g.save(); proc(); g.restore()
+    // line
     g.lineWidth = 2
-    draw_aura_p && line([x, y], [x_puct, clip(y_puct, 0, h)], g)
+    draw_puct_p && line([x, y], [x_puct, clip(y_puct, 0, h)], g)
+    draw_lcb_p && line([x, y], [x_lcb, y], g)
 }
 
 function draw_winrate_bar_order(s, w, h, g) {
@@ -852,7 +863,7 @@ function winrate_bar_xy(suggest, w, h, supplementary, bturn) {
     if (!supplementary) {return [x, y]}
     const [puct, equilibrium_visits] = puct_info(suggest)
     return [x, y, max_radius * Math.sqrt(suggest.prior), max_radius,
-            x_for(wr + puct), y_for(equilibrium_visits)]
+            x_for(wr + puct), y_for(equilibrium_visits), x_for(suggest.lcb)]
 }
 
 function winrate_bar_y(visits, w, h, max_radius) {

@@ -171,9 +171,13 @@ function create_leelaz () {
               .reduce(([ws, vs], [w, v]) => [ws + w * v, vs + v], [0, 0])
         const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
         const wrs = suggest.map(h => h.winrate)
+        const add_order = (sort_key, order_key) => {
+            suggest.slice().sort((a, b) => (b[sort_key] - a[sort_key]))
+                .forEach((h, i) => (h[order_key] = i))
+        }
         // winrate is NaN if suggest = []
-        suggest.slice().sort((a, b) => (b.winrate - a.winrate))
-            .forEach((h, i) => (h.winrate_order = i))
+        add_order('visits', 'visits_order')
+        add_order('winrate', 'winrate_order')
         the_suggest_handler({suggest, visits, b_winrate})
     }
 
@@ -181,10 +185,12 @@ function create_leelaz () {
     // info move D16 visits 23 winrate 4668 prior 2171 order 0 pv D16 Q16 D4 Q3 R5 R4 Q5 O3 info move D4 visits 22 winrate 4670 prior 2198 order 1 pv D4 Q4 D16 Q17 R15 R16 Q15 O17 info move Q16 visits 21 winrate 4663 prior 2147 order 2 pv Q16 D16 Q4 D3 C5 C4 D5 F3
     // (sample with "pass")
     // info move pass visits 65 winrate 0 prior 340 order 0 pv pass H4 pass H5 pass G3 pass G1 pass
+    // (sample of LCB)
+    // info move D4 visits 171 winrate 4445 prior 1890 lcb 4425 order 0 pv D4 Q16 Q4 D16
 
     const suggest_parser = (s) => {
         const [a, b] = s.split(/pv/), h = array2hash(a.trim().split(/\s+/))
-        h.pv = b.trim().split(/\s+/)
+        h.pv = b.trim().split(/\s+/); h.lcb = to_f(h.lcb || h.winrate) / 100
         h.visits = to_i(h.visits); h.order = to_i(h.order); h.winrate = to_f(h.winrate) / 100
         h.prior = to_f(h.prior) / 10000
         return h
