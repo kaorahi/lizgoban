@@ -1089,10 +1089,10 @@ function draw_visits_trail_curve(s, fontsize, h, xy_for, g) {
     if (!a) {return}
     const {alpha, target_p, draw_order_p, next_p} = winrate_bar_suggest_prop(s)
     const xy = a.map(xy_for)
-    g.lineWidth = 2
     a.forEach((fake_suggest, k) => {  // only use fake_suggest.winrate
         if (k === 0) {return}
         g.strokeStyle = g.fillStyle = suggest_color(fake_suggest, alpha).fill
+        g.lineWidth = (a[k].order === 0 && a[k-1].order === 0) ? 8 : 2
         line(xy[k], xy[k - 1], g)
         next_p && !target_p && fill_circle(xy[k], 4, g)
     })
