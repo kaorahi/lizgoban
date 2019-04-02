@@ -841,7 +841,7 @@ function save_sgf() {
         title: 'Save SGF file',
         // defaultPath: '.',
     })
-    f && fs.writeFile(f, history_to_sgf(history))
+    f && fs.writeFile(f, history_to_sgf(history), err => {if (err) throw err})
 }
 
 function history_to_sgf(hist) {
