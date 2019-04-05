@@ -45,7 +45,7 @@ To try it (stand alone):
 
 1. Install [Node.js](https://nodejs.org/).
 2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install".
-3. Put Leela Zero binary (version 0.16 or later) as "external/leelaz" together with its network weight as "external/network.gz".
+3. Put Leela Zero binary (version 0.17 or later) as "external/leelaz" together with its network weight as "external/network.gz".
 4. Type "npx electron src".
 
 To set options for leelaz (experimental):
