@@ -1099,13 +1099,14 @@ function menu_template(win) {
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
         item('Info', 'CmdOrCtrl+I', info),
-        sep,
+    ])
+    const debug_menu = menu('Debug', [
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
         item('Help', undefined, help),
     ])
-    return [file_menu, edit_menu, view_menu, tool_menu, help_menu]
+    return [file_menu, edit_menu, view_menu, tool_menu, debug_menu, help_menu]
 }
 
 function board_type_menu_item(label, type, win) {
