@@ -314,11 +314,11 @@ function try_play_best(weaken_method, ...weaken_args) {
     // try_play_best('pass_maybe')
     // try_play_best('random_candidate', 30)
     // try_play_best('random_leelaz', 30)
-    if (empty(R.suggest)) {return}
     const switch_to_random_leelaz = percent => {
         switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
     }
     weaken_method === 'random_leelaz' && switch_to_random_leelaz(...weaken_args)
+    if (empty(R.suggest)) {return}
     const move = (weaken_method === 'random_candidate' ?
                   weak_move(...weaken_args) : best_move())
     const pass_maybe =
