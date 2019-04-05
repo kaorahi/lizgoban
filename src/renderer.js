@@ -565,6 +565,7 @@ function draw_expected_mark(h, [x, y], expected_p, radius, g) {
 // See "suggestion reader" section in engine.js for suggestion_data.
 
 function draw_suggest(h, xy, radius, g) {
+    if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
     const suggest = h.data, {stroke, fill, lizzie_text_color} = suggest_color(suggest)
     g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_circle(xy, radius, g)
@@ -580,6 +581,13 @@ function draw_suggest(h, xy, radius, g) {
         g.restore()
     }
     draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
+}
+
+function draw_suggest_0visits(h, xy, radius, g) {
+    const limit_order = 4, size = (1 + log10(h.data.prior) / limit_order)
+    if (size <= 0) {return}
+    g.lineWidth = 1; g.strokeStyle = 'rgba(255,0,0,0.2)'
+    circle(xy, radius * size, g)
 }
 
 function suggest_color(suggest, alpha) {
