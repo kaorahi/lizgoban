@@ -654,8 +654,7 @@ function stone_for_history_elem(h, stones) {
 // suggest
 const too_small_prior = 1e-3
 function suggest_handler(h) {
-    const considerable = z => z.visits > 0 ||
-          (store.get('show_0visits') && z.prior >= too_small_prior)
+    const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
     R.move_count > 0 && (history[R.move_count - 1].suggest = h.suggest)
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
@@ -1112,7 +1111,6 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
-        store_toggler_menu_item('Show 0-visits', 'show_0visits'),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [

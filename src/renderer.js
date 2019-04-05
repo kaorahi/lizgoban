@@ -215,7 +215,7 @@ function update_goban() {
 
 function draw_main_goban(canvas) {
     const opts = {draw_visits_p: true, read_only: R.attached}
-    const h = selected_suggest(canvas); target_move = h.move
+    const h = selected_suggest(canvas); target_move = (h.visits > 0) && h.move
     // case I: "variation"
     if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
@@ -223,8 +223,9 @@ function draw_main_goban(canvas) {
     const s = (i >= 0 && R.stones[i] && R.stones[i][j]) || {}
     const show_until = keyboard_tag_data.move_count ||
           (s.stone && s.tag && (s.move_count !== R.move_count) && s.move_count)
+    const mapping_to_winrate_bar = h.move && mapping_text(h, opts)
     show_until ? draw_goban_until(canvas, show_until, opts)
-        : draw_goban_with_suggest(canvas, opts)
+        : draw_goban_with_suggest(canvas, {...opts, mapping_to_winrate_bar})
 }
 
 function draw_goban_until(canvas, show_until, opts) {
@@ -277,20 +278,24 @@ function draw_goban_with_variation(canvas, suggest, opts) {
             mark_unexpected_p = false
         }
     })
-    const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
-    const text = winrate_text && !opts.hide_mapping_text_p &&
-          `${winrate_text} (${visits_text})`
-    const subtext = text && ` prior = ${prior_text} `
-    const at = flip_maybe(suggest.winrate)
-    const mapping_to_winrate_bar = text && {text, subtext, at}
+    const mapping_to_winrate_bar = mapping_text(suggest, opts)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_expected_p: true,
                 mapping_to_winrate_bar, ...opts})
 }
 
+function mapping_text(suggest) {
+    const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
+    const v = visits_text ? ` (${visits_text})` : ''
+    const text = winrate_text && `${winrate_text}${v}`
+    const subtext = text && ` prior = ${prior_text} `
+    const at = flip_maybe(suggest.winrate)
+    return text && {text, subtext, at}
+}
+
 function draw_goban_with_principal_variation(canvas) {
     const opts = {read_only: true, force_draw_expected_p: true,
-                  hide_mapping_text_p: true}
+                  mapping_to_winrate_bar: false}
     draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
 }
 
@@ -611,8 +616,10 @@ function winrate_color_hue(winrate) {
 }
 
 function suggest_texts(suggest) {
-    return ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits),
-            ('' + suggest.prior).slice(0, 5)]
+    const prior = ('' + suggest.prior).slice(0, 5)
+    // need ' ' because '' is falsy
+    return suggest.visits === 0 ? [' ', '', prior] :
+        ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior]
 }
 
 function draw_winrate_mapping_line(h, xy, unit, g) {
