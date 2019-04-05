@@ -652,8 +652,11 @@ function stone_for_history_elem(h, stones) {
 }
 
 // suggest
+const too_small_prior = 1e-3
 function suggest_handler(h) {
-    if (!store.get('show_0visits')) {h.suggest = h.suggest.filter(z => z.visits > 0)}
+    const considerable = z => z.visits > 0 ||
+          (store.get('show_0visits') && z.prior >= too_small_prior)
+    h.suggest = h.suggest.filter(considerable)
     R.move_count > 0 && (history[R.move_count - 1].suggest = h.suggest)
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
         : (initial_b_winrate = h.b_winrate)
