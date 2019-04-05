@@ -289,7 +289,7 @@ function init_from_renderer() {leelaz.update()}
 let next_tag_count = 0
 const normal_tag_letters = 'bcdefghijklmnorstuvwy'
 const last_loaded_element_tag_letter = '.'
-const start_moves_tag_letter = ','
+const start_moves_tag_letter = "'"
 function new_tag() {
     const used = history.map(h => h.tag || '').join('')
     const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
