@@ -64,7 +64,7 @@ function create_leelaz () {
         process.on('exit', handler)
     }
 
-    const start_analysis = () => {pondering && leelaz(`lz-analyze ${the_analyze_interval_centisec}`)}
+    const start_analysis = () => {pondering && leelaz(`lz-analyze interval ${the_analyze_interval_centisec} minmoves 361`)}
     const stop_analysis = () => {leelaz('name')}
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())

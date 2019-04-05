@@ -647,6 +647,7 @@ function stone_for_history_elem(h, stones) {
 
 // suggest
 function suggest_handler(h) {
+    if (!store.get('show_0visits')) {h.suggest = h.suggest.filter(z => z.visits > 0)}
     R.move_count > 0 && (history[R.move_count - 1].suggest = h.suggest)
     R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
         : (initial_b_winrate = h.b_winrate)
@@ -1101,6 +1102,7 @@ function menu_template(win) {
         item('Info', 'CmdOrCtrl+I', info),
     ])
     const debug_menu = menu('Debug', [
+        store_toggler_menu_item('Show 0-visits', 'show_0visits'),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
