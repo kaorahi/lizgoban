@@ -435,7 +435,8 @@ function draw_on_board(stones, draw_last_p, draw_next_p, draw_expected_p,
                             draw_exp(h.unexpected_move, false, h, xy))
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
     })
-    each_coord((h, xy) => h.suggest && draw_winrate_mapping_line(h, xy, unit, g))
+    each_coord((h, xy) => h.suggest && (h.data.visits > 0)
+               && draw_winrate_mapping_line(h, xy, unit, g))
 }
 
 function goban_bg() {
@@ -765,7 +766,7 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
     g.lineWidth = 1
     const max_radius = Math.min(h, w * 0.05)
     const prev_color = 'rgba(64,128,255,0.8)'
-    R.suggest.forEach(s => {
+    R.suggest.filter(s => s.visits > 0).forEach(s => {
         const {edge_color, fan_color, vline_color, aura_color,
                target_p, draw_order_p, winrate} = winrate_bar_suggest_prop(s)
         draw_winrate_bar_fan(s, w, h, edge_color, fan_color, aura_color, target_p, g)

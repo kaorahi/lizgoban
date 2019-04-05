@@ -806,7 +806,7 @@ function winrate_from_history(history) {
 function winrate_suggested(move_count) {
     const {move, is_black} = history[move_count - 1] || {}
     const {suggest} = history[move_count - 2] || {}
-    const sw = ((suggest || []).find(h => h.move === move) || {}).winrate
+    const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
     return truep(sw) && (is_black ? sw : 100 - sw)
 }
 
