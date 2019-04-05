@@ -737,10 +737,12 @@ function draw_winrate_bar_horizontal_lines(w, h, g) {
 }
 
 function tics_until(max) {
-    const v = Math.pow(10, Math.floor(Math.log(max) / Math.log(10)))
+    const v = Math.pow(10, Math.floor(log10(max)))
     const unit_v = (max > v * 5) ? v * 2 : (max > v * 2) ? v : v / 2
     return seq(to_i(max / unit_v + 2)).map(k => unit_v * k)  // +1 for margin
 }
+
+function log10(z) {return Math.log(z) / Math.log(10)}
 
 function draw_winrate_bar_tics(b_wr, tics, vline, g) {
     seq(tics, 1).forEach(i => {
