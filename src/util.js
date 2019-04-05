@@ -22,6 +22,10 @@ E.array2hash = a => {
 E.seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
+let debug_log_p = false
+E.debug_log = arg => (typeof arg === 'boolean') ?
+    (debug_log_p = arg) : (debug_log_p && console.log(arg))
+
 // [d_f, d_g] = deferred_procs([f, 200], [g, 300])
 // d_f(1,2,3) ==> f(1,2,3) is called after 200 ms
 // d_f(1,2,3) and then d_g(4,5) within 200 ms

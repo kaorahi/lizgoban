@@ -13,7 +13,6 @@ const option = {
     weight_dir: undefined,
 }
 process.argv.forEach((x, i, a) => (x === "-j") && Object.assign(option, JSON.parse(a[i + 1])))
-console.log("option: " + JSON.stringify(option))
 
 /////////////////////////////////////////////////
 // setup
@@ -27,7 +26,7 @@ const {create_leelaz} = require('./engine.js')
 let leelaz = leelaz_for_black = create_leelaz(), leelaz_for_white = null
 
 // util
-const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
+const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, debug_log, deferred_procs}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -39,6 +38,13 @@ const store = new (safely(require, 'electron-store') ||
                    safely(require, 'electron-config') ||
                    // ... and throw the original error when both fail
                    require('electron-store'))({name: 'lizgoban'})
+
+// debug log
+const debug_log_key = 'debug_log'
+function update_debug_log() {debug_log(!!store.get(debug_log_key))}
+function toggle_debug_log() {debug_log(!!toggle_stored(debug_log_key))}
+update_debug_log()
+debug_log("option: " + JSON.stringify(option))
 
 // state
 let next_history_id = 0
@@ -350,10 +356,10 @@ function nearest_move_to_winrate(target_winrate) {
     const not_too_bad = R.suggest.filter(s => s.winrate >= target_winrate)
     const selected = min_by(s => Math.abs(s.winrate - target_winrate),
                   empty(not_too_bad) ? R.suggest : not_too_bad)
-    console.log(`weak_move: target_winrate=${target_winrate} ` +
-                `move=${selected.move} winrate=${selected.winrate} ` +
-                `visits=${selected.visits} order=${selected.order} ` +
-                `winrate_order=${selected.winrate_order}`)
+    debug_log(`weak_move: target_winrate=${target_winrate} ` +
+              `move=${selected.move} winrate=${selected.winrate} ` +
+              `visits=${selected.visits} order=${selected.order} ` +
+              `winrate_order=${selected.winrate_order}`)
     return selected.move
 }
 
@@ -934,7 +940,7 @@ let sabaki_process
 
 function start_sabaki(...sabaki_args) {
     const sabaki_command = option.sabaki_command
-    console.log('start sabaki: ' + JSON.stringify([sabaki_command, sabaki_args]))
+    debug_log('start sabaki: ' + JSON.stringify([sabaki_command, sabaki_args]))
     sabaki_process = require('child_process').spawn(sabaki_command, sabaki_args, {detached: true})
     sabaki_process.stdout.on('data', leelaz.each_line(sabaki_reader))
     leelaz.set_error_handler(sabaki_process, detach_from_sabaki)
@@ -950,7 +956,7 @@ function stop_sabaki() {
 }
 
 function sabaki_reader(line) {
-    console.log(`sabaki> ${line}`)
+    debug_log(`sabaki> ${line}`)
     const m = line.match(/^sabaki_dump_state:\s*(.*)/)
     m && load_sabaki_gametree(...(JSON.parse(m[1]).treePosition || []))
 }
@@ -960,7 +966,7 @@ function attach_to_sabaki() {
     const sgf_file = TMP.fileSync({mode: 0644, prefix: 'lizgoban-', postfix: '.sgf'})
     const sgf_text = history_to_sgf(history)
     fs.writeSync(sgf_file.fd, sgf_text)
-    console.log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
+    debug_log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_history()
     start_sabaki(sgf_file.name + '#' + R.move_count)
     attached = true; leelaz.update(); update_state()
@@ -1102,6 +1108,7 @@ function menu_template(win) {
         item('Info', 'CmdOrCtrl+I', info),
     ])
     const debug_menu = menu('Debug', [
+        store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
         store_toggler_menu_item('Show 0-visits', 'show_0visits'),
         {role: 'toggleDevTools'},
     ])
@@ -1117,7 +1124,11 @@ function board_type_menu_item(label, type, win) {
 }
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
-    const toggle_it = () => {store.set(key, !store.get(key)); update_state()}
+    const toggle_it = () => toggle_stored(key)
     return {label, accelerator, type: 'checkbox', checked: store.get(key),
             click: on_click || toggle_it}
+}
+
+function toggle_stored(key) {
+    store.set(key, !store.get(key)); update_state(); return store.get(key)
 }

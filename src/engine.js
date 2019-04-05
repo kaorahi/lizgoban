@@ -1,4 +1,4 @@
-const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, deferred_procs}
+const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, debug_log, deferred_procs}
       = require('./util.js')
 const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
        board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
@@ -27,8 +27,8 @@ function create_leelaz () {
     const log = (header, s, show_queue_p) => {
         const format = x => (('' + x).match(/.{0,4}[.].{2}/) || [''])[0]
         const ti = format(Date.now() / 1000 + 0.0001)
-        console.log(`${ti} [${(leelaz_process || {}).pid}] ${header} ${s}` + 
-                    (show_queue_p ? ` [${command_queue}]` : ''))
+        debug_log(`${ti} [${(leelaz_process || {}).pid}] ${header} ${s}` +
+                  (show_queue_p ? ` [${command_queue}]` : ''))
     }
 
     /////////////////////////////////////////////////
