@@ -46,6 +46,7 @@ function create_leelaz () {
         the_board_handler = board_handler; the_suggest_handler = suggest_handler
         the_analyze_interval_centisec = analyze_interval_centisec
         command_queue = []; last_command_id = -1; last_response_id = -1
+        check_supported('minmoves', 'lz-analyze interval 1 minmoves 361')
         clear_leelaz_board() // for restart
     }
     const restart = (...args) => {
@@ -64,7 +65,12 @@ function create_leelaz () {
         process.on('exit', handler)
     }
 
-    const start_analysis = () => {pondering && leelaz(`lz-analyze interval ${the_analyze_interval_centisec} minmoves 361`)}
+    const start_analysis = () => {
+        const command = is_supported('minmoves') ?
+              `lz-analyze interval ${the_analyze_interval_centisec} minmoves 361` :
+              `lz-analyze ${the_analyze_interval_centisec}`
+        pondering && leelaz(command)
+    }
     const stop_analysis = () => {leelaz('name')}
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
@@ -136,6 +142,7 @@ function create_leelaz () {
     const send_to_leelaz = (cmd) => {
         const cmd_with_id = `${++last_command_id} ${cmd}`
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
+        return last_command_id
     }
 
     const join_commands = (...a) => a.join(';')
@@ -158,8 +165,9 @@ function create_leelaz () {
 
     const stdout_reader = (s) => {
         log('stdout|', s)
-        const m = s.match(/^[=?](\d+)/)
-        m && (last_response_id = to_i(m[1]))
+        const m = s.match(/^([=?])(\d+)/)
+        m && ((last_response_id = to_i(m[2])),
+              set_supported(last_response_id, m[1] === '='))
         up_to_date_response() && s.match(/^info /) && suggest_reader(s)
         try_send_from_queue()
     }
@@ -262,6 +270,22 @@ function create_leelaz () {
             buf += rest
         }
     }
+
+    /////////////////////////////////////////////////
+    // feature checker
+
+    let supported = {}, checking_supported = []
+    const check_supported = (feature, cmd) => {
+        checking_supported.push([send_to_leelaz(cmd), feature]); send_to_leelaz('name')
+    }
+    const set_supported = (id, bool) => {
+        [_, feature] = checking_supported.find(p => p[0] === id) || []
+        feature && ((supported[feature] = bool), start_analysis())
+    }
+    const is_supported = feature => supported[feature]
+
+    /////////////////////////////////////////////////
+    // exported methods
 
     return {
         start, restart, kill, set_board, update, set_pondering,
