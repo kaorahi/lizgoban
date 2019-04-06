@@ -1370,8 +1370,8 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
-    keydown = false; reset_keyboard_tag()
-    to_i(e.key) > 0 && reset_keyboard_moves()
+    keydown = false; reset_keyboard_tag();
+    (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
     case "z": case "x": set_temporary_board_type(null); return
     }
