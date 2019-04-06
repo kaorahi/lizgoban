@@ -18,6 +18,7 @@ function create_leelaz () {
     let leelaz_process, the_start_args, the_analyze_interval_centisec
     let the_board_handler, the_suggest_handler
     let command_queue, last_command_id, last_response_id, pondering = true
+    let on_response_for_id = {}
     let network_size_text = '', suggest_only = false
 
     // game state
@@ -139,10 +140,11 @@ function create_leelaz () {
     const [send_from_queue_later] =
           deferred_procs([send_from_queue, pondering_delay_millisec])
 
-    const send_to_leelaz = (cmd) => {
+    const send_to_leelaz = (cmd, on_response) => {
+        // see stdout_reader for optional arg "on_response"
         const cmd_with_id = `${++last_command_id} ${cmd}`
+        on_response && (on_response_for_id[last_command_id] = on_response)
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
-        return last_command_id
     }
 
     const join_commands = (...a) => a.join(';')
@@ -166,8 +168,11 @@ function create_leelaz () {
     const stdout_reader = (s) => {
         log('stdout|', s)
         const m = s.match(/^([=?])(\d+)/)
-        m && ((last_response_id = to_i(m[2])),
-              set_supported(last_response_id, m[1] === '='))
+        if (m) {
+            const ok = (m[1] === '='), id = last_response_id = to_i(m[2])
+            const on_response = on_response_for_id[id]
+            on_response && (on_response(ok), delete on_response_for_id[id])
+        }
         up_to_date_response() && s.match(/^info /) && suggest_reader(s)
         try_send_from_queue()
     }
@@ -274,13 +279,10 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // feature checker
 
-    let supported = {}, checking_supported = []
+    let supported = {}
     const check_supported = (feature, cmd) => {
-        checking_supported.push([send_to_leelaz(cmd), feature]); send_to_leelaz('name')
-    }
-    const set_supported = (id, bool) => {
-        [_, feature] = checking_supported.find(p => p[0] === id) || []
-        feature && ((supported[feature] = bool), start_analysis())
+        send_to_leelaz(cmd, ok => {supported[feature] = ok; start_analysis()})
+        send_to_leelaz('name')  // relax (stop analysis)
     }
     const is_supported = feature => supported[feature]
 
