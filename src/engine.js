@@ -178,7 +178,7 @@ function create_leelaz () {
     }
 
     const suggest_reader = (s) => {
-        const suggest = s.split(/info/).slice(1).map(suggest_parser)
+        const suggest = s.split(/info/).slice(1).map(suggest_parser).filter(truep)
               .sort((a, b) => (a.order - b.order))
         const [wsum, visits] = suggest.map(h => [h.winrate, h.visits])
               .reduce(([ws, vs], [w, v]) => [ws + w * v, vs + v], [0, 0])
@@ -202,7 +202,8 @@ function create_leelaz () {
     // info move D4 visits 171 winrate 4445 prior 1890 lcb 4425 order 0 pv D4 Q16 Q4 D16
 
     const suggest_parser = (s) => {
-        const [a, b] = s.split(/pv/), h = array2hash(a.trim().split(/\s+/))
+        const [a, b] = s.split(/pv/); if (!b) {return false}
+        const h = array2hash(a.trim().split(/\s+/))
         h.pv = b.trim().split(/\s+/); h.lcb = to_f(h.lcb || h.winrate) / 100
         h.visits = to_i(h.visits); h.order = to_i(h.order); h.winrate = to_f(h.winrate) / 100
         h.prior = to_f(h.prior) / 10000
