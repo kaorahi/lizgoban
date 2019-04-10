@@ -24,7 +24,13 @@ E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
 let debug_log_p = false
 E.debug_log = arg => (typeof arg === 'boolean') ?
-    (debug_log_p = arg) : (debug_log_p && console.log(arg))
+    (debug_log_p = arg) : (debug_log_p && do_debug_log(arg))
+function do_debug_log(arg) {
+    const TOO_LONG = 500, HALF = Math.floor(TOO_LONG / 2)
+    const s = '' + arg, over = s.length - HALF * 2
+    const snip = str => str.slice(0, HALF) + `[snip ${over}]` + str.slice(- HALF)
+    console.log(over <= 0 ? s : snip(s))
+}
 
 // [d_f, d_g] = deferred_procs([f, 200], [g, 300])
 // d_f(1,2,3) ==> f(1,2,3) is called after 200 ms
