@@ -271,7 +271,7 @@ function create_leelaz () {
     const each_line = (f) => {
         let buf = ''
         return stream => {
-            const a = stream.toString().split('\n'), rest = a.pop()
+            const a = stream.toString().split(/\r?\n/), rest = a.pop()
             !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
             buf += rest
         }
