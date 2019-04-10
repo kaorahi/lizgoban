@@ -67,7 +67,7 @@ function create_leelaz () {
 
     const start_analysis = () => {
         const command = is_supported('minmoves') ?
-              `lz-analyze interval ${the_analyze_interval_centisec} minmoves 361` :
+              `lz-analyze interval ${the_analyze_interval_centisec} minmoves 30` :
               `lz-analyze ${the_analyze_interval_centisec}`
         pondering && leelaz(command)
     }
@@ -84,7 +84,7 @@ function create_leelaz () {
         last_command_id = -1; last_response_id = -2
     }
     const on_ready = () => {
-        check_supported('minmoves', 'lz-analyze interval 1 minmoves 361')
+        check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
     }
 
     // stateless wrapper of leelaz
