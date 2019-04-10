@@ -46,8 +46,7 @@ function create_leelaz () {
         set_error_handler(leelaz_process, restart_handler)
         the_board_handler = board_handler; the_suggest_handler = suggest_handler
         the_analyze_interval_centisec = analyze_interval_centisec
-        command_queue = []; last_command_id = -1; last_response_id = -1
-        check_supported('minmoves', 'lz-analyze interval 1 minmoves 361')
+        command_queue = []; block_commands_until_ready()
         clear_leelaz_board() // for restart
     }
     const restart = (...args) => {
@@ -77,6 +76,16 @@ function create_leelaz () {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
     }
     const showboard = () => {!suggest_only && leelaz('showboard')}
+
+    // fixme: unclear
+    // up_to_date_response() is turned to be true indirectly
+    // by send_to_leelaz as a side effect in check_supported.
+    const block_commands_until_ready = () => {
+        last_command_id = -1; last_response_id = -2
+    }
+    const on_ready = () => {
+        check_supported('minmoves', 'lz-analyze interval 1 minmoves 361')
+    }
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
@@ -221,6 +230,7 @@ function create_leelaz () {
         let m, c;
         (m = s.match(/Detecting residual layers.*?([0-9]+) channels.*?([0-9]+) blocks/)) &&
             (network_size_text = `${m[1]}x${m[2]}`);
+        (m = s.match(/Setting max tree size/) && on_ready());
         (m = s.match(/NN eval=([0-9.]+)/)) && the_nn_eval_reader(to_f(m[1]));
         (m = s.match(/Passes: *([0-9]+)/)) && (last_passes = to_i(m[1]));
         (m = s.match(/\((.)\) to move/)) && (bturn = m[1] === 'X');
