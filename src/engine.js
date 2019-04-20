@@ -250,14 +250,7 @@ function create_leelaz () {
     current_reader = main_reader
 
     /////////////////////////////////////////////////
-    // board reader
-
-    // stones = [[stone, ..., stone], ..., [stone, ..., stone]] (19x19, see coord.js)
-    // stone = {stone: true, black: true} etc. or {} for empty position
-
-    // history = [move_data, ..., move_data]
-    // move_data = {move: "G16", is_black: false, b_winrate: 42.19} etc.
-    // history[0] is "first move", "first stone color (= black)", "winrate *after* first move"
+    // reader helper
 
     const multiline_reader = (parser, finisher) => {
         let buf = []
@@ -266,6 +259,25 @@ function create_leelaz () {
             p ? buf.push(p) : (finisher(buf), buf = [], current_reader = main_reader)
         }
     }
+
+    const each_line = (f) => {
+        let buf = ''
+        return stream => {
+            const a = stream.toString().split(/\r?\n/), rest = a.pop()
+            !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
+            buf += rest
+        }
+    }
+
+    /////////////////////////////////////////////////
+    // board reader
+
+    // stones = [[stone, ..., stone], ..., [stone, ..., stone]] (19x19, see coord.js)
+    // stone = {stone: true, black: true} etc. or {} for empty position
+
+    // history = [move_data, ..., move_data]
+    // move_data = {move: "G16", is_black: false, b_winrate: 42.19} etc.
+    // history[0] is "first move", "first stone color (= black)", "winrate *after* first move"
 
     const finish_board_reader = (stones) => {
         const move_count = b_prison + w_prison + last_passes +
@@ -300,18 +312,6 @@ function create_leelaz () {
     }
 
     const endstate_reader = multiline_reader(parse_endstate_line, finish_endstate_reader)
-
-    /////////////////////////////////////////////////
-    // reader helper
-
-    const each_line = (f) => {
-        let buf = ''
-        return stream => {
-            const a = stream.toString().split(/\r?\n/), rest = a.pop()
-            !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
-            buf += rest
-        }
-    }
 
     /////////////////////////////////////////////////
     // feature checker
