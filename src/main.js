@@ -215,8 +215,9 @@ function play(move, force_create, default_tag) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (!R.stones[i] || !R.stones[i][j] || R.stones[i][j].stone)) {return}
     !pass && (R.stones[i][j] = {stone: true, black: R.bturn, maybe: true})
+    const new_sequence_p = (history.length > 0) && create_sequence_maybe(force_create)
     const tag = R.move_count > 0 &&
-          (create_sequence_maybe(force_create) ? new_tag() :
+          (new_sequence_p ? new_tag() :
            (history[R.move_count - 1] || {}) === history.last_loaded_element ?
            last_loaded_element_tag_letter : false)
     update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
