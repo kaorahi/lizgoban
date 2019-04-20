@@ -371,18 +371,20 @@ function draw_grid(unit, idx2coord, g) {
 }
 
 function draw_mapping_tics(unit, canvas, g) {
-    // background
-    const [[w0, w1], [mw0, mw1], [mb0, mb1], [b0, b1]] =
-          [0, 20, 80, 100].map(wr => mapping_line_coords(wr, unit, canvas))
-    const [wx, mwx, mbx, bx] = [w0, mw0, mb0, b0].map(a => a[0])
-    g.fillStyle = side_gradation(wx, mwx, MAYBE_WHITE, 'rgba(255,255,255,0)', g)
-    fill_rect(w0, mw1, g)
-    g.fillStyle = side_gradation(mbx, bx, 'rgba(0,0,0,0)', MAYBE_BLACK, g)
-    fill_rect(mb0, b1, g)
+    // mini winrate bar
+    const boundary = b_winrate()
+    const draw = (c, l, r) => {g.fillStyle = c; fill_rect(l, r, g)}
+    if (truep(boundary)) {
+        const [[b0, b1], [m0, m1], [w0, w1]] =
+              [0, boundary, 100].map(wr => mapping_line_coords(wr, unit, canvas))
+        draw(...(R.bturn ? [BLACK, b0, m1] : [WHITE, m0, w1]))
+    }
     // tics
     seq(9, 1).forEach(k => {
-        g.strokeStyle = BLACK, g.lineWidth = (k === 5 ? 3 : 1)
-        line(...mapping_line_coords(k * 10, unit, canvas), g)
+        const r = k * 10
+        g.strokeStyle = (R.bturn && r < boundary) ? WHITE : BLACK
+        g.lineWidth = (r === 50 ? 3 : 1)
+        line(...mapping_line_coords(r, unit, canvas), g)
     })
 }
 
@@ -401,7 +403,7 @@ function draw_visits_text(margin, canvas, g) {
 
 function draw_progress(margin, canvas, g) {
     if (R.progress < 0) {return}
-    g.fillStyle = R.progress_bturn ? BLACK : WHITE
+    g.fillStyle = (canvas !== main_canvas) ? GREEN : R.progress_bturn ? BLACK : WHITE
     fill_rect([0, canvas.height - margin / 10],
               [canvas.width * R.progress, canvas.height], g)
 }
