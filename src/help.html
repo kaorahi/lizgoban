@@ -149,6 +149,18 @@ and Shift+Tab to toggle let-me-think-first mode.
 Select "...even outside autoplay" in "View" menu
 to hide suggestions at every move regardless of autoplay.
 
+<!--
+<h3>Backward scan in auto-analysis</h3>
+
+There is a
+<span class="ext" onclick="open_ext('https://github.com/kaorahi/leela-zero/tree/ladder_revtrans')">modified Leela Zero</span>
+that do not forget promising moves after undo.
+Replace leelaz with it and
+set auto analysis visits as a negative value for backward analysis
+(scan from the last move to the first move)
+to get possibly better evaluations when some moves are in "blind spots" of Leela Zero.
+-->
+
 <hr>
 
 <h2><a name="Shortcut">Shortcut keys</a></h2>

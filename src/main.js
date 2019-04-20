@@ -52,7 +52,7 @@ debug_log("option: " + JSON.stringify(option))
 let next_history_id = 0
 let history = create_history()
 let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
-let auto_analysis_visits = Infinity, auto_play_count = 0
+let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 const simple_ui = false, winrate_trail = true
 let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
 let pausing = false, busy = false
@@ -280,6 +280,7 @@ function update_state_to_move_count_tentatively(count) {
     next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
     update_state()
 }
+function undoable() {return R.move_count > 0}
 function redoable() {return history.length > R.move_count}
 function restart() {restart_with_args()}
 function restart_with_args(h) {
@@ -465,26 +466,32 @@ function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
 
 // auto-analyze (redo after given visits)
 function try_auto_analyze() {
-    const done = R.max_visits >= auto_analysis_visits
+    const done = R.max_visits >= auto_analysis_visits()
+    const next = (pred, proc) => pred() ?
+          proc() : (pause(), stop_auto_analyze(), update_ui())
     auto_bturn = xor(R.bturn, done)
-    done && (R.move_count < history.length ? redo() :
-             (pause(), stop_auto_analyze(), update_ui()))
+    done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
     if (empty(history)) {return}
-    (auto_analysis_visits === visits) ?
+    (auto_analysis_signed_visits === visits) ?
         (stop_auto_analyze(), update_ui()) :
         start_auto_analyze(visits)
 }
 function start_auto_analyze(visits) {
-    rewind_maybe(); resume(); auto_analysis_visits = visits; update_ui()
+    auto_analysis_signed_visits = visits; rewind_maybe(); resume(); update_ui()
 }
-function stop_auto_analyze() {auto_analysis_visits = Infinity}
-function auto_analyzing() {return auto_analysis_visits < Infinity}
+function stop_auto_analyze() {auto_analysis_signed_visits = Infinity}
+function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
 function auto_analysis_progress() {
-    return auto_analyzing() ? R.max_visits / auto_analysis_visits : -1
+    return auto_analyzing() ? R.max_visits / auto_analysis_visits() : -1
 }
-function rewind_maybe() {redoable() || goto_move_count(0)}
+function auto_analysis_visits() {return Math.abs(auto_analysis_signed_visits)}
+function backward_auto_analysis_p() {return auto_analysis_signed_visits < 0}
+function rewind_maybe() {
+    backward_auto_analysis_p() ?
+        (undoable() || redo_to_end()) : (redoable() || undo_to_start())
+}
 stop_auto_analyze()
 
 // auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
@@ -674,7 +681,7 @@ function pick_properties(orig, keys) {
     const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
 }
 
-function show_suggest_p() {return auto_playing() || auto_analysis_visits >= 10}
+function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
 
 /////////////////////////////////////////////////
 // history
