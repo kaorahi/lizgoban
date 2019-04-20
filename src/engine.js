@@ -89,6 +89,7 @@ function create_leelaz () {
     }
     const on_ready = () => {
         check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
+        check_supported('endstate', 'endstate_map')
     }
 
     // stateless wrapper of leelaz
@@ -159,6 +160,7 @@ function create_leelaz () {
         const cmd_with_id = `${++last_command_id} ${cmd}`
         on_response && (on_response_for_id[last_command_id] = on_response)
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
+        cmd === 'showboard' && is_supported('endstate') && send_to_leelaz('endstate_map')
     }
 
     const join_commands = (...a) => a.join(';')
@@ -242,6 +244,7 @@ function create_leelaz () {
         (m = s.match(/\((.)\) Prisoners: *([0-9]+)/)) &&
             (c = to_i(m[2]), m[1] === 'X' ? b_prison = c : w_prison = c)
         s.match(/a b c d e f g h j k l m n o p q r s t/) && (current_reader = board_reader)
+        s.match(/endstate:/) && (current_reader = endstate_reader)
     }
 
     current_reader = main_reader
@@ -278,6 +281,24 @@ function create_leelaz () {
               .replace(/\+/g, '.').replace(/\s/g, '').match(/[0-9]+([XxOo.]+)/)
         if (!m) {return false}
         return m[1].split('').map(c => shallow_copy_hash(char2stone[c] || {}))
+    }
+
+    /////////////////////////////////////////////////
+    // endstate reader
+
+    let endstate_buf = []
+    const endstate_reader = (s) => {
+        const p = parse_endstate_line(s); p ? endstate_buf.push(p) :
+              (finish_endstate_reader(endstate_buf), endstate_buf = [], current_reader = main_reader)
+    }
+
+    const finish_endstate_reader = (endstate) => {
+        the_board_handler({endstate})
+    }
+
+    const parse_endstate_line = (line) => {
+        const b_endstate = s => to_i(s) / 1000
+        return !line.match(/endstate sum/) && line.trim().split(/\s+/).map(b_endstate)
     }
 
     /////////////////////////////////////////////////

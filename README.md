@@ -41,18 +41,33 @@ And more...
 
 ## Usage
 
-To try it (stand alone):
+### To try it (stand alone):
 
 1. Install [Node.js](https://nodejs.org/).
 2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install".
 3. Put Leela Zero binary (version 0.17 or later) as "external/leelaz" together with its network weight as "external/network.gz".
 4. Type "npx electron src".
 
-To set options for leelaz (experimental):
+### To set options for leelaz (experimental):
 
     npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 
-To attach it to Sabaki:
+### To enable endstate estimation (quite experimental):
+
+This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zero/leela-zero/issues/2331).
+
+1. Build [a modified leelaz](https://github.com/kaorahi/leela-zero/tree/endstate_map) and rename "leelaz" to "leelaz_endstate".
+2. Download [the weight file](https://drive.google.com/open?id=1ZotPAUG0zz-y7K-e934AHyYF8_StWmyN) and rename it to "network_endstate.gz".
+3. Start LizGoban with options:
+
+    npx electron src -j '{"endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}'
+
+Then you will find "Endstate" in "View" menu.
+You can also combine "leelaz_args" and "endstate_leelaz":
+
+    npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"], "endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}'
+
+### To attach it to Sabaki:
 
 1. Build a [customized Sabaki](https://github.com/kaorahi/Sabaki/tree/dump_state2) in "dump_state2" branch.
 2. Put Sabaki binary as "external/sabaki".

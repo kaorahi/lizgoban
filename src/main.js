@@ -12,6 +12,7 @@ const option = {
     engine_log_line_length: 500,
     sabaki_command: __dirname + '/../external/sabaki',
     minimum_auto_restart_millisec: 5000,
+    endstate_leelaz: null,
     weight_dir: undefined,
 }
 process.argv.forEach((x, i, a) => (x === "-j") && Object.assign(option, JSON.parse(a[i + 1])))
@@ -26,6 +27,7 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 // leelaz
 const {create_leelaz} = require('./engine.js')
 let leelaz = leelaz_for_black = create_leelaz(), leelaz_for_white = null
+let leelaz_for_endstate = null
 
 // util
 const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, debug_log, deferred_procs}
@@ -117,11 +119,17 @@ function new_window(default_board_type) {
 
 app.on('ready', () => {
     leelaz.start(leelaz_start_args()); update_menu(); new_window('double_boards')
+    if (!option.endstate_leelaz) {return}
+    leelaz.activate(false)
+    const [lz_command, weight] = option.endstate_leelaz
+    const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
+    leelaz_for_endstate = create_leelaz()
+    leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
 })
 app.on('window-all-closed', app.quit)
 app.on('quit', () => each_leelaz(z => z.kill()))
 function each_leelaz(f) {
-    [leelaz_for_black, leelaz_for_white].forEach(z => z && f(z))
+    [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
 }
 
 function renderer(channel, ...args) {renderer_gen(channel, false, ...args)}
@@ -589,9 +597,11 @@ function set_renderer_state(...args) {
     const progress_bturn = auto_bturn
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
-    const stored_keys = ['lizzie_style', 'expand_winrate_bar', 'let_me_think']
+    const endstate_sum = leelaz_for_endstate && average_endstate_sum()
+    const stored_keys = ['lizzie_style', 'expand_winrate_bar', 'let_me_think',
+                         'show_endstate']
     stored_keys.forEach(key => R[key] = store.get(key, false))
-    merge(R, {winrate_history,
+    merge(R, {winrate_history, endstate_sum,
               progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
               previous_suggest, winrate_trail}, ...args)
@@ -603,6 +613,11 @@ function set_and_render(...args) {
     set_renderer_state(...args)
     const masked_R = merge({}, R, show_suggest_p() ? {} : {suggest: [], visits: null})
     renderer('render', masked_R)
+}
+
+function average_endstate_sum() {
+    const [cur, prev] = [1, 2].map(k => (history[R.move_count - k] || {}).endstate_sum)
+    return truep(cur) && truep(prev) && (cur + prev) / 2
 }
 
 function get_previous_suggest() {
@@ -622,9 +637,17 @@ function weight_info_text() {
 
 // board
 function board_handler(h) {
+    const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
+    const board_setter = () => {
+        add_next_mark_to_stones(R.stones, history, R.move_count)
+        add_info_to_stones(R.stones, history)
+    }
+    const endstate_setter = () => {
+        add_endstate_to_stones(R.stones, R.endstate)
+        R.move_count > 0 && (history[R.move_count - 1].endstate_sum = sum(R.endstate))
+    }
     set_renderer_state(h)
-    add_next_mark_to_stones(R.stones, history, R.move_count)
-    add_info_to_stones(R.stones, history)
+    h.endstate || board_setter(); leelaz_for_endstate && endstate_setter()
     update_state()
 }
 
@@ -651,15 +674,22 @@ function add_next_mark_to_stones(stones, history, move_count) {
 }
 
 function add_info_to_stones(stones, history) {
+    const uniq = str => [...new Set(str.split(''))].join('')
     history.forEach((h, c) => {
         const s = stone_for_history_elem(h, stones)
         if (!s) {return}
-        s.tag = (s.tag || '') + (h.tag || '')
+        s.tag = uniq((s.tag || '') + (h.tag || ''))
         s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
         !s.anytime_stones && (s.anytime_stones = [])
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
 }
+
+function add_endstate_to_stones(stones, endstate) {
+    if (!endstate) {return}
+    stones.forEach((row, i) => row.forEach((s, j) => {s.endstate = endstate[i][j]}))
+}
+
 
 function stone_for_history_elem(h, stones) {
     const [i, j] = move2idx(h.move)
@@ -1040,7 +1070,7 @@ function swap_leelaz_for_black_and_white() {
     if (!leelaz_for_white) {return}
     const old_black = leelaz_for_black
     leelaz_for_black = leelaz_for_white; leelaz_for_white = old_black
-    leelaz_for_black.activate(true); leelaz_for_white.activate(false)
+    leelaz_for_black.activate(!leelaz_for_endstate); leelaz_for_white.activate(false)
     switch_leelaz()
 }
 
@@ -1107,6 +1137,7 @@ function menu_template(win) {
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
+        store_toggler_menu_item('Endstate', 'show_endstate', 'Shift+E'),
     ])
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,

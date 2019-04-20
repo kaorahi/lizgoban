@@ -257,6 +257,7 @@ function draw_goban_with_suggest(canvas, opts) {
         set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
+                draw_endstate_p: R.show_endstate,
                 mapping_tics_p: canvas !== main_canvas, ...opts})
 }
 
@@ -330,7 +331,7 @@ function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
 }
 
 function draw_goban(canvas, stones, opts) {
-    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p,
+    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
            read_only, mapping_tics_p, mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05, hm = margin / 2
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
@@ -354,7 +355,8 @@ function draw_goban(canvas, stones, opts) {
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     draw_on_board(stones || R.stones,
-                  draw_last_p, draw_next_p, draw_expected_p, unit, idx2coord, g)
+                  {draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p},
+                  unit, idx2coord, g)
     // mouse events
     canvas.onmousedown = e => (!read_only && !R.attached &&
                                (play_here(e, coord2idx), hover_off(canvas)))
@@ -396,10 +398,12 @@ function draw_visits(margin, canvas, g) {
 }
 
 function draw_visits_text(margin, canvas, g) {
+    const format = z => Math.round(z * 10) / 10
+    const esum = truep(R.endstate_sum) ? `  endstate = ${format(R.endstate_sum)}` : ''
     g.save()
     g.fillStyle = MAYBE_BLACK; set_font(margin / 2, g)
     g.textAlign = 'left'; g.textBaseline = 'middle'
-    g.fillText(`  visits = ${R.visits}`, 0, margin / 4)
+    g.fillText(`  visits = ${R.visits}${esum}`, 0, margin / 4)
     g.restore()
 }
 
@@ -429,14 +433,15 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
     fill_circle(xy, unit / 4, g)
 }
 
-function draw_on_board(stones, draw_last_p, draw_next_p, draw_expected_p,
-                       unit, idx2coord, g) {
+function draw_on_board(stones, drawp, unit, idx2coord, g) {
+    const {draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p} = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
           draw_expected_mark(h, xy, exp_p, stone_radius, g)
     const each_coord =
           proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx)))
     each_coord((h, xy) => {
+        draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
@@ -568,6 +573,13 @@ function draw_expected_mark(h, [x, y], expected_p, radius, g) {
     fill_line([x1, y1 - d], [x1, y1], [x1 + d, y1], g)
     g.strokeStyle = expected_p ? EXPECTED_COLOR : UNEXPECTED_COLOR; g.lineWidth = 2
     square_around([x, y], radius, g)
+}
+
+function draw_endstate(endstate, xy, radius, g) {
+    if (!truep(endstate)) {return}
+    const c = (endstate >= 0) ? 64 : 255, alpha = Math.abs(endstate) * 0.7
+    g.fillStyle = `rgba(${c},${c},${c},${alpha})`
+    fill_square_around(xy, radius, g)
 }
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
@@ -1255,15 +1267,16 @@ function fan_gen([x, y], r, [deg1, deg2], g) {
     g.beginPath(); g.moveTo(x, y)
     g.arc(x, y, r, deg1 * Math.PI / 180, deg2 * Math.PI / 180); g.closePath()
 }
+function square_around_gen([x, y], radius, g) {
+    rect_gen([x - radius, y - radius], [x + radius, y + radius], g)
+}
 
 const [line, fill_line, edged_fill_line] = drawers_trio(line_gen)
 const [rect, fill_rect, edged_fill_rect] = drawers_trio(rect_gen)
 const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
 const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
-
-function square_around([x, y], radius, g) {
-    rect([x - radius, y - radius], [x + radius, y + radius], g)
-}
+const [square_around, fill_square_around, edged_fill_square_around] =
+      drawers_trio(square_around_gen)
 
 function set_font(fontsize, g) {g.font = '' + fontsize + 'px sans-serif'}
 
