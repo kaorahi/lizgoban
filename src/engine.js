@@ -39,9 +39,11 @@ function create_leelaz () {
 
     // process
     const start = (...args) => {
-        const [leelaz_command, leelaz_args, analyze_interval_centisec,
-               minimum_suggested_moves, engine_log_line_length,
-               board_handler, suggest_handler, restart_handler] = the_start_args = args
+        // clean me: receive array for backward compatibility
+        const [{leelaz_command, leelaz_args, analyze_interval_centisec,
+                minimum_suggested_moves, engine_log_line_length,
+                board_handler, suggest_handler, restart_handler}]
+              = the_start_args = args
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
         leelaz_process.stdout.on('data', each_line(stdout_reader))

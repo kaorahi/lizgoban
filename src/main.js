@@ -139,17 +139,21 @@ function renderer_gen(channel, win_prop_p, ...args) {
 }
 
 function leelaz_start_args(weight_file) {
-    const leelaz_args = option.leelaz_args.slice()
+    const restart_handler = auto_restart, leelaz_args = option.leelaz_args.slice()
     const weight_pos = leelaz_weight_option_pos_in_args()
     weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
-    return [option.leelaz_command, leelaz_args, option.analyze_interval_centisec,
-            option.minimum_suggested_moves, option.engine_log_line_length,
-            board_handler, suggest_handler, auto_restart]
+    const h = {leelaz_args, board_handler, suggest_handler, restart_handler}
+    const opts = ['leelaz_command', 'analyze_interval_centisec',
+                  'minimum_suggested_moves', 'engine_log_line_length']
+    opts.forEach(key => h[key] = option[key])
+    // clean me: return array for backward compatibility
+    return [h]
 }
 function leelaz_weight_file(leelaz_for_black_or_white) {
     const k = leelaz_weight_option_pos_in_args()
-    const args = (leelaz_for_black_or_white || leelaz).start_args()
-    return (k >= 0) && args && args[1][k + 1]
+    // clean me: array is used for backward compatibility
+    const [arg] = (leelaz_for_black_or_white || leelaz).start_args() || []
+    return (k >= 0) && arg && arg.leelaz_args[k + 1]
 }
 function leelaz_weight_option_pos_in_args() {
     return option.leelaz_args.findIndex(z => z === "-w" || z === "--weights")
