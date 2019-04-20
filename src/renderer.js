@@ -332,7 +332,7 @@ function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p,
            read_only, mapping_tics_p, mapping_to_winrate_bar} = opts || {}
-    const margin = canvas.height * 0.05
+    const margin = canvas.height * 0.05, hm = margin / 2
     const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
@@ -341,8 +341,10 @@ function draw_goban(canvas, stones, opts) {
         draw_progress(margin, canvas, g); first_board_canvas = canvas
     }
     // clear
-    g.strokeStyle = BLACK; g.fillStyle = goban_bg(); g.lineWidth = 1
+    g.strokeStyle = BLACK; g.fillStyle = goban_bg(true); g.lineWidth = 1
     edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
+    g.fillStyle = goban_bg()
+    fill_rect([hm, hm], [canvas.width - hm, canvas.height - hm], g)
     // draw
     draw_grid(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
@@ -446,8 +448,8 @@ function draw_on_board(stones, draw_last_p, draw_next_p, draw_expected_p,
                && draw_winrate_mapping_line(h, xy, unit, g))
 }
 
-function goban_bg() {
-    return GOBAN_BG_COLOR[(R.pausing ? 'p' : '') + (R.trial ? 't' : '')]
+function goban_bg(border) {
+    return GOBAN_BG_COLOR[(R.pausing ? 'p' : '') + (R.trial && border ? 't' : '')]
 }
 
 function current_board_type() {
