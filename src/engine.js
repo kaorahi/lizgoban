@@ -153,7 +153,8 @@ function create_leelaz () {
     const [send_from_queue_later] =
           deferred_procs([send_from_queue, pondering_delay_millisec])
 
-    const send_to_leelaz = (cmd, on_response) => {
+    const send_to_leelaz = cmd => {try_send_to_leelaz(cmd)}
+    const try_send_to_leelaz = (cmd, on_response) => {
         // see stdout_reader for optional arg "on_response"
         const cmd_with_id = `${++last_command_id} ${cmd}`
         on_response && (on_response_for_id[last_command_id] = on_response)
@@ -296,7 +297,7 @@ function create_leelaz () {
 
     let supported = {}
     const check_supported = (feature, cmd) => {
-        send_to_leelaz(cmd, ok => {supported[feature] = ok; start_analysis()})
+        try_send_to_leelaz(cmd, ok => {supported[feature] = ok; start_analysis()})
         send_to_leelaz('name')  // relax (stop analysis)
     }
     const is_supported = feature => supported[feature]
