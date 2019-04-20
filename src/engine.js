@@ -259,10 +259,12 @@ function create_leelaz () {
     // move_data = {move: "G16", is_black: false, b_winrate: 42.19} etc.
     // history[0] is "first move", "first stone color (= black)", "winrate *after* first move"
 
-    let stones_buf = []
-    const board_reader = (s) => {
-        const p = parse_board_line(s); p ? stones_buf.push(p) :
-              (finish_board_reader(stones_buf), stones_buf = [], current_reader = main_reader)
+    const multiline_reader = (parser, finisher) => {
+        let buf = []
+        return s => {
+            const p = parser(s)
+            p ? buf.push(p) : (finisher(buf), buf = [], current_reader = main_reader)
+        }
     }
 
     const finish_board_reader = (stones) => {
@@ -283,14 +285,10 @@ function create_leelaz () {
         return m[1].split('').map(c => shallow_copy_hash(char2stone[c] || {}))
     }
 
+    const board_reader = multiline_reader(parse_board_line, finish_board_reader)
+
     /////////////////////////////////////////////////
     // endstate reader
-
-    let endstate_buf = []
-    const endstate_reader = (s) => {
-        const p = parse_endstate_line(s); p ? endstate_buf.push(p) :
-              (finish_endstate_reader(endstate_buf), endstate_buf = [], current_reader = main_reader)
-    }
 
     const finish_endstate_reader = (endstate) => {
         the_board_handler({endstate})
@@ -300,6 +298,8 @@ function create_leelaz () {
         const b_endstate = s => to_i(s) / 1000
         return !line.match(/endstate sum/) && line.trim().split(/\s+/).map(b_endstate)
     }
+
+    const endstate_reader = multiline_reader(parse_endstate_line, finish_endstate_reader)
 
     /////////////////////////////////////////////////
     // reader helper
