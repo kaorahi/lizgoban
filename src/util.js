@@ -28,7 +28,7 @@ E.debug_log = (arg, limit_len) => (typeof arg === 'boolean') ?
 function do_debug_log(arg, limit_len) {
     const HALF = Math.floor((limit_len || Infinity) / 2)
     const s = '' + arg, over = s.length - HALF * 2
-    const snip = str => str.slice(0, HALF) + `[snip ${over}]` + str.slice(- HALF)
+    const snip = str => str.slice(0, HALF) + `{...${over}...}` + str.slice(- HALF)
     console.log(over <= 0 ? s : snip(s))
 }
 
