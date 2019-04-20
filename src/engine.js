@@ -38,12 +38,11 @@ function create_leelaz () {
     // leelaz action
 
     // process
-    const start = (...args) => {
-        // clean me: receive array for backward compatibility
-        const [{leelaz_command, leelaz_args, analyze_interval_centisec,
-                minimum_suggested_moves, engine_log_line_length,
-                board_handler, suggest_handler, restart_handler}]
-              = the_start_args = args
+    const start = h => {
+        const {leelaz_command, leelaz_args, analyze_interval_centisec,
+               minimum_suggested_moves, engine_log_line_length,
+               board_handler, suggest_handler, restart_handler}
+              = the_start_args = h
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
         leelaz_process.stdout.on('data', each_line(stdout_reader))
@@ -56,9 +55,7 @@ function create_leelaz () {
         command_queue = []; block_commands_until_ready()
         clear_leelaz_board() // for restart
     }
-    const restart = (...args) => {
-        kill(); network_size_text = ''; start(...(empty(args) ? the_start_args : args))
-    }
+    const restart = h => {kill(); network_size_text = ''; start(h || the_start_args)}
     const kill = () => {
         if (!leelaz_process) {return}
         ['stdin', 'stdout', 'stderr']

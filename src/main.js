@@ -114,7 +114,7 @@ function new_window(default_board_type) {
 }
 
 app.on('ready', () => {
-    leelaz.start(...leelaz_start_args()); update_menu(); new_window('double_boards')
+    leelaz.start(leelaz_start_args()); update_menu(); new_window('double_boards')
 })
 app.on('window-all-closed', app.quit)
 app.on('quit', () => each_leelaz(z => z.kill()))
@@ -146,13 +146,11 @@ function leelaz_start_args(weight_file) {
     const opts = ['leelaz_command', 'analyze_interval_centisec',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])
-    // clean me: return array for backward compatibility
-    return [h]
+    return h
 }
 function leelaz_weight_file(leelaz_for_black_or_white) {
     const k = leelaz_weight_option_pos_in_args()
-    // clean me: array is used for backward compatibility
-    const [arg] = (leelaz_for_black_or_white || leelaz).start_args() || []
+    const arg = (leelaz_for_black_or_white || leelaz).start_args()
     return (k >= 0) && arg && arg.leelaz_args[k + 1]
 }
 function leelaz_weight_option_pos_in_args() {
@@ -281,8 +279,8 @@ function update_state_to_move_count_tentatively(count) {
 }
 function redoable() {return history.length > R.move_count}
 function restart() {restart_with_args()}
-function restart_with_args(...args) {
-    leelaz.restart(...args); switch_to_nth_sequence(sequence_cursor); stop_auto()
+function restart_with_args(h) {
+    leelaz.restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
 }
 function pause() {pausing = true; update_ponder_and_ui()}
 function resume() {pausing = false; update_ponder_and_ui()}
@@ -407,7 +405,7 @@ function load_weight_file(weight_file) {
     if (!weight_file) {return false}
     weight_file !== current_weight_file &&
         (previous_weight_file = current_weight_file)
-    restart_with_args(...leelaz_start_args(weight_file))
+    restart_with_args(leelaz_start_args(weight_file))
     return weight_file
 }
 function select_files(title) {
