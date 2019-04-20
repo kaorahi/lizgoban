@@ -23,10 +23,10 @@ E.seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
 let debug_log_p = false
-E.debug_log = arg => (typeof arg === 'boolean') ?
-    (debug_log_p = arg) : (debug_log_p && do_debug_log(arg))
-function do_debug_log(arg) {
-    const TOO_LONG = 500, HALF = Math.floor(TOO_LONG / 2)
+E.debug_log = (arg, limit_len) => (typeof arg === 'boolean') ?
+    (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len))
+function do_debug_log(arg, limit_len) {
+    const HALF = Math.floor((limit_len || Infinity) / 2)
     const s = '' + arg, over = s.length - HALF * 2
     const snip = str => str.slice(0, HALF) + `[snip ${over}]` + str.slice(- HALF)
     console.log(over <= 0 ? s : snip(s))

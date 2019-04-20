@@ -16,7 +16,7 @@ function create_leelaz () {
     const pondering_delay_millisec = 0  // disabled (obsolete)
 
     let leelaz_process, the_start_args, the_analyze_interval_centisec
-    let the_minimum_suggested_moves
+    let the_minimum_suggested_moves, the_engine_log_line_length
     let the_board_handler, the_suggest_handler
     let command_queue, last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
@@ -30,7 +30,8 @@ function create_leelaz () {
         const format = x => (('' + x).match(/.{0,4}[.].{2}/) || [''])[0]
         const ti = format(Date.now() / 1000 + 0.0001)
         debug_log(`${ti} [${(leelaz_process || {}).pid}] ${header} ${s}` +
-                  (show_queue_p ? ` [${command_queue}]` : ''))
+                  (show_queue_p ? ` [${command_queue}]` : ''),
+                  the_engine_log_line_length)
     }
 
     /////////////////////////////////////////////////
@@ -39,7 +40,7 @@ function create_leelaz () {
     // process
     const start = (...args) => {
         const [leelaz_command, leelaz_args, analyze_interval_centisec,
-               minimum_suggested_moves,
+               minimum_suggested_moves, engine_log_line_length,
                board_handler, suggest_handler, restart_handler] = the_start_args = args
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
@@ -49,6 +50,7 @@ function create_leelaz () {
         the_board_handler = board_handler; the_suggest_handler = suggest_handler
         the_analyze_interval_centisec = analyze_interval_centisec
         the_minimum_suggested_moves = minimum_suggested_moves
+        the_engine_log_line_length = engine_log_line_length
         command_queue = []; block_commands_until_ready()
         clear_leelaz_board() // for restart
     }

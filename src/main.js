@@ -9,6 +9,7 @@ const option = {
     leelaz_args: ["-g", "-w", __dirname + "/../external/network.gz"],
     analyze_interval_centisec: 10,
     minimum_suggested_moves: 30,
+    engine_log_line_length: 500,
     sabaki_command: __dirname + '/../external/sabaki',
     minimum_auto_restart_millisec: 5000,
     weight_dir: undefined,
@@ -142,7 +143,7 @@ function leelaz_start_args(weight_file) {
     const weight_pos = leelaz_weight_option_pos_in_args()
     weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
     return [option.leelaz_command, leelaz_args, option.analyze_interval_centisec,
-            option.minimum_suggested_moves,
+            option.minimum_suggested_moves, option.engine_log_line_length,
             board_handler, suggest_handler, auto_restart]
 }
 function leelaz_weight_file(leelaz_for_black_or_white) {
