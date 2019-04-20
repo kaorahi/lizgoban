@@ -100,7 +100,9 @@ function new_window(default_board_type) {
     const {board_type, previous_board_type, position, size} = store.get(conf_key) || {}
     const [x, y] = position || [0, 0]
     const [width, height] = size || [ss.height, ss.height * 0.6]
-    const win = get_new_window('index.html', {x, y, width, height, show: false})
+    const webPreferences = {nodeIntegration: true}
+    const win = get_new_window('index.html',
+                               {x, y, width, height, webPreferences, show: false})
     const prop = window_prop(win)
     merge(prop, {
         window_id, board_type: board_type || default_board_type, previous_board_type
