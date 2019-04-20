@@ -1118,12 +1118,12 @@ function draw_visits_trail_curve(s, fontsize, h, xy_for, g) {
 }
 
 function draw_visits_trail_order(s, a, forcep, fontsize, h, xy_for, g) {
-    const [x, y] = xy_for(a[0]), low = y > 0.8 * h
+    const [x, y] = xy_for(a[0]), low = y > 0.8 * h, ord = s.order + 1
     if (low && !forcep) {return}
     g.save()
     g.textAlign = 'right'; g.textBaseline = low ? 'bottom' : 'top'
     winrate_bar_order_set_style(s, fontsize, g)
-    g.fillText(`${s.order + 1} `, x, y)
+    g.fillText(ord === 1 ? '1' : `${ord} `, x, y)
     g.restore()
 }
 
