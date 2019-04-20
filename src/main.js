@@ -1094,7 +1094,7 @@ function menu_template(win) {
         board_type_menu_item('Raw board', 'raw', win),
         board_type_menu_item('Winrate graph', 'winrate_only', win),
         sep,
-        store_toggler_menu_item('Let me think first', 'let_me_think', null,
+        store_toggler_menu_item('Let me think first', 'let_me_think', 'Shift+M',
                                 toggle_let_me_think),
         store_toggler_menu_item('...even outside autoplay', 'let_me_think_anyway'),
         sep,
