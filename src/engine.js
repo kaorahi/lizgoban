@@ -16,6 +16,7 @@ function create_leelaz () {
     const pondering_delay_millisec = 0  // disabled (obsolete)
 
     let leelaz_process, the_start_args, the_analyze_interval_centisec
+    let the_minimum_suggested_moves
     let the_board_handler, the_suggest_handler
     let command_queue, last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
@@ -38,6 +39,7 @@ function create_leelaz () {
     // process
     const start = (...args) => {
         const [leelaz_command, leelaz_args, analyze_interval_centisec,
+               minimum_suggested_moves,
                board_handler, suggest_handler, restart_handler] = the_start_args = args
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
@@ -46,6 +48,7 @@ function create_leelaz () {
         set_error_handler(leelaz_process, restart_handler)
         the_board_handler = board_handler; the_suggest_handler = suggest_handler
         the_analyze_interval_centisec = analyze_interval_centisec
+        the_minimum_suggested_moves = minimum_suggested_moves
         command_queue = []; block_commands_until_ready()
         clear_leelaz_board() // for restart
     }
@@ -67,7 +70,7 @@ function create_leelaz () {
 
     const start_analysis = () => {
         const command = is_supported('minmoves') ?
-              `lz-analyze interval ${the_analyze_interval_centisec} minmoves 30` :
+              `lz-analyze interval ${the_analyze_interval_centisec} minmoves ${the_minimum_suggested_moves}` :
               `lz-analyze ${the_analyze_interval_centisec}`
         pondering && leelaz(command)
     }
