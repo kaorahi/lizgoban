@@ -52,9 +52,11 @@ And more...
 
     npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 
-### To enable endstate estimation (quite experimental):
+### To enable endstate estimation (experimental):
 
 This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zero/leela-zero/issues/2331).
+
+![The last white move increases possible black territories indirectly (small green squares).](endstate.png)
 
 1. Build [a modified leelaz](https://github.com/kaorahi/leela-zero/tree/endstate_map) and rename "leelaz" to "leelaz_endstate".
 2. Download [the weight file](https://drive.google.com/open?id=1ZotPAUG0zz-y7K-e934AHyYF8_StWmyN) and rename it to "network_endstate.gz".
@@ -62,8 +64,7 @@ This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zer
 
     npx electron src -j '{"endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}'
 
-Then you will find "Endstate" in "View" menu.
-You can also combine "leelaz_args" and "endstate_leelaz":
+Then you will find "Endstate" in "View" menu. Small green/pink squares denote increase of black/white possibilities by the last two moves. You can also combine "leelaz_args" and "endstate_leelaz":
 
     npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"], "endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}'
 

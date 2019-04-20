@@ -643,8 +643,12 @@ function board_handler(h) {
         add_info_to_stones(R.stones, history)
     }
     const endstate_setter = () => {
-        add_endstate_to_stones(R.stones, R.endstate)
-        R.move_count > 0 && (history[R.move_count - 1].endstate_sum = sum(R.endstate))
+        const prev_turn_endstate =
+              h.endstate && (history[R.move_count - 3] || {}).endstate
+        const add_endstate_to_history =
+              h => merge(h, {endstate: R.endstate, endstate_sum: sum(R.endstate)})
+        add_endstate_to_stones(R.stones, R.endstate, prev_turn_endstate)
+        R.move_count > 0 && add_endstate_to_history(history[R.move_count - 1])
     }
     set_renderer_state(h)
     h.endstate || board_setter(); leelaz_for_endstate && endstate_setter()
@@ -685,9 +689,12 @@ function add_info_to_stones(stones, history) {
     })
 }
 
-function add_endstate_to_stones(stones, endstate) {
+function add_endstate_to_stones(stones, endstate, prev_turn_endstate) {
     if (!endstate) {return}
-    stones.forEach((row, i) => row.forEach((s, j) => {s.endstate = endstate[i][j]}))
+    stones.forEach((row, i) => row.forEach((s, j) => {
+        s.endstate = endstate[i][j]
+        prev_turn_endstate && (s.endstate_diff = s.endstate - prev_turn_endstate[i][j])
+    }))
 }
 
 

@@ -448,6 +448,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
+        draw_endstate_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
     each_coord((h, xy) => h.suggest && (h.data.visits > 0)
                && draw_winrate_mapping_line(h, xy, unit, g))
@@ -580,6 +581,13 @@ function draw_endstate(endstate, xy, radius, g) {
     const c = (endstate >= 0) ? 64 : 255, alpha = Math.abs(endstate) * 0.7
     g.fillStyle = `rgba(${c},${c},${c},${alpha})`
     fill_square_around(xy, radius, g)
+}
+
+function draw_endstate_diff(diff, xy, radius, g) {
+    if (!diff) {return}
+    const size = 0.15, [c, r, f] = diff > 0 ?
+          ['#080', 1, square_around] : ['#f0f', Math.sqrt(2), diamond_around]
+    g.lineWidth = Math.abs(diff * 3); g.strokeStyle = c; f(xy, radius * size * r, g)
 }
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
@@ -1270,6 +1278,10 @@ function fan_gen([x, y], r, [deg1, deg2], g) {
 function square_around_gen([x, y], radius, g) {
     rect_gen([x - radius, y - radius], [x + radius, y + radius], g)
 }
+function diamond_around_gen([x, y], radius, g) {
+    const r = radius
+    line_gen([x + r, y], [x, y - r], [x - r, y], [x, y + r], [x + r, y], g)
+}
 
 const [line, fill_line, edged_fill_line] = drawers_trio(line_gen)
 const [rect, fill_rect, edged_fill_rect] = drawers_trio(rect_gen)
@@ -1277,6 +1289,8 @@ const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
 const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
 const [square_around, fill_square_around, edged_fill_square_around] =
       drawers_trio(square_around_gen)
+const [diamond_around, fill_diamond_around, edged_fill_diamond_around] =
+      drawers_trio(diamond_around_gen)
 
 function set_font(fontsize, g) {g.font = '' + fontsize + 'px sans-serif'}
 
