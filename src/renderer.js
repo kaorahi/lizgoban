@@ -1280,7 +1280,7 @@ function square_around_gen([x, y], radius, g) {
 }
 function diamond_around_gen([x, y], radius, g) {
     const r = radius
-    line_gen([x + r, y], [x, y - r], [x - r, y], [x, y + r], [x + r, y], g)
+    line_gen([x + r, y], [x, y - r], [x - r, y], [x, y + r], g); g.closePath()
 }
 
 const [line, fill_line, edged_fill_line] = drawers_trio(line_gen)
