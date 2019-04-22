@@ -960,6 +960,7 @@ function draw_winrate_graph(canvas) {
     draw_winrate_graph_move_count(smax, fontsize, sr2coord, g)
     draw_winrate_graph_future(w, h, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
+    draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     canvas.onmousedown = e => !R.attached && winrate_graph_goto(e, coord2sr)
     canvas.onmousemove = e => !R.attached && (e.buttons === 1) && winrate_graph_goto(e, coord2sr)
@@ -1009,6 +1010,14 @@ function draw_winrate_graph_curve(sr2coord, g) {
             (h.move_eval < 0) ? RED : (s > 0 && !truep(h.predict)) ? YELLOW : GREEN
         g.lineWidth = (s <= R.move_count ? 3 : 1)
         cur = sr2coord(s, h.r); prev && line(prev, cur, g); prev = cur
+    })
+}
+
+function draw_winrate_graph_score(sr2coord, g) {
+    const to_r = score => 50 + score
+    R.winrate_history.map(h => h.score_without_komi).forEach((score, s) => {
+        if (!truep(score)) {return}
+        g.fillStyle = "rgba(0,255,255,0.3)"; fill_circle(sr2coord(s, to_r(score)), 2, g)
     })
 }
 

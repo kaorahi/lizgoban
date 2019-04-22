@@ -615,8 +615,9 @@ function set_and_render(...args) {
     renderer('render', masked_R)
 }
 
-function average_endstate_sum() {
-    const [cur, prev] = [1, 2].map(k => (history[R.move_count - k] || {}).endstate_sum)
+function average_endstate_sum(move_count) {
+    const mc = truep(move_count) || R.move_count
+    const [cur, prev] = [1, 2].map(k => (history[mc - k] || {}).endstate_sum)
     return truep(cur) && truep(prev) && (cur + prev) / 2
 }
 
@@ -642,16 +643,17 @@ function board_handler(h) {
         add_next_mark_to_stones(R.stones, history, R.move_count)
         add_info_to_stones(R.stones, history)
     }
-    const endstate_setter = () => {
+    const endstate_setter = update_p => {
         const prev_turn_endstate =
-              h.endstate && (history[R.move_count - 3] || {}).endstate
-        const add_endstate_to_history =
-              h => merge(h, {endstate: R.endstate, endstate_sum: sum(R.endstate)})
+              update_p && (history[R.move_count - 3] || {}).endstate
+        const add_endstate_to_history = z => {
+            z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
+        }
         add_endstate_to_stones(R.stones, R.endstate, prev_turn_endstate)
         R.move_count > 0 && add_endstate_to_history(history[R.move_count - 1])
     }
     set_renderer_state(h)
-    h.endstate || board_setter(); leelaz_for_endstate && endstate_setter()
+    h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
     update_state()
 }
 
@@ -852,8 +854,10 @@ function winrate_from_history(history) {
         const move_eval = move_b_eval && move_b_eval * (history[s - 1].is_black ? 1 : -1)
         const predict = winrate_suggested(s)
         const pass = (h.is_black === (history[s - 2] || {}).is_black)
+        const score_without_komi = average_endstate_sum(s - 1)
         // drop "pass" to save data size for IPC
-        return merge({r, move_b_eval, move_eval, tag}, pass ? {pass} : {predict})
+        return merge({r, move_b_eval, move_eval, tag, score_without_komi},
+                     pass ? {pass} : {predict})
     })
 }
 
