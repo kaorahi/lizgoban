@@ -211,6 +211,8 @@ function update_goban() {
         case "suggest": default: f(draw_main_goban); break;
         }
     }
+    const c = Q("#visits_trail_canvas")
+    btype === "winrate_only" ? clear_canvas(c) : draw_visits_trail(c)
 }
 
 function draw_main_goban(canvas) {
@@ -1262,8 +1264,8 @@ function yes_no(z) {return z ? 'yes' : 'no'}
 // graphics
 
 function clear_canvas(canvas, bg_color, g) {
-    canvas.style.background = bg_color
-    g.clearRect(0, 0, canvas.width, canvas.height)
+    canvas.style.background = bg_color || TRANSPARENT;
+    (g || canvas.getContext("2d")).clearRect(0, 0, canvas.width, canvas.height)
 }
 
 function drawers_trio(gen) {

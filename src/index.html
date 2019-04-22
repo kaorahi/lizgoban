@@ -38,6 +38,7 @@
   body > * {width: 96vmin; display: block; margin: 1.5vmin; font-size: 3vw;}
   .thumbbox {display: inline-block;}
   .thumbbox img {width: 3vw; height: 3vw;}
+  #visits_trail_canvas {display: none;}
  }
  @media (min-aspect-ratio: 13/10) {
   body {display: table; text-align: center;}
@@ -62,6 +63,7 @@
   #thumbnails[data-style='block'] .thumbbox:before {
    content: attr(data-name); display: block; font-size: 2vmin;
   }
+  }
   #thumbnails[data-style='inline'] .thumbbox img {
    width: 3vmin; height: 3vmin; vertical-align: middle;
   }
@@ -71,6 +73,9 @@
   #thumbnails[data-style='block'] #thumb_height_measurer:hover .thumbbox:before,
   #thumbnails[data-style='inline'] #thumb_height_measurer:hover .thumbbox:after {
    background-color: rgba(128,128,128,0.6); width: max-content;
+  }
+  #visits_trail_canvas {
+   position: fixed; right: 1vw; bottom: 1vh; width: 10vw; height: 10vh; z-index: -9;
   }
  }
  </style>
@@ -153,6 +158,8 @@
 </div>
 
 <pre id="debug" style='clear: both'></pre>
+
+<canvas id="visits_trail_canvas"></canvas>
 
 </div>
 <!-------- end rest_div ----------->
