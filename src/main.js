@@ -815,14 +815,11 @@ function create_history(init_hist, init_prop) {
         trial: false, last_loaded_element: null
     }
     const methods = {
+        shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
+            id: new_history_id(), last_loaded_element: null
+        })),
     }
     return merge({hist}, prop, methods)
-}
-
-function shallow_copy_of_history() {
-    return merge({}, history, {
-        hist: history.hist.slice(), id: new_history_id(), last_loaded_element: null
-    })
 }
 
 /////////////////////////////////////////////////
@@ -833,7 +830,7 @@ function new_empty_board() {insert_sequence(create_history(), true)}
 function backup_history() {
     if (empty(history.hist)) {return}
     store_move_count(history)
-    insert_sequence(shallow_copy_of_history())
+    insert_sequence(history.shallow_copy())
 }
 
 function create_sequence_maybe(force) {
