@@ -1,5 +1,5 @@
-// fixme:
-// depends on R etc. in renderer.js
+/////////////////////////////////////////////////
+// setup
 
 require('./util.js').use(); require('./coord.js').use()
 
@@ -20,7 +20,9 @@ const EXPECTED_COLOR = 'rgba(0,0,255,0.3)', UNEXPECTED_COLOR = 'rgba(255,0,0,0.8
 // p: pausing, t: trial
 const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
 
-let target_move = null, first_board_canvas = null
+// state
+let R = {}, target_move = null, first_board_canvas = null
+function set_state(given_R) {R = given_R}  // fixme: ugly
 
 /////////////////////////////////////////////////
 // draw goban
@@ -971,6 +973,7 @@ function is_next_move(move) {
 //////////////////////////////////
 
 module.exports = {
+    set_state,
     draw_main_goban, draw_goban_with_principal_variation, draw_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail,
     update_winrate_trail, clear_canvas, is_next_move,

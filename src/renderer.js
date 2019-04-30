@@ -31,7 +31,7 @@ let keyboard_moves = [], keyboard_tag_data = {}
 let thumbnails = []
 
 // drawer
-const D = require('./draw.js')
+const D = require('./draw.js'); D.set_state(R)
 
 // handler
 window.onload = window.onresize = update

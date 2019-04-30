@@ -59,7 +59,7 @@ let pausing = false, busy = false
 // renderer state
 // (cf.) "set_renderer_state" in this file
 // (cf.) "the_board_handler" and "the_suggest_handler" in engine.js
-let R = {stones: [[]]}
+const R = {stones: [[]]}
 
 // sabaki
 let attached = false, has_sabaki = true
