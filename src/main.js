@@ -819,6 +819,7 @@ function create_history(init_hist, init_prop) {
         is_empty: () => empty(hist),
         ref: mc => hist[mc - 1] || {},
         last_move: () => (last(hist) || {}).move,
+        set_last_loaded_element: () => self.last_loaded_element = last(hist),
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
             id: new_history_id(), last_loaded_element: null
         })),
@@ -872,7 +873,7 @@ function uncut_sequence() {
 
 function duplicate_sequence() {
     history.is_empty() ? new_empty_board() :
-        (backup_history(), set_last_loaded_element(), (history.trial = true),
+        (backup_history(), history.set_last_loaded_element(), (history.trial = true),
          update_state())
 }
 
@@ -1027,7 +1028,7 @@ function load_sabaki_gametree(gametree, index) {
     const com = leelaz.common_header_length(history.hist, new_history)
     // keep old history for keeping winrate
     history.hist.splice(com, Infinity, ...new_history.slice(com))
-    set_last_loaded_element()
+    history.set_last_loaded_element()
     const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     const history_until_index = history_from_sabaki_nodes(nodes_until_index)
@@ -1038,8 +1039,6 @@ function load_sabaki_gametree(gametree, index) {
     // force update of board color when C-c and C-v are typed successively
     update_state()
 }
-
-function set_last_loaded_element() {history.last_loaded_element = last(history.hist)}
 
 function history_from_sabaki_nodes(nodes) {
     const new_history = []; let move_count = 0
