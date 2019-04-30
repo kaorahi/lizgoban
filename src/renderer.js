@@ -232,10 +232,7 @@ function set_temporary_board_type(btype, btype2) {
     temporary_board_type = b; update_board_type()
 }
 
-function toggle_board_type(type, toggle_let_me_think_p) {
-    main('toggle_board_type', R.window_id, type)
-    toggle_let_me_think_p && main('toggle_let_me_think')
-}
+function toggle_board_type(type) {main('toggle_board_type', R.window_id, type)}
 
 function double_boards_p() {return R.board_type.match(/^double_boards/)}
 
@@ -455,7 +452,7 @@ document.onkeydown = e => {
     case "x": f(set_temporary_board_type, "winrate_only", "suggest"); return
     case " ": m('toggle_pause'); return
     case "Z": f(toggle_board_type, 'raw'); return
-    case "Tab": f(toggle_board_type, null, e.shiftKey); return
+    case "Tab": f(toggle_board_type); return
     case "0": challenging ? m('play_best', null, 'pass_maybe') :
             f(set_keyboard_moves_for_next_move); return
     }
