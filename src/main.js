@@ -754,6 +754,21 @@ function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10
 /////////////////////////////////////////////////
 // history
 
+// example of history (array with additional properties):
+// [{move: "D16", is_black: true, move_count: 1, ...},
+//  {move: "Q4", is_black: false, move_count: 2, ...},
+//  {move: "Q16", is_black: false, move_count: 3, ...},
+//  {move: "pass", is_black: true, move_count: 4, ...},
+//  id: 7, player_black: "Ore", ...more_props]
+// 
+// Black played pass for the third move and the last move in this example.
+
+// note:
+// * move_count = 1 for the first stone, that is history[0].
+// * See board_handler() and suggest_handler() for "...".
+// * See create_history() for "...more_props".
+// * See also do_play() for passes.
+
 // fixme: array with property is misleading. for example...
 // > a=[0,1]; a.foo=2; [a, a.slice(), JSON.stringify(a), Object.assign({}, a)]
 // [ [ 0, 1, foo: 2 ], [ 0, 1 ], '[0,1]', { '0': 0, '1': 1, foo: 2 } ]
