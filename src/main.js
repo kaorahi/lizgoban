@@ -817,6 +817,7 @@ function create_history(init_hist, init_prop) {
         is_empty: () => empty(hist),
         ref: mc => hist[mc - 1] || {},
         array_until: mc => hist.slice(0, mc),
+        shorten_to: mc => hist.splice(mc),
         last_move: () => (last(hist) || {}).move,
         set_last_loaded_element: () => self.last_loaded_element = last(hist),
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
@@ -843,7 +844,7 @@ function backup_history() {
 function create_sequence_maybe(force) {
     const new_game = (R.move_count === 0)
     return (force || R.move_count < history.len()) &&
-        (backup_history(), history.hist.splice(R.move_count),
+        (backup_history(), history.shorten_to(R.move_count),
          merge(history, {trial: !simple_ui && !new_game}))
 }
 
