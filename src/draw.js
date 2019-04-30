@@ -63,7 +63,7 @@ function draw_goban_until(canvas, show_until, opts) {
 
 function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
-    R.suggest.forEach(h => set_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
+    R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     each_stone(displayed_stones, (h, idx) => (h.displayed_tag = h.tag && h.stone))
     const s0 = R.suggest[0]
     const expected_move = expected_pv()[0]
@@ -83,7 +83,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const displayed_stones = copy_stones_for_display()
     variation.forEach((move, k) => {
         const b = xor(R.bturn, k % 2 === 1), w = !b, expected_move = expected[k]
-        set_stone_at(move, displayed_stones, {
+        merge_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
             variation: true, movenums: [k + 1],
             variation_last: k === variation.length - 1, is_vague: k >= reliable_moves
@@ -942,7 +942,7 @@ function each_stone(stones, proc) {
     stones.forEach((row, i) => row.forEach((h, j) => proc(h, [i, j])))
 }
 
-function set_stone_at(move, stone_array, stone) {
+function merge_stone_at(move, stone_array, stone) {
     const get_movenums = s => s.movenums || []
     const ary_or_undef = a => empty(a) ? undefined : a
     const merge_stone = (stone0, stone1) =>
@@ -981,8 +981,8 @@ function flip_maybe(x, bturn) {
 function expected_pv() {return ((R.previous_suggest || {}).pv || []).slice(1)}
 
 function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
-    set_stone_at(expected_move, displayed_stones, {expected_move: true})
-    set_stone_at(unexpected_move, displayed_stones, {unexpected_move: true})
+    merge_stone_at(expected_move, displayed_stones, {expected_move: true})
+    merge_stone_at(unexpected_move, displayed_stones, {unexpected_move: true})
 }
 
 // math
