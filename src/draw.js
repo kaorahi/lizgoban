@@ -953,6 +953,16 @@ function side_gradation(x0, x1, color0, color1, g) {
     return grad
 }
 
+/////////////////////////////////////////////////
+// misc.
+
+function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
+function last_move_b_eval() {return winrate_history_ref('move_b_eval')}
+function last_move_eval() {return winrate_history_ref('move_eval')}
+function winrate_history_ref(key, nth_prev) {
+    return (R.winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
+}
+
 //////////////////////////////////
 
 module.exports = {

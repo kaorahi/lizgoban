@@ -119,12 +119,6 @@ function update_title() {
     if (title !== last_title) {current_window.setTitle(title); last_title = title}
 }
 
-function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
-function last_move_b_eval() {return winrate_history_ref('move_b_eval')}
-function last_move_eval() {return winrate_history_ref('move_eval')}
-function winrate_history_ref(key, nth_prev) {
-    return (R.winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
-}
 function current_tag_letters() {return R.history_tags.map(x => x.tag).join('')}
 
 function update_body_color() {
