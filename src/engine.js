@@ -92,7 +92,7 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history) => {
-        if (empty(history)) {clear_leelaz_board(); return}
+        if (empty(history)) {clear_leelaz_board(); bturn = true; return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
