@@ -141,15 +141,8 @@ const sub_canvas_deferring_millisec = 10
 const [do_on_sub_canvas_when_idle] =
       deferred_procs([f => f(sub_canvas), sub_canvas_deferring_millisec])
 
-// target first board for progress bar and thumbnail
-let first_board_done = false
-function will_do_something_on_first_board() {first_board_done = false}
-function if_first_board(proc, ...args) {
-    first_board_done || (proc(...args), (first_board_done = true))
-}
-
 function update_goban() {
-    D.reset_first_board_canvas(); will_do_something_on_first_board()
+    D.reset_first_board_canvas()
     const btype = current_board_type(), do_nothing = truep
     // set option "main_canvas_p" etc. for d(canvas, opts)
     const A = (d, opts) =>

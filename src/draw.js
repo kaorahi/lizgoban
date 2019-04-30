@@ -151,6 +151,8 @@ function draw_goban(canvas, stones, opts) {
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
     const hovered_move = canvas.lizgoban_hovered_move
+    // call proc if first_board_canvas is not set yet
+    const if_first_board = proc => (first_board_canvas || proc())
     const draw_progress_and_memorize_canvas = () => {
         draw_progress(!opts.main_canvas_p, margin, canvas, g)
         first_board_canvas = canvas
