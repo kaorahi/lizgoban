@@ -563,8 +563,7 @@ function update_let_me_think(only_when_stage_is_changed) {
     let_me_think_switch_board_type(only_when_stage_is_changed)
 }
 function let_me_think_switch_board_type(only_when_stage_is_changed) {
-    let progress = auto_play_progress()
-    if (progress < 0 && !let_me_think_anyway_p()) {return}
+    const progress = auto_play_progress(); if (progress < 0) {return}
     const stage = progress < 0.5 ? 'first_half' : 'latter_half'
     if (only_when_stage_is_changed && stage === let_me_think_previous_stage) {return}
     let_me_think_set_board_type_for(stage)
@@ -581,9 +580,7 @@ function toggle_board_type_in_let_me_think() {
     const other_type = all_types.find(type => type != current_type)
     set_board_type(other_type, win, true)
 }
-function let_me_think_exit_autoplay() {
-    let_me_think_anyway_p() || let_me_think_set_board_type_for('latter_half')
-}
+function let_me_think_exit_autoplay() {let_me_think_set_board_type_for('latter_half')}
 
 function toggle_let_me_think() {set_let_me_think(!let_me_think_p())}
 function stop_let_me_think() {set_let_me_think(false)}
@@ -591,7 +588,6 @@ function set_let_me_think(val) {
     store.set('let_me_think', val); update_let_me_think(); update_state()
 }
 function let_me_think_p() {return store.get('let_me_think')}
-function let_me_think_anyway_p() {return store.get('let_me_think_anyway')}
 
 function let_me_think_next(board_type) {
     const stay = (board_type === let_me_think_board_type.first_half || !redoable())
@@ -1167,7 +1163,6 @@ function menu_template(win) {
         sep,
         store_toggler_menu_item('Let me think first', 'let_me_think', 'Shift+M',
                                 toggle_let_me_think),
-        store_toggler_menu_item('...even outside autoplay', 'let_me_think_anyway'),
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
