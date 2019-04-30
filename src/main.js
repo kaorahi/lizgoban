@@ -287,7 +287,7 @@ function update_state_to_move_count_tentatively(count) {
     const set_stone_at = (move, stone_array, stone) => {
         aa_set(stone_array, ...move2idx(move), stone)
     }
-    history.hist.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
+    history.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
         stone: true, maybe: forward, maybe_empty: !forward, black: m.is_black
     }))
     const next_h = history.ref(R.move_count + 1)
@@ -825,7 +825,7 @@ function create_history(init_hist, init_prop) {
         })),
     }
     const array_methods =
-          aa2hash(['push', 'pop', 'map', 'forEach']
+          aa2hash(['push', 'pop', 'map', 'forEach', 'slice', 'splice']
                   .map(meth => [meth, (...args) => hist[meth](...args)]))
     return merge(self, {hist}, prop, methods, array_methods)
 }
@@ -1027,7 +1027,7 @@ function load_sabaki_gametree(gametree, index) {
     const new_history = history_from_sabaki_nodes(parent_nodes.concat(gametree.nodes))
     const com = leelaz.common_header_length(history.hist, new_history)
     // keep old history for keeping winrate
-    history.hist.splice(com, Infinity, ...new_history.slice(com))
+    history.splice(com, Infinity, ...new_history.slice(com))
     history.set_last_loaded_element()
     const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
