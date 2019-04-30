@@ -645,7 +645,7 @@ function puct_info(suggest) {
     // ==> psa/denom = psa0/denom0 + (wr0 - wr) / (cfg_puct * numerator * 100)
     const psa_per_denom = s0.prior / (1 + s0.visits) +
           (s0.winrate - suggest.winrate) / (cfg_puct * numerator * 100)
-    const equilibrium_visits = psa / clip(psa_per_denom, 1e-10, Infinity) - 1
+    const equilibrium_visits = psa / clip(psa_per_denom, 1e-10) - 1
     return [puct, equilibrium_visits]
 }
 

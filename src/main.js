@@ -603,7 +603,7 @@ function set_renderer_state(...args) {
               weight_info, network_size, tag_letters, start_moves_tag_letter,
               previous_suggest, winrate_trail}, ...args)
     // clean me: R.max_visits is needed for auto_progress()
-    R.max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1, Infinity)
+    R.max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
     R.progress = auto_progress()
 }
 function set_and_render(...args) {
