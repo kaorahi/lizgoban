@@ -338,7 +338,7 @@ const endstate_diff_tag_letter = "/"
 const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
       start_moves_tag_letter + endstate_diff_tag_letter
 function new_tag() {
-    const used = history.hist.map(h => h.tag || '').join('')
+    const used = history.map(h => h.tag || '').join('')
     const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
           .split('').findIndex(c => used.indexOf(c) < 0)
     const tag_count = (next_tag_count + Math.max(first_unused_index, 0))
@@ -719,7 +719,7 @@ function update_state() {
         const h_copy = append_endstate_tag_maybe(h)
         return h_copy.tag ? [h_copy] : []
     }
-    const history_tags = flatten(history.hist.map(pick_tagged))
+    const history_tags = flatten(history.map(pick_tagged))
     const {player_black, player_white, trial} = history
     set_and_render({
         history_length, suggest, sequence_cursor, sequence_length, attached,
@@ -822,7 +822,7 @@ function create_history(init_hist, init_prop) {
         })),
     }
     const array_methods =
-          aa2hash(['push', 'pop']
+          aa2hash(['push', 'pop', 'map']
                   .map(meth => [meth, (...args) => hist[meth](...args)]))
     return merge({hist}, prop, methods, array_methods)
 }
@@ -923,7 +923,7 @@ function winrate_after(move_count) {
 }
 
 function winrate_from_history(history) {
-    const winrates = history.hist.map(m => m.b_winrate)
+    const winrates = history.map(m => m.b_winrate)
     return [initial_b_winrate, ...winrates].map((r, s, a) => {
         const cur = history.ref(s)
         const h = append_endstate_tag_maybe(cur), tag = h.tag
