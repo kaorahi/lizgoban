@@ -169,7 +169,7 @@ function draw_wr_bar(canvas) {
 // for smooth interaction on auto-repeated undo/redo
 const sub_canvas_deferring_millisec = 10
 const [do_on_sub_canvas_when_idle] =
-      deferred_procs([f => f(sub_canvas), sub_canvas_deferring_millisec])
+      deferred_procs([f => f && f(sub_canvas), sub_canvas_deferring_millisec])
 
 const double_boards_rule = {
     double_boards: {  // [on main_canvas, on sub_canvas]
@@ -188,10 +188,10 @@ const double_boards_rule = {
 
 function update_goban() {
     D.reset_first_board_canvas()
-    const btype = current_board_type(), do_nothing = truep
+    const btype = current_board_type()
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_wr_graph)(winrate_graph_canvas),
-                            do_on_sub_canvas_when_idle(s || do_nothing),
+                            do_on_sub_canvas_when_idle(s),
                             draw_wr_bar(winrate_bar_canvas))
     if (double_boards_p()) {
         const {normal, raw} = double_boards_rule[R.board_type]
