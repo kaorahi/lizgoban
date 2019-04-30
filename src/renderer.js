@@ -151,6 +151,7 @@ function if_first_board(proc, ...args) {
 function update_goban() {
     first_board_canvas = null; will_do_something_on_first_board()
     const btype = current_board_type(), do_nothing = truep
+    const draw_main = c => D.draw_main_goban(c, {main_canvas_p: c === main_canvas})
     const draw_raw_gen = opts => c => D.draw_goban(c, null, opts)
     const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
     const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
@@ -162,27 +163,27 @@ function update_goban() {
                             D.draw_winrate_bar(winrate_bar_canvas))
     const double_boards_rule = {
         double_boards: {  // [on main_canvas, on sub_canvas]
-            normal: [D.draw_main_goban, D.draw_goban_with_principal_variation],
+            normal: [draw_main, D.draw_goban_with_principal_variation],
             raw: [draw_raw_pure, D.draw_goban_with_principal_variation]
         },
         double_boards_raw: {
-            normal: [D.draw_main_goban, draw_raw_clickable],
+            normal: [draw_main, draw_raw_clickable],
             raw: [draw_raw_pure, D.draw_goban_with_principal_variation]
         },
         double_boards_swap: {
-            normal: [draw_raw_clickable, D.draw_main_goban],
-            raw: [D.draw_main_goban, D.draw_goban_with_principal_variation]
+            normal: [draw_raw_clickable, draw_main],
+            raw: [draw_main, D.draw_goban_with_principal_variation]
         },
         double_boards_raw_pv: {
             normal: [draw_raw_main, D.draw_goban_with_principal_variation],
-            raw: [D.draw_main_goban, D.draw_goban_with_principal_variation]
+            raw: [draw_main, D.draw_goban_with_principal_variation]
         },
     }
     if (double_boards_p()) {
         const {normal, raw} = double_boards_rule[R.board_type]
         switch (btype) {
         case "winrate_only":
-            f(D.draw_winrate_graph, D.draw_visits_trail, D.draw_main_goban); break;
+            f(D.draw_winrate_graph, D.draw_visits_trail, draw_main); break;
         case "raw": f(raw[0], null, raw[1]); break;
         default: f(normal[0], null, normal[1]); break;
         }
@@ -191,7 +192,7 @@ function update_goban() {
         case "winrate_only": f(D.draw_winrate_graph, draw_raw_unclickable); break;
         case "raw": f(draw_raw_clickable); break;
         case "variation": f(D.draw_goban_with_principal_variation); break;
-        case "suggest": default: f(D.draw_main_goban); break;
+        case "suggest": default: f(draw_main); break;
         }
     }
     const c = Q("#visits_trail_canvas")

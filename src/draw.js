@@ -25,8 +25,8 @@ let target_move = null
 /////////////////////////////////////////////////
 // draw goban
 
-function draw_main_goban(canvas) {
-    const opts = {draw_visits_p: true, read_only: R.attached}
+function draw_main_goban(canvas, options) {
+    const opts = {draw_visits_p: true, read_only: R.attached, ...options}
     const h = selected_suggest(canvas); target_move = (h.visits > 0) && h.move
     // case I: "variation"
     if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
@@ -70,7 +70,7 @@ function draw_goban_with_suggest(canvas, opts) {
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
                 draw_endstate_p: R.show_endstate,
-                mapping_tics_p: canvas !== main_canvas, ...opts})
+                mapping_tics_p: !opts.main_canvas_p, ...opts})
 }
 
 function draw_goban_with_variation(canvas, suggest, opts) {
@@ -145,13 +145,15 @@ function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
            read_only, mapping_tics_p, mapping_to_winrate_bar} = opts || {}
+    const large_font_p = !opts.main_canvas_p
     const margin = canvas.height * 0.05, hm = margin / 2
     const g = canvas.getContext("2d")
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
     const hovered_move = canvas.lizgoban_hovered_move
-    const draw_progress_and_memorize_canvas = (margin, canvas, g) => {
-        draw_progress(margin, canvas, g); first_board_canvas = canvas
+    const draw_progress_and_memorize_canvas = () => {
+        draw_progress(!opts.main_canvas_p, margin, canvas, g)
+        first_board_canvas = canvas
     }
     // clear
     g.strokeStyle = BLACK; g.fillStyle = goban_bg(true); g.lineWidth = 1
@@ -162,13 +164,14 @@ function draw_goban(canvas, stones, opts) {
     draw_grid(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(margin, canvas, g)
-    if_first_board(draw_progress_and_memorize_canvas, margin, canvas, g)
+    if_first_board(draw_progress_and_memorize_canvas)
     mapping_to_winrate_bar &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
-    draw_on_board(stones || R.stones,
-                  {draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p},
-                  unit, idx2coord, g)
+    const drawp = {
+        draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p
+    }
+    draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
     canvas.onmousedown = e => (!read_only && !R.attached &&
                                (play_here(e, coord2idx), hover_off(canvas)))
@@ -219,9 +222,9 @@ function draw_visits_text(margin, canvas, g) {
     g.restore()
 }
 
-function draw_progress(margin, canvas, g) {
+function draw_progress(highlightp, margin, canvas, g) {
     if (R.progress < 0) {return}
-    g.fillStyle = (canvas !== main_canvas) ? GREEN : R.progress_bturn ? BLACK : WHITE
+    g.fillStyle = highlightp ? GREEN : R.progress_bturn ? BLACK : WHITE
     fill_rect([0, canvas.height - margin / 10],
               [canvas.width * R.progress, canvas.height], g)
 }
@@ -246,7 +249,8 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 }
 
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
-    const {draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p} = drawp
+    const {draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p}
+          = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
           draw_expected_mark(h, xy, exp_p, stone_radius, g)
@@ -255,7 +259,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
     each_coord((h, xy) => {
         draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
-            h.suggest ? draw_suggest(h, xy, stone_radius, g) : null
+            h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
@@ -341,7 +345,7 @@ function draw_endstate_diff(diff, xy, radius, g) {
 // suggest_as_stone = {suggest: true, data: suggestion_data}
 // See "suggestion reader" section in engine.js for suggestion_data.
 
-function draw_suggest(h, xy, radius, g) {
+function draw_suggest(h, xy, radius, large_font_p, g) {
     if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
     const suggest = h.data, {stroke, fill, lizzie_text_color} = suggest_color(suggest)
     g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
@@ -357,7 +361,7 @@ function draw_suggest(h, xy, radius, g) {
         g.fillText(visits_text, x, next_y , max_width)
         g.restore()
     }
-    draw_suggestion_order(h, xy, radius, g.strokeStyle, g)
+    draw_suggestion_order(h, xy, radius, g.strokeStyle, large_font_p, g)
 }
 
 function draw_suggest_0visits(h, xy, radius, g) {
@@ -407,13 +411,12 @@ function mapping_line_coords(b_winrate, unit, canvas) {
     return [[x1, y1 - d], [x1, y1]]
 }
 
-function draw_suggestion_order(h, [x, y], radius, color, g) {
+function draw_suggestion_order(h, [x, y], radius, color, large_font_p, g) {
     if (h.data.order >= 9) {return}
     const lizzie = R.lizzie_style
     const both_champ = (h.data.order + h.data.winrate_order === 0)
     const either_champ = (h.data.order * h.data.winrate_order === 0)
     const huge = [2, -1], large = [1.5, -0.5], normal = [1, -0.1], small = [0.8, 0.3]
-    const large_font_p = g.canvas !== main_canvas
     const font_modifier = large_font_p && both_champ ? 'bold ' : ''
     const either = (champ, other) => both_champ ? champ : other
     const [fontsize, d] = (lizzie ? small : large_font_p ? huge : either(large, normal))
