@@ -817,13 +817,14 @@ function create_history(init_hist, init_prop) {
         // mc = move_count (0: empty board, 1: first move, ...)
         len: () => hist.length,
         ref: mc => hist[mc - 1] || {},
-        push: elem => hist.push(elem),
-        pop: () => hist.pop(),
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
             id: new_history_id(), last_loaded_element: null
         })),
     }
-    return merge({hist}, prop, methods)
+    const array_methods =
+          aa2hash(['push', 'pop']
+                  .map(meth => [meth, (...args) => hist[meth](...args)]))
+    return merge({hist}, prop, methods, array_methods)
 }
 
 /////////////////////////////////////////////////
