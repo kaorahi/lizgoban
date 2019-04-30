@@ -145,8 +145,10 @@ function update_goban() {
     D.reset_first_board_canvas()
     const btype = current_board_type(), do_nothing = truep
     // set option "main_canvas_p" etc. for d(canvas, opts)
-    const A = (d, opts) =>
-          c => d(c, {main_canvas_p: c === main_canvas, ...(opts || {})})
+    const A = (d, opts) => c => d(c, {
+        main_canvas_p: c === main_canvas,
+        selected_suggest: selected_suggest(c), ...(opts || {})
+    })
     const draw_main = A(D.draw_main_goban, {show_until: keyboard_tag_data.move_count})
     const draw_pv = A(D.draw_goban_with_principal_variation)
     const draw_raw0 = (c, opts) => D.draw_goban(c, null, opts)
@@ -191,6 +193,11 @@ function update_goban() {
     }
     const c = Q("#visits_trail_canvas")
     btype === "winrate_only" ? D.clear_canvas(c) : D.draw_visits_trail(c)
+}
+
+function selected_suggest(canvas) {
+    const m = keyboard_moves[0] || canvas.lizgoban_hovered_move
+    return R.suggest.find(h => h.move === m) || {}
 }
 
 function current_board_type() {

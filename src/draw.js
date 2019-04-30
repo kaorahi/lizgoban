@@ -1,5 +1,5 @@
 // fixme:
-// depends on R, keyboard_moves, current_board_type(), etc. in renderer.js
+// depends on R, current_board_type(), etc. in renderer.js
 
 require('./util.js').use(); require('./coord.js').use()
 
@@ -27,7 +27,7 @@ let target_move = null, first_board_canvas = null
 
 function draw_main_goban(canvas, options) {
     const opts = {draw_visits_p: true, read_only: R.attached, ...options}
-    const h = selected_suggest(canvas); target_move = (h.visits > 0) && h.move
+    const h = options.selected_suggest; target_move = (h.visits > 0) && h.move
     // case I: "variation"
     if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
@@ -110,11 +110,6 @@ function draw_goban_with_principal_variation(canvas, options) {
     const opts = {read_only: true, force_draw_expected_p: true,
                   mapping_to_winrate_bar: false, ...options}
     draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
-}
-
-function selected_suggest(canvas) {
-    const m = keyboard_moves[0] || canvas.lizgoban_hovered_move
-    return R.suggest.find(h => h.move === m) || {}
 }
 
 function copy_stones_for_display() {
