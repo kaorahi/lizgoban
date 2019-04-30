@@ -106,9 +106,9 @@ function mapping_text(suggest) {
     return text && {text, subtext, at}
 }
 
-function draw_goban_with_principal_variation(canvas) {
+function draw_goban_with_principal_variation(canvas, options) {
     const opts = {read_only: true, force_draw_expected_p: true,
-                  mapping_to_winrate_bar: false}
+                  mapping_to_winrate_bar: false, ...options}
     draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
 }
 

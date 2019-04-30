@@ -151,11 +151,13 @@ function if_first_board(proc, ...args) {
 function update_goban() {
     D.reset_first_board_canvas(); will_do_something_on_first_board()
     const btype = current_board_type(), do_nothing = truep
-    const draw_main = c => D.draw_main_goban(c, {
-        show_until: keyboard_tag_data.move_count, main_canvas_p: c === main_canvas
-    })
-    const draw_pv = D.draw_goban_with_principal_variation
-    const draw_raw_gen = opts => c => D.draw_goban(c, null, opts)
+    // set option "main_canvas_p" etc. for d(canvas, opts)
+    const A = (d, opts) =>
+          c => d(c, {main_canvas_p: c === main_canvas, ...(opts || {})})
+    const draw_main = A(D.draw_main_goban, {show_until: keyboard_tag_data.move_count})
+    const draw_pv = A(D.draw_goban_with_principal_variation)
+    const draw_raw0 = (c, opts) => D.draw_goban(c, null, opts)
+    const draw_raw_gen = opts => A(draw_raw0, opts)
     const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
     const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
     const draw_raw_pure = draw_raw_gen({})
