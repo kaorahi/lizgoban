@@ -265,16 +265,14 @@ function redo_to_end() {redo_ntimes(Infinity)}
 
 // util
 function set_board(history, move_count) {
-    set_board_sub(truep(move_count) ? history.hist.slice(0, move_count) : history.hist)
-}
-function reset_board() {set_board_sub([])}
-function set_board_sub(hist) {
+    const hist = history.array_until(move_count)
     each_leelaz(z => z.set_board(hist)); R.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
     switch_leelaz()
     board_state_is_changed()
 }
+function reset_board() {set_board(history, 0)}
 function board_state_is_changed() {update_let_me_think()}
 
 function goto_move_count(count) {
@@ -818,6 +816,7 @@ function create_history(init_hist, init_prop) {
         len: () => hist.length,
         is_empty: () => empty(hist),
         ref: mc => hist[mc - 1] || {},
+        array_until: mc => hist.slice(0, mc),
         last_move: () => (last(hist) || {}).move,
         set_last_loaded_element: () => self.last_loaded_element = last(hist),
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
