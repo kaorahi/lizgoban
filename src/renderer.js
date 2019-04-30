@@ -151,10 +151,15 @@ function update_goban() {
     const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
     const draw_raw_pure = draw_raw_gen({})
     const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
+    const draw_wr_graph = c => {
+        const unset_busy = () => main('unset_busy')
+        const goto_move_count = count => main('busy', 'goto_move_count', count)
+        D.draw_winrate_graph(c, goto_move_count, unset_busy)
+    }
     const wr_only = (current_board_type() === 'winrate_only')
     const large_bar = R.expand_winrate_bar || wr_only
     const f = (m, w, s) => (m(main_canvas),
-                            (w || D.draw_winrate_graph)(winrate_graph_canvas),
+                            (w || draw_wr_graph)(winrate_graph_canvas),
                             do_on_sub_canvas_when_idle(s || do_nothing),
                             D.draw_winrate_bar(winrate_bar_canvas, large_bar, wr_only))
     const double_boards_rule = {
@@ -175,13 +180,13 @@ function update_goban() {
         const {normal, raw} = double_boards_rule[R.board_type]
         switch (btype) {
         case "winrate_only":
-            f(D.draw_winrate_graph, D.draw_visits_trail, draw_main); break;
+            f(draw_wr_graph, D.draw_visits_trail, draw_main); break;
         case "raw": f(raw[0], null, raw[1]); break;
         default: f(normal[0], null, normal[1]); break;
         }
     } else {
         switch (btype) {
-        case "winrate_only": f(D.draw_winrate_graph, draw_raw_unclickable); break;
+        case "winrate_only": f(draw_wr_graph, draw_raw_unclickable); break;
         case "raw": f(draw_raw_clickable); break;
         case "variation": f(draw_pv); break;
         case "suggest": default: f(draw_main); break;

@@ -691,7 +691,7 @@ function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
 /////////////////////////////////////////////////
 // winrate graph
 
-function draw_winrate_graph(canvas) {
+function draw_winrate_graph(canvas, goto_move_count, unset_busy) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
     const smax = Math.max(R.history_length, 1)
@@ -705,9 +705,11 @@ function draw_winrate_graph(canvas) {
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
-    canvas.onmousedown = e => !R.attached && winrate_graph_goto(e, coord2sr)
-    canvas.onmousemove = e => !R.attached && (e.buttons === 1) && winrate_graph_goto(e, coord2sr)
-    canvas.onmouseup = e => main('unset_busy')
+    const goto_here = e =>
+          !R.attached && winrate_graph_goto(e, coord2sr, goto_move_count)
+    canvas.onmousedown = goto_here
+    canvas.onmousemove = e => (e.buttons === 1) && goto_here(e)
+    canvas.onmouseup = e => unset_busy()
 }
 
 function draw_winrate_graph_frame(w, h, tics, g) {
@@ -777,10 +779,9 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
     })
 }
 
-function winrate_graph_goto(e, coord2sr) {
+function winrate_graph_goto(e, coord2sr, goto_move_count) {
     const [s, r] = coord2sr(...mouse2coord(e))
-    s >= 0 && main('busy', 'goto_move_count',
-                   clip(s, 0, R.history_length))
+    s >= 0 && goto_move_count(clip(s, 0, R.history_length))
 }
 
 /////////////////////////////////////////////////
