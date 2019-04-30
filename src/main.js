@@ -604,13 +604,14 @@ function set_renderer_state(...args) {
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
     const endstate_sum = leelaz_for_endstate && average_endstate_sum()
+    const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
     const stored_keys = ['lizzie_style', 'expand_winrate_bar', 'let_me_think',
                          'show_endstate']
     stored_keys.forEach(key => R[key] = store.get(key, false))
     merge(R, {winrate_history, endstate_sum,
               progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
-              previous_suggest, winrate_trail}, ...args)
+              previous_suggest, winrate_trail}, endstate_d_i, ...args)
     // clean me: R.max_visits is needed for auto_progress()
     R.max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
     R.progress = auto_progress()
