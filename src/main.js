@@ -275,10 +275,7 @@ function update_state_to_move_count_tentatively(count) {
     const forward = (count > R.move_count)
     const [from, to] = forward ? [R.move_count, count] : [count, R.move_count]
     const set_stone_at = (move, stone_array, stone) => {
-        // fixme: duplicated with set_stone_at() in renderer.js
-        // and stone_for_history_elem() in main.js
-        const [i, j] = move2idx(move)
-        truep(i) && (i >= 0) && stone_array[i] && (stone_array[i][j] = stone)
+        aa_set(stone_array, ...move2idx(move), stone)
     }
     history.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
         stone: true, maybe: forward, maybe_empty: !forward, black: m.is_black
@@ -723,10 +720,8 @@ function add_endstate_to_stones(stones, endstate, prev_endstate) {
     }))
 }
 
-
 function stone_for_history_elem(h, stones) {
-    const [i, j] = move2idx(h.move)
-    return truep(i) && (i >= 0) && stones[i] && stones[i][j]
+    return aa_ref(stones, ...move2idx(h.move))
 }
 
 // suggest
