@@ -1,5 +1,5 @@
 // fixme:
-// depends on R, current_board_type(), etc. in renderer.js
+// depends on R etc. in renderer.js
 
 require('./util.js').use(); require('./coord.js').use()
 
@@ -456,7 +456,7 @@ function kilo_str_sub(x, rules) {
 
 let winrate_bar_prev = 50
 
-function draw_winrate_bar(canvas) {
+function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9
     const xfor = percent => w * percent / 100
@@ -469,17 +469,17 @@ function draw_winrate_bar(canvas) {
         return
     }
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
-    large_winrate_bar_p() && draw_winrate_bar_horizontal_lines(w, h, g)
+    large_bar && draw_winrate_bar_horizontal_lines(w, h, g)
     draw_winrate_bar_tics(b_wr, tics, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
     R.winrate_trail && draw_winrate_trail(canvas)
-    draw_winrate_bar_suggestions(w, h, xfor, vline, g)
-    draw_winrate_bar_text(w, h, g)
+    draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
+    draw_winrate_bar_text(w, h, pale_text_p, g)
     canvas.onmouseenter = e => {update_goban()}
     canvas.onmouseleave = e => {update_goban()}
 }
 
-function draw_winrate_bar_text(w, h, g) {
+function draw_winrate_bar_text(w, h, pale_text_p, g) {
     const b_wr = b_winrate(), eval = last_move_eval()
     const visits = R.max_visits && kilo_str(R.max_visits)
     const fontsize = Math.min(h * 0.5, w * 0.04)
@@ -491,7 +491,7 @@ function draw_winrate_bar_text(w, h, g) {
         const vis = cond(visits, visits)
         const ev = cond(truep(eval), `(${eval > 0 ? '+' : ''}${f2s(eval)})`)
         const win = cond(true, `${f2s(wr)}%`)
-        const [wr_color, vis_color] = (current_board_type() === 'winrate_only') ?
+        const [wr_color, vis_color] = pale_text_p ?
               ['rgba(0,192,0,0.3)', 'rgba(160,160,160,0.3)'] :
               [GREEN, WINRATE_TRAIL_COLOR]
         g.textAlign = align; g.fillStyle = wr_color; g.fillText(win, x, fontsize * 0.5)
@@ -549,22 +549,24 @@ function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
     edged_fill_rect([x1, lw / 2], [x2, h - lw / 2], g)
 }
 
-function draw_winrate_bar_suggestions(w, h, xfor, vline, g) {
+function draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g) {
     g.lineWidth = 1
     const max_radius = Math.min(h, w * 0.05)
     const prev_color = 'rgba(64,128,255,0.8)'
     R.suggest.filter(s => s.visits > 0).forEach(s => {
         const {edge_color, fan_color, vline_color, aura_color,
                target_p, draw_order_p, winrate} = winrate_bar_suggest_prop(s)
-        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, aura_color, target_p, g)
-        draw_order_p && large_winrate_bar_p() && draw_winrate_bar_order(s, w, h, g)
+        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, aura_color,
+                             target_p, large_bar, g)
+        draw_order_p && large_bar && draw_winrate_bar_order(s, w, h, g)
         if (vline_color) {
             g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
         }
     })
     R.previous_suggest &&
         draw_winrate_bar_fan(R.previous_suggest, w, h,
-                             prev_color, TRANSPARENT, null, false, g)
+                             prev_color, TRANSPARENT, null,
+                             false, large_bar, g)
 }
 
 function winrate_bar_suggest_prop(s) {
@@ -592,9 +594,9 @@ function winrate_bar_suggest_prop(s) {
             target_p, draw_order_p, next_p, winrate}
 }
 
-function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color, force_puct_p, g) {
+function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color,
+                              force_puct_p, large_bar, g) {
     const bturn = s.bturn === undefined ? R.bturn : s.bturn
-    const large_bar = large_winrate_bar_p()
     const plot_params = winrate_bar_xy(s, w, h, true, bturn)
     const [x, y, r, max_radius, x_puct, y_puct] = plot_params
     const half_center_angle = 60 / 2, max_slant = large_bar ? 45 : 30
@@ -688,17 +690,12 @@ function puct_info(suggest) {
 
 function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
 
-function large_winrate_bar_p() {
-    return R.expand_winrate_bar || current_board_type() === 'winrate_only'
-}
-
 /////////////////////////////////////////////////
 // winrate graph
 
 function draw_winrate_graph(canvas) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    const tics = current_board_type() === 'winrate_only' ? 9 : 9
-    const xmargin = w * 0.02, fontsize = to_i(w * 0.04)
+    const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
     const smax = Math.max(R.history_length, 1)
     // s = move_count, r = winrate
     const [sr2coord, coord2sr] =
