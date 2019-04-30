@@ -1058,9 +1058,7 @@ function toggle_sabaki() {
 }
 
 /////////////////////////////////////////////////
-// another leelaz for white (experimental)
-
-// fixme: global variable "option" is tainted
+// another leelaz for white
 
 function load_leelaz_for_black() {
     with_temporary_leelaz(leelaz_for_black, load_weight)
