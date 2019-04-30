@@ -288,7 +288,8 @@ function create_leelaz () {
     }
 
     const parse_board_line = (line) => {
-        const m = line.replace(/\(X\)/g, ' x ').replace(/\(O\)/g, ' o ').replace(/\(\.\)/g, ' . ')
+        // (.) or (+) means suicide.
+        const m = line.replace(/\(X\)/g, ' x ').replace(/\(O\)/g, ' o ').replace(/\([.+]\)/g, ' . ')
               .replace(/\+/g, '.').replace(/\s/g, '').match(/[0-9]+([XxOo.]+)/)
         if (!m) {return false}
         return m[1].split('').map(c => shallow_copy_hash(char2stone[c] || {}))
