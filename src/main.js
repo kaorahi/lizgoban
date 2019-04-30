@@ -240,7 +240,6 @@ function do_play(move, is_black, tag) {
     // This is because ...
     // (1) Leelaz counts only the last passes in "showboard".
     // (2) Leelaz stops analysis after double pass.
-    history.splice(R.move_count)
     const last_pass = is_last_move_pass(), double_pass = last_pass && is_pass(move)
     last_pass && history.pop()
     !double_pass && history.push({move, is_black, tag, move_count: history.length + 1})
