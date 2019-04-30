@@ -475,8 +475,6 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     R.winrate_trail && draw_winrate_trail(canvas)
     draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
     draw_winrate_bar_text(w, h, pale_text_p, g)
-    canvas.onmouseenter = e => {update_goban()}
-    canvas.onmouseleave = e => {update_goban()}
 }
 
 function draw_winrate_bar_text(w, h, pale_text_p, g) {
