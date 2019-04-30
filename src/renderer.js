@@ -152,6 +152,7 @@ function update_goban() {
     first_board_canvas = null; will_do_something_on_first_board()
     const btype = current_board_type(), do_nothing = truep
     const draw_main = c => D.draw_main_goban(c, {main_canvas_p: c === main_canvas})
+    const draw_pv = D.draw_goban_with_principal_variation
     const draw_raw_gen = opts => c => D.draw_goban(c, null, opts)
     const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
     const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
@@ -163,20 +164,16 @@ function update_goban() {
                             D.draw_winrate_bar(winrate_bar_canvas))
     const double_boards_rule = {
         double_boards: {  // [on main_canvas, on sub_canvas]
-            normal: [draw_main, D.draw_goban_with_principal_variation],
-            raw: [draw_raw_pure, D.draw_goban_with_principal_variation]
+            normal: [draw_main, draw_pv], raw: [draw_raw_pure, draw_pv]
         },
         double_boards_raw: {
-            normal: [draw_main, draw_raw_clickable],
-            raw: [draw_raw_pure, D.draw_goban_with_principal_variation]
+            normal: [draw_main, draw_raw_clickable], raw: [draw_raw_pure, draw_pv]
         },
         double_boards_swap: {
-            normal: [draw_raw_clickable, draw_main],
-            raw: [draw_main, D.draw_goban_with_principal_variation]
+            normal: [draw_raw_clickable, draw_main], raw: [draw_main, draw_pv]
         },
         double_boards_raw_pv: {
-            normal: [draw_raw_main, D.draw_goban_with_principal_variation],
-            raw: [draw_main, D.draw_goban_with_principal_variation]
+            normal: [draw_raw_main, draw_pv], raw: [draw_main, draw_pv]
         },
     }
     if (double_boards_p()) {
@@ -191,7 +188,7 @@ function update_goban() {
         switch (btype) {
         case "winrate_only": f(D.draw_winrate_graph, draw_raw_unclickable); break;
         case "raw": f(draw_raw_clickable); break;
-        case "variation": f(D.draw_goban_with_principal_variation); break;
+        case "variation": f(draw_pv); break;
         case "suggest": default: f(draw_main); break;
         }
     }
