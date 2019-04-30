@@ -427,6 +427,28 @@ function auto_restart() {
         }, response => actions[response]())
 }
 
+// handicap stones
+function add_handicap_stones(k) {
+    // [2019-04-29] ref.
+    // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
+    // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
+    const exceptions = [5, 7], first = 'Q16', center = 'K10'
+    const pos = [first, 'D4', 'Q4', 'D16', 'Q10', 'D10', 'K16', 'K4', center]
+    const moves = pos.slice(0, k)
+    exceptions.includes(k) && (moves[k - 1] = center)
+    moves.forEach(m => do_play(m, true))
+}
+function ask_handicap_stones() {
+    const ks = seq(8, 2), buttons = [...ks.map(to_s), 'cancel']
+    const action = response => {
+        const k = ks[response]; if (!k) {return}
+        empty(history) || new_empty_board(); add_handicap_stones(k)
+    }
+    dialog.showMessageBox(null, {
+        type: "question", message: "Handicap stones", buttons: buttons,
+    }, action)
+}
+
 // load weight file for leelaz
 let previous_weight_file = null
 function load_weight() {
@@ -1160,6 +1182,7 @@ function menu_template(win) {
     const insert_if = (pred, ...items) => pred ? items : []
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
+        item('New handicap game', undefined, ask_handicap_stones, true),
         item('New window', 'CmdOrCtrl+Shift+N',
              (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
                                             'variation' : 'suggest')),
