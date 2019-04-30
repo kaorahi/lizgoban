@@ -30,10 +30,7 @@ let leelaz = leelaz_for_black = create_leelaz(), leelaz_for_white = null
 let leelaz_for_endstate = null
 
 // util
-const {to_i, to_f, xor, truep, clip, merge, empty, last, flatten, each_key_value, array2hash, seq, do_ntimes, debug_log, deferred_procs}
-      = require('./util.js')
-const {idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
-       board_size, sgfpos2move, move2sgfpos} = require('./coord.js')
+require('./util.js').use(); require('./coord.js').use()
 function safely(proc, ...args) {try {return proc(...args)} catch(e) {return null}}
 const SGF = require('@sabaki/sgf')
 const PATH = require('path'), fs = require('fs'), TMP = require('tmp')

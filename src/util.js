@@ -1,6 +1,6 @@
 // utilities
 
-const E = module.exports
+const E = {}
 
 E.to_i = x => (x | 0)
 E.to_f = x => (x - 0)
@@ -42,3 +42,5 @@ E.deferred_procs = (...proc_delay_pairs) => {
         clearTimeout(timer); timer = setTimeout(() => proc(...args), delay)
     }))
 }
+
+require('./globally.js').export_globally(module, E)
