@@ -233,7 +233,11 @@ function play(move, force_create, default_tag) {
     update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
 }
 function do_play(move, is_black, tag) {
-    // Pass is allowed only at the last of history because ...
+    // We drop "pass" except for the last of history.
+    // B:D16, W:Q4, B:pass ==> ok
+    // B:D16, W:Q4, B:pass, W:D4 ==> B:D16, W:Q4, W:D4
+    // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
+    // This is because ...
     // (1) Leelaz counts only the last passes in "showboard".
     // (2) Leelaz stops analysis after double pass.
     const move_count = R.move_count + 1
