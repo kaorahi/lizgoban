@@ -146,8 +146,8 @@ function update_goban() {
     const btype = current_board_type(), do_nothing = truep
     // set option "main_canvas_p" etc. for d(canvas, opts)
     const A = (d, opts) => c => d(c, {
-        main_canvas_p: c === main_canvas,
-        selected_suggest: selected_suggest(c), ...(opts || {})
+        main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
+        play_here, hover_here, hover_off, ...(opts || {})
     })
     const draw_main = A(D.draw_main_goban, {show_until: keyboard_tag_data.move_count})
     const draw_pv = A(D.draw_goban_with_principal_variation)
