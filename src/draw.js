@@ -33,7 +33,7 @@ function draw_main_goban(canvas, options) {
     // case II: "suggest" or "until"
     const [i, j] = h.move ? move2idx(h.move) : [-1, -1]
     const s = (i >= 0 && R.stones[i] && R.stones[i][j]) || {}
-    const show_until = keyboard_tag_data.move_count ||
+    const show_until = options.show_until ||
           (s.stone && s.tag && (s.move_count !== R.move_count) && s.move_count)
     const mapping_to_winrate_bar = h.move && mapping_text(h, opts)
     show_until ? draw_goban_until(canvas, show_until, opts)

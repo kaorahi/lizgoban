@@ -151,7 +151,9 @@ function if_first_board(proc, ...args) {
 function update_goban() {
     first_board_canvas = null; will_do_something_on_first_board()
     const btype = current_board_type(), do_nothing = truep
-    const draw_main = c => D.draw_main_goban(c, {main_canvas_p: c === main_canvas})
+    const draw_main = c => D.draw_main_goban(c, {
+        show_until: keyboard_tag_data.move_count, main_canvas_p: c === main_canvas
+    })
     const draw_pv = D.draw_goban_with_principal_variation
     const draw_raw_gen = opts => c => D.draw_goban(c, null, opts)
     const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
