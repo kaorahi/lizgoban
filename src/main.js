@@ -446,7 +446,7 @@ function ask_handicap_stones() {
     const ks = seq(8, 2), buttons = [...ks.map(to_s), 'cancel']
     const action = response => {
         const k = ks[response]; if (!k) {return}
-        empty(history.hist) || new_empty_board(); add_handicap_stones(k)
+        history.is_empty() || new_empty_board(); add_handicap_stones(k)
     }
     dialog.showMessageBox(null, {
         type: "question", message: "Handicap stones", buttons: buttons,
@@ -485,7 +485,7 @@ function endstate_diff_interval_adder(k) {
 function close_window_or_cut_sequence(win) {
     get_windows().length > 1 ? win.close() :
         attached ? null :
-        (sequence.length <= 1 && empty(history.hist)) ? win.close() : cut_sequence()
+        (sequence.length <= 1 && history.is_empty()) ? win.close() : cut_sequence()
 }
 function help() {
     const menu = [
@@ -533,7 +533,7 @@ function try_auto_analyze() {
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
-    if (empty(history.hist)) {return}
+    if (history.is_empty()) {return}
     (auto_analysis_signed_visits === visits) ?
         (stop_auto_analyze(), update_ui()) :
         start_auto_analyze(visits)
@@ -816,6 +816,7 @@ function create_history(init_hist, init_prop) {
     const methods = {
         // mc = move_count (0: empty board, 1: first move, ...)
         len: () => hist.length,
+        is_empty: () => empty(hist),
         ref: mc => hist[mc - 1] || {},
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
             id: new_history_id(), last_loaded_element: null
@@ -833,7 +834,7 @@ function create_history(init_hist, init_prop) {
 function new_empty_board() {insert_sequence(create_history(), true)}
 
 function backup_history() {
-    if (empty(history.hist)) {return}
+    if (history.is_empty()) {return}
     store_move_count(history)
     insert_sequence(history.shallow_copy())
 }
@@ -869,7 +870,7 @@ function uncut_sequence() {
 }
 
 function duplicate_sequence() {
-    empty(history.hist) ? new_empty_board() :
+    history.is_empty() ? new_empty_board() :
         (backup_history(), set_last_loaded_element(), (history.trial = true),
          update_state())
 }
@@ -959,7 +960,7 @@ function availability() {
         resume: pausing,
         bturn: R.bturn,
         wturn: !R.bturn,
-        auto_analyze: !empty(history.hist),
+        auto_analyze: !history.is_empty(),
         start_auto_analyze: !auto_analyzing() && !auto_playing(),
         stop_auto: auto_progress() >= 0,
         simple_ui: simple_ui, normal_ui: !simple_ui,
