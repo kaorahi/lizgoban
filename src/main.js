@@ -1157,6 +1157,7 @@ function menu_template(win) {
               enabled: enabled || (enabled === undefined)
           }
     const sep = {type: 'separator'}
+    const insert_if = (pred, ...items) => pred ? items : []
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
         item('New window', 'CmdOrCtrl+Shift+N',
@@ -1200,14 +1201,13 @@ function menu_template(win) {
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
-        ...(leelaz_for_endstate ? [
+        ...insert_if(leelaz_for_endstate,
             sep,
             store_toggler_menu_item(`Endstate (diff: ${endstate_diff_interval} moves)`, 'show_endstate', 'Shift+E'),
             item('...longer diff', '{', endstate_diff_interval_adder(10),
                  false, R.show_endstate, true),
             item('...shorter diff', '}', endstate_diff_interval_adder(-10),
-                 false, R.show_endstate, true),
-        ] : [])
+                 false, R.show_endstate, true))
     ])
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
