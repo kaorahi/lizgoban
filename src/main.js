@@ -242,14 +242,14 @@ function do_play(move, is_black, tag) {
     // (1) Leelaz counts only the last passes in "showboard".
     // (2) Leelaz stops analysis after double pass.
     const last_pass = is_last_move_pass(), double_pass = last_pass && is_pass(move)
-    last_pass && history.hist.pop()
+    last_pass && history.pop()
     !double_pass && history.hist.push({move, is_black, tag, move_count: history.hist.length + 1})
     set_board(history)
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (history.hist.pop(), set_board(history))
+    const delete_last = () => (history.pop(), set_board(history))
     R.move_count < history.hist.length ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
@@ -815,6 +815,7 @@ function create_history(init_hist, init_prop) {
         trial: false, last_loaded_element: null
     }
     const methods = {
+        pop: () => hist.pop(),
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
             id: new_history_id(), last_loaded_element: null
         })),
