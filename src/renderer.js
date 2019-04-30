@@ -271,7 +271,8 @@ function mouse2move(e, coord2idx) {
 function goto_idx_maybe(idx, another_board) {
     const s = aa_ref(R.stones, ...idx) || {}
     return s.stone && s.tag &&
-        (duplicate_if(another_board), main('goto_move_count', s.move_count - 1), true)
+        (duplicate_if(another_board), main('goto_move_count', s.move_count - 1),
+         wink(), true)
 }
 
 function duplicate_if(x) {x && main('duplicate_sequence')}
