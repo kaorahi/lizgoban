@@ -222,10 +222,7 @@ function selected_suggest(canvas) {
     return R.suggest.find(h => h.move === m) || {}
 }
 
-function current_board_type() {
-    return (temporary_board_type === R.board_type && R.board_type === "raw") ?
-        "suggest" : (temporary_board_type || R.board_type)
-}
+function current_board_type() {return temporary_board_type || R.board_type}
 
 function set_temporary_board_type(btype, btype2) {
     const b = (R.board_type === btype) ? btype2 : btype
