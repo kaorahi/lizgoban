@@ -228,7 +228,7 @@ function play(move, force_create, default_tag) {
     const new_sequence_p = (history.len() > 0) && create_sequence_maybe(force_create)
     const tag = R.move_count > 0 &&
           (new_sequence_p ? new_tag() :
-           (history.hist[R.move_count - 1] || {}) === history.last_loaded_element ?
+           history.ref(R.move_count) === history.last_loaded_element ?
            last_loaded_element_tag_letter : false)
     update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
     pass && wink()
@@ -292,8 +292,8 @@ function update_state_to_move_count_tentatively(count) {
     history.hist.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
         stone: true, maybe: forward, maybe_empty: !forward, black: m.is_black
     }))
-    const next_h = history.hist[R.move_count]
-    const next_s = (next_h && stone_for_history_elem(next_h, R.stones)) || {}
+    const next_h = history.ref(R.move_count + 1)
+    const next_s = stone_for_history_elem(next_h, R.stones) || {}
     next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
     update_state()
 }
@@ -318,7 +318,7 @@ function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {leelaz.update()}
 
 function wink_if_pass(proc, ...args) {
-    const rec = () => history.hist[R.move_count - 1] || {move_count: 0}
+    const rec = () => history.ref(R.move_count)
     const before = rec()
     proc(...args)
     const after = rec(), d = after.move_count - before.move_count
@@ -671,15 +671,15 @@ function set_and_render(...args) {
 
 function average_endstate_sum(move_count) {
     const mc = truep(move_count) || R.move_count
-    const [cur, prev] = [1, 2].map(k => (history.hist[mc - k] || {}).endstate_sum)
+    const [cur, prev] = [0, 1].map(k => history.ref(mc - k).endstate_sum)
     return truep(cur) && truep(prev) && (cur + prev) / 2
 }
 
 function get_previous_suggest() {
-    const [p1, p2] = [1, 2].map(k => history.hist[R.move_count - k] || {})
+    const [cur, prev] = [0, 1].map(k => history.ref(R.move_count - k))
     // avoid "undefined" and use "null" for merge in set_renderer_state
-    const ret = (p2.suggest || []).find(h => h.move === (p1.move || '')) || null
-    ret && (ret.bturn = !p2.is_black)
+    const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
+    ret && (ret.bturn = !prev.is_black)
     return ret
 }
 
@@ -698,13 +698,13 @@ function board_handler(h) {
         add_info_to_stones(R.stones, history)
     }
     const endstate_setter = update_p => {
-        const prev = R.move_count - 1 - endstate_diff_interval
-        const prev_endstate = update_p && (history.hist[prev] || {}).endstate
+        const prev = R.move_count - endstate_diff_interval
+        const prev_endstate = update_p && history.ref(prev).endstate
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
         }
         add_endstate_to_stones(R.stones, R.endstate, prev_endstate)
-        R.move_count > 0 && add_endstate_to_history(history.hist[R.move_count - 1])
+        R.move_count > 0 && add_endstate_to_history(history.ref(R.move_count))
     }
     set_renderer_state(h)
     h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
@@ -743,8 +743,7 @@ function update_ui(ui_only) {
 }
 
 function add_next_mark_to_stones(stones, history, move_count) {
-    const h = history.hist[move_count]
-    const s = (move_count < history.len()) && stone_for_history_elem(h, stones)
+    const h = history.ref(move_count + 1), s = stone_for_history_elem(h, stones)
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
 
@@ -769,7 +768,7 @@ function add_endstate_to_stones(stones, endstate, prev_endstate) {
 }
 
 function stone_for_history_elem(h, stones) {
-    return aa_ref(stones, ...move2idx(h.move))
+    return h && h.move && aa_ref(stones, ...move2idx(h.move))
 }
 
 // suggest
@@ -777,9 +776,9 @@ const too_small_prior = 1e-3
 function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
-    R.move_count > 0 && (history.hist[R.move_count - 1].suggest = h.suggest)
-    R.move_count > 0 ? history.hist[R.move_count - 1].b_winrate = h.b_winrate
-        : (initial_b_winrate = h.b_winrate)
+    const cur = history.ref(R.move_count)
+    R.move_count > 0 && (cur.suggest = h.suggest)
+    R.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
     set_and_render(h); try_auto()
 }
 
@@ -815,7 +814,9 @@ function create_history(init_hist, init_prop) {
         trial: false, last_loaded_element: null
     }
     const methods = {
+        // mc = move_count (0: empty board, 1: first move, ...)
         len: () => hist.length,
+        ref: mc => hist[mc - 1] || {},
         push: elem => hist.push(elem),
         pop: () => hist.pop(),
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
@@ -917,18 +918,19 @@ function winrate_after(move_count) {
     const or_NaN = x => truep(x) ? x : NaN
     return move_count < 0 ? NaN :
         move_count === 0 ? initial_b_winrate :
-        or_NaN((history.hist[move_count - 1] || {}).b_winrate)
+        or_NaN(history.ref(move_count).b_winrate)
 }
 
 function winrate_from_history(history) {
     const winrates = history.hist.map(m => m.b_winrate)
     return [initial_b_winrate, ...winrates].map((r, s, a) => {
-        const h = append_endstate_tag_maybe(history.hist[s - 1] || {}), tag = h.tag
+        const cur = history.ref(s)
+        const h = append_endstate_tag_maybe(cur), tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
-        const move_eval = move_b_eval && move_b_eval * (history.hist[s - 1].is_black ? 1 : -1)
+        const move_eval = move_b_eval && move_b_eval * (cur.is_black ? 1 : -1)
         const predict = winrate_suggested(s)
-        const pass = (!!h.is_black === !!(history.hist[s - 2] || {}).is_black)
+        const pass = (!!h.is_black === !!history.ref(s - 1).is_black)
         const score_without_komi = average_endstate_sum(s)
         // drop "pass" to save data size for IPC
         return merge({r, move_b_eval, move_eval, tag, score_without_komi},
@@ -937,8 +939,8 @@ function winrate_from_history(history) {
 }
 
 function winrate_suggested(move_count) {
-    const {move, is_black} = history.hist[move_count - 1] || {}
-    const {suggest} = history.hist[move_count - 2] || {}
+    const {move, is_black} = history.ref(move_count)
+    const {suggest} = history.ref(move_count - 1)
     const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
     return truep(sw) && (is_black ? sw : 100 - sw)
 }
