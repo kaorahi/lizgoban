@@ -255,7 +255,7 @@ function explicit_undo() {
 const pass_command = 'pass'
 function pass() {play(pass_command)}
 function is_pass(move) {return move === pass_command}
-function is_last_move_pass() {return is_pass((last(history.hist) || {}).move)}
+function is_last_move_pass() {return is_pass(history.last_move())}
 
 // multi-undo/redo
 function undo_ntimes(n) {wink_if_pass(goto_move_count, R.move_count - n)}
@@ -818,6 +818,7 @@ function create_history(init_hist, init_prop) {
         len: () => hist.length,
         is_empty: () => empty(hist),
         ref: mc => hist[mc - 1] || {},
+        last_move: () => (last(hist) || {}).move,
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
             id: new_history_id(), last_loaded_element: null
         })),
