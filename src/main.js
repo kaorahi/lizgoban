@@ -170,14 +170,17 @@ function leelaz_weight_option_pos_in_args() {
 
 // normal commands
 
-const simple_api = {unset_busy, update_menu, toggle_board_type, toggle_let_me_think}
+const simple_api = {
+    unset_busy, update_menu, toggle_board_type, toggle_let_me_think,
+    copy_sgf_to_clipboard,
+}
 const api = merge({}, simple_api, {
     restart, new_window, init_from_renderer, toggle_sabaki,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     let_me_think_next,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
-    paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
+    paste_sgf_from_clipboard, open_sgf, save_sgf,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
     // for debug
@@ -1117,9 +1120,9 @@ function menu_template(win) {
     const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
     const stop_auto_and = f => ((...a) => {stop_auto(); f(...a)})
     const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
-    const item = (label, accelerator, click, standalone_only, enabled) =>
+    const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
           !(standalone_only && attached) && {
-              label, accelerator, click: stop_auto_and(click),
+              label, accelerator, click: keep_auto ? click : stop_auto_and(click),
               enabled: enabled || (enabled === undefined)
           }
     const sep = {type: 'separator'}
@@ -1170,9 +1173,9 @@ function menu_template(win) {
             sep,
             store_toggler_menu_item(`Endstate (diff: ${endstate_diff_interval} moves)`, 'show_endstate', 'Shift+E'),
             item('...longer diff', '{', endstate_diff_interval_adder(10),
-                 false, R.show_endstate),
+                 false, R.show_endstate, true),
             item('...shorter diff', '}', endstate_diff_interval_adder(-10),
-                 false, R.show_endstate),
+                 false, R.show_endstate, true),
         ] : [])
     ])
     const tool_menu = menu('Tool', [
