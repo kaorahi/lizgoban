@@ -472,11 +472,8 @@ function set_keyboard_moves_maybe(n) {
     h && !keyboard_moves[0] && (keyboard_moves = h.pv) && update_goban()
 }
 function set_keyboard_moves_for_next_move() {
-    const hit = R.suggest.find(h => is_next_move(h.move))
+    const hit = R.suggest.find(h => D.is_next_move(h.move))
     hit && !keyboard_moves[0] && (keyboard_moves = hit.pv) && update_goban()
-}
-function is_next_move(move) {
-    [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
 }
 function reset_keyboard_moves() {keyboard_moves = []; update_goban()}
 

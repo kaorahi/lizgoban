@@ -963,12 +963,16 @@ function winrate_history_ref(key, nth_prev) {
     return (R.winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
 }
 
+function is_next_move(move) {
+    [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
+}
+
 //////////////////////////////////
 
 module.exports = {
     draw_main_goban, draw_goban_with_principal_variation, draw_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail,
-    update_winrate_trail, clear_canvas,
+    update_winrate_trail, clear_canvas, is_next_move,
     target_move: () => target_move,
     first_board_canvas: () => first_board_canvas,
     reset_first_board_canvas: () => (first_board_canvas = null),
