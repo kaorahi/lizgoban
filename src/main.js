@@ -671,10 +671,7 @@ function update_state() {
     const history_length = history.length, sequence_length = sequence.length, suggest = []
     const sequence_ids = sequence.map(h => h.id)
     const pick_tagged = h => {
-        const h_copy = merge({}, h)
-        leelaz_for_endstate && R.show_endstate &&
-            h.move_count === R.move_count - endstate_diff_interval &&
-            add_tag(h_copy, endstate_diff_tag_letter)
+        const h_copy = append_endstate_tag_maybe(h)
         return h_copy.tag ? [h_copy] : []
     }
     const history_tags = flatten(history.map(pick_tagged))
@@ -684,6 +681,14 @@ function update_state() {
         player_black, player_white, trial, sequence_ids, history_tags
     })
     update_ui(true)
+}
+
+function append_endstate_tag_maybe(h) {
+    const h_copy = merge({}, h)
+    leelaz_for_endstate && R.show_endstate &&
+        h.move_count === R.move_count - endstate_diff_interval &&
+        add_tag(h_copy, endstate_diff_tag_letter)
+    return h_copy
 }
 
 function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
@@ -866,8 +871,7 @@ function winrate_after(move_count) {
 function winrate_from_history(history) {
     const winrates = history.map(m => m.b_winrate)
     return [initial_b_winrate, ...winrates].map((r, s, a) => {
-        const h = history[s - 1] || {}
-        const tag = h.tag
+        const h = append_endstate_tag_maybe(history[s - 1] || {}), tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * (history[s - 1].is_black ? 1 : -1)
