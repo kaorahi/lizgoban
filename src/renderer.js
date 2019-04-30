@@ -419,7 +419,7 @@ document.onkeydown = e => {
     const repeated_keydown = keydown; keydown = true
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const escape = (key === "Escape" || key === "C-[")
-    if (escape) {hide_dialog()}
+    escape && hide_dialog()
     switch (key === "Enter" && e.target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "auto_play_sec": start_auto_play(); return
@@ -437,13 +437,9 @@ document.onkeydown = e => {
                                             keyboard_tag_data.move_count - 1)) :
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
-    if (to_i(key) > 0) {
-        challenging ?
-            m('play_weak', to_i(key) * 10) : f(set_keyboard_moves_maybe, to_i(key) - 1)
-    }
-    if (key.length === 1 && R.tag_letters.indexOf(key) >= 0) {
-        f(set_keyboard_tag_maybe, key)
-    }
+    to_i(key) > 0 && (challenging ? m('play_weak', to_i(key) * 10) :
+                      f(set_keyboard_moves_maybe, to_i(key) - 1))
+    key.length === 1 && R.tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
     switch (key) {
     case "C-c": m('copy_sgf_to_clipboard'); return
     case "z": f(set_temporary_board_type, "raw", "suggest"); return
