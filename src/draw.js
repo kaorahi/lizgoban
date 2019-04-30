@@ -29,13 +29,14 @@ function set_state(given_R) {R = given_R}  // fixme: ugly
 
 function draw_main_goban(canvas, options) {
     const opts = {draw_visits_p: true, read_only: R.attached, ...options}
-    const h = options.selected_suggest; target_move = (h.visits > 0) && h.move
+    const u = options.show_until, h = options.selected_suggest
+    target_move = !u && (h.visits > 0) && h.move
     // case I: "variation"
     if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
     const [i, j] = h.move ? move2idx(h.move) : [-1, -1]
     const s = (i >= 0 && R.stones[i] && R.stones[i][j]) || {}
-    const show_until = options.show_until ||
+    const show_until = u ||
           (s.stone && s.tag && (s.move_count !== R.move_count) && s.move_count)
     const mapping_to_winrate_bar = h.move && mapping_text(h, opts)
     show_until ? draw_goban_until(canvas, show_until, opts)
