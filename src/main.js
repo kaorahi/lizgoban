@@ -225,10 +225,10 @@ function play(move, force_create, default_tag) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (!R.stones[i] || !R.stones[i][j] || R.stones[i][j].stone)) {return}
     !pass && (R.stones[i][j] = {stone: true, black: R.bturn, maybe: true})
-    const new_sequence_p = (history.length > 0) && create_sequence_maybe(force_create)
+    const new_sequence_p = (history.hist.length > 0) && create_sequence_maybe(force_create)
     const tag = R.move_count > 0 &&
           (new_sequence_p ? new_tag() :
-           (history[R.move_count - 1] || {}) === history.last_loaded_element ?
+           (history.hist[R.move_count - 1] || {}) === history.last_loaded_element ?
            last_loaded_element_tag_letter : false)
     update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
     pass && wink()
@@ -242,20 +242,20 @@ function do_play(move, is_black, tag) {
     // (1) Leelaz counts only the last passes in "showboard".
     // (2) Leelaz stops analysis after double pass.
     const last_pass = is_last_move_pass(), double_pass = last_pass && is_pass(move)
-    last_pass && history.pop()
-    !double_pass && history.push({move, is_black, tag, move_count: history.length + 1})
+    last_pass && history.hist.pop()
+    !double_pass && history.hist.push({move, is_black, tag, move_count: history.hist.length + 1})
     set_board(history)
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (history.pop(), set_board(history))
-    R.move_count < history.length ? undo() : wink_if_pass(delete_last)
+    const delete_last = () => (history.hist.pop(), set_board(history))
+    R.move_count < history.hist.length ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
 function pass() {play(pass_command)}
 function is_pass(move) {return move === pass_command}
-function is_last_move_pass() {return is_pass((last(history) || {}).move)}
+function is_last_move_pass() {return is_pass((last(history.hist) || {}).move)}
 
 // multi-undo/redo
 function undo_ntimes(n) {wink_if_pass(goto_move_count, R.move_count - n)}
@@ -264,9 +264,13 @@ function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
 
 // util
-function set_board(history) {
-    each_leelaz(z => z.set_board(history)); R.move_count = history.length
-    R.bturn = !(history[history.length - 1] || {}).is_black
+function set_board(history, move_count) {
+    set_board_sub(truep(move_count) ? history.hist.slice(0, move_count) : history.hist)
+}
+function reset_board() {set_board_sub([])}
+function set_board_sub(hist) {
+    each_leelaz(z => z.set_board(hist)); R.move_count = hist.length
+    R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
     switch_leelaz()
     board_state_is_changed()
@@ -274,10 +278,10 @@ function set_board(history) {
 function board_state_is_changed() {update_let_me_think()}
 
 function goto_move_count(count) {
-    const c = clip(count, 0, history.length)
+    const c = clip(count, 0, history.hist.length)
     if (c === R.move_count) {return}
     update_state_to_move_count_tentatively(c)
-    set_board(history.slice(0, c))
+    set_board(history, c)
 }
 function update_state_to_move_count_tentatively(count) {
     const forward = (count > R.move_count)
@@ -285,16 +289,16 @@ function update_state_to_move_count_tentatively(count) {
     const set_stone_at = (move, stone_array, stone) => {
         aa_set(stone_array, ...move2idx(move), stone)
     }
-    history.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
+    history.hist.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
         stone: true, maybe: forward, maybe_empty: !forward, black: m.is_black
     }))
-    const next_h = history[R.move_count]
+    const next_h = history.hist[R.move_count]
     const next_s = (next_h && stone_for_history_elem(next_h, R.stones)) || {}
     next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
     update_state()
 }
 function undoable() {return R.move_count > 0}
-function redoable() {return history.length > R.move_count}
+function redoable() {return history.hist.length > R.move_count}
 function restart() {restart_with_args()}
 function restart_with_args(h) {
     leelaz.restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
@@ -314,7 +318,7 @@ function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {leelaz.update()}
 
 function wink_if_pass(proc, ...args) {
-    const rec = () => history[R.move_count - 1] || {move_count: 0}
+    const rec = () => history.hist[R.move_count - 1] || {move_count: 0}
     const before = rec()
     proc(...args)
     const after = rec(), d = after.move_count - before.move_count
@@ -334,7 +338,7 @@ const endstate_diff_tag_letter = "/"
 const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
       start_moves_tag_letter + endstate_diff_tag_letter
 function new_tag() {
-    const used = history.map(h => h.tag || '').join('')
+    const used = history.hist.map(h => h.tag || '').join('')
     const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
           .split('').findIndex(c => used.indexOf(c) < 0)
     const tag_count = (next_tag_count + Math.max(first_unused_index, 0))
@@ -442,7 +446,7 @@ function ask_handicap_stones() {
     const ks = seq(8, 2), buttons = [...ks.map(to_s), 'cancel']
     const action = response => {
         const k = ks[response]; if (!k) {return}
-        empty(history) || new_empty_board(); add_handicap_stones(k)
+        empty(history.hist) || new_empty_board(); add_handicap_stones(k)
     }
     dialog.showMessageBox(null, {
         type: "question", message: "Handicap stones", buttons: buttons,
@@ -481,7 +485,7 @@ function endstate_diff_interval_adder(k) {
 function close_window_or_cut_sequence(win) {
     get_windows().length > 1 ? win.close() :
         attached ? null :
-        (sequence.length <= 1 && empty(history)) ? win.close() : cut_sequence()
+        (sequence.length <= 1 && empty(history.hist)) ? win.close() : cut_sequence()
 }
 function help() {
     const menu = [
@@ -529,7 +533,7 @@ function try_auto_analyze() {
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
-    if (empty(history)) {return}
+    if (empty(history.hist)) {return}
     (auto_analysis_signed_visits === visits) ?
         (stop_auto_analyze(), update_ui()) :
         start_auto_analyze(visits)
@@ -667,12 +671,12 @@ function set_and_render(...args) {
 
 function average_endstate_sum(move_count) {
     const mc = truep(move_count) || R.move_count
-    const [cur, prev] = [1, 2].map(k => (history[mc - k] || {}).endstate_sum)
+    const [cur, prev] = [1, 2].map(k => (history.hist[mc - k] || {}).endstate_sum)
     return truep(cur) && truep(prev) && (cur + prev) / 2
 }
 
 function get_previous_suggest() {
-    const [p1, p2] = [1, 2].map(k => history[R.move_count - k] || {})
+    const [p1, p2] = [1, 2].map(k => history.hist[R.move_count - k] || {})
     // avoid "undefined" and use "null" for merge in set_renderer_state
     const ret = (p2.suggest || []).find(h => h.move === (p1.move || '')) || null
     ret && (ret.bturn = !p2.is_black)
@@ -695,12 +699,12 @@ function board_handler(h) {
     }
     const endstate_setter = update_p => {
         const prev = R.move_count - 1 - endstate_diff_interval
-        const prev_endstate = update_p && (history[prev] || {}).endstate
+        const prev_endstate = update_p && (history.hist[prev] || {}).endstate
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
         }
         add_endstate_to_stones(R.stones, R.endstate, prev_endstate)
-        R.move_count > 0 && add_endstate_to_history(history[R.move_count - 1])
+        R.move_count > 0 && add_endstate_to_history(history.hist[R.move_count - 1])
     }
     set_renderer_state(h)
     h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
@@ -709,13 +713,13 @@ function board_handler(h) {
 
 function update_state() {
     set_renderer_state()  // need to update R.show_endstate
-    const history_length = history.length, sequence_length = sequence.length, suggest = []
+    const history_length = history.hist.length, sequence_length = sequence.length, suggest = []
     const sequence_ids = sequence.map(h => h.id)
     const pick_tagged = h => {
         const h_copy = append_endstate_tag_maybe(h)
         return h_copy.tag ? [h_copy] : []
     }
-    const history_tags = flatten(history.map(pick_tagged))
+    const history_tags = flatten(history.hist.map(pick_tagged))
     const {player_black, player_white, trial} = history
     set_and_render({
         history_length, suggest, sequence_cursor, sequence_length, attached,
@@ -739,13 +743,13 @@ function update_ui(ui_only) {
 }
 
 function add_next_mark_to_stones(stones, history, move_count) {
-    const h = history[move_count]
-    const s = (move_count < history.length) && stone_for_history_elem(h, stones)
+    const h = history.hist[move_count]
+    const s = (move_count < history.hist.length) && stone_for_history_elem(h, stones)
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
 
 function add_info_to_stones(stones, history) {
-    history.forEach((h, c) => {
+    history.hist.forEach((h, c) => {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
         add_tag(s, h.tag)
         s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
@@ -773,8 +777,8 @@ const too_small_prior = 1e-3
 function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
-    R.move_count > 0 && (history[R.move_count - 1].suggest = h.suggest)
-    R.move_count > 0 ? history[R.move_count - 1].b_winrate = h.b_winrate
+    R.move_count > 0 && (history.hist[R.move_count - 1].suggest = h.suggest)
+    R.move_count > 0 ? history.hist[R.move_count - 1].b_winrate = h.b_winrate
         : (initial_b_winrate = h.b_winrate)
     set_and_render(h); try_auto()
 }
@@ -788,43 +792,32 @@ function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10
 /////////////////////////////////////////////////
 // history
 
-// example of history (array with additional properties):
+// example of history.hist:
 // [{move: "D16", is_black: true, move_count: 1, ...},
 //  {move: "Q4", is_black: false, move_count: 2, ...},
 //  {move: "Q16", is_black: false, move_count: 3, ...},
-//  {move: "pass", is_black: true, move_count: 4, ...},
-//  id: 7, player_black: "Ore", ...more_props]
+//  {move: "pass", is_black: true, move_count: 4, ...}]
 // 
 // Black played pass for the third move and the last move in this example.
 
 // note:
 // * move_count = 1 for the first stone, that is history[0].
 // * See board_handler() and suggest_handler() for "...".
-// * See create_history() for "...more_props".
 // * See also do_play() for passes.
-
-// fixme: array with property is misleading. for example...
-// > a=[0,1]; a.foo=2; [a, a.slice(), JSON.stringify(a), Object.assign({}, a)]
-// [ [ 0, 1, foo: 2 ], [ 0, 1 ], '[0,1]', { '0': 0, '1': 1, foo: 2 } ]
 
 function new_history_id() {return next_history_id++}
 
 function create_history() {
-    const hist = []
-    Object.assign(hist,
-                  {move_count: 0, player_black: "", player_white: "",
-                   sgf_file: "", sgf_str: "", id: new_history_id(),
-                   trial: false, last_loaded_element: null})
-    return hist
+    return {hist: [],
+            move_count: 0, player_black: "", player_white: "",
+            sgf_file: "", sgf_str: "", id: new_history_id(),
+            trial: false, last_loaded_element: null}
 }
 
 function shallow_copy_of_history() {
-    // > a=[0,[1]]; a.foo=2; b=Object.assign(a.slice(),a); a[1][0] = 9; [a, b]
-    // [ [ 0, [ 9 ], foo: 2 ], [ 0, [ 9 ], foo: 2 ] ]
-    const shallow_copy_with_prop = ary =>
-          Object.assign(ary.slice(), ary,
-                        {id: new_history_id(), last_loaded_element: null})
-    return shallow_copy_with_prop(history)
+    return merge({}, history, {
+        hist: history.hist.slice(), id: new_history_id(), last_loaded_element: null
+    })
 }
 
 /////////////////////////////////////////////////
@@ -833,15 +826,15 @@ function shallow_copy_of_history() {
 function new_empty_board() {insert_sequence(create_history(), true)}
 
 function backup_history() {
-    if (empty(history)) {return}
+    if (empty(history.hist)) {return}
     store_move_count(history)
     insert_sequence(shallow_copy_of_history())
 }
 
 function create_sequence_maybe(force) {
     const new_game = (R.move_count === 0)
-    return (force || R.move_count < history.length) &&
-        (backup_history(), history.splice(R.move_count),
+    return (force || R.move_count < history.hist.length) &&
+        (backup_history(), history.hist.splice(R.move_count),
          merge(history, {trial: !simple_ui && !new_game}))
 }
 
@@ -869,7 +862,7 @@ function uncut_sequence() {
 }
 
 function duplicate_sequence() {
-    empty(history) ? new_empty_board() :
+    empty(history.hist) ? new_empty_board() :
         (backup_history(), set_last_loaded_element(), (history.trial = true),
          update_state())
 }
@@ -892,11 +885,11 @@ function insert_sequence(new_history, switch_to, before) {
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    store_move_count(history); set_board([]); goto_nth_sequence(wrapped_n)
+    store_move_count(history); reset_board(); goto_nth_sequence(wrapped_n)
     R.move_count = 0; redo_ntimes(history.move_count); update_state()
 }
 
-function store_move_count(hist) {hist.move_count = R.move_count}
+function store_move_count(history) {history.move_count = R.move_count}
 function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
@@ -919,18 +912,18 @@ function winrate_after(move_count) {
     const or_NaN = x => truep(x) ? x : NaN
     return move_count < 0 ? NaN :
         move_count === 0 ? initial_b_winrate :
-        or_NaN((history[move_count - 1] || {}).b_winrate)
+        or_NaN((history.hist[move_count - 1] || {}).b_winrate)
 }
 
 function winrate_from_history(history) {
-    const winrates = history.map(m => m.b_winrate)
+    const winrates = history.hist.map(m => m.b_winrate)
     return [initial_b_winrate, ...winrates].map((r, s, a) => {
-        const h = append_endstate_tag_maybe(history[s - 1] || {}), tag = h.tag
+        const h = append_endstate_tag_maybe(history.hist[s - 1] || {}), tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
-        const move_eval = move_b_eval && move_b_eval * (history[s - 1].is_black ? 1 : -1)
+        const move_eval = move_b_eval && move_b_eval * (history.hist[s - 1].is_black ? 1 : -1)
         const predict = winrate_suggested(s)
-        const pass = (!!h.is_black === !!(history[s - 2] || {}).is_black)
+        const pass = (!!h.is_black === !!(history.hist[s - 2] || {}).is_black)
         const score_without_komi = average_endstate_sum(s)
         // drop "pass" to save data size for IPC
         return merge({r, move_b_eval, move_eval, tag, score_without_komi},
@@ -939,8 +932,8 @@ function winrate_from_history(history) {
 }
 
 function winrate_suggested(move_count) {
-    const {move, is_black} = history[move_count - 1] || {}
-    const {suggest} = history[move_count - 2] || {}
+    const {move, is_black} = history.hist[move_count - 1] || {}
+    const {suggest} = history.hist[move_count - 2] || {}
     const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
     return truep(sw) && (is_black ? sw : 100 - sw)
 }
@@ -958,7 +951,7 @@ function availability() {
         resume: pausing,
         bturn: R.bturn,
         wturn: !R.bturn,
-        auto_analyze: !empty(history),
+        auto_analyze: !empty(history.hist),
         start_auto_analyze: !auto_analyzing() && !auto_playing(),
         stop_auto: auto_progress() >= 0,
         simple_ui: simple_ui, normal_ui: !simple_ui,
@@ -1021,9 +1014,9 @@ function load_sabaki_gametree(gametree, index) {
     if (!gametree || !gametree.nodes) {return}
     const parent_nodes = nodes_from_sabaki_gametree(gametree.parent)
     const new_history = history_from_sabaki_nodes(parent_nodes.concat(gametree.nodes))
-    const com = leelaz.common_header_length(history, new_history)
+    const com = leelaz.common_header_length(history.hist, new_history)
     // keep old history for keeping winrate
-    history.splice(com, Infinity, ...new_history.slice(com))
+    history.hist.splice(com, Infinity, ...new_history.slice(com))
     set_last_loaded_element()
     const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
@@ -1031,12 +1024,12 @@ function load_sabaki_gametree(gametree, index) {
     const player_name = bw => (nodes_until_index[0][bw] || [""])[0]
     merge(history, {player_black: player_name("PB"), player_white: player_name("PW"),
                     trial: false})
-    set_board(history.slice(0, history_until_index.length))
+    set_board(history, history_until_index.length)
     // force update of board color when C-c and C-v are typed successively
     update_state()
 }
 
-function set_last_loaded_element() {history.last_loaded_element = last(history)}
+function set_last_loaded_element() {history.last_loaded_element = last(history.hist)}
 
 function history_from_sabaki_nodes(nodes) {
     const new_history = []; let move_count = 0
