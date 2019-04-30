@@ -146,7 +146,7 @@ function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
            read_only, mapping_tics_p, mapping_to_winrate_bar} = opts || {}
     const margin = canvas.height * 0.05, hm = margin / 2
-    const g = canvas.getContext("2d"); g.lizgoban_canvas = canvas
+    const g = canvas.getContext("2d")
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
     const hovered_move = canvas.lizgoban_hovered_move
@@ -395,11 +395,11 @@ function suggest_texts(suggest) {
 }
 
 function draw_winrate_mapping_line(h, xy, unit, g) {
-    const canvas = g.lizgoban_canvas, b_winrate = flip_maybe(h.data.winrate)
+    const b_winrate = flip_maybe(h.data.winrate)
     const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
     g.lineWidth = 1.5 / (order * 2 + 1)
     g.strokeStyle = RED
-    line(xy, ...mapping_line_coords(b_winrate, unit, canvas), g)
+    line(xy, ...mapping_line_coords(b_winrate, unit, g.canvas), g)
 }
 
 function mapping_line_coords(b_winrate, unit, canvas) {
