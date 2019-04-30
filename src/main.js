@@ -55,6 +55,7 @@ let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 const simple_ui = false, winrate_trail = true
 let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
 let pausing = false, busy = false
+const endstate_diff_interval = 2
 
 // renderer state
 // (cf.) "set_renderer_state" in this file
@@ -643,12 +644,12 @@ function board_handler(h) {
         add_info_to_stones(R.stones, history)
     }
     const endstate_setter = update_p => {
-        const prev_turn_endstate =
-              update_p && (history[R.move_count - 3] || {}).endstate
+        const prev = R.move_count - 1 - endstate_diff_interval
+        const prev_endstate = update_p && (history[prev] || {}).endstate
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
         }
-        add_endstate_to_stones(R.stones, R.endstate, prev_turn_endstate)
+        add_endstate_to_stones(R.stones, R.endstate, prev_endstate)
         R.move_count > 0 && add_endstate_to_history(history[R.move_count - 1])
     }
     set_renderer_state(h)
@@ -690,11 +691,11 @@ function add_info_to_stones(stones, history) {
     })
 }
 
-function add_endstate_to_stones(stones, endstate, prev_turn_endstate) {
+function add_endstate_to_stones(stones, endstate, prev_endstate) {
     if (!endstate) {return}
     stones.forEach((row, i) => row.forEach((s, j) => {
         s.endstate = endstate[i][j]
-        prev_turn_endstate && (s.endstate_diff = s.endstate - prev_turn_endstate[i][j])
+        prev_endstate && (s.endstate_diff = s.endstate - prev_endstate[i][j])
     }))
 }
 
