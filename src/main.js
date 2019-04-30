@@ -223,8 +223,8 @@ ipc.on('close_window_or_cut_sequence', e => {
 // game play
 function play(move, force_create, default_tag) {
     const [i, j] = move2idx(move), pass = (i < 0)
-    if (!pass && (!R.stones[i] || !R.stones[i][j] || R.stones[i][j].stone)) {return}
-    !pass && (R.stones[i][j] = {stone: true, black: R.bturn, maybe: true})
+    if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {return}
+    !pass && aa_set(R.stones, i, j, {stone: true, black: R.bturn, maybe: true})
     const new_sequence_p = (history.len() > 0) && create_sequence_maybe(force_create)
     const tag = R.move_count > 0 &&
           (new_sequence_p ? new_tag() :

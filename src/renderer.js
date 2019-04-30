@@ -272,7 +272,7 @@ function mouse2move(e, coord2idx) {
 }
 
 function goto_idx_maybe(idx, another_board) {
-    const [i, j] = idx, s = (i >= 0) ? (R.stones[i] || [])[j] : {}
+    const s = aa_ref(R.stones, ...idx) || {}
     return s.stone && s.tag &&
         (duplicate_if(another_board), main('goto_move_count', s.move_count - 1), true)
 }
