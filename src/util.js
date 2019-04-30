@@ -23,6 +23,7 @@ E.seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
 // array of array
+E.aa_new = (m, n, f) => E.seq(m).map(i => E.seq(n).map(j => f(i, j)))
 E.aa_ref = (aa, i, j) => truep(i) && (i >= 0) && aa[i] && aa[i][j]
 E.aa_set = (aa, i, j, val) =>
     truep(i) && (i >= 0) && ((aa[i] = aa[i] || []), (aa[i][j] = val))

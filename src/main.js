@@ -60,7 +60,7 @@ let endstate_diff_interval = 12
 // renderer state
 // (cf.) "set_renderer_state" in this file
 // (cf.) "the_board_handler" and "the_suggest_handler" in engine.js
-const R = {stones: [[]]}
+const R = {stones: aa_new(19, 19, () => ({}))}
 
 // sabaki
 let attached = false, has_sabaki = true
