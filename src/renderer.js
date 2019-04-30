@@ -128,54 +128,71 @@ function update_body_color() {
 }
 
 /////////////////////////////////////////////////
-// draw goban etc.
+// draw parts
+
+// set option "main_canvas_p" etc. for d(canvas, opts)
+function with_opts(d, opts) {
+    return c => d(c, {
+        main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
+        play_here, hover_here, hover_off, ...(opts || {})
+    })
+}
+
+const draw_main = c => with_opts(D.draw_main_goban,
+                                 // need to eval keyboard_tag_data in runtime
+                                 {show_until: keyboard_tag_data.move_count})(c)
+const draw_pv = with_opts(D.draw_goban_with_principal_variation)
+const draw_raw_gen = options => {
+    const draw = (c, opts) => D.draw_goban(c, null, opts)
+    return with_opts(draw, options)
+}
+const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
+const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
+const draw_raw_pure = draw_raw_gen({})
+const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
+
+function draw_wr_graph(canvas) {
+    const unset_busy = () => main('unset_busy')
+    const goto_move_count = count => main('busy', 'goto_move_count', count)
+    D.draw_winrate_graph(canvas, goto_move_count, unset_busy)
+}
+
+function draw_wr_bar(canvas) {
+    const wr_only = (current_board_type() === 'winrate_only')
+    const large_bar = R.expand_winrate_bar || wr_only
+    D.draw_winrate_bar(canvas, large_bar, wr_only)
+}
+
+/////////////////////////////////////////////////
+// assign parts to canvases
 
 // for smooth interaction on auto-repeated undo/redo
 const sub_canvas_deferring_millisec = 10
 const [do_on_sub_canvas_when_idle] =
       deferred_procs([f => f(sub_canvas), sub_canvas_deferring_millisec])
 
+const double_boards_rule = {
+    double_boards: {  // [on main_canvas, on sub_canvas]
+        normal: [draw_main, draw_pv], raw: [draw_raw_pure, draw_pv]
+    },
+    double_boards_raw: {
+        normal: [draw_main, draw_raw_clickable], raw: [draw_raw_pure, draw_pv]
+    },
+    double_boards_swap: {
+        normal: [draw_raw_clickable, draw_main], raw: [draw_main, draw_pv]
+    },
+    double_boards_raw_pv: {
+        normal: [draw_raw_main, draw_pv], raw: [draw_main, draw_pv]
+    },
+}
+
 function update_goban() {
     D.reset_first_board_canvas()
     const btype = current_board_type(), do_nothing = truep
-    // set option "main_canvas_p" etc. for d(canvas, opts)
-    const A = (d, opts) => c => d(c, {
-        main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
-        play_here, hover_here, hover_off, ...(opts || {})
-    })
-    const draw_main = A(D.draw_main_goban, {show_until: keyboard_tag_data.move_count})
-    const draw_pv = A(D.draw_goban_with_principal_variation)
-    const draw_raw0 = (c, opts) => D.draw_goban(c, null, opts)
-    const draw_raw_gen = opts => A(draw_raw0, opts)
-    const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
-    const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
-    const draw_raw_pure = draw_raw_gen({})
-    const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
-    const draw_wr_graph = c => {
-        const unset_busy = () => main('unset_busy')
-        const goto_move_count = count => main('busy', 'goto_move_count', count)
-        D.draw_winrate_graph(c, goto_move_count, unset_busy)
-    }
-    const wr_only = (current_board_type() === 'winrate_only')
-    const large_bar = R.expand_winrate_bar || wr_only
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_wr_graph)(winrate_graph_canvas),
                             do_on_sub_canvas_when_idle(s || do_nothing),
-                            D.draw_winrate_bar(winrate_bar_canvas, large_bar, wr_only))
-    const double_boards_rule = {
-        double_boards: {  // [on main_canvas, on sub_canvas]
-            normal: [draw_main, draw_pv], raw: [draw_raw_pure, draw_pv]
-        },
-        double_boards_raw: {
-            normal: [draw_main, draw_raw_clickable], raw: [draw_raw_pure, draw_pv]
-        },
-        double_boards_swap: {
-            normal: [draw_raw_clickable, draw_main], raw: [draw_main, draw_pv]
-        },
-        double_boards_raw_pv: {
-            normal: [draw_raw_main, draw_pv], raw: [draw_main, draw_pv]
-        },
-    }
+                            draw_wr_bar(winrate_bar_canvas))
     if (double_boards_p()) {
         const {normal, raw} = double_boards_rule[R.board_type]
         switch (btype) {
