@@ -805,7 +805,7 @@ function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10
 function new_history_id() {return next_history_id++}
 
 function create_history(init_hist, init_prop) {
-    const self = {}, hist = init_hist || []  // private in future
+    const self = {}, hist = init_hist || []  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "",
         sgf_file: "", sgf_str: "", id: new_history_id(),
@@ -832,7 +832,7 @@ function create_history(init_hist, init_prop) {
     const array_methods =
           aa2hash(['push', 'pop', 'map', 'forEach', 'slice', 'splice']
                   .map(meth => [meth, (...args) => hist[meth](...args)]))
-    return merge(self, {hist}, prop, methods, array_methods)
+    return merge(self, prop, methods, array_methods)
 }
 
 /////////////////////////////////////////////////
