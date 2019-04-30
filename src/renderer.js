@@ -242,9 +242,9 @@ function double_boards_p() {return R.board_type.match(/^double_boards/)}
 
 function play_here(e, coord2idx) {
     const move = mouse2move(e, coord2idx); if (!move) {return}
-    const another_board = e.ctrlKey
+    const another_board = e.ctrlKey, pass = e.shiftKey && R.move_count > 0
     goto_idx_maybe(move2idx(move), another_board) ||
-        main('play', move, !!another_board)
+        (pass && main('pass'), main('play', move, !!another_board))
 }
 
 function hover_here(e, coord2idx, canvas) {
