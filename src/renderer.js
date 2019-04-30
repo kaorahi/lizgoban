@@ -459,6 +459,7 @@ document.onkeydown = e => {
     case "0": challenging ? m('play_best', null, 'pass_maybe') :
             f(set_keyboard_moves_for_next_move); return
     }
+    // busy = stop analysis during auto-repeat for efficiency
     const busy = (...a) => m('busy', ...a)
     switch (!R.attached && key) {
     case "C-v": m('paste_sgf_from_clipboard'); break;
