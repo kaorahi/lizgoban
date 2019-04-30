@@ -225,7 +225,7 @@ function play(move, force_create, default_tag) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (!R.stones[i] || !R.stones[i][j] || R.stones[i][j].stone)) {return}
     !pass && (R.stones[i][j] = {stone: true, black: R.bturn, maybe: true})
-    const new_sequence_p = (history.hist.length > 0) && create_sequence_maybe(force_create)
+    const new_sequence_p = (history.len() > 0) && create_sequence_maybe(force_create)
     const tag = R.move_count > 0 &&
           (new_sequence_p ? new_tag() :
            (history.hist[R.move_count - 1] || {}) === history.last_loaded_element ?
@@ -243,14 +243,14 @@ function do_play(move, is_black, tag) {
     // (2) Leelaz stops analysis after double pass.
     const last_pass = is_last_move_pass(), double_pass = last_pass && is_pass(move)
     last_pass && history.pop()
-    !double_pass && history.push({move, is_black, tag, move_count: history.hist.length + 1})
+    !double_pass && history.push({move, is_black, tag, move_count: history.len() + 1})
     set_board(history)
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
     const delete_last = () => (history.pop(), set_board(history))
-    R.move_count < history.hist.length ? undo() : wink_if_pass(delete_last)
+    R.move_count < history.len() ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
 function pass() {play(pass_command)}
@@ -278,7 +278,7 @@ function set_board_sub(hist) {
 function board_state_is_changed() {update_let_me_think()}
 
 function goto_move_count(count) {
-    const c = clip(count, 0, history.hist.length)
+    const c = clip(count, 0, history.len())
     if (c === R.move_count) {return}
     update_state_to_move_count_tentatively(c)
     set_board(history, c)
@@ -298,7 +298,7 @@ function update_state_to_move_count_tentatively(count) {
     update_state()
 }
 function undoable() {return R.move_count > 0}
-function redoable() {return history.hist.length > R.move_count}
+function redoable() {return history.len() > R.move_count}
 function restart() {restart_with_args()}
 function restart_with_args(h) {
     leelaz.restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
@@ -713,7 +713,7 @@ function board_handler(h) {
 
 function update_state() {
     set_renderer_state()  // need to update R.show_endstate
-    const history_length = history.hist.length, sequence_length = sequence.length, suggest = []
+    const history_length = history.len(), sequence_length = sequence.length, suggest = []
     const sequence_ids = sequence.map(h => h.id)
     const pick_tagged = h => {
         const h_copy = append_endstate_tag_maybe(h)
@@ -744,7 +744,7 @@ function update_ui(ui_only) {
 
 function add_next_mark_to_stones(stones, history, move_count) {
     const h = history.hist[move_count]
-    const s = (move_count < history.hist.length) && stone_for_history_elem(h, stones)
+    const s = (move_count < history.len()) && stone_for_history_elem(h, stones)
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
 
@@ -815,6 +815,7 @@ function create_history(init_hist, init_prop) {
         trial: false, last_loaded_element: null
     }
     const methods = {
+        len: () => hist.length,
         push: elem => hist.push(elem),
         pop: () => hist.pop(),
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
@@ -837,7 +838,7 @@ function backup_history() {
 
 function create_sequence_maybe(force) {
     const new_game = (R.move_count === 0)
-    return (force || R.move_count < history.hist.length) &&
+    return (force || R.move_count < history.len()) &&
         (backup_history(), history.hist.splice(R.move_count),
          merge(history, {trial: !simple_ui && !new_game}))
 }
