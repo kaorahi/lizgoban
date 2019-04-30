@@ -313,6 +313,9 @@ let next_tag_count = 0
 const normal_tag_letters = 'bcdefghijklmnorstuvwy'
 const last_loaded_element_tag_letter = '.'
 const start_moves_tag_letter = "'"
+const endstate_diff_tag_letter = "/"
+const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
+      start_moves_tag_letter + endstate_diff_tag_letter
 function new_tag() {
     const used = history.map(h => h.tag || '').join('')
     const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
@@ -597,8 +600,6 @@ function let_me_think_anyway_p() {return store.get('let_me_think_anyway')}
 
 function set_renderer_state(...args) {
     const winrate_history = winrate_from_history(history)
-    const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
-          start_moves_tag_letter
     const previous_suggest = get_previous_suggest()
     const progress_bturn = auto_bturn
     const weight_info = weight_info_text()
@@ -611,6 +612,7 @@ function set_renderer_state(...args) {
     merge(R, {winrate_history, endstate_sum,
               progress_bturn,
               weight_info, network_size, tag_letters, start_moves_tag_letter,
+              endstate_diff_tag_letter,
               previous_suggest, winrate_trail}, endstate_d_i, ...args)
     // clean me: R.max_visits is needed for auto_progress()
     R.max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
@@ -665,9 +667,17 @@ function board_handler(h) {
 }
 
 function update_state() {
+    set_renderer_state()  // need to update R.show_endstate
     const history_length = history.length, sequence_length = sequence.length, suggest = []
     const sequence_ids = sequence.map(h => h.id)
-    const history_tags = flatten(history.map(h => h.tag ? [h] : []))
+    const pick_tagged = h => {
+        const h_copy = merge({}, h)
+        leelaz_for_endstate && R.show_endstate &&
+            h.move_count === R.move_count - endstate_diff_interval &&
+            add_tag(h_copy, endstate_diff_tag_letter)
+        return h_copy.tag ? [h_copy] : []
+    }
+    const history_tags = flatten(history.map(pick_tagged))
     const {player_black, player_white, trial} = history
     set_and_render({
         history_length, suggest, sequence_cursor, sequence_length, attached,
@@ -675,6 +685,8 @@ function update_state() {
     })
     update_ui(true)
 }
+
+function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
 function update_ui(ui_only) {
     update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
@@ -687,11 +699,9 @@ function add_next_mark_to_stones(stones, history, move_count) {
 }
 
 function add_info_to_stones(stones, history) {
-    const uniq = str => [...new Set(str.split(''))].join('')
     history.forEach((h, c) => {
-        const s = stone_for_history_elem(h, stones)
-        if (!s) {return}
-        s.tag = uniq((s.tag || '') + (h.tag || ''))
+        const s = stone_for_history_elem(h, stones); if (!s) {return}
+        add_tag(s, h.tag)
         s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
         leelaz_for_endstate && truep(s.move_count) &&
             (R.move_count - endstate_diff_interval < s.move_count) && (s.recent = true)

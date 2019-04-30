@@ -119,7 +119,10 @@ function update_title() {
     if (title !== last_title) {current_window.setTitle(title); last_title = title}
 }
 
-function current_tag_letters() {return R.history_tags.map(x => x.tag).join('')}
+function current_tag_letters() {
+    return R.history_tags.map(x => x.tag).join('')
+        .replace(R.endstate_diff_tag_letter, '')
+}
 
 function update_body_color() {
     [Q('#body').style.color, Q('#body').style.backgroundColor] =

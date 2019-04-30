@@ -22,6 +22,9 @@ E.array2hash = a => {
 E.seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
+// str_uniq('zabcacd') = 'zabcd'
+E.str_uniq = str => [...new Set(str.split(''))].join('')
+
 let debug_log_p = false
 E.debug_log = (arg, limit_len) => (typeof arg === 'boolean') ?
     (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len))
