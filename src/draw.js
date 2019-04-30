@@ -25,7 +25,7 @@ let R = {}, target_move = null, first_board_canvas = null
 function set_state(given_R) {R = given_R}  // fixme: ugly
 
 /////////////////////////////////////////////////
-// draw goban
+// various gobans
 
 function draw_main_goban(canvas, options) {
     const opts = {draw_visits_p: true, read_only: R.attached, ...options}
@@ -99,45 +99,14 @@ function draw_goban_with_variation(canvas, suggest, opts) {
                 mapping_to_winrate_bar, ...opts})
 }
 
-function mapping_text(suggest) {
-    const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
-    const v = visits_text ? ` (${visits_text})` : ''
-    const text = winrate_text && `${winrate_text}${v}`
-    const subtext = text && ` prior = ${prior_text} `
-    const at = flip_maybe(suggest.winrate)
-    return text && {text, subtext, at}
-}
-
 function draw_goban_with_principal_variation(canvas, options) {
     const opts = {read_only: true, force_draw_expected_p: true,
                   mapping_to_winrate_bar: false, ...options}
     draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
 }
 
-function copy_stones_for_display() {
-    return R.stones.map(row => row.map(s => merge({}, s)))
-}
-
-function each_stone(stones, proc) {
-    stones.forEach((row, i) => row.forEach((h, j) => proc(h, [i, j])))
-}
-
-function set_stone_at(move, stone_array, stone) {
-    const get_movenums = s => s.movenums || []
-    const ary_or_undef = a => empty(a) ? undefined : a
-    const merge_stone = (stone0, stone1) =>
-        merge(stone0, stone1,
-              {movenums: ary_or_undef(flatten([stone0, stone1].map(get_movenums)))})
-    // do nothing if move is pass
-    const [i, j] = move2idx(move); (i >= 0) && merge_stone(stone_array[i][j], stone)
-}
-
-function expected_pv() {return ((R.previous_suggest || {}).pv || []).slice(1)}
-
-function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
-    set_stone_at(expected_move, displayed_stones, {expected_move: true})
-    set_stone_at(unexpected_move, displayed_stones, {unexpected_move: true})
-}
+/////////////////////////////////////////////////
+// generic goban
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
@@ -188,24 +157,6 @@ function draw_grid(unit, idx2coord, g) {
     stars.forEach(i => stars.forEach(j => fill_circle(idx2coord(i, j), star_radius, g)))
 }
 
-function draw_mapping_tics(unit, canvas, g) {
-    // mini winrate bar
-    const boundary = b_winrate()
-    const draw = (c, l, r) => {g.fillStyle = c; fill_rect(l, r, g)}
-    if (truep(boundary)) {
-        const [[b0, b1], [m0, m1], [w0, w1]] =
-              [0, boundary, 100].map(wr => mapping_line_coords(wr, unit, canvas))
-        draw(...(R.bturn ? [BLACK, b0, m1] : [WHITE, m0, w1]))
-    }
-    // tics
-    seq(9, 1).forEach(k => {
-        const r = k * 10
-        g.strokeStyle = (R.bturn && r < boundary) ? WHITE : BLACK
-        g.lineWidth = (r === 50 ? 3 : 1)
-        line(...mapping_line_coords(r, unit, canvas), g)
-    })
-}
-
 function draw_visits(margin, canvas, g) {
     if (!truep(R.visits)) {return}
     draw_visits_text(margin, canvas, g)
@@ -226,19 +177,6 @@ function draw_progress(highlightp, margin, canvas, g) {
     g.fillStyle = highlightp ? GREEN : R.progress_bturn ? BLACK : WHITE
     fill_rect([0, canvas.height - margin / 10],
               [canvas.width * R.progress, canvas.height], g)
-}
-
-function draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g) {
-    const {text, subtext, at} = mapping_to_winrate_bar
-    const y = canvas.height - margin / 6
-    g.fillStyle = RED; set_font(margin / 2, g)
-    // main text
-    g.textAlign = at < 10 ? 'left' : at < 90 ? 'center' : 'right'
-    g.fillText(text, canvas.width * at / 100, y)
-    // subtext
-    const [sub_at, sub_align] = at > 50 ? [0, 'left'] : [100, 'right']
-    g.fillStyle = 'rgba(255,0,0,0.5)'; g.textAlign = sub_align
-    g.fillText(subtext, canvas.width * sub_at / 100, y)
 }
 
 function draw_cursor(hovered_move, unit, idx2coord, g) {
@@ -274,7 +212,9 @@ function goban_bg(border) {
 }
 
 /////////////////////////////////////////////////
-// draw parts
+// on goban grids
+
+// stone
 
 function draw_stone(h, xy, radius, draw_last_p, g) {
     const [b_color, w_color] = h.displayed_colors ||
@@ -319,27 +259,7 @@ function draw_next_move(h, xy, radius, g) {
     g.strokeStyle = h.next_is_black ? BLACK : WHITE; g.lineWidth = 3; circle(xy, radius, g)
 }
 
-function draw_expected_mark(h, [x, y], expected_p, radius, g) {
-    const x1 = x - radius, y1 = y + radius, d = radius / 2
-    g.fillStyle = xor(R.bturn, expected_p) ? BLACK : WHITE  // whose plan?
-    fill_line([x1, y1 - d], [x1, y1], [x1 + d, y1], g)
-    g.strokeStyle = expected_p ? EXPECTED_COLOR : UNEXPECTED_COLOR; g.lineWidth = 2
-    square_around([x, y], radius, g)
-}
-
-function draw_endstate(endstate, xy, radius, g) {
-    if (!truep(endstate)) {return}
-    const c = (endstate >= 0) ? 64 : 255, alpha = Math.abs(endstate) * 0.7
-    g.fillStyle = `rgba(${c},${c},${c},${alpha})`
-    fill_square_around(xy, radius, g)
-}
-
-function draw_endstate_diff(diff, xy, radius, g) {
-    if (!diff) {return}
-    const size = 0.2, [c, r, f] = diff > 0 ?
-          ['#080', 1, square_around] : ['#f0f', 1, x_shape_around]
-    g.lineWidth = Math.abs(diff * 3); g.strokeStyle = c; f(xy, radius * size * r, g)
-}
+// suggestions
 
 // suggest_as_stone = {suggest: true, data: suggestion_data}
 // See "suggestion reader" section in engine.js for suggestion_data.
@@ -370,46 +290,6 @@ function draw_suggest_0visits(h, xy, radius, g) {
     circle(xy, radius * size, g)
 }
 
-function suggest_color(suggest, alpha) {
-    const hue = winrate_color_hue(suggest.winrate)
-    const alpha_emphasis = emph => {
-        const max_alpha = 0.5, visits_ratio = suggest.visits / (R.visits + 1)
-        return max_alpha * visits_ratio ** (1 - emph)
-    }
-    const hsl_e = (h, s, l, emph) => hsla(h, s, l, alpha || alpha_emphasis(emph))
-    const stroke = hsl_e(hue, 100, 20, 0.85), fill = hsl_e(hue, 100, 50, 0.4)
-    const lizzie_text_color = hsl_e(0, 0, 0, 0.75)
-    return {stroke, fill, lizzie_text_color}
-}
-
-function winrate_color_hue(winrate) {
-    const cyan_hue = 180, green_hue = 120, yellow_hue = 60, red_hue = 0
-    const unit_delta_points = 5, unit_delta_hue = green_hue - yellow_hue
-    const wr0 = flip_maybe(b_winrate(1) || b_winrate())
-    const delta_hue = (winrate - wr0) * unit_delta_hue / unit_delta_points
-    return to_i(clip(yellow_hue + delta_hue, red_hue, cyan_hue))
-}
-
-function suggest_texts(suggest) {
-    const prior = ('' + suggest.prior).slice(0, 5)
-    // need ' ' because '' is falsy
-    return suggest.visits === 0 ? [' ', '', prior] :
-        ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior]
-}
-
-function draw_winrate_mapping_line(h, xy, unit, g) {
-    const b_winrate = flip_maybe(h.data.winrate)
-    const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
-    g.lineWidth = 1.5 / (order * 2 + 1)
-    g.strokeStyle = RED
-    line(xy, ...mapping_line_coords(b_winrate, unit, g.canvas), g)
-}
-
-function mapping_line_coords(b_winrate, unit, canvas) {
-    const x1 = canvas.width * b_winrate / 100, y1 = canvas.height, d = unit * 0.3
-    return [[x1, y1 - d], [x1, y1]]
-}
-
 function draw_suggestion_order(h, [x, y], radius, color, large_font_p, g) {
     if (h.data.order >= 9) {return}
     const lizzie = R.lizzie_style
@@ -431,26 +311,84 @@ function draw_suggestion_order(h, [x, y], radius, color, large_font_p, g) {
     g.restore()
 }
 
-function flip_maybe(x, bturn) {
-    return (bturn === undefined ? R.bturn : bturn) ? x : 100 - x
+// misc
+
+function draw_expected_mark(h, [x, y], expected_p, radius, g) {
+    const x1 = x - radius, y1 = y + radius, d = radius / 2
+    g.fillStyle = xor(R.bturn, expected_p) ? BLACK : WHITE  // whose plan?
+    fill_line([x1, y1 - d], [x1, y1], [x1 + d, y1], g)
+    g.strokeStyle = expected_p ? EXPECTED_COLOR : UNEXPECTED_COLOR; g.lineWidth = 2
+    square_around([x, y], radius, g)
 }
 
-function hsla(h, s, l, alpha) {
-    return 'hsla(' + h + ',' + s + '%,' + l + '%,' + (alpha === undefined ? 1 : alpha) + ')'
+function draw_endstate(endstate, xy, radius, g) {
+    if (!truep(endstate)) {return}
+    const c = (endstate >= 0) ? 64 : 255, alpha = Math.abs(endstate) * 0.7
+    g.fillStyle = `rgba(${c},${c},${c},${alpha})`
+    fill_square_around(xy, radius, g)
 }
 
-// [0,1,2,3,4,5,6,7,8,9,10,11,12].map(k => kilo_str(10**k))  ==>
-// ['1','10','100','1.0K','10K','100K','1.0M','10M','100M','1.0G','10G','100G','1000G']
-function kilo_str(x) {
-    return kilo_str_sub(x, [[1e9, 'G'], [1e6, 'M'], [1e3, 'k']])
+function draw_endstate_diff(diff, xy, radius, g) {
+    if (!diff) {return}
+    const size = 0.2, [c, r, f] = diff > 0 ?
+          ['#080', 1, square_around] : ['#f0f', 1, x_shape_around]
+    g.lineWidth = Math.abs(diff * 3); g.strokeStyle = c; f(xy, radius * size * r, g)
 }
-function kilo_str_sub(x, rules) {
-    if (empty(rules)) {return '' + x}
-    const [[base, unit], ...rest] = rules
-    if (x < base) {return kilo_str_sub(x, rest)}
-    // +0.1 for "1.0K" instead of "1K"
-    const y = (x + 0.1) / base, z = Math.floor(y)
-    return (y < 10 ? ('' + y).slice(0, 3) : '' + z) + unit
+
+/////////////////////////////////////////////////
+// mapping from goban to winrate bar
+
+function draw_winrate_mapping_line(h, xy, unit, g) {
+    const b_winrate = flip_maybe(h.data.winrate)
+    const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
+    g.lineWidth = 1.5 / (order * 2 + 1)
+    g.strokeStyle = RED
+    line(xy, ...mapping_line_coords(b_winrate, unit, g.canvas), g)
+}
+
+function draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g) {
+    const {text, subtext, at} = mapping_to_winrate_bar
+    const y = canvas.height - margin / 6
+    g.fillStyle = RED; set_font(margin / 2, g)
+    // main text
+    g.textAlign = at < 10 ? 'left' : at < 90 ? 'center' : 'right'
+    g.fillText(text, canvas.width * at / 100, y)
+    // subtext
+    const [sub_at, sub_align] = at > 50 ? [0, 'left'] : [100, 'right']
+    g.fillStyle = 'rgba(255,0,0,0.5)'; g.textAlign = sub_align
+    g.fillText(subtext, canvas.width * sub_at / 100, y)
+}
+
+function draw_mapping_tics(unit, canvas, g) {
+    // mini winrate bar
+    const boundary = b_winrate()
+    const draw = (c, l, r) => {g.fillStyle = c; fill_rect(l, r, g)}
+    if (truep(boundary)) {
+        const [[b0, b1], [m0, m1], [w0, w1]] =
+              [0, boundary, 100].map(wr => mapping_line_coords(wr, unit, canvas))
+        draw(...(R.bturn ? [BLACK, b0, m1] : [WHITE, m0, w1]))
+    }
+    // tics
+    seq(9, 1).forEach(k => {
+        const r = k * 10
+        g.strokeStyle = (R.bturn && r < boundary) ? WHITE : BLACK
+        g.lineWidth = (r === 50 ? 3 : 1)
+        line(...mapping_line_coords(r, unit, canvas), g)
+    })
+}
+
+function mapping_text(suggest) {
+    const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
+    const v = visits_text ? ` (${visits_text})` : ''
+    const text = winrate_text && `${winrate_text}${v}`
+    const subtext = text && ` prior = ${prior_text} `
+    const at = flip_maybe(suggest.winrate)
+    return text && {text, subtext, at}
+}
+
+function mapping_line_coords(b_winrate, unit, canvas) {
+    const x1 = canvas.width * b_winrate / 100, y1 = canvas.height, d = unit * 0.3
+    return [[x1, y1 - d], [x1, y1]]
 }
 
 /////////////////////////////////////////////////
@@ -524,14 +462,6 @@ function draw_winrate_bar_horizontal_lines(w, h, g) {
     winrate_bar_ys(vs, w, h).map(y => line([0, y], [w, y], g))
 }
 
-function tics_until(max) {
-    const v = Math.pow(10, Math.floor(log10(max)))
-    const unit_v = (max > v * 5) ? v * 2 : (max > v * 2) ? v : v / 2
-    return seq(to_i(max / unit_v + 2)).map(k => unit_v * k)  // +1 for margin
-}
-
-function log10(z) {return Math.log(z) / Math.log(10)}
-
 function draw_winrate_bar_tics(b_wr, tics, vline, g) {
     seq(tics, 1).forEach(i => {
         const r = 100 * i / (tics + 1)
@@ -548,6 +478,11 @@ function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
     const lw = g.lineWidth = 3; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_rect([x1, lw / 2], [x2, h - lw / 2], g)
 }
+
+/////////////////////////////////////////////////
+// suggested moves on winrate bar
+
+// draw
 
 function draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g) {
     g.lineWidth = 1
@@ -567,31 +502,6 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g) {
         draw_winrate_bar_fan(R.previous_suggest, w, h,
                              prev_color, TRANSPARENT, null,
                              false, large_bar, g)
-}
-
-function winrate_bar_suggest_prop(s) {
-    // const
-    const next_color = '#48f'
-    const next_vline_color = 'rgba(64,128,255,0.5)'
-    const target_vline_color = 'rgba(255,64,64,0.5)'
-    const normal_aura_color = 'rgba(235,148,0,0.8)'
-    const target_aura_color = 'rgba(0,192,0,0.8)'
-    // main
-    const {move, winrate} = s
-    const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
-    const target_p = (move === target_move), next_p = is_next_move(move)
-    const alpha = target_p ? 1.0 : target_move ? 0.3 : 0.8
-    const {fill} = suggest_color(s, alpha)
-    const fan_color = (!target_move && next_p) ? next_color : fill
-    const vline_color = target_p ? target_vline_color :
-          next_p ? next_vline_color : null
-    const aura_color = target_p ? target_aura_color : normal_aura_color
-    const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
-          s.order < 3 || s.winrate_order < 3 || target_p || next_p
-    const eliminated = target_move && !target_p
-    const draw_order_p = major && !eliminated
-    return {edge_color, fan_color, vline_color, aura_color, alpha,
-            target_p, draw_order_p, next_p, winrate}
 }
 
 function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color,
@@ -641,11 +551,62 @@ function draw_winrate_bar_order(s, w, h, g) {
     g.restore()
 }
 
+// style
+
+function winrate_bar_suggest_prop(s) {
+    // const
+    const next_color = '#48f'
+    const next_vline_color = 'rgba(64,128,255,0.5)'
+    const target_vline_color = 'rgba(255,64,64,0.5)'
+    const normal_aura_color = 'rgba(235,148,0,0.8)'
+    const target_aura_color = 'rgba(0,192,0,0.8)'
+    // main
+    const {move, winrate} = s
+    const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
+    const target_p = (move === target_move), next_p = is_next_move(move)
+    const alpha = target_p ? 1.0 : target_move ? 0.3 : 0.8
+    const {fill} = suggest_color(s, alpha)
+    const fan_color = (!target_move && next_p) ? next_color : fill
+    const vline_color = target_p ? target_vline_color :
+          next_p ? next_vline_color : null
+    const aura_color = target_p ? target_aura_color : normal_aura_color
+    const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
+          s.order < 3 || s.winrate_order < 3 || target_p || next_p
+    const eliminated = target_move && !target_p
+    const draw_order_p = major && !eliminated
+    return {edge_color, fan_color, vline_color, aura_color, alpha,
+            target_p, draw_order_p, next_p, winrate}
+}
+
+function suggest_color(suggest, alpha) {
+    const hue = winrate_color_hue(suggest.winrate)
+    const alpha_emphasis = emph => {
+        const max_alpha = 0.5, visits_ratio = suggest.visits / (R.visits + 1)
+        return max_alpha * visits_ratio ** (1 - emph)
+    }
+    const hsl_e = (h, s, l, emph) => hsla(h, s, l, alpha || alpha_emphasis(emph))
+    const stroke = hsl_e(hue, 100, 20, 0.85), fill = hsl_e(hue, 100, 50, 0.4)
+    const lizzie_text_color = hsl_e(0, 0, 0, 0.75)
+    return {stroke, fill, lizzie_text_color}
+}
+
+function winrate_color_hue(winrate) {
+    const cyan_hue = 180, green_hue = 120, yellow_hue = 60, red_hue = 0
+    const unit_delta_points = 5, unit_delta_hue = green_hue - yellow_hue
+    const wr0 = flip_maybe(b_winrate(1) || b_winrate())
+    const delta_hue = (winrate - wr0) * unit_delta_hue / unit_delta_points
+    return to_i(clip(yellow_hue + delta_hue, red_hue, cyan_hue))
+}
+
+function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
+
 function winrate_bar_order_set_style(s, fontsize, g) {
     const firstp = (s.order === 0)
     set_font(fontsize * (firstp ? 1.5 : 1), g)
     g.fillStyle = firstp ? WINRATE_BAR_FIRST_ORDER_COLOR : WINRATE_BAR_ORDER_COLOR
 }
+
+// calc
 
 function winrate_bar_xy(suggest, w, h, supplementary, bturn) {
     const wr = suggest.winrate, max_radius = winrate_bar_max_radius(w, h)
@@ -687,8 +648,6 @@ function puct_info(suggest) {
     const equilibrium_visits = psa / clip(psa_per_denom, 1e-10, Infinity) - 1
     return [puct, equilibrium_visits]
 }
-
-function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
 
 /////////////////////////////////////////////////
 // winrate graph
@@ -956,8 +915,45 @@ function side_gradation(x0, x1, color0, color1, g) {
     return grad
 }
 
+function hsla(h, s, l, alpha) {
+    return 'hsla(' + h + ',' + s + '%,' + l + '%,' + (alpha === undefined ? 1 : alpha) + ')'
+}
+
 /////////////////////////////////////////////////
-// misc.
+// utils
+
+// stones
+
+function copy_stones_for_display() {
+    return R.stones.map(row => row.map(s => merge({}, s)))
+}
+
+function each_stone(stones, proc) {
+    stones.forEach((row, i) => row.forEach((h, j) => proc(h, [i, j])))
+}
+
+function set_stone_at(move, stone_array, stone) {
+    const get_movenums = s => s.movenums || []
+    const ary_or_undef = a => empty(a) ? undefined : a
+    const merge_stone = (stone0, stone1) =>
+        merge(stone0, stone1,
+              {movenums: ary_or_undef(flatten([stone0, stone1].map(get_movenums)))})
+    // do nothing if move is pass
+    const [i, j] = move2idx(move); (i >= 0) && merge_stone(stone_array[i][j], stone)
+}
+
+function is_next_move(move) {
+    [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
+}
+
+// visits & winrate
+
+function suggest_texts(suggest) {
+    const prior = ('' + suggest.prior).slice(0, 5)
+    // need ' ' because '' is falsy
+    return suggest.visits === 0 ? [' ', '', prior] :
+        ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior]
+}
 
 function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
 function last_move_b_eval() {return winrate_history_ref('move_b_eval')}
@@ -966,8 +962,41 @@ function winrate_history_ref(key, nth_prev) {
     return (R.winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
 }
 
-function is_next_move(move) {
-    [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
+function flip_maybe(x, bturn) {
+    return (bturn === undefined ? R.bturn : bturn) ? x : 100 - x
+}
+
+// previously expected move
+
+function expected_pv() {return ((R.previous_suggest || {}).pv || []).slice(1)}
+
+function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
+    set_stone_at(expected_move, displayed_stones, {expected_move: true})
+    set_stone_at(unexpected_move, displayed_stones, {unexpected_move: true})
+}
+
+// math
+
+function tics_until(max) {
+    const v = Math.pow(10, Math.floor(log10(max)))
+    const unit_v = (max > v * 5) ? v * 2 : (max > v * 2) ? v : v / 2
+    return seq(to_i(max / unit_v + 2)).map(k => unit_v * k)  // +1 for margin
+}
+
+function log10(z) {return Math.log(z) / Math.log(10)}
+
+// [0,1,2,3,4,5,6,7,8,9,10,11,12].map(k => kilo_str(10**k))  ==>
+// ['1','10','100','1.0K','10K','100K','1.0M','10M','100M','1.0G','10G','100G','1000G']
+function kilo_str(x) {
+    return kilo_str_sub(x, [[1e9, 'G'], [1e6, 'M'], [1e3, 'k']])
+}
+function kilo_str_sub(x, rules) {
+    if (empty(rules)) {return '' + x}
+    const [[base, unit], ...rest] = rules
+    if (x < base) {return kilo_str_sub(x, rest)}
+    // +0.1 for "1.0K" instead of "1K"
+    const y = (x + 0.1) / base, z = Math.floor(y)
+    return (y < 10 ? ('' + y).slice(0, 3) : '' + z) + unit
 }
 
 //////////////////////////////////
