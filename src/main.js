@@ -243,7 +243,7 @@ function do_play(move, is_black, tag) {
     // (2) Leelaz stops analysis after double pass.
     const last_pass = is_last_move_pass(), double_pass = last_pass && is_pass(move)
     last_pass && history.pop()
-    !double_pass && history.hist.push({move, is_black, tag, move_count: history.hist.length + 1})
+    !double_pass && history.push({move, is_black, tag, move_count: history.hist.length + 1})
     set_board(history)
 }
 function undo() {undo_ntimes(1)}
@@ -815,6 +815,7 @@ function create_history(init_hist, init_prop) {
         trial: false, last_loaded_element: null
     }
     const methods = {
+        push: elem => hist.push(elem),
         pop: () => hist.pop(),
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
             id: new_history_id(), last_loaded_element: null
