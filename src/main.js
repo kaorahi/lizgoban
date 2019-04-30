@@ -1147,7 +1147,8 @@ function menu_template(win) {
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
-        store_toggler_menu_item('Endstate', 'show_endstate', 'Shift+E'),
+        leelaz_for_endstate &&
+            store_toggler_menu_item('Endstate', 'show_endstate', 'Shift+E'),
     ])
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
