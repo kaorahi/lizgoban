@@ -896,7 +896,7 @@ function winrate_from_history(history) {
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * (history[s - 1].is_black ? 1 : -1)
         const predict = winrate_suggested(s)
-        const pass = (h.is_black === (history[s - 2] || {}).is_black)
+        const pass = (!!h.is_black === !!(history[s - 2] || {}).is_black)
         const score_without_komi = average_endstate_sum(s - 1)
         // drop "pass" to save data size for IPC
         return merge({r, move_b_eval, move_eval, tag, score_without_komi},
