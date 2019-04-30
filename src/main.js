@@ -175,6 +175,7 @@ const api = merge({}, simple_api, {
     restart, new_window, init_from_renderer, toggle_sabaki,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
+    let_me_think_next,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
     paste_sgf_from_clipboard, copy_sgf_to_clipboard, open_sgf, save_sgf,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
@@ -591,6 +592,12 @@ function set_let_me_think(val) {
 }
 function let_me_think_p() {return store.get('let_me_think')}
 function let_me_think_anyway_p() {return store.get('let_me_think_anyway')}
+
+function let_me_think_next(board_type) {
+    const stay = (board_type === let_me_think_board_type.first_half || !redoable())
+    stay || redo()
+    let_me_think_set_board_type_for(stay ? 'latter_half' : 'first_half')
+}
 
 /////////////////////////////////////////////////
 // from leelaz to renderer

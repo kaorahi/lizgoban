@@ -469,6 +469,7 @@ document.onkeydown = e => {
         busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
     case "ArrowRight": case "ArrowDown":
         busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
+    case ";": busy('let_me_think_next', R.board_type); break;
     case "[": m('previous_sequence'); break;
     case "]": m('next_sequence'); break;
     case "p": m('pass'); break;
