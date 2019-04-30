@@ -137,7 +137,8 @@ function draw_goban(canvas, stones, opts) {
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     const drawp = {
-        draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p
+        draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p,
+        draw_recent_p: draw_last_p && draw_endstate_p,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
@@ -186,7 +187,8 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 }
 
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
-    const {draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p}
+    const {draw_last_p, draw_recent_p, draw_next_p, draw_expected_p,
+           draw_endstate_p, large_font_p}
           = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
@@ -195,7 +197,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
           proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx)))
     each_coord((h, xy) => {
         draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
-        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
+        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, draw_recent_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
@@ -216,17 +218,18 @@ function goban_bg(border) {
 
 // stone
 
-function draw_stone(h, xy, radius, draw_last_p, g) {
+function draw_stone(h, xy, radius, draw_last_p, draw_recent_p, g) {
     const [b_color, w_color] = h.displayed_colors ||
           (h.maybe ? [MAYBE_BLACK, MAYBE_WHITE] :
            h.maybe_empty ? [PALE_BLACK, PALE_WHITE] :
            h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
            [BLACK, WHITE])
+    const last_or_recent = (draw_last_p && h.last) || (draw_recent_p && h.recent)
     g.lineWidth = 1; g.strokeStyle = b_color
     g.fillStyle = h.black ? b_color : w_color
     edged_fill_circle(xy, radius, g)
     h.movenums && draw_movenums(h, xy, radius, g)
-    draw_last_p && h.last && draw_last_move(h, xy, radius, g)
+    last_or_recent && draw_last_or_recent_move(h, xy, radius, g)
 }
 
 function draw_movenums(h, xy, radius, g) {
@@ -250,8 +253,10 @@ function draw_text_on_stone(text, color, xy, radius, g) {
     g.restore()
 }
 
-function draw_last_move(h, xy, radius, g) {
-    g.strokeStyle = h.black ? WHITE : BLACK; g.lineWidth = 2
+function draw_last_or_recent_move(h, xy, radius, g) {
+    const color = [[WHITE, BLACK], ["rgba(255,255,255,0.2)", "rgba(0,0,0,0.1)"]]
+    const b2i = z => (z ? 0 : 1)
+    g.strokeStyle = color[b2i(h.last)][b2i(h.black)]; g.lineWidth = 2
     circle(xy, radius * 0.8, g)
 }
 

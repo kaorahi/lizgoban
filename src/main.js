@@ -686,6 +686,8 @@ function add_info_to_stones(stones, history) {
         if (!s) {return}
         s.tag = uniq((s.tag || '') + (h.tag || ''))
         s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
+        leelaz_for_endstate && truep(s.move_count) &&
+            (R.move_count - endstate_diff_interval < s.move_count) && (s.recent = true)
         !s.anytime_stones && (s.anytime_stones = [])
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
