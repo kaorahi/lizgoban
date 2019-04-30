@@ -823,6 +823,11 @@ function create_history(init_hist, init_prop) {
         shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
             id: new_history_id(), last_loaded_element: null
         })),
+        set_with_reuse: new_hist => {
+            const com = leelaz.common_header_length(hist, new_hist)
+            // keep old history for keeping winrate
+            hist.splice(com, Infinity, ...new_hist.slice(com))
+        },
     }
     const array_methods =
           aa2hash(['push', 'pop', 'map', 'forEach', 'slice', 'splice']
@@ -1024,10 +1029,8 @@ function load_sabaki_gametree_on_new_history(gametree) {
 function load_sabaki_gametree(gametree, index) {
     if (!gametree || !gametree.nodes) {return}
     const parent_nodes = nodes_from_sabaki_gametree(gametree.parent)
-    const new_history = history_from_sabaki_nodes(parent_nodes.concat(gametree.nodes))
-    const com = leelaz.common_header_length(history.hist, new_history)
-    // keep old history for keeping winrate
-    history.splice(com, Infinity, ...new_history.slice(com))
+    const new_hist = history_from_sabaki_nodes(parent_nodes.concat(gametree.nodes))
+    history.set_with_reuse(new_hist)
     history.set_last_loaded_element()
     const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
