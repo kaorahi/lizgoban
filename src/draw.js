@@ -20,7 +20,7 @@ const EXPECTED_COLOR = 'rgba(0,0,255,0.3)', UNEXPECTED_COLOR = 'rgba(255,0,0,0.8
 // p: pausing, t: trial
 const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
 
-let target_move = null
+let target_move = null, first_board_canvas = null
 
 /////////////////////////////////////////////////
 // draw goban
@@ -968,4 +968,6 @@ module.exports = {
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail,
     update_winrate_trail, clear_canvas,
     target_move: () => target_move,
+    first_board_canvas: () => first_board_canvas,
+    reset_first_board_canvas: () => (first_board_canvas = null),
 }

@@ -28,7 +28,7 @@ const R = {
 }
 let temporary_board_type = null
 let keyboard_moves = [], keyboard_tag_data = {}
-let thumbnails = [], first_board_canvas = null
+let thumbnails = []
 
 // drawer
 const D = require('./draw.js')
@@ -149,7 +149,7 @@ function if_first_board(proc, ...args) {
 }
 
 function update_goban() {
-    first_board_canvas = null; will_do_something_on_first_board()
+    D.reset_first_board_canvas(); will_do_something_on_first_board()
     const btype = current_board_type(), do_nothing = truep
     const draw_main = c => D.draw_main_goban(c, {
         show_until: keyboard_tag_data.move_count, main_canvas_p: c === main_canvas
@@ -277,9 +277,9 @@ const [try_thumbnail, store_thumbnail_later] =
                      [store_thumbnail, thumbnail_deferring_millisec])
 
 function take_thumbnail() {
-    if (!first_board_canvas) {return}
+    const canvas = D.first_board_canvas(); if (!canvas) {return}
     let fired = false
-    first_board_canvas.toBlob(blob => {
+    canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???
         const tags = current_tag_letters()
         const players = (R.player_black || R.player_white) ?
