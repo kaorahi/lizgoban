@@ -231,6 +231,7 @@ function play(move, force_create, default_tag) {
            (history[R.move_count - 1] || {}) === history.last_loaded_element ?
            last_loaded_element_tag_letter : false)
     update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
+    pass && wink()
 }
 function do_play(move, is_black, tag) {
     // We drop "pass" except for the last of history.
@@ -248,7 +249,8 @@ function do_play(move, is_black, tag) {
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    (R.move_count < history.length) ? undo() : (history.pop(), set_board(history))
+    const delete_last = () => (history.pop(), set_board(history))
+    R.move_count < history.length ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
 function pass() {play(pass_command)}
@@ -256,7 +258,7 @@ function is_pass(move) {return move === pass_command}
 function is_last_move_pass() {return is_pass((last(history) || {}).move)}
 
 // multi-undo/redo
-function undo_ntimes(n) {goto_move_count(R.move_count - n)}
+function undo_ntimes(n) {wink_if_pass(goto_move_count, R.move_count - n)}
 function redo_ntimes(n) {undo_ntimes(- n)}
 function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
@@ -310,6 +312,18 @@ function update_ponder() {
 }
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {leelaz.update()}
+
+function wink_if_pass(proc, ...args) {
+    const rec = () => history[R.move_count - 1] || {move_count: 0}
+    const before = rec()
+    proc(...args)
+    const after = rec(), d = after.move_count - before.move_count
+    if (Math.abs(d) !== 1) {return}
+    const implicit_pass = !!before.is_black === !!after.is_black
+    const pass = implicit_pass || is_pass((d === 1 ? after : before).move)
+    pass && wink()
+}
+function wink() {renderer('wink')}
 
 // tag letter
 let next_tag_count = 0
@@ -933,7 +947,7 @@ function availability() {
 /////////////////////////////////////////////////
 // SGF
 
-function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history))}
+function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history)); wink()}
 function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
 
 function open_sgf() {select_files('Select SGF file').forEach(load_sgf)}

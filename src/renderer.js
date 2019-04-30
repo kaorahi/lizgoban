@@ -107,6 +107,7 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
 ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog'))
 
 ipc.on('slide_in', (e, direction) => slide_in(direction))
+ipc.on('wink', (e) => wink())
 
 let last_title = ''
 function update_title() {
@@ -562,11 +563,11 @@ function set_selection(elem, val) {
 
 function slide_in(direction) {
     const shift = {next: '30%', previous: '-30%'}[direction]
-    Q('#goban').animate([
-        {transform: `translate(0%, ${shift})`, opacity: 0},
-        {transform: 'translate(0)', opacity: 1},
-    ], 200)
+    effect_gen({transform: `translate(0%, ${shift})`, opacity: 0},
+               {transform: 'translate(0)', opacity: 1})
 }
+function wink() {effect_gen({opacity: 1}, {opacity: 0.7}, {opacity: 1})}
+function effect_gen(...transforms) {Q('#goban').animate(transforms, 200)}
 
 /////////////////////////////////////////////////
 // init
