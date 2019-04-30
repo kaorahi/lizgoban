@@ -4,6 +4,7 @@ const E = {}
 
 E.to_i = x => (x | 0)
 E.to_f = x => (x - 0)
+E.to_s = x => (x + '')
 E.xor = (a, b) => (!a === !!b)
 E.truep = x => (x || x === 0 || x === '')
 E.clip = (x, lower, upper) => Math.max(lower, Math.min(x, upper || Infinity))
@@ -36,7 +37,7 @@ E.debug_log = (arg, limit_len) => (typeof arg === 'boolean') ?
     (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len))
 function do_debug_log(arg, limit_len) {
     const HALF = Math.floor((limit_len || Infinity) / 2)
-    const s = '' + arg, over = s.length - HALF * 2
+    const s = E.to_s(arg), over = s.length - HALF * 2
     const snip = str => str.slice(0, HALF) + `{...${over}...}` + str.slice(- HALF)
     console.log(over <= 0 ? s : snip(s))
 }

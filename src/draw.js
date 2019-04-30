@@ -959,7 +959,7 @@ function is_next_move(move) {
 // visits & winrate
 
 function suggest_texts(suggest) {
-    const prior = ('' + suggest.prior).slice(0, 5)
+    const prior = to_s(suggest.prior).slice(0, 5)
     // need ' ' because '' is falsy
     return suggest.visits === 0 ? [' ', '', prior] :
         ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior]
@@ -1001,12 +1001,12 @@ function kilo_str(x) {
     return kilo_str_sub(x, [[1e9, 'G'], [1e6, 'M'], [1e3, 'k']])
 }
 function kilo_str_sub(x, rules) {
-    if (empty(rules)) {return '' + x}
+    if (empty(rules)) {return to_s(x)}
     const [[base, unit], ...rest] = rules
     if (x < base) {return kilo_str_sub(x, rest)}
     // +0.1 for "1.0K" instead of "1K"
     const y = (x + 0.1) / base, z = Math.floor(y)
-    return (y < 10 ? ('' + y).slice(0, 3) : '' + z) + unit
+    return (y < 10 ? to_s(y).slice(0, 3) : to_s(z)) + unit
 }
 
 //////////////////////////////////
