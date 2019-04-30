@@ -96,7 +96,7 @@ function create_leelaz () {
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
-        do_ntimes(back, undo1); rest.map(play1)
+        do_ntimes(back, undo1); rest.forEach(play1)
         bturn = !(last(history) || {}).is_black
         if (back > 0 || !empty(rest)) {update()}
         leelaz_previous_history = shallow_copy_array(history)
