@@ -64,7 +64,7 @@ This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zer
 
     npx electron src -j '{"endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}'
 
-Then you will find "Endstate" in "View" menu. Small green squares and pink Xs denote increase of black and white possibilities by the last two moves. The estimated score without komi is plotted by cyan dots in the winrate graph though it is not quite accurate. You can also combine "leelaz_args" and "endstate_leelaz":
+Then you will find "Endstate" in "View" menu. Small green squares and pink Xs denote increase of black and white possibilities by recent moves. The estimated score without komi is plotted by cyan dots in the winrate graph though it is not quite accurate. You can also combine "leelaz_args" and "endstate_leelaz":
 
     npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"], "endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}'
 

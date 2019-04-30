@@ -55,7 +55,7 @@ let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 const simple_ui = false, winrate_trail = true
 let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
 let pausing = false, busy = false
-const endstate_diff_interval = 2
+let endstate_diff_interval = 12
 
 // renderer state
 // (cf.) "set_renderer_state" in this file
@@ -430,6 +430,12 @@ function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 
 // misc.
 function toggle_trial() {history.trial = !history.trial; update_state()}
+function endstate_diff_interval_adder(k) {
+    return () => {
+        endstate_diff_interval = clip(endstate_diff_interval + k, 2)
+        leelaz_for_endstate.update()
+    }
+}
 function close_window_or_cut_sequence(win) {
     get_windows().length > 1 ? win.close() :
         attached ? null :
@@ -1150,8 +1156,14 @@ function menu_template(win) {
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
-        leelaz_for_endstate &&
-            store_toggler_menu_item('Endstate', 'show_endstate', 'Shift+E'),
+        ...(leelaz_for_endstate ? [
+            sep,
+            store_toggler_menu_item(`Endstate (diff: ${endstate_diff_interval} moves)`, 'show_endstate', 'Shift+E'),
+            item('...longer diff', '{', endstate_diff_interval_adder(10),
+                 false, R.show_endstate),
+            item('...shorter diff', '}', endstate_diff_interval_adder(-10),
+                 false, R.show_endstate),
+        ] : [])
     ])
     const tool_menu = menu('Tool', [
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
