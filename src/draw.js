@@ -335,9 +335,9 @@ function draw_endstate(endstate, xy, radius, g) {
 
 function draw_endstate_diff(diff, xy, radius, g) {
     if (!diff) {return}
-    const size = 0.2, [c, r, f] = diff > 0 ?
-          ['#080', 1, square_around] : ['#f0f', 1, x_shape_around]
-    const thick = R.endstate_diff_interval > 5 ? 1.5 : 3
+    const size = 0.2, [c, r, f, thicker] = diff > 0 ?
+          ['#080', 1, square_around, 1.5] : ['#f0f', 1, x_shape_around, 1]
+    const thick = (R.endstate_diff_interval > 5 ? 1.5 : 3) * thicker
     g.lineWidth = Math.abs(diff * thick); g.strokeStyle = c; f(xy, radius * size * r, g)
 }
 
