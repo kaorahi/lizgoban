@@ -748,7 +748,7 @@ function add_next_mark_to_stones(stones, history, move_count) {
 }
 
 function add_info_to_stones(stones, history) {
-    history.hist.forEach((h, c) => {
+    history.forEach((h, c) => {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
         add_tag(s, h.tag)
         s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
@@ -822,7 +822,7 @@ function create_history(init_hist, init_prop) {
         })),
     }
     const array_methods =
-          aa2hash(['push', 'pop', 'map']
+          aa2hash(['push', 'pop', 'map', 'forEach']
                   .map(meth => [meth, (...args) => hist[meth](...args)]))
     return merge({hist}, prop, methods, array_methods)
 }
