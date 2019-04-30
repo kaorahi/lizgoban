@@ -807,11 +807,16 @@ function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10
 
 function new_history_id() {return next_history_id++}
 
-function create_history() {
-    return {hist: [],
-            move_count: 0, player_black: "", player_white: "",
-            sgf_file: "", sgf_str: "", id: new_history_id(),
-            trial: false, last_loaded_element: null}
+function create_history(init_hist, init_prop) {
+    const hist = init_hist || []  // private in future
+    const prop = init_prop || {  // public
+        move_count: 0, player_black: "", player_white: "",
+        sgf_file: "", sgf_str: "", id: new_history_id(),
+        trial: false, last_loaded_element: null
+    }
+    const methods = {
+    }
+    return merge({hist}, prop, methods)
 }
 
 function shallow_copy_of_history() {
