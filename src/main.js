@@ -46,7 +46,7 @@ debug_log("option: " + JSON.stringify(option))
 // (cf.) "the_board_handler" and "the_suggest_handler" in engine.js
 const stored_keys_for_renderer =
       ['lizzie_style', 'expand_winrate_bar', 'let_me_think', 'show_endstate']
-const R = {stones: aa_new(19, 19, () => ({}))}; fetch_stored_keys()
+const R = {stones: aa_new(19, 19, () => ({})), ...renderer_preferences()}
 
 // modules
 const {create_game} = require('./game.js')
@@ -374,8 +374,7 @@ function store_toggler_menu_item(label, key, accelerator, on_click) {
 }
 
 function toggle_stored(key) {
-    const val = !(stored_keys_for_renderer.includes(key) ? R[key] : store.get(key))
-    set_stored(key, val); update_state(); return val
+    const val = !get_stored(key); set_stored(key, val); update_state(); return val
 }
 
 /////////////////////////////////////////////////
@@ -776,8 +775,11 @@ function update_ui(ui_only) {
 function set_stored(key, val) {
     store.set(key, val); stored_keys_for_renderer.includes(key) && (R[key] = val)
 }
-function fetch_stored_keys() {
-    stored_keys_for_renderer.forEach(key => R[key] = store.get(key, false))
+function get_stored(key) {
+    return stored_keys_for_renderer.includes(key) ? R[key] : store.get(key)
+}
+function renderer_preferences() {
+    return aa2hash(stored_keys_for_renderer.map(key => [key, store.get(key, false)]))
 }
 
 function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
