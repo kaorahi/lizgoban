@@ -756,8 +756,8 @@ function exist_deleted_sequence() {return !empty(deleted_sequences)}
 /////////////////////////////////////////////////
 // utils for updating renderer state
 
-function update_state() {
-    const history_length = game.len(), sequence_length = sequence.length, suggest = []
+function update_state(keep_suggest_p) {
+    const history_length = game.len(), sequence_length = sequence.length
     const sequence_ids = sequence.map(h => h.id)
     const pick_tagged = h => {
         const h_copy = P.append_endstate_tag_maybe(h)
@@ -766,9 +766,9 @@ function update_state() {
     const history_tags = flatten(game.map(pick_tagged))
     const {player_black, player_white, trial} = game
     P.set_and_render({
-        history_length, suggest, sequence_cursor, sequence_length, attached,
+        history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, history_tags
-    })
+    }, keep_suggest_p ? {} : {suggest: []})
     update_ui(true)
 }
 

@@ -191,6 +191,7 @@ function get_endstate_diff_interval() {return endstate_diff_interval}
 function add_endstate_diff_interval(k) {
     change_endstate_diff_target(() => {
         endstate_diff_interval = clip(endstate_diff_interval + k, 2)
+        add_info_to_stones(R.stones, game)  // update "recent stone" marks
     })
 }
 function set_endstate_diff_from(k) {
@@ -199,7 +200,7 @@ function set_endstate_diff_from(k) {
 function change_endstate_diff_target(proc) {
     const old = endstate_diff_move_count()
     proc()
-    endstate_diff_move_count() !== old && (update_endstate_diff(), set_and_render())
+    endstate_diff_move_count() !== old && (update_endstate_diff(), M.update_state(true))
 }
 
 function start_endstate(leelaz_start_args, endstate_option) {
@@ -298,8 +299,7 @@ function add_info_to_stones(stones, game) {
         add_tag(s, h.tag)
         s.stone && (h.move_count <= game.move_count) && (s.move_count = h.move_count)
         leelaz_for_endstate && truep(s.move_count) &&
-            (game.move_count - endstate_diff_interval < s.move_count) &&
-            (s.recent = true)
+            (s.recent = (game.move_count - endstate_diff_interval < s.move_count))
         !s.anytime_stones && (s.anytime_stones = [])
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
