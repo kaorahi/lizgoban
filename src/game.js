@@ -32,6 +32,7 @@ function create_game(init_history, init_prop) {
         len: () => history.length,
         is_empty: () => empty(history),
         ref: mc => history[mc - 1] || {},
+        ref_current: () => self.ref(self.move_count),
         array_until: mc => history.slice(0, mc),
         shorten_to: mc => history.splice(mc),
         last_move: () => (last(history) || {}).move,

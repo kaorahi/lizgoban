@@ -208,9 +208,9 @@ function add_endstate_to_stones(stones, endstate, update_diff_p) {
 function update_endstate_diff() {
     const prev = endstate_diff_move_count(), sign = prev < game.move_count ? 1 : -1
     const prev_endstate = game.ref(prev).endstate
-    prev_endstate &&
-        aa_each(R.stones, (s, i, j) =>
-                (s.endstate_diff = sign * (s.endstate - prev_endstate[i][j])))
+    const ok = prev_endstate && game.ref_current().endstate
+    aa_each(R.stones, (s, i, j) =>
+            (s.endstate_diff = ok ? sign * (s.endstate - prev_endstate[i][j]) : 0))
 }
 function endstate_diff_move_count() {
     return endstate_diff_from || (game.move_count - endstate_diff_interval)
