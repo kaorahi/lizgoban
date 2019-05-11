@@ -12,6 +12,7 @@ const current_window = electron.remote.getCurrentWindow()
 // canvas
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
 const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate_graph')
+const graph_overlay_canvas = Q('#graph_overlay')
 
 // renderer state
 const R = {
@@ -420,6 +421,7 @@ function set_all_canvas_size() {
                     main_board_size, main_size - main_board_height)
     set_canvas_square_size(sub_canvas, sub_board_size)
     set_canvas_size(winrate_graph_canvas, winrate_graph_width, winrate_graph_height)
+    set_overlay(graph_overlay_canvas, wr_only ? main_canvas: winrate_graph_canvas)
     update_all_thumbnails()
 }
 
@@ -428,6 +430,23 @@ function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, siz
 function set_canvas_size(canvas, width, height) {
     if (to_i(width) === canvas.width && to_i(height) === canvas.height) {return}
     canvas.setAttribute('width', width); canvas.setAttribute('height', height)
+}
+
+function set_overlay(canvas, orig) {
+    set_canvas_size(canvas, orig.width, orig.height)
+    const rect = orig.getBoundingClientRect()
+    // "canvas.style.position === 'absolute'" does not work
+    const absolute_p = portrait_p()  // fixme: is there a better way?
+    const set_without_margin = ([xy, wh, scroll]) =>
+          (canvas.style[xy] = (rect[xy] + (rect[wh] - canvas[wh]) / 2)
+           + (absolute_p ? window[scroll] : 0) + 'px')
+    const args = [['left', 'width', 'scrollX'], ['top', 'height', 'scrollY']]
+    args.forEach(set_without_margin)
+}
+
+function portrait_p() {
+    const [my, sy] = [main_canvas, sub_canvas].map(c => c.getBoundingClientRect().y)
+    return my < sy
 }
 
 /////////////////////////////////////////////////

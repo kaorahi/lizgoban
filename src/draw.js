@@ -671,11 +671,14 @@ function draw_winrate_graph(canvas, show_until, goto_move_count, unset_busy) {
     // s = move_count, r = winrate
     const [sr2coord, coord2sr] =
           uv2coord_translator_pair(canvas, [0, smax], [100, 0], xmargin, 0)
+    const overlay = graph_overlay_canvas.getContext("2d")
+    clear_canvas(graph_overlay_canvas)
+    !show_until && draw_winrate_graph_future(w, h, sr2coord, overlay)
+    if (R.busy) {return}
     clear_canvas(canvas, BLACK, g)
     show_until && draw_winrate_graph_show_until(show_until, w, h, sr2coord, g)
     draw_winrate_graph_frame(w, h, tics, g)
     draw_winrate_graph_move_count(smax, fontsize, sr2coord, g)
-    !show_until && draw_winrate_graph_future(w, h, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)

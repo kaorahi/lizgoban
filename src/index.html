@@ -14,6 +14,7 @@
  #main_div {position: relative;}
  #winrate_graph {border: solid 1px #ccc;}
  #winrate_graph:hover {border: solid 1px green;}
+ #graph_overlay {pointer-events: none;}
  .thumbbox img {border: solid 2px rgba(0,0,0,0); vertical-align: top;}
  .thumbbox:hover:not(.current) img {border-color: green;}
  .thumbbox.current img {border-color: red;}
@@ -36,6 +37,7 @@
  .close_button {position: absolute; top: 0px; right: 0px;}
  @media (max-aspect-ratio: 13/10) {
   body > * {width: 96vmin; display: block; margin: 1.5vmin; font-size: 3vw;}
+  #graph_overlay {position: absolute;}
   .thumbbox {display: inline-block;}
   .thumbbox img {width: 3vw; height: 3vw;}
   #visits_trail_canvas {display: none;}
@@ -49,6 +51,7 @@
    font-size: calc((96vw - 96vh) * 3/100);
    text-align: left;
   }
+  #graph_overlay {position: fixed;}
   #thumb_aligner {display: table-cell; text-align: left; width: 5vw;}
   #thumb_height_measurer:hover {position: relative; z-index: 9;}
   .thumbbox {width: 5vw; padding-left: 0.5vh;}
@@ -172,6 +175,8 @@
   <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
  </p>
 </div>
+
+<canvas id="graph_overlay"></canvas>
 
 </body>
 </html>
