@@ -310,16 +310,22 @@ function switch_to_random_leelaz(percent) {
 
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'restart']
 module.exports = {
-    initialize, set_board, switch_to_random_leelaz,
-    stone_for_history_elem, new_tag, set_renderer_state, set_and_render,
-    append_endstate_tag_maybe,
-    board_handler, suggest_handler, load_leelaz_for_black,
-    load_leelaz_for_white, unload_leelaz_for_white,
-    swap_leelaz_for_black_and_white,
-    leelaz_weight_file, start_leelaz,
-    each_leelaz, update_leelaz, all_start_args,
-    leelaz_for_white_p, leelaz_for_endstate_p, set_pondering,
+    // basic
+    initialize, set_board,
+    // leelaz
+    start_leelaz, update_leelaz, set_pondering, each_leelaz,
+    board_handler, suggest_handler, all_start_args, leelaz_weight_file,
+    // another leelaz for white
+    leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_to_random_leelaz,
+    load_leelaz_for_white, unload_leelaz_for_white, load_leelaz_for_black,
+    // endstate
+    leelaz_for_endstate_p, append_endstate_tag_maybe,
     get_endstate_diff_interval, add_endstate_diff_interval,
+    // renderer
+    set_renderer_state, set_and_render,
+    // util
+    stone_for_history_elem, new_tag,
+    // leelaz methods
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)]))
 }
