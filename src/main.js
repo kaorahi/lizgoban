@@ -515,7 +515,7 @@ function nearest_move_to_winrate(target_winrate) {
 function winrate_after(move_count) {
     const or_NaN = x => truep(x) ? x : NaN
     return move_count < 0 ? NaN :
-        move_count === 0 ? initial_b_winrate :
+        move_count === 0 ? P.get_initial_b_winrate() :
         or_NaN(game.ref(move_count).b_winrate)
 }
 
