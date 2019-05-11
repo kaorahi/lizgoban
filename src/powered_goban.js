@@ -13,10 +13,6 @@ const {create_leelaz} = require('./engine.js')
 let leelaz = create_leelaz(), leelaz_for_black = leelaz
 let leelaz_for_white = null, leelaz_for_endstate = null
 
-function start_endstate(es_args) {
-    leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
-}
 function each_leelaz(f) {
     [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
 }
@@ -292,6 +288,18 @@ function all_start_args() {
     return {black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
 }
 
+function start_leelaz(leelaz_start_args, endstate_option) {
+    leelaz.start(leelaz_start_args())
+    endstate_option && start_endstate(leelaz_start_args, endstate_option)
+}
+function start_endstate(leelaz_start_args, endstate_option) {
+    leelaz.activate(false)
+    const [lz_command, weight] = endstate_option
+    const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
+    leelaz_for_endstate = create_leelaz()
+    leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
+}
+
 module.exports = {
     initialize, set_board, switch_leelaz,
     stone_for_history_elem, new_tag, set_renderer_state, set_and_render,
@@ -300,7 +308,7 @@ module.exports = {
     board_handler, suggest_handler, load_leelaz_for_black,
     load_leelaz_for_white, unload_leelaz_for_white,
     swap_leelaz_for_black_and_white,
-    leelaz_weight_file, start_endstate,
+    leelaz_weight_file, start_leelaz,
     each_leelaz, update_leelaz, update_endstate, all_start_args,
     leelaz_for_white_p, leelaz_for_endstate_p, set_pondering,
 }

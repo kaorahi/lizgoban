@@ -79,12 +79,8 @@ fs.access(option.sabaki_command, null,
 // app
 
 app.on('ready', () => {
-    P.leelaz().start(leelaz_start_args()); update_menu(); new_window('double_boards')
-    if (!option.endstate_leelaz) {return}
-    P.leelaz().activate(false)
-    const [lz_command, weight] = option.endstate_leelaz
-    const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
-    P.start_endstate(es_args)
+    P.start_leelaz(leelaz_start_args, option.endstate_leelaz)
+    update_menu(); new_window('double_boards')
 })
 app.on('window-all-closed', app.quit)
 app.on('quit', () => P.each_leelaz(z => z.kill()))
