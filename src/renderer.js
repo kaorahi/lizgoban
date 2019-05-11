@@ -522,10 +522,12 @@ function set_keyboard_moves_for_next_move() {
 function reset_keyboard_moves() {keyboard_moves = []; update_goban()}
 
 function set_keyboard_tag_maybe(key) {
+    const old = keyboard_tag_move_count
     const tags = R.history_tags.slice().reverse()
     const data = tags.find(h => h.tag.includes(key) && h.move_count < R.move_count) ||
           tags.find(h => h.tag.includes(key))
-    data && ((keyboard_tag_move_count = data.move_count), update_goban())
+    data && (data.move_count !== old) &&
+        ((keyboard_tag_move_count = data.move_count), update_goban())
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_until(canvas) {
