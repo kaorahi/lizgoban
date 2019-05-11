@@ -4,9 +4,9 @@ const PATH = require('path')
 // state
 let endstate_diff_interval = 12
 let initial_b_winrate = NaN, winrate_trail = true
-let R, on_change, M, V
+let R, on_change, M
 function initialize(...args) {  // fixme: ugly
-    [R, on_change, M] = args; V = M.peek_main
+    [R, on_change, M] = args
 }
 
 // leelaz
@@ -34,7 +34,7 @@ function set_board(game, move_count) {
 // main flow (4) receive analysis from leelaz
 
 function board_handler(h) {
-    const game = V().game
+    const game = M.current_game()
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const board_setter = () => {
         add_next_mark_to_stones(R.stones, game, R.move_count)
@@ -56,7 +56,7 @@ function board_handler(h) {
 
 const too_small_prior = 1e-3
 function suggest_handler(h) {
-    const game = V().game
+    const game = M.current_game()
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
     const cur = game.ref(R.move_count)
@@ -69,7 +69,7 @@ function suggest_handler(h) {
 // main flow (5) change renderer state and send it to renderer
 
 function set_renderer_state(...args) {
-    const winrate_history = winrate_from_game(V().game)
+    const winrate_history = winrate_from_game(M.current_game())
     const previous_suggest = get_previous_suggest()
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
@@ -168,7 +168,7 @@ function winrate_from_game(game) {
 }
 
 function winrate_suggested(move_count) {
-    const game = V().game
+    const game = M.current_game()
     const {move, is_black} = game.ref(move_count)
     const {suggest} = game.ref(move_count - 1)
     const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
@@ -185,7 +185,7 @@ const endstate_diff_tag_letter = "/"
 const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
       start_moves_tag_letter + endstate_diff_tag_letter
 function new_tag() {
-    const game = V().game
+    const game = M.current_game()
     const used = game.map(h => h.tag || '').join('')
     const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
           .split('').findIndex(c => used.indexOf(c) < 0)
@@ -199,14 +199,14 @@ function new_tag() {
 // utils for updating renderer state
 
 function average_endstate_sum(move_count) {
-    const game = V().game
+    const game = M.current_game()
     const mc = truep(move_count) || R.move_count
     const [cur, prev] = [0, 1].map(k => game.ref(mc - k).endstate_sum)
     return truep(cur) && truep(prev) && (cur + prev) / 2
 }
 
 function get_previous_suggest() {
-    const [cur, prev] = [0, 1].map(k => V().game.ref(R.move_count - k))
+    const [cur, prev] = [0, 1].map(k => M.current_game().ref(R.move_count - k))
     // avoid "undefined" and use "null" for merge in set_renderer_state
     const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
     ret && (ret.bturn = !prev.is_black)
