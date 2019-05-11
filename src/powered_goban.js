@@ -2,8 +2,8 @@ require('./util.js').use(); require('./coord.js').use()
 const PATH = require('path')
 
 // state
-let endstate_diff_interval = 12
-let initial_b_winrate = NaN, winrate_trail = true
+let endstate_diff_interval = 12, initial_b_winrate = NaN
+const winrate_trail = true
 let R, on_change, on_suggest, M
 function initialize(...args) {[R, {on_change, on_suggest}, M] = args}  // fixme: ugly
 
