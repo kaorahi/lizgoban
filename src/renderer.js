@@ -138,6 +138,7 @@ function update_body_color() {
 function with_opts(d, opts) {
     return c => d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
+        reverse_next_color_p: is_shift_key_down() && R.move_count > 0,
         play_here, hover_here, hover_off, ...(opts || {})
     })
 }
@@ -417,6 +418,7 @@ function set_canvas_size(canvas, width, height) {
 let keydown = false
 
 document.onkeydown = e => {
+    update_shift_key(e)
     const repeated_keydown = keydown; keydown = true
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const escape = (key === "Escape" || key === "C-[")
@@ -478,6 +480,7 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
+    update_shift_key(e)
     keydown = false; reset_keyboard_tag();
     (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
@@ -485,6 +488,10 @@ document.onkeyup = e => {
     }
     main('unset_busy')
 }
+
+let shift_key_down = false
+function update_shift_key(e) {shift_key_down = e.shiftKey}
+function is_shift_key_down() {return shift_key_down}
 
 function set_keyboard_moves_maybe(n) {
     const h = R.suggest[n]

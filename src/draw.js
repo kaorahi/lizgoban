@@ -111,7 +111,8 @@ function draw_goban_with_principal_variation(canvas, options) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
-           tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar}
+           tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
+           reverse_next_color_p}
           = opts || {}
     const large_font_p = !opts.main_canvas_p
     const margin = canvas.height * 0.05, hm = margin / 2
@@ -137,7 +138,8 @@ function draw_goban(canvas, stones, opts) {
     if_first_board(draw_progress_and_memorize_canvas)
     mapping_to_winrate_bar &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
-    !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
+    !read_only && hovered_move &&
+        draw_cursor(hovered_move, reverse_next_color_p, unit, idx2coord, g)
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p,
         draw_recent_p: draw_last_p && draw_endstate_p, tag_clickable_p,
@@ -183,9 +185,9 @@ function draw_progress(highlightp, margin, canvas, g) {
               [canvas.width * R.progress, canvas.height], g)
 }
 
-function draw_cursor(hovered_move, unit, idx2coord, g) {
+function draw_cursor(hovered_move, reverse_next_color_p, unit, idx2coord, g) {
     const xy = idx2coord(...move2idx(hovered_move))
-    g.fillStyle = R.bturn ? PALE_BLACK : PALE_WHITE
+    g.fillStyle = xor(R.bturn, reverse_next_color_p) ? PALE_BLACK : PALE_WHITE
     fill_circle(xy, unit / 4, g)
 }
 
