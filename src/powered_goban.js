@@ -70,17 +70,17 @@ function with_handlers(h) {return merge({board_handler, suggest_handler}, h)}
 function board_handler(h) {
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const board_setter = () => {
-        add_next_mark_to_stones(R.stones, game, R.move_count)
+        add_next_mark_to_stones(R.stones, game, game.move_count)
         add_info_to_stones(R.stones, game)
     }
     const endstate_setter = update_p => {
-        const prev = R.move_count - endstate_diff_interval
+        const prev = game.move_count - endstate_diff_interval
         const prev_endstate = update_p && game.ref(prev).endstate
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
         }
         add_endstate_to_stones(R.stones, R.endstate, prev_endstate)
-        R.move_count > 0 && add_endstate_to_history(game.ref(R.move_count))
+        game.move_count > 0 && add_endstate_to_history(game.ref(game.move_count))
     }
     set_renderer_state(h)
     h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
@@ -91,9 +91,9 @@ const too_small_prior = 1e-3
 function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
-    const cur = game.ref(R.move_count)
-    R.move_count > 0 && (cur.suggest = h.suggest)
-    R.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
+    const cur = game.ref(game.move_count)
+    game.move_count > 0 && (cur.suggest = h.suggest)
+    game.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
     set_and_render(h); on_suggest()
 }
 
@@ -174,7 +174,7 @@ function leelaz_for_endstate_p() {return !!leelaz_for_endstate}
 function append_endstate_tag_maybe(h) {
     const h_copy = merge({}, h)
     leelaz_for_endstate && R.show_endstate &&
-        h.move_count === R.move_count - endstate_diff_interval &&
+        h.move_count === game.move_count - endstate_diff_interval &&
         add_tag(h_copy, endstate_diff_tag_letter)
     return h_copy
 }
@@ -200,7 +200,7 @@ function add_endstate_to_stones(stones, endstate, prev_endstate) {
     }))
 }
 function average_endstate_sum(move_count) {
-    const mc = truep(move_count) || R.move_count
+    const mc = truep(move_count) || game.move_count
     const [cur, prev] = [0, 1].map(k => game.ref(mc - k).endstate_sum)
     return truep(cur) && truep(prev) && (cur + prev) / 2
 }
@@ -237,7 +237,7 @@ function winrate_suggested(move_count) {
 // misc. utils for updating renderer state
 
 function get_previous_suggest() {
-    const [cur, prev] = [0, 1].map(k => game.ref(R.move_count - k))
+    const [cur, prev] = [0, 1].map(k => game.ref(game.move_count - k))
     // avoid "undefined" and use "null" for merge in set_renderer_state
     const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
     ret && (ret.bturn = !prev.is_black)
@@ -257,9 +257,10 @@ function add_info_to_stones(stones, game) {
     game.forEach((h, c) => {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
         add_tag(s, h.tag)
-        s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
+        s.stone && (h.move_count <= game.move_count) && (s.move_count = h.move_count)
         leelaz_for_endstate && truep(s.move_count) &&
-            (R.move_count - endstate_diff_interval < s.move_count) && (s.recent = true)
+            (game.move_count - endstate_diff_interval < s.move_count) &&
+            (s.recent = true)
         !s.anytime_stones && (s.anytime_stones = [])
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
