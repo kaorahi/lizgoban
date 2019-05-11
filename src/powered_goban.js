@@ -54,7 +54,7 @@ function board_handler(h) {
     }
     set_renderer_state(h)
     h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
-    update_state()
+    M.update_state()
 }
 
 const too_small_prior = 1e-3
@@ -98,30 +98,6 @@ function set_and_render(...args) {
     V().renderer('render', masked_R)
 }
 
-function update_state() {
-    set_renderer_state()  // need to update R.show_endstate
-    const game = V().game, sequence = V().sequence
-    const sequence_cursor = V().sequence_cursor
-    const attached = V().attached
-    const history_length = game.len(), sequence_length = sequence.length, suggest = []
-    const sequence_ids = sequence.map(h => h.id)
-    const pick_tagged = h => {
-        const h_copy = append_endstate_tag_maybe(h)
-        return h_copy.tag ? [h_copy] : []
-    }
-    const history_tags = flatten(game.map(pick_tagged))
-    const {player_black, player_white, trial} = game
-    set_and_render({
-        history_length, suggest, sequence_cursor, sequence_length, attached,
-        player_black, player_white, trial, sequence_ids, history_tags
-    })
-    update_ui(true)
-}
-
-function update_ui(ui_only) {
-    M.update_menu(); M.renderer_with_window_prop('update_ui', M.availability(), ui_only)
-}
-
 /////////////////////////////////////////////////
 // another leelaz for white
 
@@ -136,7 +112,7 @@ function load_leelaz_for_white(load_weight) {
 function unload_leelaz_for_white() {
     switch_to_another_leelaz(leelaz_for_black)
     leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
-    update_state()
+    M.update_state()
 }
 
 function with_temporary_leelaz(leelaz_for_black_or_white, proc) {
@@ -151,7 +127,7 @@ function switch_leelaz(bturn) {
 
 function switch_to_another_leelaz(next_leelaz) {
     next_leelaz && next_leelaz !== leelaz &&
-        (leelaz = next_leelaz) && (update_ponder(), update_state())
+        (leelaz = next_leelaz) && (update_ponder(), M.update_state())
 }
 
 function swap_leelaz_for_black_and_white() {
@@ -301,9 +277,10 @@ function L() {return {leelaz, leelaz_for_black, leelaz_for_white, leelaz_for_end
 
 module.exports = {
     initialize, set_board, switch_leelaz,
-    stone_for_history_elem, new_tag,
+    stone_for_history_elem, new_tag, set_renderer_state, set_and_render,
+    append_endstate_tag_maybe,
     L,
-    board_handler, suggest_handler, create_leelaz, update_state, update_ui,
+    board_handler, suggest_handler, create_leelaz,
     load_leelaz_for_white, unload_leelaz_for_white, with_temporary_leelaz,
     leelaz_weight_file, start_endstate,
     each_leelaz,

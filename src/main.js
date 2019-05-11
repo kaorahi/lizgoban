@@ -50,13 +50,12 @@ const R = {stones: aa_new(19, 19, () => ({}))}
 const {create_game} = require('./game.js')
 const P = require('./powered_goban.js'), {L} = P
 P.initialize(R, update_let_me_think,
-             {update_menu,
-              renderer_with_window_prop, availability,
+             {update_state,
               leelaz_weight_option_pos_in_args, store, auto_progress,
               show_suggest_p, try_auto, peek_main,
              })
 function peek_main() {
-    return {game, auto_bturn, sequence, sequence_cursor, attached, renderer, endstate_diff_interval}
+    return {game, auto_bturn, renderer, endstate_diff_interval}
 }
 
 // state
@@ -133,7 +132,7 @@ function new_window(default_board_type) {
         position: win.getPosition(), size: win.getSize()
     }))
     windows.push(win)
-    win.once('ready-to-show', () => {P.update_ui(); win.show()})
+    win.once('ready-to-show', () => {update_ui(); win.show()})
 }
 
 // renderer
@@ -218,7 +217,7 @@ function play(move, force_create, default_tag) {
           (new_sequence_p ? P.new_tag() :
            game.ref(R.move_count) === game.last_loaded_element ?
            last_loaded_element_tag_letter : false)
-    P.update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
+    update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
     pass && wink()
 }
 function do_play(move, is_black, tag) {
@@ -268,7 +267,7 @@ function update_state_to_move_count_tentatively(count) {
     const next_h = game.ref(R.move_count + 1)
     const next_s = P.stone_for_history_elem(next_h, R.stones) || {}
     next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
-    P.update_state()
+    update_state()
 }
 
 /////////////////////////////////////////////////
@@ -381,7 +380,7 @@ function store_toggler_menu_item(label, key, accelerator, on_click) {
 }
 
 function toggle_stored(key) {
-    store.set(key, !store.get(key)); P.update_state(); return store.get(key)
+    store.set(key, !store.get(key)); update_state(); return store.get(key)
 }
 
 /////////////////////////////////////////////////
@@ -392,24 +391,24 @@ function try_auto() {auto_playing() ? try_auto_play() : try_auto_analyze()}
 function auto_progress() {
     return Math.max(auto_analysis_progress(), auto_play_progress())
 }
-function stop_auto() {stop_auto_analyze(); stop_auto_play(); P.update_ui()}
+function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
 
 // auto-analyze (redo after given visits)
 function try_auto_analyze() {
     const done = R.max_visits >= auto_analysis_visits()
     const next = (pred, proc) => pred() ?
-          proc() : (pause(), stop_auto_analyze(), P.update_ui())
+          proc() : (pause(), stop_auto_analyze(), update_ui())
     auto_bturn = xor(R.bturn, done)
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
     if (game.is_empty()) {return}
     (auto_analysis_signed_visits === visits) ?
-        (stop_auto_analyze(), P.update_ui()) :
+        (stop_auto_analyze(), update_ui()) :
         start_auto_analyze(visits)
 }
 function start_auto_analyze(visits) {
-    auto_analysis_signed_visits = visits; rewind_maybe(); resume(); P.update_ui()
+    auto_analysis_signed_visits = visits; rewind_maybe(); resume(); update_ui()
 }
 function stop_auto_analyze() {auto_analysis_signed_visits = Infinity}
 function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
@@ -430,7 +429,7 @@ function auto_play(sec, explicitly_playing_best) {
     explicitly_playing_best ? (auto_replaying = false) : (auto_play_count = Infinity)
     auto_replaying && rewind_maybe()
     auto_play_sec = sec || -1; stop_auto_analyze()
-    update_auto_play_time(); update_let_me_think(); resume(); P.update_ui()
+    update_auto_play_time(); update_let_me_think(); resume(); update_ui()
 }
 function try_auto_play() {
     auto_play_ready() && (auto_replaying ? try_auto_replay() : try_play_best())
@@ -537,7 +536,7 @@ function set_board_type(type, win, keep_let_me_think) {
     const prop = window_prop(win), {board_type, previous_board_type} = prop
     if (!type || type === board_type) {return}
     keep_let_me_think || stop_let_me_think()
-    merge(prop, {board_type: type, previous_board_type: board_type}); P.update_ui()
+    merge(prop, {board_type: type, previous_board_type: board_type}); update_ui()
 }
 
 // handicap stones
@@ -563,7 +562,7 @@ function ask_handicap_stones() {
 }
 
 // misc.
-function toggle_trial() {game.trial = !game.trial; P.update_state()}
+function toggle_trial() {game.trial = !game.trial; update_state()}
 function close_window_or_cut_sequence(win) {
     get_windows().length > 1 ? win.close() :
         attached ? null :
@@ -612,7 +611,7 @@ function update_ponder() {
     L().leelaz_for_black.set_pondering(pondering && b)
     L().leelaz_for_white && L().leelaz_for_white.set_pondering(pondering && !b)
 }
-function update_ponder_and_ui() {update_ponder(); P.update_ui()}
+function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {L().leelaz.update()}
 
 function wink_if_pass(proc, ...args) {
@@ -671,7 +670,7 @@ function let_me_think_exit_autoplay() {let_me_think_set_board_type_for('latter_h
 function toggle_let_me_think() {set_let_me_think(!let_me_think_p())}
 function stop_let_me_think() {set_let_me_think(false)}
 function set_let_me_think(val) {
-    store.set('let_me_think', val); update_let_me_think(); P.update_state()
+    store.set('let_me_think', val); update_let_me_think(); update_state()
 }
 function let_me_think_p() {return store.get('let_me_think')}
 
@@ -725,7 +724,7 @@ function uncut_sequence() {
 function duplicate_sequence() {
     game.is_empty() ? new_empty_board() :
         (backup_game(), game.set_last_loaded_element(), (game.trial = true),
-         P.update_state())
+         update_state())
 }
 
 function delete_sequence() {
@@ -747,7 +746,7 @@ function insert_sequence(new_game, switch_to, before) {
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
     store_move_count(game); P.set_board(null); goto_nth_sequence(wrapped_n)
-    R.move_count = 0; redo_ntimes(game.move_count); P.update_state()
+    R.move_count = 0; redo_ntimes(game.move_count); update_state()
 }
 
 function store_move_count(game) {game.move_count = R.move_count}
@@ -766,6 +765,27 @@ function exist_deleted_sequence() {return !empty(deleted_sequences)}
 
 /////////////////////////////////////////////////
 // utils for updating renderer state
+
+function update_state() {
+    P.set_renderer_state()  // need to update R.show_endstate
+    const history_length = game.len(), sequence_length = sequence.length, suggest = []
+    const sequence_ids = sequence.map(h => h.id)
+    const pick_tagged = h => {
+        const h_copy = P.append_endstate_tag_maybe(h)
+        return h_copy.tag ? [h_copy] : []
+    }
+    const history_tags = flatten(game.map(pick_tagged))
+    const {player_black, player_white, trial} = game
+    P.set_and_render({
+        history_length, suggest, sequence_cursor, sequence_length, attached,
+        player_black, player_white, trial, sequence_ids, history_tags
+    })
+    update_ui(true)
+}
+
+function update_ui(ui_only) {
+    update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
+}
 
 function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
 
@@ -891,7 +911,7 @@ function load_sabaki_gametree(gametree, index) {
     if (!truep(move_count)) {return}
     P.set_board(game, move_count)
     // force update of board color when C-c and C-v are typed successively
-    P.update_state()
+    update_state()
 }
 
 /////////////////////////////////////////////////
@@ -930,12 +950,12 @@ function attach_to_sabaki() {
     debug_log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_game()
     start_sabaki(sgf_file.name + '#' + R.move_count)
-    attached = true; L().leelaz.update(); P.update_state()
+    attached = true; L().leelaz.update(); update_state()
 }
 
 function detach_from_sabaki() {
     if (!attached || !has_sabaki) {return}
-    stop_sabaki(); attached = false; L().leelaz.update(); P.update_state()
+    stop_sabaki(); attached = false; L().leelaz.update(); update_state()
 }
 
 function toggle_sabaki() {
