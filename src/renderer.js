@@ -29,6 +29,7 @@ const R = {
 let temporary_board_type = null
 let keyboard_moves = [], keyboard_tag_move_count = null
 let hovered_move = null, hovered_move_count = null, hovered_canvas = null
+let supporting_show_until_p = false
 let thumbnails = []
 
 // drawer
@@ -253,10 +254,11 @@ function play_here(e, coord2idx, tag_clickable_p) {
         (pass && main('pass'), main('play', move, !!another_board))
 }
 
-function hover_here(e, coord2idx, canvas) {
+function hover_here(e, coord2idx, canvas, support_show_until_p) {
     const old = hovered_move
     hovered_move = mouse2move(e, coord2idx); hovered_canvas = canvas
-    e.shiftKey && set_hovered_move_count(hovered_move)
+    supporting_show_until_p = support_show_until_p
+    set_hovered_move_count(e.shiftKey && support_show_until_p && hovered_move)
     if (hovered_move != old) {update_goban()}
 }
 
@@ -534,7 +536,8 @@ function set_keyboard_tag_maybe(key) {
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_until(canvas) {
-    return keyboard_tag_move_count || if_hovered_on(canvas, hovered_move_count)
+    return keyboard_tag_move_count ||
+        (supporting_show_until_p && if_hovered_on(canvas, hovered_move_count))
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())

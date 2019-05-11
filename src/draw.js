@@ -28,7 +28,8 @@ function set_state(given_R) {R = given_R}  // fixme: ugly
 // various gobans
 
 function draw_main_goban(canvas, options) {
-    const opts = {draw_visits_p: true, read_only: R.attached, ...options}
+    const opts = {draw_visits_p: true, read_only: R.attached,
+                  support_show_until_p: true, ...options}
     const u = options.show_until, h = options.selected_suggest
     target_move = !u && (h.visits > 0) && h.move
     // case I: "variation"
@@ -111,7 +112,7 @@ function draw_goban_with_principal_variation(canvas, options) {
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
-           hovered_move, reverse_next_color_p, show_until}
+           hovered_move, reverse_next_color_p, show_until, support_show_until_p}
           = opts || {}
     const large_font_p = !opts.main_canvas_p
     const margin = canvas.height * 0.05, hm = margin / 2
@@ -148,7 +149,7 @@ function draw_goban(canvas, stones, opts) {
     canvas.onmousedown = e =>
         (!read_only && !R.attached &&
          (opts.play_here(e, coord2idx, opts.tag_clickable_p), opts.hover_off(canvas)))
-    canvas.onmousemove = e => opts.hover_here(e, coord2idx, canvas)
+    canvas.onmousemove = e => opts.hover_here(e, coord2idx, canvas, support_show_until_p)
     canvas.onmouseleave = e => opts.hover_off(canvas)
 }
 
