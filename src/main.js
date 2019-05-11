@@ -50,7 +50,7 @@ const R = {stones: aa_new(19, 19, () => ({}))}
 const {create_game} = require('./game.js')
 const P = require('./powered_goban.js'), {L} = P
 P.initialize(R, update_let_me_think,
-             {update_state,
+             {update_state, update_ponder,
               leelaz_weight_option_pos_in_args, store, auto_progress,
               show_suggest_p, try_auto, peek_main,
              })
@@ -350,10 +350,10 @@ function menu_template(win) {
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
          type: 'checkbox', checked: !!L().leelaz_for_white,
          click: stop_auto_and(L().leelaz_for_white ?
-                              unload_leelaz_for_white : load_leelaz_for_white)},
+                              P.unload_leelaz_for_white : load_leelaz_for_white)},
         L().leelaz_for_white ?
             item('Swap black/white weights', 'Shift+S',
-                 swap_leelaz_for_black_and_white) :
+                 P.swap_leelaz_for_black_and_white) :
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
         item('Info', 'CmdOrCtrl+I', info),

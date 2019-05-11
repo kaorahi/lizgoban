@@ -127,7 +127,7 @@ function switch_leelaz(bturn) {
 
 function switch_to_another_leelaz(next_leelaz) {
     next_leelaz && next_leelaz !== leelaz &&
-        (leelaz = next_leelaz) && (update_ponder(), M.update_state())
+        (leelaz = next_leelaz) && (M.update_ponder(), M.update_state())
 }
 
 function swap_leelaz_for_black_and_white() {
@@ -282,6 +282,7 @@ module.exports = {
     L,
     board_handler, suggest_handler, create_leelaz,
     load_leelaz_for_white, unload_leelaz_for_white, with_temporary_leelaz,
+    swap_leelaz_for_black_and_white,
     leelaz_weight_file, start_endstate,
     each_leelaz,
 }
