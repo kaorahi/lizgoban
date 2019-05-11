@@ -813,7 +813,7 @@ function create_game(init_history, init_prop) {
             id: new_game_id(), last_loaded_element: null
         })),
         set_with_reuse: new_history => {
-            const com = leelaz.common_header_length(history, new_history)
+            const com = common_header_length(history, new_history)
             // keep old history for keeping winrate
             history.splice(com, Infinity, ...new_history.slice(com))
         },
@@ -1263,8 +1263,8 @@ function start_sabaki(...sabaki_args) {
     const sabaki_command = option.sabaki_command
     debug_log('start sabaki: ' + JSON.stringify([sabaki_command, sabaki_args]))
     sabaki_process = require('child_process').spawn(sabaki_command, sabaki_args, {detached: true})
-    sabaki_process.stdout.on('data', leelaz.each_line(sabaki_reader))
-    leelaz.set_error_handler(sabaki_process, detach_from_sabaki)
+    sabaki_process.stdout.on('data', each_line(sabaki_reader))
+    set_error_handler(sabaki_process, detach_from_sabaki)
 }
 
 function stop_sabaki() {

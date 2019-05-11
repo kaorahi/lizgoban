@@ -61,10 +61,6 @@ function create_leelaz () {
         set_error_handler(leelaz_process, e => {})
         leelaz_process.kill('SIGKILL')
     }
-    const set_error_handler = (process, handler) => {
-        ['stdin', 'stdout', 'stderr'].forEach(k => process[k].on('error', handler))
-        process.on('exit', handler)
-    }
 
     const start_analysis = () => {
         const command = is_supported('minmoves') ?
@@ -100,11 +96,6 @@ function create_leelaz () {
         bturn = !(last(history) || {}).is_black
         if (back > 0 || !empty(rest)) {update()}
         leelaz_previous_history = shallow_copy_array(history)
-    }
-    const common_header_length = (a, b) => {
-        const eq = (x, y) => (!!x.is_black === !!y.is_black && x.move === y.move)
-        const k = a.findIndex((x, i) => !eq(x, b[i] || {}))
-        return (k >= 0) ? k : a.length
     }
     const play1 = ({move, is_black}) => {leelaz('play ' + (is_black ? 'b ' : 'w ') + move)}
     const undo1 = () => {leelaz('undo')}
@@ -257,15 +248,6 @@ function create_leelaz () {
         }
     }
 
-    const each_line = (f) => {
-        let buf = ''
-        return stream => {
-            const a = stream.toString().split(/\r?\n/), rest = a.pop()
-            !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
-            buf += rest
-        }
-    }
-
     /////////////////////////////////////////////////
     // board reader
 
@@ -327,8 +309,6 @@ function create_leelaz () {
     return {
         start, restart, kill, set_board, update, set_pondering,
         start_args, activate, network_size, peek_value,
-        // utility
-        common_header_length, each_line, set_error_handler,
         // for debug
         send_to_leelaz,
     }

@@ -54,4 +54,23 @@ E.deferred_procs = (...proc_delay_pairs) => {
     }))
 }
 
+// for engine (chiefly)
+E.common_header_length = (a, b) => {
+    const eq = (x, y) => (!!x.is_black === !!y.is_black && x.move === y.move)
+    const k = a.findIndex((x, i) => !eq(x, b[i] || {}))
+    return (k >= 0) ? k : a.length
+}
+E.each_line = (f) => {
+    let buf = ''
+    return stream => {
+        const a = stream.toString().split(/\r?\n/), rest = a.pop()
+        !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
+        buf += rest
+    }
+}
+E.set_error_handler = (process, handler) => {
+    ['stdin', 'stdout', 'stderr'].forEach(k => process[k].on('error', handler))
+    process.on('exit', handler)
+}
+
 require('./globally.js').export_globally(module, E)
