@@ -431,11 +431,9 @@ function set_canvas_size(canvas, width, height) {
 /////////////////////////////////////////////////
 // keyboard operation
 
-let keydown = false
-
 document.onkeydown = e => {
     update_shift_key(e)
-    const repeated_keydown = keydown; keydown = true
+    const repeated_keydown = e.repeat
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const escape = (key === "Escape" || key === "C-[")
     escape && hide_dialog()
@@ -496,7 +494,7 @@ document.onkeydown = e => {
 
 document.onkeyup = e => {
     update_shift_key(e)
-    keydown = false; reset_keyboard_tag(); set_hovered_move_count(null);
+    reset_keyboard_tag(); set_hovered_move_count(null);
     (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
     case "z": case "x": set_temporary_board_type(null); return
