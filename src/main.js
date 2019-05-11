@@ -592,7 +592,7 @@ function info() {
 function endstate_diff_interval_adder(k) {
     return () => {
         endstate_diff_interval = clip(endstate_diff_interval + k, 2)
-        L().leelaz_for_endstate.update()
+        P.update_endstate()
     }
 }
 
