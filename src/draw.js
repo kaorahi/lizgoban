@@ -35,7 +35,7 @@ function draw_main_goban(canvas, options) {
     if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
     const [i, j] = h.move ? move2idx(h.move) : [-1, -1]
-    const s = (i >= 0 && R.stones[i] && R.stones[i][j]) || {}
+    const s = aa_ref(R.stones, i, j) || {}
     const show_until = u ||
           (s.stone && s.tag && (s.move_count !== R.move_count) && s.move_count)
     const mapping_to_winrate_bar = h.move && mapping_text(h, opts)
