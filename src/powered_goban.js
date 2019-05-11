@@ -82,7 +82,9 @@ function board_handler(h) {
     }
     const endstate_setter = update_p => {
         const add_endstate_to_history = z => {
-            z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
+            z.endstate = R.endstate; if (!update_p) {return}
+            z.endstate_sum = sum(R.endstate)
+            z.hotness = sum_of_endstate_change(leelaz_move_count)
         }
         add_endstate_to_stones(R.stones, R.endstate, update_p)
         leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
@@ -223,9 +225,19 @@ function endstate_diff_move_count() {
     return endstate_diff_from || (game.move_count - endstate_diff_interval)
 }
 function average_endstate_sum(move_count) {
+    return for_current_and_previous_endstate(move_count, 'endstate_sum', 1,
+                                             (cur, prev) => (cur + prev) / 2)
+}
+function sum_of_endstate_change(move_count) {
+    let sum = 0
+    const f = (cur, prev) =>
+          (aa_each(cur, (c, i, j) => (sum += Math.abs(c - prev[i][j]))), true)
+    return for_current_and_previous_endstate(move_count, 'endstate', 2, f) && sum
+}
+function for_current_and_previous_endstate(move_count, key, delta, f) {
     const mc = truep(move_count) || game.move_count
-    const [cur, prev] = [0, 1].map(k => game.ref(mc - k).endstate_sum)
-    return truep(cur) && truep(prev) && (cur + prev) / 2
+    const [cur, prev] = [0, delta].map(k => game.ref(mc - k)[key])
+    return truep(cur) && truep(prev) && f(cur, prev)
 }
 function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
@@ -243,8 +255,9 @@ function winrate_from_game(game) {
         const predict = winrate_suggested(s)
         const pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const score_without_komi = average_endstate_sum(s)
+        const hotness = h.hotness
         // drop "pass" to save data size for IPC
-        return merge({r, move_b_eval, move_eval, tag, score_without_komi},
+        return merge({r, move_b_eval, move_eval, tag, score_without_komi, hotness},
                      pass ? {pass} : {predict})
     })
 }

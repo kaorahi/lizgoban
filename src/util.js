@@ -15,6 +15,7 @@ E.merge = Object.assign
 E.empty = a => !a || (a.length === 0)
 E.last = a => a[a.length - 1]
 E.flatten = a => [].concat(...a)
+E.percentile = (a, p) => a.slice().sort((x, y) => x - y)[to_i(a.length * p / 100)]
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 E.array2hash = a => {
     const h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h

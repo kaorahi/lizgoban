@@ -680,6 +680,7 @@ function draw_winrate_graph(canvas, show_until, goto_move_count, unset_busy) {
     draw_winrate_graph_frame(w, h, tics, g)
     draw_winrate_graph_move_count(smax, fontsize, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
+    draw_winrate_graph_hotness(h, sr2coord, g)
     draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     const goto_here = e =>
@@ -720,10 +721,12 @@ function draw_winrate_graph_future(w, h, sr2coord, g) {
 }
 
 function draw_winrate_graph_move_count(smax, fontsize, sr2coord, g) {
+    g.save()
     g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
-    set_font(fontsize, g)
+    set_font(fontsize, g); g.textBaseline = 'top'
     g.textAlign = R.move_count < smax / 2 ? 'left' : 'right'
-    g.fillText(' ' + R.move_count + ' ', ...sr2coord(R.move_count, 0))
+    g.fillText(' ' + R.move_count + ' ', ...sr2coord(R.move_count, 100))
+    g.restore()
 }
 
 function draw_winrate_graph_curve(sr2coord, g) {
@@ -750,6 +753,19 @@ function draw_winrate_graph_score(sr2coord, g) {
         const [radius, alpha] = diff_target_p ? [3, 0.7] : [2, 0.3]
         const xy = sr2coord(s, to_r(score))
         g.fillStyle = `rgba(0,255,255,${alpha})`; fill_circle(xy, radius, g)
+    })
+}
+
+function draw_winrate_graph_hotness(h, sr2coord, g) {
+    const to_r = hot => clip(hot / 3, 0, 100)
+    const hots = R.winrate_history.map(h => h.hotness)
+    const threshold = percentile(hots.filter(truep), 95)
+    hots.forEach((hot, s) => {
+        if (!truep(hot)) {return}
+        const [line_width, alpha] = hot >= threshold ? [2, 0.5] : [1, 0.3]
+        const [x, y] = sr2coord(s, to_r(hot))
+        g.strokeStyle = `rgba(255,128,0,${alpha})`; g.lineWidth = line_width
+        line([x, y], [x, h], g)
     })
 }
 
