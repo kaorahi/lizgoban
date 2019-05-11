@@ -39,13 +39,11 @@ function start_leelaz(leelaz_start_args, endstate_option) {
 }
 function update_leelaz() {leelaz.update()}
 function restart(h) {leelaz.restart(h && with_handlers(h))}
+function kill_all_leelaz() {each_leelaz(z => z.kill())}
 function set_pondering(pondering) {
     const b = (leelaz === leelaz_for_black)
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
-}
-function each_leelaz(f) {
-    [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
 }
 function all_start_args() {
     const f = lz => lz && lz.start_args()
@@ -57,6 +55,9 @@ function leelaz_weight_file(leelaz_for_black_or_white) {
     return (k >= 0) && arg && arg.leelaz_args[k + 1]
 }
 
+function each_leelaz(f) {
+    [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
+}
 function with_handlers(h) {return merge({board_handler, suggest_handler}, h)}
 
 /////////////////////////////////////////////////
@@ -280,7 +281,7 @@ module.exports = {
     // basic
     initialize, set_board,
     // leelaz
-    start_leelaz, update_leelaz, set_pondering, each_leelaz, restart,
+    start_leelaz, update_leelaz, set_pondering, restart, kill_all_leelaz,
     all_start_args, leelaz_weight_file,
     // another leelaz for white
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_to_random_leelaz,

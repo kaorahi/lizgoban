@@ -82,7 +82,7 @@ app.on('ready', () => {
     update_menu(); new_window('double_boards')
 })
 app.on('window-all-closed', app.quit)
-app.on('quit', () => P.each_leelaz(z => z.kill()))
+app.on('quit', P.kill_all_leelaz)
 
 // window
 
