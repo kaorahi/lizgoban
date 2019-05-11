@@ -240,8 +240,11 @@ function double_boards_p() {return R.board_type.match(/^double_boards/)}
 
 function play_here(e, coord2idx, tag_clickable_p) {
     const move = mouse2move(e, coord2idx); if (!move) {return}
+    const idx = move2idx(move)
     const another_board = e.ctrlKey, pass = e.shiftKey && R.move_count > 0;
-    (tag_clickable_p && goto_idx_maybe(move2idx(move), another_board)) ||
+    const goto_p = e.shiftKey && (aa_ref(R.stones, ...idx) || {}).stone
+    if (goto_p) {goto_idx_maybe(idx, another_board, true); return}
+    (tag_clickable_p && goto_idx_maybe(idx, another_board)) ||
         (pass && main('pass'), main('play', move, !!another_board))
 }
 
@@ -276,9 +279,9 @@ function mouse2move(e, coord2idx) {
     const idx = mouse2idx(e, coord2idx); return idx && idx2move(...idx)
 }
 
-function goto_idx_maybe(idx, another_board) {
+function goto_idx_maybe(idx, another_board, forcep) {
     const s = aa_ref(R.stones, ...idx) || {}
-    return s.stone && s.tag &&
+    return s.stone && (forcep || s.tag) &&
         (duplicate_if(another_board), main('goto_move_count', s.move_count - 1),
          wink(), true)
 }
