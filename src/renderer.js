@@ -27,7 +27,7 @@ const R = {
     window_id: -1,
 }
 let temporary_board_type = null
-let keyboard_moves = [], keyboard_tag_data = {}
+let keyboard_moves = [], keyboard_tag_move_count = null
 let thumbnails = []
 
 // drawer
@@ -144,8 +144,8 @@ function with_opts(d, opts) {
 }
 
 const draw_main = c => with_opts(D.draw_main_goban,
-                                 // need to eval keyboard_tag_data in runtime
-                                 {show_until: keyboard_tag_data.move_count})(c)
+                                 // need to eval keyboard_tag_move_count in runtime
+                                 {show_until: keyboard_tag_move_count})(c)
 const draw_pv = with_opts(D.draw_goban_with_principal_variation)
 const draw_raw_gen = options => {
     const draw = (c, opts) => D.draw_goban(c, null, opts)
@@ -435,9 +435,9 @@ document.onkeydown = e => {
                          !R.attached && !repeated_keydown)
     const play_it = (steps, another_board) =>
           D.target_move() ? m('play', D.target_move(), another_board) :
-          keyboard_tag_data.move_count ? (duplicate_if(another_board),
-                                          m('goto_move_count',
-                                            keyboard_tag_data.move_count - 1)) :
+          truep(keyboard_tag_move_count) ? (duplicate_if(another_board),
+                                            m('goto_move_count',
+                                              keyboard_tag_move_count - 1)) :
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     to_i(key) > 0 && (challenging ? m('play_weak', to_i(key) * 10) :
@@ -507,10 +507,9 @@ function set_keyboard_tag_maybe(key) {
     const tags = R.history_tags.slice().reverse()
     const data = tags.find(h => h.tag.includes(key) && h.move_count <= R.move_count) ||
           tags.find(h => h.tag.includes(key))
-    keyboard_tag_data = data || {}
-    data && update_goban()
+    data && ((keyboard_tag_move_count = data.move_count), update_goban())
 }
-function reset_keyboard_tag() {keyboard_tag_data = {}; update_goban()}
+function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 
 /////////////////////////////////////////////////
 // controller
