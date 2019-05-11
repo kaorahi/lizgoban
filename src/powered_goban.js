@@ -68,9 +68,15 @@ function with_handlers(h) {return merge({board_handler, suggest_handler}, h)}
 /////////////////////////////////////////////////
 // receive analysis from leelaz
 
+// This is not equal to R.move_count and game.move_count
+// for repeated (fast) undo/redo since showboard is deferred
+// in this case for efficiency.
+let leelaz_move_count = 0
+
 function board_handler(h) {
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const board_setter = () => {
+        leelaz_move_count = h.move_count
         add_next_mark_to_stones(R.stones, game, game.move_count)
         add_info_to_stones(R.stones, game)
     }
@@ -79,7 +85,7 @@ function board_handler(h) {
             z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
         }
         add_endstate_to_stones(R.stones, R.endstate, update_p)
-        game.move_count > 0 && add_endstate_to_history(game.ref(game.move_count))
+        leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
     }
     set_renderer_state(h)
     h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
