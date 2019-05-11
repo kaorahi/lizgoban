@@ -391,7 +391,7 @@ function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
 
 // auto-analyze (redo after given visits)
 function try_auto_analyze() {
-    const done = R.max_visits >= auto_analysis_visits()
+    const done = auto_analysis_progress() >= 1
     const next = (pred, proc) => pred() ?
           proc() : (pause(), stop_auto_analyze(), update_ui())
     auto_bturn = xor(R.bturn, done)
