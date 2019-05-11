@@ -59,7 +59,7 @@ function draw_goban_until(canvas, show_until, opts) {
     })
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true,
-                draw_endstate_p: R.show_endstate, ...opts})
+                draw_endstate_diff_p: R.show_endstate, ...opts})
 }
 
 function draw_goban_with_suggest(canvas, opts) {
@@ -72,8 +72,8 @@ function draw_goban_with_suggest(canvas, opts) {
         set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
-                draw_endstate_p: R.show_endstate, tag_clickable_p: true,
-                mapping_tics_p: !opts.main_canvas_p, ...opts})
+                draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
+                tag_clickable_p: true, mapping_tics_p: !opts.main_canvas_p, ...opts})
 }
 
 function draw_goban_with_variation(canvas, suggest, opts) {
@@ -110,7 +110,8 @@ function draw_goban_with_principal_variation(canvas, options) {
 // generic goban
 
 function draw_goban(canvas, stones, opts) {
-    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
+    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p,
+           draw_endstate_p, draw_endstate_diff_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
            hovered_move, reverse_next_color_p, show_until, support_show_until_p}
           = opts || {}
@@ -140,7 +141,8 @@ function draw_goban(canvas, stones, opts) {
     !read_only && hovered_move &&
         draw_cursor(hovered_move, reverse_next_color_p, unit, idx2coord, g)
     const drawp = {
-        draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p,
+        draw_last_p, draw_next_p, draw_expected_p,
+        draw_endstate_p, draw_endstate_diff_p, large_font_p,
         draw_recent_p: draw_last_p && draw_endstate_p && !show_until,
         tag_clickable_p, hovered_move,
     }
@@ -193,7 +195,8 @@ function draw_cursor(hovered_move, reverse_next_color_p, unit, idx2coord, g) {
 
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_recent_p, draw_next_p, draw_expected_p,
-           draw_endstate_p, large_font_p, tag_clickable_p, hovered_move}
+           draw_endstate_p, draw_endstate_diff_p,
+           large_font_p, tag_clickable_p, hovered_move}
           = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
@@ -209,7 +212,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                             draw_exp(h.unexpected_move, false, h, xy))
         const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
-        draw_endstate_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
+        draw_endstate_diff_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
     each_coord((h, xy) => h.suggest && (h.data.visits > 0)
                && draw_winrate_mapping_line(h, xy, unit, g))
