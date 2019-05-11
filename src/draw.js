@@ -784,7 +784,7 @@ function draw_winrate_graph_barchart(key, mag, rgb, upside_down, h, sr2coord, g)
     const values = winrate_history_values_of(key)
     const conv = upside_down ? (val => 100 - val) : identity
     const to_r = val => conv(clip(val * mag, 0, 100))
-    const threshold = percentile(values.filter(truep), 95)
+    const threshold = num_sort(values.filter(truep)).slice(-10)[0]
     const plotter = (x, y, s, g) => {
         const [line_width, alpha] = values[s] >= threshold ? [2, 0.5] : [1, 0.3]
         g.strokeStyle = `rgba(${rgb},${alpha})`; g.lineWidth = line_width
