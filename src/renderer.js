@@ -433,8 +433,9 @@ function set_canvas_size(canvas, width, height) {
 
 document.onkeydown = e => {
     update_shift_key(e)
-    const repeated_keydown = e.repeat
     const key = (e.ctrlKey ? 'C-' : '') + e.key
+    const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
+    // GROUP 1: for input forms
     const escape = (key === "Escape" || key === "C-[")
     escape && hide_dialog()
     switch (key === "Enter" && e.target.id) {
@@ -444,15 +445,20 @@ document.onkeydown = e => {
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {
         escape && e.target.blur(); return
     }
-    const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
+    // GROUP 2: allow auto-repeat
+    const busy = (...a) => m('busy', ...a)  // stop analysis in auto-repeat
+    switch (!R.attached && key) {
+    case "ArrowLeft": case "ArrowUp":
+        busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "ArrowRight": case "ArrowDown":
+        busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
+    case "Backspace": case "Delete": busy('explicit_undo'); break;
+    case ";": busy('let_me_think_next', R.board_type); break;
+    }
+    if (e.repeat) {return}
+    // GROUP 3: usable with sabaki
     const challenging = (R.board_type === "raw" && current_board_type() === "raw" &&
-                         !R.attached && !repeated_keydown)
-    const until = showing_until()
-    const play_it = (steps, another_board) =>
-          D.target_move() ? m('play', D.target_move(), another_board) :
-          truep(until) ? (duplicate_if(another_board), m('goto_move_count', until)) :
-          truep(steps) ? m('play_best', steps) :
-          !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
+                         !R.attached)
     to_i(key) > 0 && (challenging ? m('play_weak', to_i(key) * 10) :
                       f(set_keyboard_moves_maybe, to_i(key) - 1))
     key.length === 1 && tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
@@ -466,17 +472,17 @@ document.onkeydown = e => {
     case "0": challenging ? m('play_best', null, 'pass_maybe') :
             f(set_keyboard_moves_for_next_move); return
     }
-    // busy = stop analysis during auto-repeat for efficiency
-    const busy = (...a) => m('busy', ...a)
+    // GROUP 4: stand-alone only
+    const until = showing_until()
+    const play_it = (steps, another_board) =>
+          D.target_move() ? m('play', D.target_move(), another_board) :
+          truep(until) ? (duplicate_if(another_board), m('goto_move_count', until)) :
+          truep(steps) ? m('play_best', steps) :
+          !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     switch (!R.attached && key) {
     case "C-v": m('paste_sgf_from_clipboard'); break;
     case "C-x": m('cut_sequence'); break;
     case "C-w": m('close_window_or_cut_sequence'); break;
-    case "ArrowLeft": case "ArrowUp":
-        busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
-    case "ArrowRight": case "ArrowDown":
-        busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
-    case ";": busy('let_me_think_next', R.board_type); break;
     case "[": m('previous_sequence'); break;
     case "]": m('next_sequence'); break;
     case "p": m('pass'); break;
@@ -484,7 +490,6 @@ document.onkeydown = e => {
     case "`": f(play_it, false, true); break;
     case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
         break;
-    case "Backspace": case "Delete": busy('explicit_undo'); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
     case "a": f(toggle_auto_analyze_visits); break;
