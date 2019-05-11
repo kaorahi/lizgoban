@@ -283,7 +283,7 @@ function mouse2move(e, coord2idx) {
 function goto_idx_maybe(idx, another_board, forcep) {
     const s = aa_ref(R.stones, ...idx) || {}
     return s.stone && (forcep || s.tag) &&
-        (duplicate_if(another_board), main('goto_move_count', s.move_count - 1),
+        (duplicate_if(another_board), main('goto_move_count', s.move_count),
          wink(), true)
 }
 
@@ -448,8 +448,7 @@ document.onkeydown = e => {
     const until = showing_until()
     const play_it = (steps, another_board) =>
           D.target_move() ? m('play', D.target_move(), another_board) :
-          truep(until) ? (duplicate_if(another_board),
-                          m('goto_move_count', until - 1)) :
+          truep(until) ? (duplicate_if(another_board), m('goto_move_count', until)) :
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     to_i(key) > 0 && (challenging ? m('play_weak', to_i(key) * 10) :
@@ -517,7 +516,7 @@ function reset_keyboard_moves() {keyboard_moves = []; update_goban()}
 
 function set_keyboard_tag_maybe(key) {
     const tags = R.history_tags.slice().reverse()
-    const data = tags.find(h => h.tag.includes(key) && h.move_count <= R.move_count) ||
+    const data = tags.find(h => h.tag.includes(key) && h.move_count < R.move_count) ||
           tags.find(h => h.tag.includes(key))
     data && ((keyboard_tag_move_count = data.move_count), update_goban())
 }
