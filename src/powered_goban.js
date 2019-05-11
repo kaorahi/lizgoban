@@ -2,6 +2,7 @@ require('./util.js').use(); require('./coord.js').use()
 const PATH = require('path')
 
 // state
+let endstate_diff_interval = 12
 let initial_b_winrate = NaN, winrate_trail = true
 let R, on_change, M, V
 function initialize(...args) {  // fixme: ugly
@@ -40,7 +41,7 @@ function board_handler(h) {
         add_info_to_stones(R.stones, game)
     }
     const endstate_setter = update_p => {
-        const prev = R.move_count - V().endstate_diff_interval
+        const prev = R.move_count - endstate_diff_interval
         const prev_endstate = update_p && game.ref(prev).endstate
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
@@ -74,7 +75,6 @@ function set_renderer_state(...args) {
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
     const endstate_sum = leelaz_for_endstate && average_endstate_sum()
-    const endstate_diff_interval = V().endstate_diff_interval
     const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
     const stored_keys = ['lizzie_style', 'expand_winrate_bar', 'let_me_think',
                          'show_endstate']
@@ -222,7 +222,6 @@ function weight_info_text() {
 
 function append_endstate_tag_maybe(h) {
     const h_copy = merge({}, h)
-    const endstate_diff_interval = V().endstate_diff_interval
     leelaz_for_endstate && R.show_endstate &&
         h.move_count === R.move_count - endstate_diff_interval &&
         add_tag(h_copy, endstate_diff_tag_letter)
@@ -242,7 +241,7 @@ function add_info_to_stones(stones, game) {
         add_tag(s, h.tag)
         s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
         leelaz_for_endstate && truep(s.move_count) &&
-            (R.move_count - V().endstate_diff_interval < s.move_count) && (s.recent = true)
+            (R.move_count - endstate_diff_interval < s.move_count) && (s.recent = true)
         !s.anytime_stones && (s.anytime_stones = [])
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
@@ -282,7 +281,6 @@ function set_pondering(pondering) {
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
 }
 function update_leelaz() {leelaz.update()}
-function update_endstate() {leelaz_for_endstate.update()}
 function all_start_args() {
     const f = lz => lz && lz.start_args()
     return {black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
@@ -300,6 +298,12 @@ function start_endstate(leelaz_start_args, endstate_option) {
     leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
 }
 
+function get_endstate_diff_interval() {return endstate_diff_interval}
+function add_endstate_diff_interval(k) {
+    endstate_diff_interval = clip(endstate_diff_interval + k, 2)
+    leelaz_for_endstate.update()
+}
+
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'restart']
 module.exports = {
     initialize, set_board, switch_leelaz,
@@ -309,8 +313,9 @@ module.exports = {
     load_leelaz_for_white, unload_leelaz_for_white,
     swap_leelaz_for_black_and_white,
     leelaz_weight_file, start_leelaz,
-    each_leelaz, update_leelaz, update_endstate, all_start_args,
+    each_leelaz, update_leelaz, all_start_args,
     leelaz_for_white_p, leelaz_for_endstate_p, set_pondering,
+    get_endstate_diff_interval, add_endstate_diff_interval,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)]))
 }

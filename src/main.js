@@ -55,7 +55,7 @@ P.initialize(R, update_let_me_think,
               show_suggest_p, try_auto, peek_main,
              })
 function peek_main() {
-    return {game, auto_bturn, renderer, endstate_diff_interval}
+    return {game, auto_bturn, renderer}
 }
 
 // state
@@ -65,7 +65,6 @@ let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 const simple_ui = false
 let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
 let pausing = false, busy = false
-let endstate_diff_interval = 12
 
 // sabaki
 let attached = false, has_sabaki = true
@@ -333,7 +332,7 @@ function menu_template(win) {
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
         ...insert_if(P.leelaz_for_endstate_p(),
             sep,
-            store_toggler_menu_item(`Endstate (diff: ${endstate_diff_interval} moves)`, 'show_endstate', 'Shift+E'),
+            store_toggler_menu_item(`Endstate (diff: ${P.get_endstate_diff_interval()} moves)`, 'show_endstate', 'Shift+E'),
             item('...longer diff', '{', endstate_diff_interval_adder(10),
                  false, R.show_endstate, true),
             item('...shorter diff', '}', endstate_diff_interval_adder(-10),
@@ -586,10 +585,7 @@ function info() {
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
 }
 function endstate_diff_interval_adder(k) {
-    return () => {
-        endstate_diff_interval = clip(endstate_diff_interval + k, 2)
-        P.update_endstate()
-    }
+    return () => P.add_endstate_diff_interval(k)
 }
 
 /////////////////////////////////////////////////
