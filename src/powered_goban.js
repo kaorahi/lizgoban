@@ -304,9 +304,13 @@ function add_endstate_diff_interval(k) {
     leelaz_for_endstate.update()
 }
 
+function switch_to_random_leelaz(percent) {
+    switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
+}
+
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'restart']
 module.exports = {
-    initialize, set_board, switch_leelaz,
+    initialize, set_board, switch_to_random_leelaz,
     stone_for_history_elem, new_tag, set_renderer_state, set_and_render,
     append_endstate_tag_maybe,
     board_handler, suggest_handler, load_leelaz_for_black,
