@@ -13,6 +13,7 @@ const MAYBE_BLACK = "rgba(0,0,0,0.5)", MAYBE_WHITE = "rgba(255,255,255,0.5)"
 const VAGUE_BLACK = 'rgba(0,0,0,0.3)', VAGUE_WHITE = 'rgba(255,255,255,0.3)'
 const PALE_BLUE = "rgba(128,128,255,0.5)"
 const PALE_BLACK = "rgba(0,0,0,0.1)", PALE_WHITE = "rgba(255,255,255,0.3)"
+const PALER_BLACK = "rgba(0,0,0,0.07)", PALER_WHITE = "rgba(255,255,255,0.21)"
 const PALE_RED = "rgba(255,0,0,0.1)", PALE_GREEN = "rgba(0,255,0,0.1)"
 const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)'
 const WINRATE_BAR_ORDER_COLOR = '#d00', WINRATE_BAR_FIRST_ORDER_COLOR = '#0a0'
@@ -49,7 +50,7 @@ function draw_goban_until(canvas, show_until, opts) {
             h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
             h.stone = true
         } else {
-            h.stone && ((h.displayed_colors = [PALE_BLACK, PALE_WHITE]),
+            h.stone && ((h.displayed_colors = [PALER_BLACK, PALER_WHITE]),
                         (h.last = false))
         }
         h.displayed_tag = h.tag
