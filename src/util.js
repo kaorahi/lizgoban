@@ -7,6 +7,7 @@ E.to_f = x => (x - 0)
 E.to_s = x => (x + '')
 E.xor = (a, b) => (!a === !!b)
 E.truep = x => (x || x === 0 || x === '')
+E.do_nothing = () => {}
 E.clip = (x, lower, upper) => Math.max(lower, Math.min(x, upper || Infinity))
 // E.sum = a => a.reduce((r,x) => r + x, 0)
 // E.clone = x => JSON.parse(JSON.stringify(x))
