@@ -580,10 +580,10 @@ function help() {
 function info() {
     const f = (label, s) => s ?
           `<${label}>\n` + fold_text(JSON.stringify(s), 80, 5) + '\n\n' : ''
+    const sa = P.all_start_args()
     const lz = P.leelaz_for_white_p() ?
-          (f("leelaz (black)", L().leelaz_for_black.start_args()) +
-           f("leelaz (white)", L().leelaz_for_white.start_args())) :
-          f("leelaz", L().leelaz.start_args())
+          (f("leelaz (black)", sa.black) + f("leelaz (white)", sa.white)) :
+          f("leelaz", sa.both)
     const message = lz +
           f("sgf file", game.sgf_file) +
           f("sgf", game.sgf_str)
