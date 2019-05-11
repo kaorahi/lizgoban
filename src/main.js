@@ -737,8 +737,8 @@ function insert_sequence(new_game, switch_to, before) {
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    store_move_count(game); P.set_board(null); goto_nth_sequence(wrapped_n)
-    R.move_count = 0; redo_ntimes(game.move_count); update_state()
+    store_move_count(game); goto_nth_sequence(wrapped_n)
+    P.set_board(game, game.move_count); update_state()
 }
 
 function store_move_count(game) {game.move_count = R.move_count}

@@ -22,7 +22,7 @@ let R, on_change, on_suggest, M
 function initialize(...args) {[R, {on_change, on_suggest}, M] = args}  // fixme: ugly
 
 function set_board(game, move_count) {
-    const hist = game ? game.array_until(move_count) : []
+    const hist = game.array_until(move_count)
     each_leelaz(z => z.set_board(hist)); R.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
