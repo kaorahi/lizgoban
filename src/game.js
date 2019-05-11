@@ -36,7 +36,7 @@ function create_game(init_history, init_prop) {
         shorten_to: mc => history.splice(mc),
         last_move: () => (last(history) || {}).move,
         set_last_loaded_element: () => self.last_loaded_element = last(history),
-        shallow_copy: () => create_game(history.slice(), merge({}, prop, {
+        shallow_copy: () => create_game(history.slice(), merge({}, self, {
             id: new_game_id(), last_loaded_element: null
         })),
         set_with_reuse: new_history => {
