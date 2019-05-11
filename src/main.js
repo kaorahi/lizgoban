@@ -1178,7 +1178,7 @@ function save_sgf() {
 
 function history_to_sgf(hist) {
     const f = (t, p) => `${t}[${SGF.escapeString(p || '')}]`
-    return `(;KM[7.5]${f('PW', history.player_white)}${f('PB', history.player_black)}` +
+    return `(;KM[7.5]${f('PW', hist.player_white)}${f('PB', hist.player_black)}` +
         hist.map(({move: move, is_black: is_black}) =>
                  (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
         ')'
