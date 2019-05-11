@@ -607,11 +607,7 @@ function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
 function set_or_unset_busy(bool) {busy = bool; update_ponder()}
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
-function update_ponder() {
-    const pondering = !pausing && !busy, b = (L().leelaz === L().leelaz_for_black)
-    L().leelaz_for_black.set_pondering(pondering && b)
-    P.leelaz_for_white_p() && L().leelaz_for_white.set_pondering(pondering && !b)
-}
+function update_ponder() {P.set_pondering(!pausing && !busy)}
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {L().leelaz.update()}
 

@@ -276,6 +276,12 @@ function leelaz_weight_file(leelaz_for_black_or_white) {
 function leelaz_for_white_p() {return !!leelaz_for_white}
 function leelaz_for_endstate_p() {return !!leelaz_for_endstate}
 
+function set_pondering(pondering) {
+    const b = (leelaz === leelaz_for_black)
+    leelaz_for_black.set_pondering(pondering && b)
+    leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
+}
+
 function L() {return {leelaz, leelaz_for_black, leelaz_for_white, leelaz_for_endstate}}
 
 module.exports = {
@@ -288,5 +294,5 @@ module.exports = {
     swap_leelaz_for_black_and_white,
     leelaz_weight_file, start_endstate,
     each_leelaz,
-    leelaz_for_white_p, leelaz_for_endstate_p,
+    leelaz_for_white_p, leelaz_for_endstate_p, set_pondering,
 }
