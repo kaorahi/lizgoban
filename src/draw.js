@@ -680,6 +680,7 @@ function draw_winrate_graph(canvas, show_until, goto_move_count, unset_busy) {
     draw_winrate_graph_frame(w, h, tics, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_hotness(h, sr2coord, g)
+    draw_winrate_graph_uncertainty(h, sr2coord, g)
     draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     const goto_here = e =>
@@ -756,6 +757,19 @@ function draw_winrate_graph_hotness(h, sr2coord, g) {
         const [x, y] = sr2coord(s, to_r(hot))
         g.strokeStyle = `rgba(255,128,0,${alpha})`; g.lineWidth = line_width
         line([x, y], [x, h], g)
+    })
+}
+
+function draw_winrate_graph_uncertainty(h, sr2coord, g) {
+    const to_r = hot => (1 - 0.1 * hot) * 100
+    const hots = R.winrate_history.map(h => h.uncertainty)
+    const threshold = percentile(hots.filter(truep), 95)
+    hots.forEach((hot, s) => {
+        if (!truep(hot)) {return}
+        const [line_width, alpha] = hot >= threshold ? [2, 0.5] : [1, 0.3]
+        const [x, y] = sr2coord(s, to_r(hot))
+        g.strokeStyle = `rgba(255,255,255,${alpha})`; g.lineWidth = line_width
+        line([x, y], [x, 0], g)
     })
 }
 

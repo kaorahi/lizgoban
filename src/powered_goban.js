@@ -99,7 +99,7 @@ function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
     const cur = game.ref(game.move_count)
-    game.move_count > 0 && (cur.suggest = h.suggest)
+    game.move_count > 0 && ((cur.suggest = h.suggest), (cur.visits = h.visits))
     game.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
     set_and_render(h); on_suggest()
 }
@@ -256,9 +256,11 @@ function winrate_from_game(game) {
         const pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const score_without_komi = average_endstate_sum(s)
         const hotness = h.hotness
+        const best = (h.suggest || [])[0]
+        const uncertainty = best && (1 - best.visits / h.visits)
         // drop "pass" to save data size for IPC
-        return merge({r, move_b_eval, move_eval, tag, score_without_komi, hotness},
-                     pass ? {pass} : {predict})
+        return merge({r, move_b_eval, move_eval, tag, score_without_komi, hotness,
+                      uncertainty}, pass ? {pass} : {predict})
     })
 }
 

@@ -8,6 +8,7 @@ E.to_s = x => (x + '')
 E.xor = (a, b) => (!a === !!b)
 E.truep = x => (x || x === 0 || x === '')
 E.do_nothing = () => {}
+E.identity = x => x
 E.clip = (x, lower, upper) => Math.max(lower, Math.min(x, upper || Infinity))
 // E.sum = a => a.reduce((r,x) => r + x, 0)
 // E.clone = x => JSON.parse(JSON.stringify(x))
@@ -15,7 +16,8 @@ E.merge = Object.assign
 E.empty = a => !a || (a.length === 0)
 E.last = a => a[a.length - 1]
 E.flatten = a => [].concat(...a)
-E.percentile = (a, p) => a.slice().sort((x, y) => x - y)[to_i(a.length * p / 100)]
+E.sort_by = (a, f) => a.slice().sort((x, y) => f(x) - f(y))
+E.percentile = (a, p) => E.sort_by(a, E.identity)[to_i(a.length * p / 100)]
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 E.array2hash = a => {
     const h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h
