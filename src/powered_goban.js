@@ -205,8 +205,6 @@ function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 /////////////////////////////////////////////////
 // winrate history
 
-function winrate_before(move_count) {return winrate_after(move_count - 1)}
-
 function winrate_after(move_count) {
     const or_NaN = x => truep(x) ? x : NaN
     return move_count < 0 ? NaN :
