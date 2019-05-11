@@ -4,10 +4,8 @@ const PATH = require('path')
 // state
 let endstate_diff_interval = 12
 let initial_b_winrate = NaN, winrate_trail = true
-let R, on_change, M
-function initialize(...args) {  // fixme: ugly
-    [R, on_change, M] = args
-}
+let R, on_change, on_suggest, M
+function initialize(...args) {[R, {on_change, on_suggest}, M] = args}  // fixme: ugly
 
 // leelaz
 const {create_leelaz} = require('./engine.js')
@@ -62,7 +60,7 @@ function suggest_handler(h) {
     const cur = game.ref(R.move_count)
     R.move_count > 0 && (cur.suggest = h.suggest)
     R.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
-    set_and_render(h); M.try_auto()
+    set_and_render(h); on_suggest()
 }
 
 /////////////////////////////////////////////////

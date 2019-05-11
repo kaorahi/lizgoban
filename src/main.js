@@ -49,8 +49,8 @@ const R = {stones: aa_new(19, 19, () => ({}))}
 // modules
 const {create_game} = require('./game.js')
 const P = require('./powered_goban.js')
-P.initialize(R, update_let_me_think, {
-    current_game, render, try_auto, update_state, update_ponder, show_suggest_p,
+P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
+    current_game, render, update_state, update_ponder, show_suggest_p,
     auto_progress, is_auto_bturn, leelaz_weight_option_pos_in_args, store,
 })
 function render(given_R) {renderer('render', given_R)}
