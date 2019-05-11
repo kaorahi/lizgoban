@@ -268,10 +268,11 @@ function hover_off(canvas) {
 }
 
 function set_hovered_move_count(move) {
-    const [i, j] = move2idx(move || '') || [-1, -1], s = aa_ref(R.stones, i, j)
-    hovered_move_count =
-        s && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
-    update_showing_until()
+    const f = () => {
+        const ij = move2idx(move), s = ij && aa_ref(R.stones, ...ij)
+        return s && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
+    }
+    hovered_move_count = move && (f() || R.move_count); update_showing_until()
 }
 
 function mouse2coord(e) {
