@@ -27,7 +27,8 @@ const R = {
     window_id: -1,
 }
 let temporary_board_type = null
-let keyboard_moves = [], keyboard_tag_move_count = null, hovered_move_count = null
+let keyboard_moves = [], keyboard_tag_move_count = null
+let hovered_move = null, hovered_move_count = null, hovered_canvas = null
 let thumbnails = []
 
 // drawer
@@ -139,13 +140,14 @@ function with_opts(d, opts) {
     return c => d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
         reverse_next_color_p: is_shift_key_down() && R.move_count > 0,
+        hovered_move: if_hovered_on(c, hovered_move),
         play_here, hover_here, hover_off, ...(opts || {})
     })
 }
 
 const draw_main = c =>
       // need to eval in runtime
-      with_opts(D.draw_main_goban, {show_until: showing_until()})(c)
+      with_opts(D.draw_main_goban, {show_until: showing_until(c)})(c)
 const draw_pv = with_opts(D.draw_goban_with_principal_variation)
 const draw_raw_gen = options => {
     const draw = (c, opts) => D.draw_goban(c, null, opts)
@@ -219,8 +221,11 @@ function update_goban() {
 }
 
 function selected_suggest(canvas) {
-    const m = keyboard_moves[0] || canvas.lizgoban_hovered_move
+    const m = keyboard_moves[0] || if_hovered_on(canvas, hovered_move)
     return R.suggest.find(h => h.move === m) || {}
+}
+function if_hovered_on(canvas, val) {
+    return (!canvas || (canvas === hovered_canvas)) && val
 }
 
 function current_board_type() {return temporary_board_type || R.board_type}
@@ -249,17 +254,17 @@ function play_here(e, coord2idx, tag_clickable_p) {
 }
 
 function hover_here(e, coord2idx, canvas) {
-    const old = canvas.lizgoban_hovered_move
-    const move = canvas.lizgoban_hovered_move = mouse2move(e, coord2idx)
-    e.shiftKey && set_hovered(move)
-    if (canvas.lizgoban_hovered_move != old) {update_goban()}
+    const old = hovered_move
+    hovered_move = mouse2move(e, coord2idx); hovered_canvas = canvas
+    e.shiftKey && set_hovered_move_count(hovered_move)
+    if (hovered_move != old) {update_goban()}
 }
 
 function hover_off(canvas) {
-    canvas.lizgoban_hovered_move = undefined; set_hovered(null); update_goban()
+    hovered_move = undefined; set_hovered_move_count(null); update_goban()
 }
 
-function set_hovered(move) {
+function set_hovered_move_count(move) {
     const [i, j] = move2idx(move || '') || [-1, -1], s = aa_ref(R.stones, i, j)
     hovered_move_count =
         (s && s.stone && (s.move_count !== R.move_count) && s.move_count)
@@ -492,7 +497,7 @@ document.onkeydown = e => {
 
 document.onkeyup = e => {
     update_shift_key(e)
-    keydown = false; reset_keyboard_tag(); set_hovered(null);
+    keydown = false; reset_keyboard_tag(); set_hovered_move_count(null);
     (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
     case "z": case "x": set_temporary_board_type(null); return
@@ -521,7 +526,9 @@ function set_keyboard_tag_maybe(key) {
     data && ((keyboard_tag_move_count = data.move_count), update_goban())
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
-function showing_until() {return keyboard_tag_move_count || hovered_move_count}
+function showing_until(canvas) {
+    return keyboard_tag_move_count || if_hovered_on(canvas, hovered_move_count)
+}
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
 }

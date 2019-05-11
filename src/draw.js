@@ -111,14 +111,13 @@ function draw_goban_with_principal_variation(canvas, options) {
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
-           reverse_next_color_p}
+           hovered_move, reverse_next_color_p}
           = opts || {}
     const large_font_p = !opts.main_canvas_p
     const margin = canvas.height * 0.05, hm = margin / 2
     const g = canvas.getContext("2d")
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
-    const hovered_move = canvas.lizgoban_hovered_move
     // call proc if first_board_canvas is not set yet
     const if_first_board = proc => (first_board_canvas || proc())
     const draw_progress_and_memorize_canvas = () => {
@@ -141,7 +140,7 @@ function draw_goban(canvas, stones, opts) {
         draw_cursor(hovered_move, reverse_next_color_p, unit, idx2coord, g)
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p,
-        draw_recent_p: draw_last_p && draw_endstate_p, tag_clickable_p,
+        draw_recent_p: draw_last_p && draw_endstate_p, tag_clickable_p, hovered_move,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
@@ -192,7 +191,7 @@ function draw_cursor(hovered_move, reverse_next_color_p, unit, idx2coord, g) {
 
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_recent_p, draw_next_p, draw_expected_p,
-           draw_endstate_p, large_font_p, tag_clickable_p}
+           draw_endstate_p, large_font_p, tag_clickable_p, hovered_move}
           = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
@@ -206,8 +205,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
-        const highlight_tag_p = tag_clickable_p &&
-              idx2move(...idx) === g.canvas.lizgoban_hovered_move
+        const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
         draw_endstate_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
