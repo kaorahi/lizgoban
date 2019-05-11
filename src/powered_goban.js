@@ -106,9 +106,6 @@ function set_renderer_state(...args) {
     const network_size = leelaz.network_size()
     const endstate_sum = leelaz_for_endstate && average_endstate_sum()
     const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
-    const stored_keys = ['lizzie_style', 'expand_winrate_bar', 'let_me_think',
-                         'show_endstate']
-    stored_keys.forEach(key => R[key] = M.store.get(key, false))
     merge(R, {winrate_history, endstate_sum,
               progress_bturn, weight_info, network_size,
               previous_suggest, winrate_trail}, endstate_d_i, ...args)
@@ -290,7 +287,7 @@ module.exports = {
     leelaz_for_endstate_p, append_endstate_tag_maybe,
     get_endstate_diff_interval, add_endstate_diff_interval,
     // renderer
-    set_renderer_state, set_and_render,
+    set_and_render,
     // util
     stone_for_history_elem,
     // leelaz methods

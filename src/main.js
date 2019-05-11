@@ -44,7 +44,9 @@ debug_log("option: " + JSON.stringify(option))
 // renderer state
 // (cf.) "set_renderer_state" in powered_goban.js
 // (cf.) "the_board_handler" and "the_suggest_handler" in engine.js
-const R = {stones: aa_new(19, 19, () => ({}))}
+const stored_keys_for_renderer =
+      ['lizzie_style', 'expand_winrate_bar', 'let_me_think', 'show_endstate']
+const R = {stones: aa_new(19, 19, () => ({}))}; fetch_stored_keys()
 
 // modules
 const {create_game} = require('./game.js')
@@ -52,7 +54,7 @@ const P = require('./powered_goban.js')
 P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
     // functions used in powered_goban.js
     current_game, render, update_state, update_ponder, show_suggest_p,
-    auto_progress, is_auto_bturn, leelaz_weight_option_pos_in_args, store,
+    auto_progress, is_auto_bturn, leelaz_weight_option_pos_in_args,
 })
 function render(given_R) {renderer('render', given_R)}
 function is_auto_bturn() {return auto_bturn}
@@ -122,7 +124,7 @@ function new_window(default_board_type) {
     merge(prop, {
         window_id, board_type: board_type || default_board_type, previous_board_type
     })
-    win.on('close', () => store.set(conf_key, {
+    win.on('close', () => set_stored(conf_key, {
         board_type: prop.board_type, previous_board_type: prop.previous_board_type,
         position: win.getPosition(), size: win.getSize()
     }))
@@ -373,7 +375,8 @@ function store_toggler_menu_item(label, key, accelerator, on_click) {
 }
 
 function toggle_stored(key) {
-    store.set(key, !store.get(key)); update_state(); return store.get(key)
+    const val = !(stored_keys_for_renderer.includes(key) ? R[key] : store.get(key))
+    set_stored(key, val); update_state(); return val
 }
 
 /////////////////////////////////////////////////
@@ -659,7 +662,7 @@ function let_me_think_exit_autoplay() {let_me_think_set_board_type_for('latter_h
 function toggle_let_me_think() {set_let_me_think(!let_me_think_p())}
 function stop_let_me_think() {set_let_me_think(false)}
 function set_let_me_think(val) {
-    store.set('let_me_think', val); update_let_me_think(); update_state()
+    set_stored('let_me_think', val); update_let_me_think(); update_state()
 }
 function let_me_think_p() {return store.get('let_me_think')}
 
@@ -756,7 +759,6 @@ function exist_deleted_sequence() {return !empty(deleted_sequences)}
 // utils for updating renderer state
 
 function update_state() {
-    P.set_renderer_state()  // need to update R.show_endstate
     const history_length = game.len(), sequence_length = sequence.length, suggest = []
     const sequence_ids = sequence.map(h => h.id)
     const pick_tagged = h => {
@@ -774,6 +776,13 @@ function update_state() {
 
 function update_ui(ui_only) {
     update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
+}
+
+function set_stored(key, val) {
+    store.set(key, val); stored_keys_for_renderer.includes(key) && (R[key] = val)
+}
+function fetch_stored_keys() {
+    stored_keys_for_renderer.forEach(key => R[key] = store.get(key, false))
 }
 
 function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
