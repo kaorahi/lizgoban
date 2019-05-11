@@ -72,7 +72,7 @@ function draw_goban_with_suggest(canvas, opts) {
         set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
-                draw_endstate_p: R.show_endstate,
+                draw_endstate_p: R.show_endstate, tag_clickable_p: true,
                 mapping_tics_p: !opts.main_canvas_p, ...opts})
 }
 
@@ -143,8 +143,9 @@ function draw_goban(canvas, stones, opts) {
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
-    canvas.onmousedown = e => (!read_only && !R.attached &&
-                               (opts.play_here(e, coord2idx), opts.hover_off(canvas)))
+    canvas.onmousedown = e =>
+        (!read_only && !R.attached &&
+         (opts.play_here(e, coord2idx, opts.tag_clickable_p), opts.hover_off(canvas)))
     canvas.onmousemove = e => opts.hover_here(e, coord2idx, canvas)
     canvas.onmouseleave = e => opts.hover_off(canvas)
 }

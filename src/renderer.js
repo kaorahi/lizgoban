@@ -237,10 +237,10 @@ function double_boards_p() {return R.board_type.match(/^double_boards/)}
 /////////////////////////////////////////////////
 // mouse action
 
-function play_here(e, coord2idx) {
+function play_here(e, coord2idx, tag_clickable_p) {
     const move = mouse2move(e, coord2idx); if (!move) {return}
-    const another_board = e.ctrlKey, pass = e.shiftKey && R.move_count > 0
-    goto_idx_maybe(move2idx(move), another_board) ||
+    const another_board = e.ctrlKey, pass = e.shiftKey && R.move_count > 0;
+    (tag_clickable_p && goto_idx_maybe(move2idx(move), another_board)) ||
         (pass && main('pass'), main('play', move, !!another_board))
 }
 
