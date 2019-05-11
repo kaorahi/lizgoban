@@ -435,7 +435,6 @@ let keydown = false
 
 document.onkeydown = e => {
     update_shift_key(e)
-    update_showing_until()
     const repeated_keydown = keydown; keydown = true
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const escape = (key === "Escape" || key === "C-[")
@@ -506,7 +505,10 @@ document.onkeyup = e => {
 }
 
 let shift_key_down = false
-function update_shift_key(e) {shift_key_down = e.shiftKey}
+function update_shift_key(e) {
+    shift_key_down = e.shiftKey
+    set_hovered_move_count(shift_key_down && hovered_move)
+}
 function is_shift_key_down() {return shift_key_down}
 
 function set_keyboard_moves_maybe(n) {
