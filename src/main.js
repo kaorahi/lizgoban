@@ -168,7 +168,7 @@ const api = merge({}, simple_api, {
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
     // for debug
-    send_to_leelaz: P.leelaz().send_to_leelaz,
+    send_to_leelaz: P.send_to_leelaz,
 })
 
 function api_handler(channel, handler, busy) {
@@ -483,7 +483,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const move = (weaken_method === 'random_candidate' ?
                   weak_move(...weaken_args) : best_move())
     const pass_maybe =
-          () => P.leelaz().peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
+          () => P.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
     const play_it = () => {
         decrement_auto_play_count()
         weaken_method === 'pass_maybe' ? pass_maybe() : play(move)
@@ -827,7 +827,7 @@ function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 // restart
 function restart() {restart_with_args()}
 function restart_with_args(h) {
-    P.leelaz().restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
+    P.restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
 }
 let last_restart_time = 0
 function auto_restart() {

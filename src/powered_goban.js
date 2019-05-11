@@ -300,15 +300,17 @@ function start_endstate(leelaz_start_args, endstate_option) {
     leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
 }
 
+const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'restart']
 module.exports = {
     initialize, set_board, switch_leelaz,
     stone_for_history_elem, new_tag, set_renderer_state, set_and_render,
     append_endstate_tag_maybe,
-    leelaz: () => leelaz,
     board_handler, suggest_handler, load_leelaz_for_black,
     load_leelaz_for_white, unload_leelaz_for_white,
     swap_leelaz_for_black_and_white,
     leelaz_weight_file, start_leelaz,
     each_leelaz, update_leelaz, update_endstate, all_start_args,
     leelaz_for_white_p, leelaz_for_endstate_p, set_pondering,
+    ...aa2hash(exported_from_leelaz.map(key =>
+                                        [key, (...args) => leelaz[key](...args)]))
 }
