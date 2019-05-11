@@ -6,23 +6,20 @@
 require('./util.js').use(); require('./coord.js').use()
 const PATH = require('path')
 
-// state
-let endstate_diff_interval = 12, initial_b_winrate = NaN
-const winrate_trail = true
-let R, on_change, on_suggest, M
-function initialize(...args) {[R, {on_change, on_suggest}, M] = args}  // fixme: ugly
-
 // leelaz
 const {create_leelaz} = require('./engine.js')
 let leelaz = create_leelaz(), leelaz_for_black = leelaz
 let leelaz_for_white = null, leelaz_for_endstate = null
 
-function each_leelaz(f) {
-    [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
-}
+// state
+let endstate_diff_interval = 12, initial_b_winrate = NaN
+const winrate_trail = true
+let R, on_change, on_suggest, M
 
 /////////////////////////////////////////////////
-// set_board
+// basic
+
+function initialize(...args) {[R, {on_change, on_suggest}, M] = args}  // fixme: ugly
 
 function set_board(game, move_count) {
     const hist = game ? game.array_until(move_count) : []
@@ -34,7 +31,33 @@ function set_board(game, move_count) {
 }
 
 /////////////////////////////////////////////////
-// main flow (4) receive analysis from leelaz
+// leelaz
+
+function start_leelaz(leelaz_start_args, endstate_option) {
+    leelaz.start(leelaz_start_args())
+    endstate_option && start_endstate(leelaz_start_args, endstate_option)
+}
+function update_leelaz() {leelaz.update()}
+function set_pondering(pondering) {
+    const b = (leelaz === leelaz_for_black)
+    leelaz_for_black.set_pondering(pondering && b)
+    leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
+}
+function each_leelaz(f) {
+    [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
+}
+function all_start_args() {
+    const f = lz => lz && lz.start_args()
+    return {black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
+}
+function leelaz_weight_file(leelaz_for_black_or_white) {
+    const k = M.leelaz_weight_option_pos_in_args()
+    const arg = (leelaz_for_black_or_white || leelaz).start_args()
+    return (k >= 0) && arg && arg.leelaz_args[k + 1]
+}
+
+/////////////////////////////////////////////////
+// receive analysis from leelaz
 
 function board_handler(h) {
     const game = M.current_game()
@@ -69,7 +92,7 @@ function suggest_handler(h) {
 }
 
 /////////////////////////////////////////////////
-// main flow (5) change renderer state and send it to renderer
+// change renderer state and send it to renderer
 
 function set_renderer_state(...args) {
     const winrate_history = winrate_from_game(M.current_game())
@@ -100,10 +123,20 @@ function set_and_render(...args) {
 /////////////////////////////////////////////////
 // another leelaz for white
 
+function leelaz_for_white_p() {return !!leelaz_for_white}
+function swap_leelaz_for_black_and_white() {
+    if (!leelaz_for_white) {return}
+    const old_black = leelaz_for_black
+    leelaz_for_black = leelaz_for_white; leelaz_for_white = old_black
+    leelaz_for_black.activate(!leelaz_for_endstate); leelaz_for_white.activate(false)
+    switch_leelaz()
+}
+function switch_to_random_leelaz(percent) {
+    switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
+}
 function load_leelaz_for_black(load_weight) {
     with_temporary_leelaz(leelaz_for_black, load_weight)
 }
-
 function load_leelaz_for_white(load_weight) {
     const proc = () => {
         leelaz_for_white.activate(false)
@@ -111,34 +144,63 @@ function load_leelaz_for_white(load_weight) {
     }
     with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
 }
-
 function unload_leelaz_for_white() {
     switch_to_another_leelaz(leelaz_for_black)
     leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
     M.update_state()
 }
 
+// internal
+
 function with_temporary_leelaz(leelaz_for_black_or_white, proc) {
     leelaz = leelaz_for_black_or_white; proc()
     leelaz = leelaz_for_black; switch_leelaz()
 }
-
 function switch_leelaz(bturn) {
     switch_to_another_leelaz((bturn === undefined ? R.bturn : bturn) ?
                              leelaz_for_black : leelaz_for_white)
 }
-
 function switch_to_another_leelaz(next_leelaz) {
     next_leelaz && next_leelaz !== leelaz &&
         (leelaz = next_leelaz) && (M.update_ponder(), M.update_state())
 }
 
-function swap_leelaz_for_black_and_white() {
-    if (!leelaz_for_white) {return}
-    const old_black = leelaz_for_black
-    leelaz_for_black = leelaz_for_white; leelaz_for_white = old_black
-    leelaz_for_black.activate(!leelaz_for_endstate); leelaz_for_white.activate(false)
-    switch_leelaz()
+/////////////////////////////////////////////////
+// endstate
+
+function leelaz_for_endstate_p() {return !!leelaz_for_endstate}
+function append_endstate_tag_maybe(h) {
+    const h_copy = merge({}, h)
+    leelaz_for_endstate && R.show_endstate &&
+        h.move_count === R.move_count - endstate_diff_interval &&
+        add_tag(h_copy, endstate_diff_tag_letter)
+    return h_copy
+}
+function get_endstate_diff_interval() {return endstate_diff_interval}
+function add_endstate_diff_interval(k) {
+    endstate_diff_interval = clip(endstate_diff_interval + k, 2)
+    leelaz_for_endstate.update()
+}
+
+function start_endstate(leelaz_start_args, endstate_option) {
+    leelaz.activate(false)
+    const [lz_command, weight] = endstate_option
+    const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
+    leelaz_for_endstate = create_leelaz()
+    leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
+}
+function add_endstate_to_stones(stones, endstate, prev_endstate) {
+    if (!endstate) {return}
+    stones.forEach((row, i) => row.forEach((s, j) => {
+        s.endstate = endstate[i][j]
+        prev_endstate && (s.endstate_diff = s.endstate - prev_endstate[i][j])
+    }))
+}
+function average_endstate_sum(move_count) {
+    const game = M.current_game()
+    const mc = truep(move_count) || R.move_count
+    const [cur, prev] = [0, 1].map(k => game.ref(mc - k).endstate_sum)
+    return truep(cur) && truep(prev) && (cur + prev) / 2
 }
 
 /////////////////////////////////////////////////
@@ -197,16 +259,10 @@ function new_tag() {
     next_tag_count = tag_count + 1
     return normal_tag_letters[tag_count]
 }
+function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
 /////////////////////////////////////////////////
-// utils for updating renderer state
-
-function average_endstate_sum(move_count) {
-    const game = M.current_game()
-    const mc = truep(move_count) || R.move_count
-    const [cur, prev] = [0, 1].map(k => game.ref(mc - k).endstate_sum)
-    return truep(cur) && truep(prev) && (cur + prev) / 2
-}
+// misc. utils for updating renderer state
 
 function get_previous_suggest() {
     const [cur, prev] = [0, 1].map(k => M.current_game().ref(R.move_count - k))
@@ -215,29 +271,16 @@ function get_previous_suggest() {
     ret && (ret.bturn = !prev.is_black)
     return ret
 }
-
 function weight_info_text() {
     const f = lz =>
           `${PATH.basename(leelaz_weight_file(lz)) || ''} ${lz.network_size() || ''}`
     return leelaz_for_white ?
         `${f(leelaz_for_black)} / ${f(leelaz_for_white)}` : f(leelaz)
 }
-
-function append_endstate_tag_maybe(h) {
-    const h_copy = merge({}, h)
-    leelaz_for_endstate && R.show_endstate &&
-        h.move_count === R.move_count - endstate_diff_interval &&
-        add_tag(h_copy, endstate_diff_tag_letter)
-    return h_copy
-}
-
-function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
-
 function add_next_mark_to_stones(stones, game, move_count) {
     const h = game.ref(move_count + 1), s = stone_for_history_elem(h, stones)
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
-
 function add_info_to_stones(stones, game) {
     game.forEach((h, c) => {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
@@ -249,67 +292,15 @@ function add_info_to_stones(stones, game) {
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
 }
-
-function add_endstate_to_stones(stones, endstate, prev_endstate) {
-    if (!endstate) {return}
-    stones.forEach((row, i) => row.forEach((s, j) => {
-        s.endstate = endstate[i][j]
-        prev_endstate && (s.endstate_diff = s.endstate - prev_endstate[i][j])
-    }))
-}
-
 function stone_for_history_elem(h, stones) {
     return h && h.move && aa_ref(stones, ...move2idx(h.move))
 }
-
 function pick_properties(orig, keys) {
     const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
 }
 
 /////////////////////////////////////////////////
 // exports
-
-function leelaz_weight_file(leelaz_for_black_or_white) {
-    const k = M.leelaz_weight_option_pos_in_args()
-    const arg = (leelaz_for_black_or_white || leelaz).start_args()
-    return (k >= 0) && arg && arg.leelaz_args[k + 1]
-}
-
-function leelaz_for_white_p() {return !!leelaz_for_white}
-function leelaz_for_endstate_p() {return !!leelaz_for_endstate}
-
-function set_pondering(pondering) {
-    const b = (leelaz === leelaz_for_black)
-    leelaz_for_black.set_pondering(pondering && b)
-    leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
-}
-function update_leelaz() {leelaz.update()}
-function all_start_args() {
-    const f = lz => lz && lz.start_args()
-    return {black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
-}
-
-function start_leelaz(leelaz_start_args, endstate_option) {
-    leelaz.start(leelaz_start_args())
-    endstate_option && start_endstate(leelaz_start_args, endstate_option)
-}
-function start_endstate(leelaz_start_args, endstate_option) {
-    leelaz.activate(false)
-    const [lz_command, weight] = endstate_option
-    const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
-    leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
-}
-
-function get_endstate_diff_interval() {return endstate_diff_interval}
-function add_endstate_diff_interval(k) {
-    endstate_diff_interval = clip(endstate_diff_interval + k, 2)
-    leelaz_for_endstate.update()
-}
-
-function switch_to_random_leelaz(percent) {
-    switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
-}
 
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'restart']
 module.exports = {
@@ -320,7 +311,7 @@ module.exports = {
     board_handler, suggest_handler, all_start_args, leelaz_weight_file,
     // another leelaz for white
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_to_random_leelaz,
-    load_leelaz_for_white, unload_leelaz_for_white, load_leelaz_for_black,
+    load_leelaz_for_black, load_leelaz_for_white, unload_leelaz_for_white,
     // endstate
     leelaz_for_endstate_p, append_endstate_tag_maybe,
     get_endstate_diff_interval, add_endstate_diff_interval,
