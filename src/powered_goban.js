@@ -91,7 +91,7 @@ function set_renderer_state(...args) {
 function set_and_render(...args) {
     set_renderer_state(...args)
     const masked_R = merge({}, R, M.show_suggest_p() ? {} : {suggest: [], visits: null})
-    V().renderer('render', masked_R)
+    M.render(masked_R)
 }
 
 /////////////////////////////////////////////////
