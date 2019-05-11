@@ -13,7 +13,7 @@ let leelaz = create_leelaz(), leelaz_for_black = leelaz
 let leelaz_for_white = null, leelaz_for_endstate = null
 
 // state
-let endstate_diff_interval = 12, initial_b_winrate = NaN
+let endstate_diff_interval = 12, endstate_diff_from = null, initial_b_winrate = NaN
 let game = create_game()  // dummy empty game until first set_board()
 const winrate_trail = true
 let R, on_change, on_suggest, M
@@ -179,8 +179,17 @@ function append_endstate_tag_maybe(h) {
 }
 function get_endstate_diff_interval() {return endstate_diff_interval}
 function add_endstate_diff_interval(k) {
-    endstate_diff_interval = clip(endstate_diff_interval + k, 2)
-    update_endstate_diff(); M.update_state()
+    change_endstate_diff_target(() => {
+        endstate_diff_interval = clip(endstate_diff_interval + k, 2)
+    })
+}
+function set_endstate_diff_from(k) {
+    change_endstate_diff_target(() => {endstate_diff_from = k})
+}
+function change_endstate_diff_target(proc) {
+    const old = endstate_diff_move_count()
+    proc()
+    endstate_diff_move_count() !== old && (update_endstate_diff(), set_and_render())
 }
 
 function start_endstate(leelaz_start_args, endstate_option) {
@@ -197,10 +206,14 @@ function add_endstate_to_stones(stones, endstate, update_diff_p) {
     update_diff_p && update_endstate_diff()
 }
 function update_endstate_diff() {
-    const prev = game.move_count - endstate_diff_interval
+    const prev = endstate_diff_move_count(), sign = prev < game.move_count ? 1 : -1
     const prev_endstate = game.ref(prev).endstate
-    prev_endstate && aa_each(R.stones, (s, i, j) =>
-                             (s.endstate_diff = s.endstate - prev_endstate[i][j]))
+    prev_endstate &&
+        aa_each(R.stones, (s, i, j) =>
+                (s.endstate_diff = sign * (s.endstate - prev_endstate[i][j])))
+}
+function endstate_diff_move_count() {
+    return endstate_diff_from || (game.move_count - endstate_diff_interval)
 }
 function average_endstate_sum(move_count) {
     const mc = truep(move_count) || game.move_count
@@ -290,7 +303,7 @@ module.exports = {
     load_leelaz_for_black, load_leelaz_for_white, unload_leelaz_for_white,
     // endstate
     leelaz_for_endstate_p, append_endstate_tag_maybe,
-    get_endstate_diff_interval, add_endstate_diff_interval,
+    get_endstate_diff_interval, add_endstate_diff_interval, set_endstate_diff_from,
     // renderer
     set_and_render,
     // util

@@ -57,7 +57,8 @@ function draw_goban_until(canvas, show_until, opts) {
         }
         h.displayed_tag = h.tag
     })
-    draw_goban(canvas, displayed_stones, {draw_last_p: true, ...opts})
+    draw_goban(canvas, displayed_stones,
+               {draw_last_p: true, draw_endstate_p: R.show_endstate, ...opts})
 }
 
 function draw_goban_with_suggest(canvas, opts) {

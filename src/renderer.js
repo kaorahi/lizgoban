@@ -263,6 +263,7 @@ function set_hovered(move) {
     const [i, j] = move2idx(move || '') || [-1, -1], s = aa_ref(R.stones, i, j)
     hovered_move_count =
         (s && s.stone && (s.move_count !== R.move_count) && s.move_count)
+    update_showing_until()
 }
 
 function mouse2coord(e) {
@@ -429,6 +430,7 @@ let keydown = false
 
 document.onkeydown = e => {
     update_shift_key(e)
+    update_showing_until()
     const repeated_keydown = keydown; keydown = true
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const escape = (key === "Escape" || key === "C-[")
@@ -521,6 +523,9 @@ function set_keyboard_tag_maybe(key) {
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_until() {return keyboard_tag_move_count || hovered_move_count}
+function update_showing_until() {
+    R.show_endstate && main('set_endstate_diff_from', showing_until())
+}
 
 /////////////////////////////////////////////////
 // controller

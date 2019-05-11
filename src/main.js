@@ -154,9 +154,10 @@ function renderer_gen(channel, win_prop_p, ...args) {
 
 // normal commands
 
+const {set_endstate_diff_from} = P
 const simple_api = {
     unset_busy, update_menu, toggle_board_type, toggle_let_me_think,
-    copy_sgf_to_clipboard,
+    copy_sgf_to_clipboard, set_endstate_diff_from,
 }
 const api = merge({}, simple_api, {
     restart, new_window, init_from_renderer, toggle_sabaki,
