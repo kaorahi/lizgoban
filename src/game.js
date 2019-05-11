@@ -23,8 +23,6 @@ function new_game_id() {return next_game_id++}
 function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
-        // move_count is not updated usually.
-        // It is only used as record of return-point when sequence is switched.
         move_count: 0, player_black: "", player_white: "",
         sgf_file: "", sgf_str: "", id: new_game_id(),
         trial: false, last_loaded_element: null

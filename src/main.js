@@ -679,7 +679,6 @@ function new_empty_board() {insert_sequence(create_game(), true)}
 
 function backup_game() {
     if (game.is_empty()) {return}
-    store_move_count(game)
     insert_sequence(game.shallow_copy())
 }
 
@@ -720,7 +719,6 @@ function duplicate_sequence() {
 }
 
 function delete_sequence() {
-    store_move_count(game)
     sequence.length === 1 && (sequence[1] = create_game())
     sequence.splice(sequence_cursor, 1)
     const nextp = (sequence_cursor === 0)
@@ -737,11 +735,9 @@ function insert_sequence(new_game, switch_to, before) {
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    store_move_count(game); goto_nth_sequence(wrapped_n)
-    P.set_board(game, game.move_count); update_state()
+    goto_nth_sequence(wrapped_n); P.set_board(game, game.move_count); update_state()
 }
 
-function store_move_count(game) {game.move_count = R.move_count}
 function goto_nth_sequence(n) {game = sequence[sequence_cursor = n]}
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
