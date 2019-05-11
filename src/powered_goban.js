@@ -71,7 +71,7 @@ function suggest_handler(h) {
 function set_renderer_state(...args) {
     const winrate_history = winrate_from_game(V().game)
     const previous_suggest = get_previous_suggest()
-    const progress_bturn = V().auto_bturn
+    const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
     const endstate_sum = leelaz_for_endstate && average_endstate_sum()

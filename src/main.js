@@ -51,12 +51,13 @@ const {create_game} = require('./game.js')
 const P = require('./powered_goban.js')
 P.initialize(R, update_let_me_think,
              {update_state, update_ponder,
-              leelaz_weight_option_pos_in_args, store, auto_progress,
+              leelaz_weight_option_pos_in_args, store, auto_progress, is_auto_bturn,
               show_suggest_p, try_auto, render, peek_main,
              })
 function render(given_R) {renderer('render', given_R)}
+function is_auto_bturn() {return auto_bturn}
 function peek_main() {
-    return {game, auto_bturn}
+    return {game}
 }
 
 // state
