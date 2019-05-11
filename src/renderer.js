@@ -504,7 +504,6 @@ function set_keyboard_moves_for_next_move() {
 function reset_keyboard_moves() {keyboard_moves = []; update_goban()}
 
 function set_keyboard_tag_maybe(key) {
-    if (keyboard_tag_data.tag) {return}
     const tags = R.history_tags.slice().reverse()
     const data = tags.find(h => h.tag.includes(key) && h.move_count <= R.move_count) ||
           tags.find(h => h.tag.includes(key))
