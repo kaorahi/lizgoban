@@ -678,7 +678,6 @@ function draw_winrate_graph(canvas, show_until, goto_move_count, unset_busy) {
     clear_canvas(canvas, BLACK, g)
     show_until && draw_winrate_graph_show_until(show_until, w, h, sr2coord, g)
     draw_winrate_graph_frame(w, h, tics, g)
-    draw_winrate_graph_move_count(smax, fontsize, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_hotness(h, sr2coord, g)
     draw_winrate_graph_score(sr2coord, g)
@@ -718,15 +717,6 @@ function draw_winrate_graph_future(w, h, sr2coord, g) {
     }
     const alpha = 0.2
     paint(0.5, alpha, 0, 0, y); paint(1, alpha, alpha, y, h)
-}
-
-function draw_winrate_graph_move_count(smax, fontsize, sr2coord, g) {
-    g.save()
-    g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
-    set_font(fontsize, g); g.textBaseline = 'top'
-    g.textAlign = R.move_count < smax / 2 ? 'left' : 'right'
-    g.fillText(' ' + R.move_count + ' ', ...sr2coord(R.move_count, 100))
-    g.restore()
 }
 
 function draw_winrate_graph_curve(sr2coord, g) {
