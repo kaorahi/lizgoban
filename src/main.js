@@ -53,12 +53,11 @@ const {create_game} = require('./game.js')
 const P = require('./powered_goban.js')
 P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
     // functions used in powered_goban.js
-    current_game, render, update_state, update_ponder, show_suggest_p,
+    render, update_state, update_ponder, show_suggest_p,
     auto_progress, is_auto_bturn, leelaz_weight_option_pos_in_args,
 })
 function render(given_R) {renderer('render', given_R)}
 function is_auto_bturn() {return auto_bturn}
-function current_game() {return game}
 
 // state
 let game = create_game()

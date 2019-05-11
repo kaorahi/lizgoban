@@ -4,6 +4,7 @@
 // starts analysis of given game state, and updates displayed suggestions.
 
 require('./util.js').use(); require('./coord.js').use()
+const {create_game} = require('./game.js')
 const PATH = require('path')
 
 // leelaz
@@ -13,6 +14,7 @@ let leelaz_for_white = null, leelaz_for_endstate = null
 
 // state
 let endstate_diff_interval = 12, initial_b_winrate = NaN
+let game = create_game()  // dummy empty game until first set_board()
 const winrate_trail = true
 let R, on_change, on_suggest, M
 
@@ -21,7 +23,8 @@ let R, on_change, on_suggest, M
 
 function initialize(...args) {[R, {on_change, on_suggest}, M] = args}  // fixme: ugly
 
-function set_board(game, move_count) {
+function set_board(given_game, move_count) {
+    game = given_game
     const hist = game.array_until(move_count)
     each_leelaz(z => z.set_board(hist))
     R.move_count = game.move_count = hist.length
@@ -65,7 +68,6 @@ function with_handlers(h) {return merge({board_handler, suggest_handler}, h)}
 // receive analysis from leelaz
 
 function board_handler(h) {
-    const game = M.current_game()
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const board_setter = () => {
         add_next_mark_to_stones(R.stones, game, R.move_count)
@@ -87,7 +89,6 @@ function board_handler(h) {
 
 const too_small_prior = 1e-3
 function suggest_handler(h) {
-    const game = M.current_game()
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
     const cur = game.ref(R.move_count)
@@ -100,7 +101,7 @@ function suggest_handler(h) {
 // change renderer state and send it to renderer
 
 function set_renderer_state(...args) {
-    const game = M.current_game(), move_count = game.move_count
+    const move_count = game.move_count
     const winrate_history = winrate_from_game(game)
     const previous_suggest = get_previous_suggest()
     const progress_bturn = M.is_auto_bturn()
@@ -199,7 +200,6 @@ function add_endstate_to_stones(stones, endstate, prev_endstate) {
     }))
 }
 function average_endstate_sum(move_count) {
-    const game = M.current_game()
     const mc = truep(move_count) || R.move_count
     const [cur, prev] = [0, 1].map(k => game.ref(mc - k).endstate_sum)
     return truep(cur) && truep(prev) && (cur + prev) / 2
@@ -227,7 +227,6 @@ function winrate_from_game(game) {
 }
 
 function winrate_suggested(move_count) {
-    const game = M.current_game()
     const {move, is_black} = game.ref(move_count)
     const {suggest} = game.ref(move_count - 1)
     const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
@@ -238,7 +237,7 @@ function winrate_suggested(move_count) {
 // misc. utils for updating renderer state
 
 function get_previous_suggest() {
-    const [cur, prev] = [0, 1].map(k => M.current_game().ref(R.move_count - k))
+    const [cur, prev] = [0, 1].map(k => game.ref(R.move_count - k))
     // avoid "undefined" and use "null" for merge in set_renderer_state
     const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
     ret && (ret.bturn = !prev.is_black)
