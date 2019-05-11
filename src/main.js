@@ -48,9 +48,9 @@ update_debug_log()
 debug_log("option: " + JSON.stringify(option))
 
 // state
-let next_history_id = 0
-let history = create_history()
-let sequence = [history], sequence_cursor = 0, initial_b_winrate = NaN
+let next_game_id = 0
+let game = create_game()
+let sequence = [game], sequence_cursor = 0, initial_b_winrate = NaN
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 const simple_ui = false, winrate_trail = true
 let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
@@ -208,10 +208,10 @@ function play(move, force_create, default_tag) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
     !pass && aa_set(R.stones, i, j, {stone: true, black: R.bturn, maybe: true})
-    const new_sequence_p = (history.len() > 0) && create_sequence_maybe(force_create)
+    const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create)
     const tag = R.move_count > 0 &&
           (new_sequence_p ? new_tag() :
-           history.ref(R.move_count) === history.last_loaded_element ?
+           game.ref(R.move_count) === game.last_loaded_element ?
            last_loaded_element_tag_letter : false)
     update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
     pass && wink()
@@ -225,20 +225,20 @@ function do_play(move, is_black, tag) {
     // (1) Leelaz counts only the last passes in "showboard".
     // (2) Leelaz stops analysis after double pass.
     const last_pass = is_last_move_pass(), double_pass = last_pass && is_pass(move)
-    last_pass && history.pop()
-    !double_pass && history.push({move, is_black, tag, move_count: history.len() + 1})
-    set_board(history)
+    last_pass && game.pop()
+    !double_pass && game.push({move, is_black, tag, move_count: game.len() + 1})
+    set_board(game)
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (history.pop(), set_board(history))
-    R.move_count < history.len() ? undo() : wink_if_pass(delete_last)
+    const delete_last = () => (game.pop(), set_board(game))
+    R.move_count < game.len() ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
 function pass() {play(pass_command)}
 function is_pass(move) {return move === pass_command}
-function is_last_move_pass() {return is_pass(history.last_move())}
+function is_last_move_pass() {return is_pass(game.last_move())}
 
 function undo_ntimes(n) {wink_if_pass(goto_move_count, R.move_count - n)}
 function redo_ntimes(n) {undo_ntimes(- n)}
@@ -246,10 +246,10 @@ function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
 
 function goto_move_count(count) {
-    const c = clip(count, 0, history.len())
+    const c = clip(count, 0, game.len())
     if (c === R.move_count) {return}
     update_state_to_move_count_tentatively(c)
-    set_board(history, c)
+    set_board(game, c)
 }
 function update_state_to_move_count_tentatively(count) {
     const forward = (count > R.move_count)
@@ -257,10 +257,10 @@ function update_state_to_move_count_tentatively(count) {
     const set_stone_at = (move, stone_array, stone) => {
         aa_set(stone_array, ...move2idx(move), stone)
     }
-    history.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
+    game.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
         stone: true, maybe: forward, maybe_empty: !forward, black: m.is_black
     }))
-    const next_h = history.ref(R.move_count + 1)
+    const next_h = game.ref(R.move_count + 1)
     const next_s = stone_for_history_elem(next_h, R.stones) || {}
     next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
     update_state()
@@ -269,15 +269,15 @@ function update_state_to_move_count_tentatively(count) {
 /////////////////////////////////////////////////
 // main flow (3) send game state to leelaz
 
-function set_board(history, move_count) {
-    const hist = history.array_until(move_count)
+function set_board(game, move_count) {
+    const hist = game.array_until(move_count)
     each_leelaz(z => z.set_board(hist)); R.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
     switch_leelaz()
     board_state_is_changed()
 }
-function reset_board() {set_board(history, 0)}
+function reset_board() {set_board(game, 0)}
 function board_state_is_changed() {update_let_me_think()}
 
 /////////////////////////////////////////////////
@@ -286,17 +286,17 @@ function board_state_is_changed() {update_let_me_think()}
 function board_handler(h) {
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const board_setter = () => {
-        add_next_mark_to_stones(R.stones, history, R.move_count)
-        add_info_to_stones(R.stones, history)
+        add_next_mark_to_stones(R.stones, game, R.move_count)
+        add_info_to_stones(R.stones, game)
     }
     const endstate_setter = update_p => {
         const prev = R.move_count - endstate_diff_interval
-        const prev_endstate = update_p && history.ref(prev).endstate
+        const prev_endstate = update_p && game.ref(prev).endstate
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
         }
         add_endstate_to_stones(R.stones, R.endstate, prev_endstate)
-        R.move_count > 0 && add_endstate_to_history(history.ref(R.move_count))
+        R.move_count > 0 && add_endstate_to_history(game.ref(R.move_count))
     }
     set_renderer_state(h)
     h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
@@ -307,7 +307,7 @@ const too_small_prior = 1e-3
 function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
-    const cur = history.ref(R.move_count)
+    const cur = game.ref(R.move_count)
     R.move_count > 0 && (cur.suggest = h.suggest)
     R.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
     set_and_render(h); try_auto()
@@ -317,7 +317,7 @@ function suggest_handler(h) {
 // main flow (5) change renderer state and send it to renderer
 
 function set_renderer_state(...args) {
-    const winrate_history = winrate_from_history(history)
+    const winrate_history = winrate_from_game(game)
     const previous_suggest = get_previous_suggest()
     const progress_bturn = auto_bturn
     const weight_info = weight_info_text()
@@ -344,14 +344,14 @@ function set_and_render(...args) {
 
 function update_state() {
     set_renderer_state()  // need to update R.show_endstate
-    const history_length = history.len(), sequence_length = sequence.length, suggest = []
+    const history_length = game.len(), sequence_length = sequence.length, suggest = []
     const sequence_ids = sequence.map(h => h.id)
     const pick_tagged = h => {
         const h_copy = append_endstate_tag_maybe(h)
         return h_copy.tag ? [h_copy] : []
     }
-    const history_tags = flatten(history.map(pick_tagged))
-    const {player_black, player_white, trial} = history
+    const history_tags = flatten(game.map(pick_tagged))
+    const {player_black, player_white, trial} = game
     set_and_render({
         history_length, suggest, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, history_tags
@@ -409,7 +409,7 @@ function menu_template(win) {
              exist_deleted_sequence()),
         item('Duplicate board', 'CmdOrCtrl+D', duplicate_sequence, true),
         sep,
-        {label: 'Trial board', type: 'checkbox', checked: history.trial,
+        {label: 'Trial board', type: 'checkbox', checked: game.trial,
          click: toggle_trial},
     ])
     const view_menu = menu('View', [
@@ -495,7 +495,7 @@ function try_auto_analyze() {
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
-    if (history.is_empty()) {return}
+    if (game.is_empty()) {return}
     (auto_analysis_signed_visits === visits) ?
         (stop_auto_analyze(), update_ui()) :
         start_auto_analyze(visits)
@@ -647,7 +647,7 @@ function ask_handicap_stones() {
     const ks = seq(8, 2), buttons = [...ks.map(to_s), 'cancel']
     const action = response => {
         const k = ks[response]; if (!k) {return}
-        history.is_empty() || new_empty_board(); add_handicap_stones(k)
+        game.is_empty() || new_empty_board(); add_handicap_stones(k)
     }
     dialog.showMessageBox(null, {
         type: "question", message: "Handicap stones", buttons: buttons,
@@ -655,11 +655,11 @@ function ask_handicap_stones() {
 }
 
 // misc.
-function toggle_trial() {history.trial = !history.trial; update_state()}
+function toggle_trial() {game.trial = !game.trial; update_state()}
 function close_window_or_cut_sequence(win) {
     get_windows().length > 1 ? win.close() :
         attached ? null :
-        (sequence.length <= 1 && history.is_empty()) ? win.close() : cut_sequence()
+        (sequence.length <= 1 && game.is_empty()) ? win.close() : cut_sequence()
 }
 function help() {
     const menu = [
@@ -677,8 +677,8 @@ function info() {
            f("leelaz (white)", leelaz_for_white.start_args())) :
           f("leelaz", leelaz.start_args())
     const message = lz +
-          f("sgf file", history.sgf_file) +
-          f("sgf", history.sgf_str)
+          f("sgf file", game.sgf_file) +
+          f("sgf", game.sgf_str)
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
 }
 function endstate_diff_interval_adder(k) {
@@ -692,7 +692,7 @@ function endstate_diff_interval_adder(k) {
 // utils for actions
 
 function undoable() {return R.move_count > 0}
-function redoable() {return history.len() > R.move_count}
+function redoable() {return game.len() > R.move_count}
 function pause() {pausing = true; update_ponder_and_ui()}
 function resume() {pausing = false; update_ponder_and_ui()}
 function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
@@ -708,7 +708,7 @@ function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {leelaz.update()}
 
 function wink_if_pass(proc, ...args) {
-    const rec = () => history.ref(R.move_count)
+    const rec = () => game.ref(R.move_count)
     const before = rec()
     proc(...args)
     const after = rec(), d = after.move_count - before.move_count
@@ -774,9 +774,9 @@ function let_me_think_next(board_type) {
 }
 
 /////////////////////////////////////////////////
-// history
+// game
 
-// example of history.hist:
+// example of game.hist:
 // [{move: "D16", is_black: true, move_count: 1, ...},
 //  {move: "Q4", is_black: false, move_count: 2, ...},
 //  {move: "Q16", is_black: false, move_count: 3, ...},
@@ -789,15 +789,15 @@ function let_me_think_next(board_type) {
 // * See board_handler() and suggest_handler() for "...".
 // * See also do_play() for passes.
 
-function new_history_id() {return next_history_id++}
+function new_game_id() {return next_game_id++}
 
-function create_history(init_hist, init_prop) {
+function create_game(init_hist, init_prop) {
     const self = {}, hist = init_hist || []  // private
     const prop = init_prop || {  // public
         // move_count is not updated usually.
         // It is only used as record of return-point when sequence is switched.
         move_count: 0, player_black: "", player_white: "",
-        sgf_file: "", sgf_str: "", id: new_history_id(),
+        sgf_file: "", sgf_str: "", id: new_game_id(),
         trial: false, last_loaded_element: null
     }
     const methods = {
@@ -809,8 +809,8 @@ function create_history(init_hist, init_prop) {
         shorten_to: mc => hist.splice(mc),
         last_move: () => (last(hist) || {}).move,
         set_last_loaded_element: () => self.last_loaded_element = last(hist),
-        shallow_copy: () => create_history(hist.slice(), merge({}, prop, {
-            id: new_history_id(), last_loaded_element: null
+        shallow_copy: () => create_game(hist.slice(), merge({}, prop, {
+            id: new_game_id(), last_loaded_element: null
         })),
         set_with_reuse: new_hist => {
             const com = leelaz.common_header_length(hist, new_hist)
@@ -827,19 +827,19 @@ function create_history(init_hist, init_prop) {
 /////////////////////////////////////////////////
 // sequence (list of histories)
 
-function new_empty_board() {insert_sequence(create_history(), true)}
+function new_empty_board() {insert_sequence(create_game(), true)}
 
-function backup_history() {
-    if (history.is_empty()) {return}
-    store_move_count(history)
-    insert_sequence(history.shallow_copy())
+function backup_game() {
+    if (game.is_empty()) {return}
+    store_move_count(game)
+    insert_sequence(game.shallow_copy())
 }
 
 function create_sequence_maybe(force) {
     const new_game = (R.move_count === 0)
-    return (force || R.move_count < history.len()) &&
-        (backup_history(), history.shorten_to(R.move_count),
-         merge(history, {trial: !simple_ui && !new_game}))
+    return (force || R.move_count < game.len()) &&
+        (backup_game(), game.shorten_to(R.move_count),
+         merge(game, {trial: !simple_ui && !new_game}))
 }
 
 function next_sequence() {previous_or_next_sequence(1, next_sequence_effect)}
@@ -857,7 +857,7 @@ function nth_sequence(n) {
 let cut_first_p = false
 function cut_sequence() {
     cut_first_p = (sequence_cursor === 0)
-    push_deleted_sequence(history); delete_sequence()
+    push_deleted_sequence(game); delete_sequence()
 }
 function uncut_sequence() {
     insert_before = (cut_first_p && sequence_cursor === 0)
@@ -866,35 +866,35 @@ function uncut_sequence() {
 }
 
 function duplicate_sequence() {
-    history.is_empty() ? new_empty_board() :
-        (backup_history(), history.set_last_loaded_element(), (history.trial = true),
+    game.is_empty() ? new_empty_board() :
+        (backup_game(), game.set_last_loaded_element(), (game.trial = true),
          update_state())
 }
 
 function delete_sequence() {
-    store_move_count(history)
-    sequence.length === 1 && (sequence[1] = create_history())
+    store_move_count(game)
+    sequence.length === 1 && (sequence[1] = create_game())
     sequence.splice(sequence_cursor, 1)
     const nextp = (sequence_cursor === 0)
     switch_to_nth_sequence(Math.max(sequence_cursor - 1, 0))
     nextp ? next_sequence_effect() : previous_sequence_effect()
 }
 
-function insert_sequence(new_history, switch_to, before) {
-    if (!new_history) {return}
+function insert_sequence(new_game, switch_to, before) {
+    if (!new_game) {return}
     const f = switch_to ? switch_to_nth_sequence : goto_nth_sequence
     const n = sequence_cursor + (before ? 0 : 1)
-    sequence.splice(n, 0, new_history); f(n); next_sequence_effect()
+    sequence.splice(n, 0, new_game); f(n); next_sequence_effect()
 }
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    store_move_count(history); reset_board(); goto_nth_sequence(wrapped_n)
-    R.move_count = 0; redo_ntimes(history.move_count); update_state()
+    store_move_count(game); reset_board(); goto_nth_sequence(wrapped_n)
+    R.move_count = 0; redo_ntimes(game.move_count); update_state()
 }
 
-function store_move_count(history) {history.move_count = R.move_count}
-function goto_nth_sequence(n) {history = sequence[sequence_cursor = n]}
+function store_move_count(game) {game.move_count = R.move_count}
+function goto_nth_sequence(n) {game = sequence[sequence_cursor = n]}
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
 
@@ -912,12 +912,12 @@ function exist_deleted_sequence() {return !empty(deleted_sequences)}
 
 function average_endstate_sum(move_count) {
     const mc = truep(move_count) || R.move_count
-    const [cur, prev] = [0, 1].map(k => history.ref(mc - k).endstate_sum)
+    const [cur, prev] = [0, 1].map(k => game.ref(mc - k).endstate_sum)
     return truep(cur) && truep(prev) && (cur + prev) / 2
 }
 
 function get_previous_suggest() {
-    const [cur, prev] = [0, 1].map(k => history.ref(R.move_count - k))
+    const [cur, prev] = [0, 1].map(k => game.ref(R.move_count - k))
     // avoid "undefined" and use "null" for merge in set_renderer_state
     const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
     ret && (ret.bturn = !prev.is_black)
@@ -941,13 +941,13 @@ function append_endstate_tag_maybe(h) {
 
 function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
-function add_next_mark_to_stones(stones, history, move_count) {
-    const h = history.ref(move_count + 1), s = stone_for_history_elem(h, stones)
+function add_next_mark_to_stones(stones, game, move_count) {
+    const h = game.ref(move_count + 1), s = stone_for_history_elem(h, stones)
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
 
-function add_info_to_stones(stones, history) {
-    history.forEach((h, c) => {
+function add_info_to_stones(stones, game) {
+    game.forEach((h, c) => {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
         add_tag(s, h.tag)
         s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
@@ -986,11 +986,11 @@ function availability() {
         resume: pausing,
         bturn: R.bturn,
         wturn: !R.bturn,
-        auto_analyze: !history.is_empty(),
+        auto_analyze: !game.is_empty(),
         start_auto_analyze: !auto_analyzing() && !auto_playing(),
         stop_auto: auto_progress() >= 0,
         simple_ui: simple_ui, normal_ui: !simple_ui,
-        trial: history.trial,
+        trial: game.trial,
     }
 }
 
@@ -1003,19 +1003,19 @@ function winrate_after(move_count) {
     const or_NaN = x => truep(x) ? x : NaN
     return move_count < 0 ? NaN :
         move_count === 0 ? initial_b_winrate :
-        or_NaN(history.ref(move_count).b_winrate)
+        or_NaN(game.ref(move_count).b_winrate)
 }
 
-function winrate_from_history(history) {
-    const winrates = history.map(m => m.b_winrate)
+function winrate_from_game(game) {
+    const winrates = game.map(m => m.b_winrate)
     return [initial_b_winrate, ...winrates].map((r, s, a) => {
-        const cur = history.ref(s)
+        const cur = game.ref(s)
         const h = append_endstate_tag_maybe(cur), tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * (cur.is_black ? 1 : -1)
         const predict = winrate_suggested(s)
-        const pass = (!!h.is_black === !!history.ref(s - 1).is_black)
+        const pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const score_without_komi = average_endstate_sum(s)
         // drop "pass" to save data size for IPC
         return merge({r, move_b_eval, move_eval, tag, score_without_komi},
@@ -1024,8 +1024,8 @@ function winrate_from_history(history) {
 }
 
 function winrate_suggested(move_count) {
-    const {move, is_black} = history.ref(move_count)
-    const {suggest} = history.ref(move_count - 1)
+    const {move, is_black} = game.ref(move_count)
+    const {suggest} = game.ref(move_count - 1)
     const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
     return truep(sw) && (is_black ? sw : 100 - sw)
 }
@@ -1040,7 +1040,7 @@ const endstate_diff_tag_letter = "/"
 const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
       start_moves_tag_letter + endstate_diff_tag_letter
 function new_tag() {
-    const used = history.map(h => h.tag || '').join('')
+    const used = game.map(h => h.tag || '').join('')
     const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
           .split('').findIndex(c => used.indexOf(c) < 0)
     const tag_count = (next_tag_count + Math.max(first_unused_index, 0))
@@ -1159,13 +1159,13 @@ function swap_leelaz_for_black_and_white() {
 /////////////////////////////////////////////////
 // SGF
 
-function copy_sgf_to_clipboard() {clipboard.writeText(history_to_sgf(history)); wink()}
+function copy_sgf_to_clipboard() {clipboard.writeText(game_to_sgf(game)); wink()}
 function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
 
 function open_sgf() {select_files('Select SGF file').forEach(load_sgf)}
 function load_sgf(filename) {
     read_sgf(fs.readFileSync(filename, {encoding: 'binary'}));
-    history.sgf_file = filename
+    game.sgf_file = filename
 }
 
 function save_sgf() {
@@ -1173,13 +1173,13 @@ function save_sgf() {
         title: 'Save SGF file',
         // defaultPath: '.',
     })
-    f && fs.writeFile(f, history_to_sgf(history), err => {if (err) throw err})
+    f && fs.writeFile(f, game_to_sgf(game), err => {if (err) throw err})
 }
 
-function history_to_sgf(hist) {
+function game_to_sgf(game) {
     const f = (t, p) => `${t}[${SGF.escapeString(p || '')}]`
-    return `(;KM[7.5]${f('PW', hist.player_white)}${f('PB', hist.player_black)}` +
-        hist.map(({move: move, is_black: is_black}) =>
+    return `(;KM[7.5]${f('PW', game.player_white)}${f('PB', game.player_black)}` +
+        game.map(({move: move, is_black: is_black}) =>
                  (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
         ')'
 }
@@ -1187,8 +1187,8 @@ function history_to_sgf(hist) {
 function read_sgf(sgf_str) {
     try {
         const clipped = clip_sgf(sgf_str)
-        load_sabaki_gametree_on_new_history(parse_sgf(clipped)[0])
-        history.sgf_str = clipped
+        load_sabaki_gametree_on_new_game(parse_sgf(clipped)[0])
+        game.sgf_str = clipped
     }
     catch (e) {dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"')}
 }
@@ -1203,23 +1203,23 @@ function clip_sgf(sgf_str) {return sgf_str.match(/\(\s*;[^]*\][\s\)]*\)/)[0]}
 /////////////////////////////////////////////////
 // Sabaki gameTree
 
-function load_sabaki_gametree_on_new_history(gametree) {
-    backup_history(); load_sabaki_gametree(gametree)
+function load_sabaki_gametree_on_new_game(gametree) {
+    backup_game(); load_sabaki_gametree(gametree)
 }
 
 function load_sabaki_gametree(gametree, index) {
     if (!gametree || !gametree.nodes) {return}
     const parent_nodes = nodes_from_sabaki_gametree(gametree.parent)
     const new_hist = history_from_sabaki_nodes(parent_nodes.concat(gametree.nodes))
-    history.set_with_reuse(new_hist)
-    history.set_last_loaded_element()
+    game.set_with_reuse(new_hist)
+    game.set_last_loaded_element()
     const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     const history_until_index = history_from_sabaki_nodes(nodes_until_index)
     const player_name = bw => (nodes_until_index[0][bw] || [""])[0]
-    merge(history, {player_black: player_name("PB"), player_white: player_name("PW"),
-                    trial: false})
-    set_board(history, history_until_index.length)
+    merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
+                 trial: false})
+    set_board(game, history_until_index.length)
     // force update of board color when C-c and C-v are typed successively
     update_state()
 }
@@ -1285,10 +1285,10 @@ function sabaki_reader(line) {
 function attach_to_sabaki() {
     if (attached || !has_sabaki) {return}
     const sgf_file = TMP.fileSync({mode: 0644, prefix: 'lizgoban-', postfix: '.sgf'})
-    const sgf_text = history_to_sgf(history)
+    const sgf_text = game_to_sgf(game)
     fs.writeSync(sgf_file.fd, sgf_text)
     debug_log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
-    backup_history()
+    backup_game()
     start_sabaki(sgf_file.name + '#' + R.move_count)
     attached = true; leelaz.update(); update_state()
 }
