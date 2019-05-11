@@ -49,11 +49,13 @@ function draw_goban_until(canvas, show_until, opts) {
         const ss = h.anytime_stones, target = ss && latest_move(ss)
         if (target) {
             h.black = target.is_black; h.last = (target.move_count === show_until)
-            h.displayed_colors =
-                h.last ? [BLACK, WHITE] :
-                h.stone ? [MAYBE_BLACK, MAYBE_WHITE] : [PALE_BLACK, PALE_WHITE]
+            h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
+            h.stone = true
+        } else {
+            h.stone && ((h.displayed_colors = [PALE_BLACK, PALE_WHITE]),
+                        (h.last = false))
         }
-        h.stone = !!target; h.displayed_tag = h.tag
+        h.displayed_tag = h.tag
     })
     draw_goban(canvas, displayed_stones, {draw_last_p: true, ...opts})
 }
