@@ -42,12 +42,8 @@ function draw_main_goban(canvas, options) {
 
 function draw_goban_until(canvas, show_until, opts) {
     const displayed_stones = copy_stones_for_display()
-    const latest_move = ss => {
-        const n = ss.findIndex(z => (z.move_count > show_until))
-        return n >= 0 ? ss[n - 1] : last(ss)
-    }
     each_stone(displayed_stones, (h, idx) => {
-        const ss = h.anytime_stones, target = ss && latest_move(ss)
+        const ss = h.anytime_stones, target = latest_move(ss, show_until)
         if (target) {
             h.black = target.is_black; h.last = (target.move_count === show_until)
             h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
@@ -1002,6 +998,12 @@ function is_next_move(move) {
     [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
 }
 
+function latest_move(moves, show_until) {
+    if (!moves) {return false}
+    const n = moves.findIndex(z => (z.move_count > show_until))
+    return n >= 0 ? moves[n - 1] : last(moves)
+}
+
 // visits & winrate
 
 function suggest_texts(suggest) {
@@ -1061,7 +1063,7 @@ module.exports = {
     set_state,
     draw_main_goban, draw_goban_with_principal_variation, draw_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail,
-    update_winrate_trail, clear_canvas, is_next_move,
+    update_winrate_trail, clear_canvas, is_next_move, latest_move,
     target_move: () => target_move,
     first_board_canvas: () => first_board_canvas,
     reset_first_board_canvas: () => (first_board_canvas = null),

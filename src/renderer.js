@@ -270,7 +270,7 @@ function hover_off(canvas) {
 function set_hovered_move_count(move) {
     const [i, j] = move2idx(move || '') || [-1, -1], s = aa_ref(R.stones, i, j)
     hovered_move_count =
-        (s && s.stone && (s.move_count !== R.move_count) && s.move_count)
+        s && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
     update_showing_until()
 }
 
