@@ -281,6 +281,7 @@ function set_pondering(pondering) {
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
 }
+function update_leelaz() {leelaz.update()}
 
 function L() {return {leelaz, leelaz_for_black, leelaz_for_white, leelaz_for_endstate}}
 
@@ -293,6 +294,6 @@ module.exports = {
     load_leelaz_for_white, unload_leelaz_for_white, with_temporary_leelaz,
     swap_leelaz_for_black_and_white,
     leelaz_weight_file, start_endstate,
-    each_leelaz,
+    each_leelaz, update_leelaz,
     leelaz_for_white_p, leelaz_for_endstate_p, set_pondering,
 }

@@ -609,7 +609,7 @@ function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
 function update_ponder() {P.set_pondering(!pausing && !busy)}
 function update_ponder_and_ui() {update_ponder(); update_ui()}
-function init_from_renderer() {L().leelaz.update()}
+function init_from_renderer() {P.update_leelaz()}
 
 function wink_if_pass(proc, ...args) {
     const rec = () => game.ref(R.move_count)
@@ -947,12 +947,12 @@ function attach_to_sabaki() {
     debug_log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_game()
     start_sabaki(sgf_file.name + '#' + R.move_count)
-    attached = true; L().leelaz.update(); update_state()
+    attached = true; P.update_leelaz(); update_state()
 }
 
 function detach_from_sabaki() {
     if (!attached || !has_sabaki) {return}
-    stop_sabaki(); attached = false; L().leelaz.update(); update_state()
+    stop_sabaki(); attached = false; P.update_leelaz(); update_state()
 }
 
 function toggle_sabaki() {
