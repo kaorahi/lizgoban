@@ -27,7 +27,7 @@ const R = {
     window_id: -1,
 }
 let temporary_board_type = null
-let keyboard_moves = [], keyboard_tag_move_count = null
+let keyboard_moves = [], keyboard_tag_move_count = null, hovered_move_count = null
 let thumbnails = []
 
 // drawer
@@ -143,9 +143,9 @@ function with_opts(d, opts) {
     })
 }
 
-const draw_main = c => with_opts(D.draw_main_goban,
-                                 // need to eval keyboard_tag_move_count in runtime
-                                 {show_until: keyboard_tag_move_count})(c)
+const draw_main = c =>
+      // need to eval in runtime
+      with_opts(D.draw_main_goban, {show_until: showing_until()})(c)
 const draw_pv = with_opts(D.draw_goban_with_principal_variation)
 const draw_raw_gen = options => {
     const draw = (c, opts) => D.draw_goban(c, null, opts)
@@ -247,12 +247,19 @@ function play_here(e, coord2idx, tag_clickable_p) {
 
 function hover_here(e, coord2idx, canvas) {
     const old = canvas.lizgoban_hovered_move
-    canvas.lizgoban_hovered_move = mouse2move(e, coord2idx)
+    const move = canvas.lizgoban_hovered_move = mouse2move(e, coord2idx)
+    e.shiftKey && set_hovered(move)
     if (canvas.lizgoban_hovered_move != old) {update_goban()}
 }
 
 function hover_off(canvas) {
-    canvas.lizgoban_hovered_move = undefined; update_goban()
+    canvas.lizgoban_hovered_move = undefined; set_hovered(null); update_goban()
+}
+
+function set_hovered(move) {
+    const [i, j] = move2idx(move || '') || [-1, -1], s = aa_ref(R.stones, i, j)
+    hovered_move_count =
+        (s && s.stone && (s.move_count !== R.move_count) && s.move_count)
 }
 
 function mouse2coord(e) {
@@ -433,11 +440,11 @@ document.onkeydown = e => {
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     const challenging = (R.board_type === "raw" && current_board_type() === "raw" &&
                          !R.attached && !repeated_keydown)
+    const until = showing_until()
     const play_it = (steps, another_board) =>
           D.target_move() ? m('play', D.target_move(), another_board) :
-          truep(keyboard_tag_move_count) ? (duplicate_if(another_board),
-                                            m('goto_move_count',
-                                              keyboard_tag_move_count - 1)) :
+          truep(until) ? (duplicate_if(another_board),
+                          m('goto_move_count', until - 1)) :
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     to_i(key) > 0 && (challenging ? m('play_weak', to_i(key) * 10) :
@@ -481,7 +488,7 @@ document.onkeydown = e => {
 
 document.onkeyup = e => {
     update_shift_key(e)
-    keydown = false; reset_keyboard_tag();
+    keydown = false; reset_keyboard_tag(); set_hovered(null);
     (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
     case "z": case "x": set_temporary_board_type(null); return
@@ -510,6 +517,7 @@ function set_keyboard_tag_maybe(key) {
     data && ((keyboard_tag_move_count = data.move_count), update_goban())
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
+function showing_until() {return keyboard_tag_move_count || hovered_move_count}
 
 /////////////////////////////////////////////////
 // controller
