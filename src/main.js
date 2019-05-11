@@ -71,6 +71,22 @@ fs.access(option.sabaki_command, null,
 /////////////////////////////////////////////////
 // electron
 
+// app
+
+app.on('ready', () => {
+    leelaz.start(leelaz_start_args()); update_menu(); new_window('double_boards')
+    if (!option.endstate_leelaz) {return}
+    leelaz.activate(false)
+    const [lz_command, weight] = option.endstate_leelaz
+    const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
+    leelaz_for_endstate = create_leelaz()
+    leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
+})
+app.on('window-all-closed', app.quit)
+app.on('quit', () => each_leelaz(z => z.kill()))
+
+// window
+
 let windows = [], last_window_id = -1
 
 function window_prop(win) {  // fixme: adding private data impolitely
@@ -115,20 +131,7 @@ function new_window(default_board_type) {
     win.once('ready-to-show', () => {update_ui(); win.show()})
 }
 
-app.on('ready', () => {
-    leelaz.start(leelaz_start_args()); update_menu(); new_window('double_boards')
-    if (!option.endstate_leelaz) {return}
-    leelaz.activate(false)
-    const [lz_command, weight] = option.endstate_leelaz
-    const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
-    leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
-})
-app.on('window-all-closed', app.quit)
-app.on('quit', () => each_leelaz(z => z.kill()))
-function each_leelaz(f) {
-    [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
-}
+// renderer
 
 function renderer(channel, ...args) {renderer_gen(channel, false, ...args)}
 function renderer_with_window_prop(channel, ...args) {
@@ -146,27 +149,8 @@ function renderer_gen(channel, win_prop_p, ...args) {
                                 ...args))
 }
 
-function leelaz_start_args(weight_file) {
-    const restart_handler = auto_restart, leelaz_args = option.leelaz_args.slice()
-    const weight_pos = leelaz_weight_option_pos_in_args()
-    weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
-    const h = {leelaz_args, board_handler, suggest_handler, restart_handler}
-    const opts = ['leelaz_command', 'analyze_interval_centisec',
-                  'minimum_suggested_moves', 'engine_log_line_length']
-    opts.forEach(key => h[key] = option[key])
-    return h
-}
-function leelaz_weight_file(leelaz_for_black_or_white) {
-    const k = leelaz_weight_option_pos_in_args()
-    const arg = (leelaz_for_black_or_white || leelaz).start_args()
-    return (k >= 0) && arg && arg.leelaz_args[k + 1]
-}
-function leelaz_weight_option_pos_in_args() {
-    return option.leelaz_args.findIndex(z => z === "-w" || z === "--weights")
-}
-
 /////////////////////////////////////////////////
-// from renderer
+// main flow (1) receive commands from renderer
 
 // normal commands
 
@@ -218,9 +202,8 @@ ipc.on('close_window_or_cut_sequence', e => {
        })
 
 /////////////////////////////////////////////////
-// action
+// main flow (2) change game state
 
-// game play
 function play(move, force_create, default_tag) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
@@ -257,23 +240,10 @@ function pass() {play(pass_command)}
 function is_pass(move) {return move === pass_command}
 function is_last_move_pass() {return is_pass(history.last_move())}
 
-// multi-undo/redo
 function undo_ntimes(n) {wink_if_pass(goto_move_count, R.move_count - n)}
 function redo_ntimes(n) {undo_ntimes(- n)}
 function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
-
-// util
-function set_board(history, move_count) {
-    const hist = history.array_until(move_count)
-    each_leelaz(z => z.set_board(hist)); R.move_count = hist.length
-    R.bturn = !(hist[hist.length - 1] || {}).is_black
-    R.visits = null
-    switch_leelaz()
-    board_state_is_changed()
-}
-function reset_board() {set_board(history, 0)}
-function board_state_is_changed() {update_let_me_think()}
 
 function goto_move_count(count) {
     const c = clip(count, 0, history.len())
@@ -295,225 +265,219 @@ function update_state_to_move_count_tentatively(count) {
     next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
     update_state()
 }
-function undoable() {return R.move_count > 0}
-function redoable() {return history.len() > R.move_count}
-function restart() {restart_with_args()}
-function restart_with_args(h) {
-    leelaz.restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
-}
-function pause() {pausing = true; update_ponder_and_ui()}
-function resume() {pausing = false; update_ponder_and_ui()}
-function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
-function set_or_unset_busy(bool) {busy = bool; update_ponder()}
-function set_busy() {set_or_unset_busy(true)}
-function unset_busy() {set_or_unset_busy(false)}
-function update_ponder() {
-    const pondering = !pausing && !busy, b = (leelaz === leelaz_for_black)
-    leelaz_for_black.set_pondering(pondering && b)
-    leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
-}
-function update_ponder_and_ui() {update_ponder(); update_ui()}
-function init_from_renderer() {leelaz.update()}
 
-function wink_if_pass(proc, ...args) {
-    const rec = () => history.ref(R.move_count)
-    const before = rec()
-    proc(...args)
-    const after = rec(), d = after.move_count - before.move_count
-    if (Math.abs(d) !== 1) {return}
-    const implicit_pass = !!before.is_black === !!after.is_black
-    const pass = implicit_pass || is_pass((d === 1 ? after : before).move)
-    pass && wink()
-}
-function wink() {renderer('wink')}
+/////////////////////////////////////////////////
+// main flow (3) send game state to leelaz
 
-// tag letter
-let next_tag_count = 0
-const normal_tag_letters = 'bcdefghijklmnorstuvwy'
-const last_loaded_element_tag_letter = '.'
-const start_moves_tag_letter = "'"
-const endstate_diff_tag_letter = "/"
-const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
-      start_moves_tag_letter + endstate_diff_tag_letter
-function new_tag() {
-    const used = history.map(h => h.tag || '').join('')
-    const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
-          .split('').findIndex(c => used.indexOf(c) < 0)
-    const tag_count = (next_tag_count + Math.max(first_unused_index, 0))
-          % normal_tag_letters.length
-    next_tag_count = tag_count + 1
-    return normal_tag_letters[tag_count]
+function set_board(history, move_count) {
+    const hist = history.array_until(move_count)
+    each_leelaz(z => z.set_board(hist)); R.move_count = hist.length
+    R.bturn = !(hist[hist.length - 1] || {}).is_black
+    R.visits = null
+    switch_leelaz()
+    board_state_is_changed()
 }
+function reset_board() {set_board(history, 0)}
+function board_state_is_changed() {update_let_me_think()}
 
-// play best move(s)
-function play_best(n, weaken_method, ...weaken_args) {
-    auto_play(null, true); increment_auto_play_count(n)
-    try_play_best(weaken_method, ...weaken_args)
-}
-function play_weak(percent) {
-    play_best(null, leelaz_for_white ? 'random_leelaz' : 'random_candidate', percent)
-}
-function try_play_best(weaken_method, ...weaken_args) {
-    // (ex)
-    // try_play_best()
-    // try_play_best('pass_maybe')
-    // try_play_best('random_candidate', 30)
-    // try_play_best('random_leelaz', 30)
-    const switch_to_random_leelaz = percent => {
-        switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
+/////////////////////////////////////////////////
+// main flow (4) receive analysis from leelaz
+
+function board_handler(h) {
+    const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
+    const board_setter = () => {
+        add_next_mark_to_stones(R.stones, history, R.move_count)
+        add_info_to_stones(R.stones, history)
     }
-    weaken_method === 'random_leelaz' && switch_to_random_leelaz(...weaken_args)
-    if (empty(R.suggest)) {return}
-    const move = (weaken_method === 'random_candidate' ?
-                  weak_move(...weaken_args) : best_move())
-    const pass_maybe =
-          () => leelaz.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
-    const play_it = () => {
-        decrement_auto_play_count()
-        weaken_method === 'pass_maybe' ? pass_maybe() : play(move)
+    const endstate_setter = update_p => {
+        const prev = R.move_count - endstate_diff_interval
+        const prev_endstate = update_p && history.ref(prev).endstate
+        const add_endstate_to_history = z => {
+            z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
+        }
+        add_endstate_to_stones(R.stones, R.endstate, prev_endstate)
+        R.move_count > 0 && add_endstate_to_history(history.ref(R.move_count))
     }
-    do_as_auto_play(move !== 'pass', play_it)
-}
-function best_move() {return R.suggest[0].move}
-function weak_move(weaken_percent) {
-    // (1) Converge winrate to 0 with move counts
-    // (2) Occasionally play good moves with low probability
-    // (3) Do not play too bad moves
-    const r = clip((weaken_percent || 0) / 100, 0, 1)
-    const initial_target_winrate = 40 * 10**(- r)
-    const target = initial_target_winrate * 2**(- R.move_count / 100)  // (1)
-    const flip_maybe = x => R.bturn ? x : 100 - x
-    const current_winrate = flip_maybe(winrate_after(R.move_count))
-    const u = Math.random()**(1 - r) * r  // (2)
-    const next_target = current_winrate * (1 - u) + target * u  // (3)
-    return nearest_move_to_winrate(next_target)
-}
-function nearest_move_to_winrate(target_winrate) {
-    const min_by = (f, a) => {
-        const b = a.map(f), m = Math.min(...b); return a[b.indexOf(m)]
-    }
-    const not_too_bad = R.suggest.filter(s => s.winrate >= target_winrate)
-    const selected = min_by(s => Math.abs(s.winrate - target_winrate),
-                  empty(not_too_bad) ? R.suggest : not_too_bad)
-    debug_log(`weak_move: target_winrate=${target_winrate} ` +
-              `move=${selected.move} winrate=${selected.winrate} ` +
-              `visits=${selected.visits} order=${selected.order} ` +
-              `winrate_order=${selected.winrate_order}`)
-    return selected.move
+    set_renderer_state(h)
+    h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
+    update_state()
 }
 
-// board type
-function toggle_board_type(window_id, type) {
-    if (let_me_think_p() && !type) {toggle_board_type_in_let_me_think(); return}
-    const win = window_for_id(window_id)
-    const {board_type, previous_board_type} = window_prop(win)
-    const new_type = (type && board_type !== type) ? type : previous_board_type
-    set_board_type(new_type, win, !type)
-}
-function set_board_type(type, win, keep_let_me_think) {
-    const prop = window_prop(win), {board_type, previous_board_type} = prop
-    if (!type || type === board_type) {return}
-    keep_let_me_think || stop_let_me_think()
-    merge(prop, {board_type: type, previous_board_type: board_type}); update_ui()
-}
-
-// auto-restart
-let last_restart_time = 0
-function auto_restart() {
-    const buttons = ["retry", "load weight file", "save SGF and quit", "quit"]
-    const actions = [restart, load_weight, () => (save_sgf(), app.quit()), app.quit];
-    (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
-        (restart(), last_restart_time = Date.now()) :
-        dialog.showMessageBox(null, {
-            type: "error", message: "Leela Zero is down.", buttons: buttons,
-        }, response => actions[response]())
-}
-
-// handicap stones
-function add_handicap_stones(k) {
-    // [2019-04-29] ref.
-    // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
-    // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
-    const exceptions = [5, 7], first = 'Q16', center = 'K10'
-    const pos = [first, 'D4', 'Q4', 'D16', 'Q10', 'D10', 'K16', 'K4', center]
-    const moves = pos.slice(0, k)
-    exceptions.includes(k) && (moves[k - 1] = center)
-    moves.forEach(m => do_play(m, true))
-}
-function ask_handicap_stones() {
-    const ks = seq(8, 2), buttons = [...ks.map(to_s), 'cancel']
-    const action = response => {
-        const k = ks[response]; if (!k) {return}
-        history.is_empty() || new_empty_board(); add_handicap_stones(k)
-    }
-    dialog.showMessageBox(null, {
-        type: "question", message: "Handicap stones", buttons: buttons,
-    }, action)
-}
-
-// load weight file for leelaz
-let previous_weight_file = null
-function load_weight() {
-    return load_weight_file(select_files('Select weight file for leela zero')[0])
-}
-function load_weight_file(weight_file) {
-    const current_weight_file = leelaz_weight_file()
-    if (!weight_file) {return false}
-    weight_file !== current_weight_file &&
-        (previous_weight_file = current_weight_file)
-    restart_with_args(leelaz_start_args(weight_file))
-    return weight_file
-}
-function select_files(title) {
-    return files = dialog.showOpenDialog(null, {
-        properties: ['openFile'], title: title,
-        defaultPath: option.weight_dir,
-    }) || []
-}
-function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
-
-// misc.
-function toggle_trial() {history.trial = !history.trial; update_state()}
-function endstate_diff_interval_adder(k) {
-    return () => {
-        endstate_diff_interval = clip(endstate_diff_interval + k, 2)
-        leelaz_for_endstate.update()
-    }
-}
-function close_window_or_cut_sequence(win) {
-    get_windows().length > 1 ? win.close() :
-        attached ? null :
-        (sequence.length <= 1 && history.is_empty()) ? win.close() : cut_sequence()
-}
-function help() {
-    const menu = [
-        {label: 'File', submenu: [{role: 'close'}]},
-        {label: 'View',
-         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]}
-    ]
-    get_new_window('help.html').setMenu(Menu.buildFromTemplate(menu))
-}
-function info() {
-    const f = (label, s) => s ?
-          `<${label}>\n` + fold_text(JSON.stringify(s), 80, 5) + '\n\n' : ''
-    const lz = leelaz_for_white ?
-          (f("leelaz (black)", leelaz_for_black.start_args()) +
-           f("leelaz (white)", leelaz_for_white.start_args())) :
-          f("leelaz", leelaz.start_args())
-    const message = lz +
-          f("sgf file", history.sgf_file) +
-          f("sgf", history.sgf_str)
-    dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
-}
-function fold_text(str, n, max_lines) {
-    const fold_line =
-          s => s.split('').map((c, i) => i % n === n - 1 ? c + '\n' : c).join('')
-    const cut = s => s.split('\n').slice(0, max_lines).join('\n')
-    return cut(str.split('\n').map(fold_line).join('\n'))
+const too_small_prior = 1e-3
+function suggest_handler(h) {
+    const considerable = z => z.visits > 0 || z.prior >= too_small_prior
+    h.suggest = h.suggest.filter(considerable)
+    const cur = history.ref(R.move_count)
+    R.move_count > 0 && (cur.suggest = h.suggest)
+    R.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
+    set_and_render(h); try_auto()
 }
 
 /////////////////////////////////////////////////
-// auto-analyze / auto-play
+// main flow (5) change renderer state and send it to renderer
+
+function set_renderer_state(...args) {
+    const winrate_history = winrate_from_history(history)
+    const previous_suggest = get_previous_suggest()
+    const progress_bturn = auto_bturn
+    const weight_info = weight_info_text()
+    const network_size = leelaz.network_size()
+    const endstate_sum = leelaz_for_endstate && average_endstate_sum()
+    const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
+    const stored_keys = ['lizzie_style', 'expand_winrate_bar', 'let_me_think',
+                         'show_endstate']
+    stored_keys.forEach(key => R[key] = store.get(key, false))
+    merge(R, {winrate_history, endstate_sum,
+              progress_bturn,
+              weight_info, network_size, tag_letters, start_moves_tag_letter,
+              endstate_diff_tag_letter,
+              previous_suggest, winrate_trail}, endstate_d_i, ...args)
+    // clean me: R.max_visits is needed for auto_progress()
+    R.max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
+    R.progress = auto_progress()
+}
+function set_and_render(...args) {
+    set_renderer_state(...args)
+    const masked_R = merge({}, R, show_suggest_p() ? {} : {suggest: [], visits: null})
+    renderer('render', masked_R)
+}
+
+function update_state() {
+    set_renderer_state()  // need to update R.show_endstate
+    const history_length = history.len(), sequence_length = sequence.length, suggest = []
+    const sequence_ids = sequence.map(h => h.id)
+    const pick_tagged = h => {
+        const h_copy = append_endstate_tag_maybe(h)
+        return h_copy.tag ? [h_copy] : []
+    }
+    const history_tags = flatten(history.map(pick_tagged))
+    const {player_black, player_white, trial} = history
+    set_and_render({
+        history_length, suggest, sequence_cursor, sequence_length, attached,
+        player_black, player_white, trial, sequence_ids, history_tags
+    })
+    update_ui(true)
+}
+
+function update_ui(ui_only) {
+    update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
+}
+
+/////////////////////////////////////////////////
+// another source of change: menu
+
+function update_menu() {
+    get_windows()
+        .forEach(win => win.setMenu(simple_ui ? null :
+                                    Menu.buildFromTemplate(menu_template(win))))
+}
+
+function menu_template(win) {
+    const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
+    const stop_auto_and = f => ((...a) => {stop_auto(); f(...a)})
+    const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
+    const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
+          !(standalone_only && attached) && {
+              label, accelerator, click: keep_auto ? click : stop_auto_and(click),
+              enabled: enabled || (enabled === undefined)
+          }
+    const sep = {type: 'separator'}
+    const insert_if = (pred, ...items) => pred ? items : []
+    const file_menu = menu('File', [
+        item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
+        item('New handicap game', undefined, ask_handicap_stones, true),
+        item('New window', 'CmdOrCtrl+Shift+N',
+             (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
+                                            'variation' : 'suggest')),
+        item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
+        item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
+        sep,
+        item('Reset', 'CmdOrCtrl+R', restart),
+        leelaz_for_white ?
+            item('Load weights for black', 'Shift+L', load_leelaz_for_black) :
+            item('Load network weights', 'Shift+L', load_weight),
+        sep,
+        item('Close', undefined, (this_item, win) => win.close()),
+        item('Quit', undefined, app.quit),
+    ])
+    const edit_menu = menu('Edit', [
+        item('Copy SGF', 'CmdOrCtrl+C', copy_sgf_to_clipboard, true),
+        item('Paste SGF', 'CmdOrCtrl+V', paste_sgf_from_clipboard, true),
+        sep,
+        item('Delete board', 'CmdOrCtrl+X', cut_sequence, true),
+        item('Undelete board', 'CmdOrCtrl+Z', uncut_sequence, true,
+             exist_deleted_sequence()),
+        item('Duplicate board', 'CmdOrCtrl+D', duplicate_sequence, true),
+        sep,
+        {label: 'Trial board', type: 'checkbox', checked: history.trial,
+         click: toggle_trial},
+    ])
+    const view_menu = menu('View', [
+        board_type_menu_item('Two boards A (main+PV)', 'double_boards', win),
+        board_type_menu_item('Two boards B (main+raw)', 'double_boards_raw', win),
+        board_type_menu_item('Two boards C (raw+sub)', 'double_boards_swap', win),
+        board_type_menu_item('Two boards D (raw+PV)', 'double_boards_raw_pv', win),
+        board_type_menu_item('Suggestions', 'suggest', win),
+        board_type_menu_item('Principal variation', 'variation', win),
+        board_type_menu_item('Raw board', 'raw', win),
+        board_type_menu_item('Winrate graph', 'winrate_only', win),
+        sep,
+        store_toggler_menu_item('Let me think first', 'let_me_think', 'Shift+M',
+                                toggle_let_me_think),
+        sep,
+        store_toggler_menu_item('Lizzie style', 'lizzie_style'),
+        store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
+        ...insert_if(leelaz_for_endstate,
+            sep,
+            store_toggler_menu_item(`Endstate (diff: ${endstate_diff_interval} moves)`, 'show_endstate', 'Shift+E'),
+            item('...longer diff', '{', endstate_diff_interval_adder(10),
+                 false, R.show_endstate, true),
+            item('...shorter diff', '}', endstate_diff_interval_adder(-10),
+                 false, R.show_endstate, true))
+    ])
+    const tool_menu = menu('Tool', [
+        has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
+                       accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
+        item('Auto replay', 'Shift+A', ask_sec(true), true),
+        item('Self play', 'Shift+P', ask_sec(false), true),
+        {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
+         type: 'checkbox', checked: !!leelaz_for_white,
+         click: stop_auto_and(leelaz_for_white ?
+                              unload_leelaz_for_white : load_leelaz_for_white)},
+        leelaz_for_white ?
+            item('Swap black/white weights', 'Shift+S',
+                 swap_leelaz_for_black_and_white) :
+            item('Switch to previous weights', 'Shift+S',
+                 switch_to_previous_weight, false, !!previous_weight_file),
+        item('Info', 'CmdOrCtrl+I', info),
+    ])
+    const debug_menu = menu('Debug', [
+        store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
+        {role: 'toggleDevTools'},
+    ])
+    const help_menu = menu('Help', [
+        item('Help', undefined, help),
+    ])
+    return [file_menu, edit_menu, view_menu, tool_menu, debug_menu, help_menu]
+}
+
+function board_type_menu_item(label, type, win) {
+    return {label, type: 'radio', checked: window_prop(win).board_type === type,
+            click: (this_item, win) => set_board_type(type, win)}
+}
+
+function store_toggler_menu_item(label, key, accelerator, on_click) {
+    const toggle_it = () => toggle_stored(key)
+    return {label, accelerator, type: 'checkbox', checked: store.get(key),
+            click: on_click || toggle_it}
+}
+
+function toggle_stored(key) {
+    store.set(key, !store.get(key)); update_state(); return store.get(key)
+}
+
+/////////////////////////////////////////////////
+// another source of change: auto-analyze / auto-play
 
 // common
 function try_auto() {auto_playing() ? try_auto_play() : try_auto_analyze()}
@@ -592,6 +556,177 @@ function auto_playing(forever) {
 }
 
 /////////////////////////////////////////////////
+// play against leelaz
+
+function play_best(n, weaken_method, ...weaken_args) {
+    auto_play(null, true); increment_auto_play_count(n)
+    try_play_best(weaken_method, ...weaken_args)
+}
+function play_weak(percent) {
+    play_best(null, leelaz_for_white ? 'random_leelaz' : 'random_candidate', percent)
+}
+function try_play_best(weaken_method, ...weaken_args) {
+    // (ex)
+    // try_play_best()
+    // try_play_best('pass_maybe')
+    // try_play_best('random_candidate', 30)
+    // try_play_best('random_leelaz', 30)
+    const switch_to_random_leelaz = percent => {
+        switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
+    }
+    weaken_method === 'random_leelaz' && switch_to_random_leelaz(...weaken_args)
+    if (empty(R.suggest)) {return}
+    const move = (weaken_method === 'random_candidate' ?
+                  weak_move(...weaken_args) : best_move())
+    const pass_maybe =
+          () => leelaz.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
+    const play_it = () => {
+        decrement_auto_play_count()
+        weaken_method === 'pass_maybe' ? pass_maybe() : play(move)
+    }
+    do_as_auto_play(move !== 'pass', play_it)
+}
+function best_move() {return R.suggest[0].move}
+function weak_move(weaken_percent) {
+    // (1) Converge winrate to 0 with move counts
+    // (2) Occasionally play good moves with low probability
+    // (3) Do not play too bad moves
+    const r = clip((weaken_percent || 0) / 100, 0, 1)
+    const initial_target_winrate = 40 * 10**(- r)
+    const target = initial_target_winrate * 2**(- R.move_count / 100)  // (1)
+    const flip_maybe = x => R.bturn ? x : 100 - x
+    const current_winrate = flip_maybe(winrate_after(R.move_count))
+    const u = Math.random()**(1 - r) * r  // (2)
+    const next_target = current_winrate * (1 - u) + target * u  // (3)
+    return nearest_move_to_winrate(next_target)
+}
+function nearest_move_to_winrate(target_winrate) {
+    const min_by = (f, a) => {
+        const b = a.map(f), m = Math.min(...b); return a[b.indexOf(m)]
+    }
+    const not_too_bad = R.suggest.filter(s => s.winrate >= target_winrate)
+    const selected = min_by(s => Math.abs(s.winrate - target_winrate),
+                  empty(not_too_bad) ? R.suggest : not_too_bad)
+    debug_log(`weak_move: target_winrate=${target_winrate} ` +
+              `move=${selected.move} winrate=${selected.winrate} ` +
+              `visits=${selected.visits} order=${selected.order} ` +
+              `winrate_order=${selected.winrate_order}`)
+    return selected.move
+}
+
+/////////////////////////////////////////////////
+// other actions
+
+// board type
+function toggle_board_type(window_id, type) {
+    if (let_me_think_p() && !type) {toggle_board_type_in_let_me_think(); return}
+    const win = window_for_id(window_id)
+    const {board_type, previous_board_type} = window_prop(win)
+    const new_type = (type && board_type !== type) ? type : previous_board_type
+    set_board_type(new_type, win, !type)
+}
+function set_board_type(type, win, keep_let_me_think) {
+    const prop = window_prop(win), {board_type, previous_board_type} = prop
+    if (!type || type === board_type) {return}
+    keep_let_me_think || stop_let_me_think()
+    merge(prop, {board_type: type, previous_board_type: board_type}); update_ui()
+}
+
+// handicap stones
+function add_handicap_stones(k) {
+    // [2019-04-29] ref.
+    // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
+    // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
+    const exceptions = [5, 7], first = 'Q16', center = 'K10'
+    const pos = [first, 'D4', 'Q4', 'D16', 'Q10', 'D10', 'K16', 'K4', center]
+    const moves = pos.slice(0, k)
+    exceptions.includes(k) && (moves[k - 1] = center)
+    moves.forEach(m => do_play(m, true))
+}
+function ask_handicap_stones() {
+    const ks = seq(8, 2), buttons = [...ks.map(to_s), 'cancel']
+    const action = response => {
+        const k = ks[response]; if (!k) {return}
+        history.is_empty() || new_empty_board(); add_handicap_stones(k)
+    }
+    dialog.showMessageBox(null, {
+        type: "question", message: "Handicap stones", buttons: buttons,
+    }, action)
+}
+
+// misc.
+function toggle_trial() {history.trial = !history.trial; update_state()}
+function close_window_or_cut_sequence(win) {
+    get_windows().length > 1 ? win.close() :
+        attached ? null :
+        (sequence.length <= 1 && history.is_empty()) ? win.close() : cut_sequence()
+}
+function help() {
+    const menu = [
+        {label: 'File', submenu: [{role: 'close'}]},
+        {label: 'View',
+         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]}
+    ]
+    get_new_window('help.html').setMenu(Menu.buildFromTemplate(menu))
+}
+function info() {
+    const f = (label, s) => s ?
+          `<${label}>\n` + fold_text(JSON.stringify(s), 80, 5) + '\n\n' : ''
+    const lz = leelaz_for_white ?
+          (f("leelaz (black)", leelaz_for_black.start_args()) +
+           f("leelaz (white)", leelaz_for_white.start_args())) :
+          f("leelaz", leelaz.start_args())
+    const message = lz +
+          f("sgf file", history.sgf_file) +
+          f("sgf", history.sgf_str)
+    dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
+}
+function endstate_diff_interval_adder(k) {
+    return () => {
+        endstate_diff_interval = clip(endstate_diff_interval + k, 2)
+        leelaz_for_endstate.update()
+    }
+}
+
+/////////////////////////////////////////////////
+// utils for actions
+
+function undoable() {return R.move_count > 0}
+function redoable() {return history.len() > R.move_count}
+function pause() {pausing = true; update_ponder_and_ui()}
+function resume() {pausing = false; update_ponder_and_ui()}
+function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
+function set_or_unset_busy(bool) {busy = bool; update_ponder()}
+function set_busy() {set_or_unset_busy(true)}
+function unset_busy() {set_or_unset_busy(false)}
+function update_ponder() {
+    const pondering = !pausing && !busy, b = (leelaz === leelaz_for_black)
+    leelaz_for_black.set_pondering(pondering && b)
+    leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
+}
+function update_ponder_and_ui() {update_ponder(); update_ui()}
+function init_from_renderer() {leelaz.update()}
+
+function wink_if_pass(proc, ...args) {
+    const rec = () => history.ref(R.move_count)
+    const before = rec()
+    proc(...args)
+    const after = rec(), d = after.move_count - before.move_count
+    if (Math.abs(d) !== 1) {return}
+    const implicit_pass = !!before.is_black === !!after.is_black
+    const pass = implicit_pass || is_pass((d === 1 ? after : before).move)
+    pass && wink()
+}
+function wink() {renderer('wink')}
+
+function fold_text(str, n, max_lines) {
+    const fold_line =
+          s => s.split('').map((c, i) => i % n === n - 1 ? c + '\n' : c).join('')
+    const cut = s => s.split('\n').slice(0, max_lines).join('\n')
+    return cut(str.split('\n').map(fold_line).join('\n'))
+}
+
+/////////////////////////////////////////////////
 // let-me-think-first mode
 
 // fixme: this mode uses the first window even if it is requested from other windows
@@ -637,154 +772,6 @@ function let_me_think_next(board_type) {
     stay || redo()
     let_me_think_set_board_type_for(stay ? 'latter_half' : 'first_half')
 }
-
-/////////////////////////////////////////////////
-// from leelaz to renderer
-
-function set_renderer_state(...args) {
-    const winrate_history = winrate_from_history(history)
-    const previous_suggest = get_previous_suggest()
-    const progress_bturn = auto_bturn
-    const weight_info = weight_info_text()
-    const network_size = leelaz.network_size()
-    const endstate_sum = leelaz_for_endstate && average_endstate_sum()
-    const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
-    const stored_keys = ['lizzie_style', 'expand_winrate_bar', 'let_me_think',
-                         'show_endstate']
-    stored_keys.forEach(key => R[key] = store.get(key, false))
-    merge(R, {winrate_history, endstate_sum,
-              progress_bturn,
-              weight_info, network_size, tag_letters, start_moves_tag_letter,
-              endstate_diff_tag_letter,
-              previous_suggest, winrate_trail}, endstate_d_i, ...args)
-    // clean me: R.max_visits is needed for auto_progress()
-    R.max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
-    R.progress = auto_progress()
-}
-function set_and_render(...args) {
-    set_renderer_state(...args)
-    const masked_R = merge({}, R, show_suggest_p() ? {} : {suggest: [], visits: null})
-    renderer('render', masked_R)
-}
-
-function average_endstate_sum(move_count) {
-    const mc = truep(move_count) || R.move_count
-    const [cur, prev] = [0, 1].map(k => history.ref(mc - k).endstate_sum)
-    return truep(cur) && truep(prev) && (cur + prev) / 2
-}
-
-function get_previous_suggest() {
-    const [cur, prev] = [0, 1].map(k => history.ref(R.move_count - k))
-    // avoid "undefined" and use "null" for merge in set_renderer_state
-    const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
-    ret && (ret.bturn = !prev.is_black)
-    return ret
-}
-
-function weight_info_text() {
-    const f = lz =>
-          `${PATH.basename(leelaz_weight_file(lz)) || ''} ${lz.network_size() || ''}`
-    return leelaz_for_white ?
-        `${f(leelaz_for_black)} / ${f(leelaz_for_white)}` : f(leelaz)
-}
-
-// board
-function board_handler(h) {
-    const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
-    const board_setter = () => {
-        add_next_mark_to_stones(R.stones, history, R.move_count)
-        add_info_to_stones(R.stones, history)
-    }
-    const endstate_setter = update_p => {
-        const prev = R.move_count - endstate_diff_interval
-        const prev_endstate = update_p && history.ref(prev).endstate
-        const add_endstate_to_history = z => {
-            z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
-        }
-        add_endstate_to_stones(R.stones, R.endstate, prev_endstate)
-        R.move_count > 0 && add_endstate_to_history(history.ref(R.move_count))
-    }
-    set_renderer_state(h)
-    h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
-    update_state()
-}
-
-function update_state() {
-    set_renderer_state()  // need to update R.show_endstate
-    const history_length = history.len(), sequence_length = sequence.length, suggest = []
-    const sequence_ids = sequence.map(h => h.id)
-    const pick_tagged = h => {
-        const h_copy = append_endstate_tag_maybe(h)
-        return h_copy.tag ? [h_copy] : []
-    }
-    const history_tags = flatten(history.map(pick_tagged))
-    const {player_black, player_white, trial} = history
-    set_and_render({
-        history_length, suggest, sequence_cursor, sequence_length, attached,
-        player_black, player_white, trial, sequence_ids, history_tags
-    })
-    update_ui(true)
-}
-
-function append_endstate_tag_maybe(h) {
-    const h_copy = merge({}, h)
-    leelaz_for_endstate && R.show_endstate &&
-        h.move_count === R.move_count - endstate_diff_interval &&
-        add_tag(h_copy, endstate_diff_tag_letter)
-    return h_copy
-}
-
-function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
-
-function update_ui(ui_only) {
-    update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
-}
-
-function add_next_mark_to_stones(stones, history, move_count) {
-    const h = history.ref(move_count + 1), s = stone_for_history_elem(h, stones)
-    s && (s.next_move = true) && (s.next_is_black = h.is_black)
-}
-
-function add_info_to_stones(stones, history) {
-    history.forEach((h, c) => {
-        const s = stone_for_history_elem(h, stones); if (!s) {return}
-        add_tag(s, h.tag)
-        s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
-        leelaz_for_endstate && truep(s.move_count) &&
-            (R.move_count - endstate_diff_interval < s.move_count) && (s.recent = true)
-        !s.anytime_stones && (s.anytime_stones = [])
-        s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
-    })
-}
-
-function add_endstate_to_stones(stones, endstate, prev_endstate) {
-    if (!endstate) {return}
-    stones.forEach((row, i) => row.forEach((s, j) => {
-        s.endstate = endstate[i][j]
-        prev_endstate && (s.endstate_diff = s.endstate - prev_endstate[i][j])
-    }))
-}
-
-function stone_for_history_elem(h, stones) {
-    return h && h.move && aa_ref(stones, ...move2idx(h.move))
-}
-
-// suggest
-const too_small_prior = 1e-3
-function suggest_handler(h) {
-    const considerable = z => z.visits > 0 || z.prior >= too_small_prior
-    h.suggest = h.suggest.filter(considerable)
-    const cur = history.ref(R.move_count)
-    R.move_count > 0 && (cur.suggest = h.suggest)
-    R.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
-    set_and_render(h); try_auto()
-}
-
-function pick_properties(orig, keys) {
-    const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
-}
-
-function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
 
 /////////////////////////////////////////////////
 // history
@@ -921,6 +908,93 @@ function pop_deleted_sequence() {return deleted_sequences.pop()}
 function exist_deleted_sequence() {return !empty(deleted_sequences)}
 
 /////////////////////////////////////////////////
+// utils for updating renderer state
+
+function average_endstate_sum(move_count) {
+    const mc = truep(move_count) || R.move_count
+    const [cur, prev] = [0, 1].map(k => history.ref(mc - k).endstate_sum)
+    return truep(cur) && truep(prev) && (cur + prev) / 2
+}
+
+function get_previous_suggest() {
+    const [cur, prev] = [0, 1].map(k => history.ref(R.move_count - k))
+    // avoid "undefined" and use "null" for merge in set_renderer_state
+    const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
+    ret && (ret.bturn = !prev.is_black)
+    return ret
+}
+
+function weight_info_text() {
+    const f = lz =>
+          `${PATH.basename(leelaz_weight_file(lz)) || ''} ${lz.network_size() || ''}`
+    return leelaz_for_white ?
+        `${f(leelaz_for_black)} / ${f(leelaz_for_white)}` : f(leelaz)
+}
+
+function append_endstate_tag_maybe(h) {
+    const h_copy = merge({}, h)
+    leelaz_for_endstate && R.show_endstate &&
+        h.move_count === R.move_count - endstate_diff_interval &&
+        add_tag(h_copy, endstate_diff_tag_letter)
+    return h_copy
+}
+
+function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
+
+function add_next_mark_to_stones(stones, history, move_count) {
+    const h = history.ref(move_count + 1), s = stone_for_history_elem(h, stones)
+    s && (s.next_move = true) && (s.next_is_black = h.is_black)
+}
+
+function add_info_to_stones(stones, history) {
+    history.forEach((h, c) => {
+        const s = stone_for_history_elem(h, stones); if (!s) {return}
+        add_tag(s, h.tag)
+        s.stone && (h.move_count <= R.move_count) && (s.move_count = h.move_count)
+        leelaz_for_endstate && truep(s.move_count) &&
+            (R.move_count - endstate_diff_interval < s.move_count) && (s.recent = true)
+        !s.anytime_stones && (s.anytime_stones = [])
+        s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
+    })
+}
+
+function add_endstate_to_stones(stones, endstate, prev_endstate) {
+    if (!endstate) {return}
+    stones.forEach((row, i) => row.forEach((s, j) => {
+        s.endstate = endstate[i][j]
+        prev_endstate && (s.endstate_diff = s.endstate - prev_endstate[i][j])
+    }))
+}
+
+function stone_for_history_elem(h, stones) {
+    return h && h.move && aa_ref(stones, ...move2idx(h.move))
+}
+
+function pick_properties(orig, keys) {
+    const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
+}
+
+function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
+
+function availability() {
+    return {
+        undo: R.move_count > 0,
+        redo: redoable(),
+        attach: !attached,
+        detach: attached,
+        pause: !pausing,
+        resume: pausing,
+        bturn: R.bturn,
+        wturn: !R.bturn,
+        auto_analyze: !history.is_empty(),
+        start_auto_analyze: !auto_analyzing() && !auto_playing(),
+        stop_auto: auto_progress() >= 0,
+        simple_ui: simple_ui, normal_ui: !simple_ui,
+        trial: history.trial,
+    }
+}
+
+/////////////////////////////////////////////////
 // winrate history
 
 function winrate_before(move_count) {return winrate_after(move_count - 1)}
@@ -957,24 +1031,129 @@ function winrate_suggested(move_count) {
 }
 
 /////////////////////////////////////////////////
-// availability
+// tag letter
+let next_tag_count = 0
+const normal_tag_letters = 'bcdefghijklmnorstuvwy'
+const last_loaded_element_tag_letter = '.'
+const start_moves_tag_letter = "'"
+const endstate_diff_tag_letter = "/"
+const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
+      start_moves_tag_letter + endstate_diff_tag_letter
+function new_tag() {
+    const used = history.map(h => h.tag || '').join('')
+    const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
+          .split('').findIndex(c => used.indexOf(c) < 0)
+    const tag_count = (next_tag_count + Math.max(first_unused_index, 0))
+          % normal_tag_letters.length
+    next_tag_count = tag_count + 1
+    return normal_tag_letters[tag_count]
+}
 
-function availability() {
-    return {
-        undo: R.move_count > 0,
-        redo: redoable(),
-        attach: !attached,
-        detach: attached,
-        pause: !pausing,
-        resume: pausing,
-        bturn: R.bturn,
-        wturn: !R.bturn,
-        auto_analyze: !history.is_empty(),
-        start_auto_analyze: !auto_analyzing() && !auto_playing(),
-        stop_auto: auto_progress() >= 0,
-        simple_ui: simple_ui, normal_ui: !simple_ui,
-        trial: history.trial,
+/////////////////////////////////////////////////
+// leelaz process
+
+// load weight file
+let previous_weight_file = null
+function load_weight() {
+    return load_weight_file(select_files('Select weight file for leela zero')[0])
+}
+function load_weight_file(weight_file) {
+    const current_weight_file = leelaz_weight_file()
+    if (!weight_file) {return false}
+    weight_file !== current_weight_file &&
+        (previous_weight_file = current_weight_file)
+    restart_with_args(leelaz_start_args(weight_file))
+    return weight_file
+}
+function select_files(title) {
+    return files = dialog.showOpenDialog(null, {
+        properties: ['openFile'], title: title,
+        defaultPath: option.weight_dir,
+    }) || []
+}
+function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
+
+// restart
+function restart() {restart_with_args()}
+function restart_with_args(h) {
+    leelaz.restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
+}
+let last_restart_time = 0
+function auto_restart() {
+    const buttons = ["retry", "load weight file", "save SGF and quit", "quit"]
+    const actions = [restart, load_weight, () => (save_sgf(), app.quit()), app.quit];
+    (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
+        (restart(), last_restart_time = Date.now()) :
+        dialog.showMessageBox(null, {
+            type: "error", message: "Leela Zero is down.", buttons: buttons,
+        }, response => actions[response]())
+}
+
+// util
+function each_leelaz(f) {
+    [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
+}
+function leelaz_start_args(weight_file) {
+    const restart_handler = auto_restart, leelaz_args = option.leelaz_args.slice()
+    const weight_pos = leelaz_weight_option_pos_in_args()
+    weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
+    const h = {leelaz_args, board_handler, suggest_handler, restart_handler}
+    const opts = ['leelaz_command', 'analyze_interval_centisec',
+                  'minimum_suggested_moves', 'engine_log_line_length']
+    opts.forEach(key => h[key] = option[key])
+    return h
+}
+function leelaz_weight_file(leelaz_for_black_or_white) {
+    const k = leelaz_weight_option_pos_in_args()
+    const arg = (leelaz_for_black_or_white || leelaz).start_args()
+    return (k >= 0) && arg && arg.leelaz_args[k + 1]
+}
+function leelaz_weight_option_pos_in_args() {
+    return option.leelaz_args.findIndex(z => z === "-w" || z === "--weights")
+}
+
+/////////////////////////////////////////////////
+// another leelaz for white
+
+function load_leelaz_for_black() {
+    with_temporary_leelaz(leelaz_for_black, load_weight)
+}
+
+function load_leelaz_for_white() {
+    const proc = () => {
+        leelaz_for_white.activate(false)
+        load_weight() || (leelaz_for_white.kill(), (leelaz_for_white = null))
     }
+    with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
+}
+
+function with_temporary_leelaz(leelaz_for_black_or_white, proc) {
+    leelaz = leelaz_for_black_or_white; proc()
+    leelaz = leelaz_for_black; switch_leelaz()
+}
+
+function unload_leelaz_for_white() {
+    switch_to_another_leelaz(leelaz_for_black)
+    leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
+    update_state()
+}
+
+function switch_leelaz(bturn) {
+    switch_to_another_leelaz((bturn === undefined ? R.bturn : bturn) ?
+                             leelaz_for_black : leelaz_for_white)
+}
+
+function switch_to_another_leelaz(next_leelaz) {
+    next_leelaz && next_leelaz !== leelaz &&
+        (leelaz = next_leelaz) && (update_ponder(), update_state())
+}
+
+function swap_leelaz_for_black_and_white() {
+    if (!leelaz_for_white) {return}
+    const old_black = leelaz_for_black
+    leelaz_for_black = leelaz_for_white; leelaz_for_white = old_black
+    leelaz_for_black.activate(!leelaz_for_endstate); leelaz_for_white.activate(false)
+    switch_leelaz()
 }
 
 /////////////////////////////////////////////////
@@ -1121,161 +1300,4 @@ function detach_from_sabaki() {
 
 function toggle_sabaki() {
     stop_auto(); attached ? detach_from_sabaki() : attach_to_sabaki()
-}
-
-/////////////////////////////////////////////////
-// another leelaz for white
-
-function load_leelaz_for_black() {
-    with_temporary_leelaz(leelaz_for_black, load_weight)
-}
-
-function load_leelaz_for_white() {
-    const proc = () => {
-        leelaz_for_white.activate(false)
-        load_weight() || (leelaz_for_white.kill(), (leelaz_for_white = null))
-    }
-    with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
-}
-
-function with_temporary_leelaz(leelaz_for_black_or_white, proc) {
-    leelaz = leelaz_for_black_or_white; proc()
-    leelaz = leelaz_for_black; switch_leelaz()
-}
-
-function unload_leelaz_for_white() {
-    switch_to_another_leelaz(leelaz_for_black)
-    leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
-    update_state()
-}
-
-function switch_leelaz(bturn) {
-    switch_to_another_leelaz((bturn === undefined ? R.bturn : bturn) ?
-                             leelaz_for_black : leelaz_for_white)
-}
-
-function switch_to_another_leelaz(next_leelaz) {
-    next_leelaz && next_leelaz !== leelaz &&
-        (leelaz = next_leelaz) && (update_ponder(), update_state())
-}
-
-function swap_leelaz_for_black_and_white() {
-    if (!leelaz_for_white) {return}
-    const old_black = leelaz_for_black
-    leelaz_for_black = leelaz_for_white; leelaz_for_white = old_black
-    leelaz_for_black.activate(!leelaz_for_endstate); leelaz_for_white.activate(false)
-    switch_leelaz()
-}
-
-/////////////////////////////////////////////////
-// menu
-
-function update_menu() {
-    get_windows()
-        .forEach(win => win.setMenu(simple_ui ? null :
-                                    Menu.buildFromTemplate(menu_template(win))))
-}
-
-function menu_template(win) {
-    const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
-    const stop_auto_and = f => ((...a) => {stop_auto(); f(...a)})
-    const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
-    const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
-          !(standalone_only && attached) && {
-              label, accelerator, click: keep_auto ? click : stop_auto_and(click),
-              enabled: enabled || (enabled === undefined)
-          }
-    const sep = {type: 'separator'}
-    const insert_if = (pred, ...items) => pred ? items : []
-    const file_menu = menu('File', [
-        item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
-        item('New handicap game', undefined, ask_handicap_stones, true),
-        item('New window', 'CmdOrCtrl+Shift+N',
-             (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
-                                            'variation' : 'suggest')),
-        item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
-        item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
-        sep,
-        item('Reset', 'CmdOrCtrl+R', restart),
-        leelaz_for_white ?
-            item('Load weights for black', 'Shift+L', load_leelaz_for_black) :
-            item('Load network weights', 'Shift+L', load_weight),
-        sep,
-        item('Close', undefined, (this_item, win) => win.close()),
-        item('Quit', undefined, app.quit),
-    ])
-    const edit_menu = menu('Edit', [
-        item('Copy SGF', 'CmdOrCtrl+C', copy_sgf_to_clipboard, true),
-        item('Paste SGF', 'CmdOrCtrl+V', paste_sgf_from_clipboard, true),
-        sep,
-        item('Delete board', 'CmdOrCtrl+X', cut_sequence, true),
-        item('Undelete board', 'CmdOrCtrl+Z', uncut_sequence, true,
-             exist_deleted_sequence()),
-        item('Duplicate board', 'CmdOrCtrl+D', duplicate_sequence, true),
-        sep,
-        {label: 'Trial board', type: 'checkbox', checked: history.trial,
-         click: toggle_trial},
-    ])
-    const view_menu = menu('View', [
-        board_type_menu_item('Two boards A (main+PV)', 'double_boards', win),
-        board_type_menu_item('Two boards B (main+raw)', 'double_boards_raw', win),
-        board_type_menu_item('Two boards C (raw+sub)', 'double_boards_swap', win),
-        board_type_menu_item('Two boards D (raw+PV)', 'double_boards_raw_pv', win),
-        board_type_menu_item('Suggestions', 'suggest', win),
-        board_type_menu_item('Principal variation', 'variation', win),
-        board_type_menu_item('Raw board', 'raw', win),
-        board_type_menu_item('Winrate graph', 'winrate_only', win),
-        sep,
-        store_toggler_menu_item('Let me think first', 'let_me_think', 'Shift+M',
-                                toggle_let_me_think),
-        sep,
-        store_toggler_menu_item('Lizzie style', 'lizzie_style'),
-        store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
-        ...insert_if(leelaz_for_endstate,
-            sep,
-            store_toggler_menu_item(`Endstate (diff: ${endstate_diff_interval} moves)`, 'show_endstate', 'Shift+E'),
-            item('...longer diff', '{', endstate_diff_interval_adder(10),
-                 false, R.show_endstate, true),
-            item('...shorter diff', '}', endstate_diff_interval_adder(-10),
-                 false, R.show_endstate, true))
-    ])
-    const tool_menu = menu('Tool', [
-        has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
-                       accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
-        item('Auto replay', 'Shift+A', ask_sec(true), true),
-        item('Self play', 'Shift+P', ask_sec(false), true),
-        {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
-         type: 'checkbox', checked: !!leelaz_for_white,
-         click: stop_auto_and(leelaz_for_white ?
-                              unload_leelaz_for_white : load_leelaz_for_white)},
-        leelaz_for_white ?
-            item('Swap black/white weights', 'Shift+S',
-                 swap_leelaz_for_black_and_white) :
-            item('Switch to previous weights', 'Shift+S',
-                 switch_to_previous_weight, false, !!previous_weight_file),
-        item('Info', 'CmdOrCtrl+I', info),
-    ])
-    const debug_menu = menu('Debug', [
-        store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
-        {role: 'toggleDevTools'},
-    ])
-    const help_menu = menu('Help', [
-        item('Help', undefined, help),
-    ])
-    return [file_menu, edit_menu, view_menu, tool_menu, debug_menu, help_menu]
-}
-
-function board_type_menu_item(label, type, win) {
-    return {label, type: 'radio', checked: window_prop(win).board_type === type,
-            click: (this_item, win) => set_board_type(type, win)}
-}
-
-function store_toggler_menu_item(label, key, accelerator, on_click) {
-    const toggle_it = () => toggle_stored(key)
-    return {label, accelerator, type: 'checkbox', checked: store.get(key),
-            click: on_click || toggle_it}
-}
-
-function toggle_stored(key) {
-    store.set(key, !store.get(key)); update_state(); return store.get(key)
 }
