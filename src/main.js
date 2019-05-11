@@ -290,6 +290,7 @@ function menu_template(win) {
           }
     const sep = {type: 'separator'}
     const insert_if = (pred, ...items) => pred ? items : []
+    const lz_white = P.leelaz_for_white_p()
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
         item('New handicap game', undefined, ask_handicap_stones, true),
@@ -300,7 +301,7 @@ function menu_template(win) {
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
         item('Reset', 'CmdOrCtrl+R', restart),
-        L().leelaz_for_white ?
+        lz_white ?
             item('Load weights for black', 'Shift+L', load_leelaz_for_black) :
             item('Load network weights', 'Shift+L', load_weight),
         sep,
@@ -334,7 +335,7 @@ function menu_template(win) {
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
-        ...insert_if(L().leelaz_for_endstate,
+        ...insert_if(P.leelaz_for_endstate_p(),
             sep,
             store_toggler_menu_item(`Endstate (diff: ${endstate_diff_interval} moves)`, 'show_endstate', 'Shift+E'),
             item('...longer diff', '{', endstate_diff_interval_adder(10),
@@ -348,10 +349,10 @@ function menu_template(win) {
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('Self play', 'Shift+P', ask_sec(false), true),
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
-         type: 'checkbox', checked: !!L().leelaz_for_white,
-         click: stop_auto_and(L().leelaz_for_white ?
+         type: 'checkbox', checked: lz_white,
+         click: stop_auto_and(lz_white ?
                               P.unload_leelaz_for_white : load_leelaz_for_white)},
-        L().leelaz_for_white ?
+        lz_white ?
             item('Swap black/white weights', 'Shift+S',
                  P.swap_leelaz_for_black_and_white) :
             item('Switch to previous weights', 'Shift+S',
@@ -470,7 +471,7 @@ function play_best(n, weaken_method, ...weaken_args) {
     try_play_best(weaken_method, ...weaken_args)
 }
 function play_weak(percent) {
-    play_best(null, L().leelaz_for_white ? 'random_leelaz' : 'random_candidate', percent)
+    play_best(null, P.leelaz_for_white_p() ? 'random_leelaz' : 'random_candidate', percent)
 }
 function try_play_best(weaken_method, ...weaken_args) {
     // (ex)
@@ -579,7 +580,7 @@ function help() {
 function info() {
     const f = (label, s) => s ?
           `<${label}>\n` + fold_text(JSON.stringify(s), 80, 5) + '\n\n' : ''
-    const lz = L().leelaz_for_white ?
+    const lz = P.leelaz_for_white_p() ?
           (f("leelaz (black)", L().leelaz_for_black.start_args()) +
            f("leelaz (white)", L().leelaz_for_white.start_args())) :
           f("leelaz", L().leelaz.start_args())
@@ -609,7 +610,7 @@ function unset_busy() {set_or_unset_busy(false)}
 function update_ponder() {
     const pondering = !pausing && !busy, b = (L().leelaz === L().leelaz_for_black)
     L().leelaz_for_black.set_pondering(pondering && b)
-    L().leelaz_for_white && L().leelaz_for_white.set_pondering(pondering && !b)
+    P.leelaz_for_white_p() && L().leelaz_for_white.set_pondering(pondering && !b)
 }
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {L().leelaz.update()}

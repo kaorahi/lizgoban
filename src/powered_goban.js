@@ -273,6 +273,9 @@ function leelaz_weight_file(leelaz_for_black_or_white) {
     return (k >= 0) && arg && arg.leelaz_args[k + 1]
 }
 
+function leelaz_for_white_p() {return !!leelaz_for_white}
+function leelaz_for_endstate_p() {return !!leelaz_for_endstate}
+
 function L() {return {leelaz, leelaz_for_black, leelaz_for_white, leelaz_for_endstate}}
 
 module.exports = {
@@ -280,9 +283,10 @@ module.exports = {
     stone_for_history_elem, new_tag, set_renderer_state, set_and_render,
     append_endstate_tag_maybe,
     L,
-    board_handler, suggest_handler, create_leelaz,
+    board_handler, suggest_handler,
     load_leelaz_for_white, unload_leelaz_for_white, with_temporary_leelaz,
     swap_leelaz_for_black_and_white,
     leelaz_weight_file, start_endstate,
     each_leelaz,
+    leelaz_for_white_p, leelaz_for_endstate_p,
 }
