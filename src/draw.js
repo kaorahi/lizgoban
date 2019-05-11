@@ -57,9 +57,12 @@ function draw_goban_until(canvas, show_until, opts) {
                         (h.last = false))
         }
         h.displayed_tag = h.tag
+        const next_stone = ss && ss.find(z => (z.move_count === show_until + 1))
+        h.next_move = !!next_stone; h.next_is_black = (next_stone || {}).is_black
     })
     draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, draw_endstate_p: R.show_endstate, ...opts})
+               {draw_last_p: true, draw_next_p: true,
+                draw_endstate_p: R.show_endstate, ...opts})
 }
 
 function draw_goban_with_suggest(canvas, opts) {
