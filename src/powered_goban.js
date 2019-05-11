@@ -292,13 +292,11 @@ function all_start_args() {
     return {black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
 }
 
-function L() {return {leelaz, leelaz_for_black, leelaz_for_white, leelaz_for_endstate}}
-
 module.exports = {
     initialize, set_board, switch_leelaz,
     stone_for_history_elem, new_tag, set_renderer_state, set_and_render,
     append_endstate_tag_maybe,
-    L,
+    leelaz: () => leelaz,
     board_handler, suggest_handler, load_leelaz_for_black,
     load_leelaz_for_white, unload_leelaz_for_white,
     swap_leelaz_for_black_and_white,

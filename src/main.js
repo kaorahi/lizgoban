@@ -48,7 +48,7 @@ const R = {stones: aa_new(19, 19, () => ({}))}
 
 // modules
 const {create_game} = require('./game.js')
-const P = require('./powered_goban.js'), {L} = P
+const P = require('./powered_goban.js')
 P.initialize(R, update_let_me_think,
              {update_state, update_ponder,
               leelaz_weight_option_pos_in_args, store, auto_progress,
@@ -79,9 +79,9 @@ fs.access(option.sabaki_command, null,
 // app
 
 app.on('ready', () => {
-    L().leelaz.start(leelaz_start_args()); update_menu(); new_window('double_boards')
+    P.leelaz().start(leelaz_start_args()); update_menu(); new_window('double_boards')
     if (!option.endstate_leelaz) {return}
-    L().leelaz.activate(false)
+    P.leelaz().activate(false)
     const [lz_command, weight] = option.endstate_leelaz
     const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
     P.start_endstate(es_args)
@@ -172,7 +172,7 @@ const api = merge({}, simple_api, {
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
     // for debug
-    send_to_leelaz: L().leelaz.send_to_leelaz,
+    send_to_leelaz: P.leelaz().send_to_leelaz,
 })
 
 function api_handler(channel, handler, busy) {
@@ -487,7 +487,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const move = (weaken_method === 'random_candidate' ?
                   weak_move(...weaken_args) : best_move())
     const pass_maybe =
-          () => L().leelaz.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
+          () => P.leelaz().peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
     const play_it = () => {
         decrement_auto_play_count()
         weaken_method === 'pass_maybe' ? pass_maybe() : play(move)
@@ -831,7 +831,7 @@ function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 // restart
 function restart() {restart_with_args()}
 function restart_with_args(h) {
-    L().leelaz.restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
+    P.leelaz().restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
 }
 let last_restart_time = 0
 function auto_restart() {
