@@ -106,9 +106,7 @@ function set_renderer_state(...args) {
                          'show_endstate']
     stored_keys.forEach(key => R[key] = M.store.get(key, false))
     merge(R, {winrate_history, endstate_sum,
-              progress_bturn,
-              weight_info, network_size, tag_letters, start_moves_tag_letter,
-              endstate_diff_tag_letter,
+              progress_bturn, weight_info, network_size,
               previous_suggest, winrate_trail}, endstate_d_i, ...args)
     // clean me: R.max_visits is needed for auto_progress()
     R.max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
@@ -202,6 +200,7 @@ function average_endstate_sum(move_count) {
     const [cur, prev] = [0, 1].map(k => game.ref(mc - k).endstate_sum)
     return truep(cur) && truep(prev) && (cur + prev) / 2
 }
+function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
 /////////////////////////////////////////////////
 // winrate history
@@ -239,27 +238,6 @@ function winrate_suggested(move_count) {
     const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
     return truep(sw) && (is_black ? sw : 100 - sw)
 }
-
-/////////////////////////////////////////////////
-// tag letter
-let next_tag_count = 0
-const normal_tag_letters = 'bcdefghijklmnorstuvwy'
-const last_loaded_element_tag_letter = '.'
-const start_moves_tag_letter = "'"
-const endstate_diff_tag_letter = "/"
-const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
-      start_moves_tag_letter + endstate_diff_tag_letter
-function new_tag() {
-    const game = M.current_game()
-    const used = game.map(h => h.tag || '').join('')
-    const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
-          .split('').findIndex(c => used.indexOf(c) < 0)
-    const tag_count = (next_tag_count + Math.max(first_unused_index, 0))
-          % normal_tag_letters.length
-    next_tag_count = tag_count + 1
-    return normal_tag_letters[tag_count]
-}
-function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
 /////////////////////////////////////////////////
 // misc. utils for updating renderer state
@@ -318,7 +296,7 @@ module.exports = {
     // renderer
     set_renderer_state, set_and_render,
     // util
-    stone_for_history_elem, new_tag,
+    stone_for_history_elem,
     // leelaz methods
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)]))

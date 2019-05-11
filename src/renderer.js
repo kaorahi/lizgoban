@@ -23,7 +23,7 @@ const R = {
     progress: 0.0, progress_bturn: true, weight_info: '', network_size: '',
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [],
-    tag_letters: '', start_moves_tag_letter: '', lizzie_style: false,
+    lizzie_style: false,
     window_id: -1,
 }
 let temporary_board_type = null
@@ -74,7 +74,7 @@ function hide_dialog() {
 
 function play_moves(moves) {
     moves && moves.forEach((move, k) => main('play', move, false,
-                                             (k === 0) && R.start_moves_tag_letter))
+                                             (k === 0) && start_moves_tag_letter))
 }
 
 function main(channel, ...args) {ipc.send(channel, ...args)}
@@ -122,7 +122,7 @@ function update_title() {
 
 function current_tag_letters() {
     return R.history_tags.map(x => x.tag).join('')
-        .replace(R.endstate_diff_tag_letter, '')
+        .replace(endstate_diff_tag_letter, '')
 }
 
 function update_body_color() {
@@ -442,7 +442,7 @@ document.onkeydown = e => {
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     to_i(key) > 0 && (challenging ? m('play_weak', to_i(key) * 10) :
                       f(set_keyboard_moves_maybe, to_i(key) - 1))
-    key.length === 1 && R.tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
+    key.length === 1 && tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
     switch (key) {
     case "C-c": m('copy_sgf_to_clipboard'); return
     case "z": f(set_temporary_board_type, "raw", "suggest"); return

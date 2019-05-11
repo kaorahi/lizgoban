@@ -74,4 +74,17 @@ E.set_error_handler = (process, handler) => {
     process.on('exit', handler)
 }
 
-require('./globally.js').export_globally(module, E)
+// avoid letters for keyboard operation in renderer.js
+const normal_tag_letters = 'bcdefghijklmnorstuvwy'
+const last_loaded_element_tag_letter = '.'
+const start_moves_tag_letter = "'"
+const endstate_diff_tag_letter = "/"
+const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
+      start_moves_tag_letter + endstate_diff_tag_letter
+const common_constants = {
+    normal_tag_letters, last_loaded_element_tag_letter,
+    start_moves_tag_letter, endstate_diff_tag_letter,
+    tag_letters,
+}
+
+require('./globally.js').export_globally(module, E.merge(E, common_constants))

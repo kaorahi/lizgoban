@@ -6,7 +6,7 @@ const SGF = require('@sabaki/sgf')
 
 // example of history:
 // [{move: "D16", is_black: true, move_count: 1, ...},
-//  {move: "Q4", is_black: false, move_count: 2, ...},
+//  {move: "Q4", is_black: false, move_count: 2, tag: "b", ...},
 //  {move: "Q16", is_black: false, move_count: 3, ...},
 //  {move: "pass", is_black: true, move_count: 4, ...}]
 // 
@@ -50,6 +50,8 @@ function create_game(init_history, init_prop) {
         import_sgf: sgf_str => import_sgf_to_game(sgf_str, self),
         load_sabaki_gametree: (gametree, index) =>
             load_sabaki_gametree_to_game(gametree, index, self),
+        new_tag_maybe: (new_sequence_p, move_count) =>
+            new_tag_maybe_for_game(self, new_sequence_p, move_count),
     }
     const array_methods =
           aa2hash(['push', 'pop', 'map', 'forEach', 'slice', 'splice']
@@ -128,6 +130,25 @@ function history_from_sabaki_nodes(nodes) {
 function nodes_from_sabaki_gametree(gametree) {
     return (gametree === null) ? [] :
         nodes_from_sabaki_gametree(gametree.parent).concat(gametree.nodes)
+}
+
+/////////////////////////////////////////////////
+// tag letter
+
+let next_tag_count = 0
+function new_tag_maybe_for_game(game, new_sequence_p, move_count) {
+    return new_sequence_p ? new_tag_for_game(game) :
+           game.ref(move_count) === game.last_loaded_element ?
+           last_loaded_element_tag_letter : false
+}
+function new_tag_for_game(game) {
+    const used = game.map(h => h.tag || '').join('')
+    const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
+          .split('').findIndex(c => used.indexOf(c) < 0)
+    const tag_count = (next_tag_count + Math.max(first_unused_index, 0))
+          % normal_tag_letters.length
+    next_tag_count = tag_count + 1
+    return normal_tag_letters[tag_count]
 }
 
 /////////////////////////////////////////////////
