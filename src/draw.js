@@ -678,9 +678,9 @@ function draw_winrate_graph(canvas, show_until, goto_move_count, unset_busy) {
     clear_canvas(canvas, BLACK, g)
     show_until && draw_winrate_graph_show_until(show_until, w, h, sr2coord, g)
     draw_winrate_graph_frame(w, h, tics, g)
-    draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_hotness(h, sr2coord, g)
     draw_winrate_graph_uncertainty(h, sr2coord, g)
+    draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     const goto_here = e =>
@@ -768,11 +768,11 @@ function draw_winrate_graph_score(sr2coord, g) {
 }
 
 function draw_winrate_graph_hotness(h, sr2coord, g) {
-    draw_winrate_graph_barchart('hotness', 0.33, '255,128,0', false, h, sr2coord, g)
+    draw_winrate_graph_barchart('hotness', 0.33, '0,255,255', true, h, sr2coord, g)
 }
 
 function draw_winrate_graph_uncertainty(h, sr2coord, g) {
-    draw_winrate_graph_barchart('uncertainty', 10, '255,255,255', true, h, sr2coord, g)
+    draw_winrate_graph_barchart('uncertainty', 10, '255,128,0', false, h, sr2coord, g)
 }
 
 function draw_winrate_graph_history(ary, to_r, plotter, sr2coord, g) {
