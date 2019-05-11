@@ -111,7 +111,7 @@ function draw_goban_with_principal_variation(canvas, options) {
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, draw_endstate_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
-           hovered_move, reverse_next_color_p}
+           hovered_move, reverse_next_color_p, show_until}
           = opts || {}
     const large_font_p = !opts.main_canvas_p
     const margin = canvas.height * 0.05, hm = margin / 2
@@ -140,7 +140,8 @@ function draw_goban(canvas, stones, opts) {
         draw_cursor(hovered_move, reverse_next_color_p, unit, idx2coord, g)
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_endstate_p, large_font_p,
-        draw_recent_p: draw_last_p && draw_endstate_p, tag_clickable_p, hovered_move,
+        draw_recent_p: draw_last_p && draw_endstate_p && !show_until,
+        tag_clickable_p, hovered_move,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
