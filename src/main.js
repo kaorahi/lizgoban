@@ -807,6 +807,8 @@ function new_history_id() {return next_history_id++}
 function create_history(init_hist, init_prop) {
     const self = {}, hist = init_hist || []  // private
     const prop = init_prop || {  // public
+        // move_count is not updated usually.
+        // It is only used as record of return-point when sequence is switched.
         move_count: 0, player_black: "", player_white: "",
         sgf_file: "", sgf_str: "", id: new_history_id(),
         trial: false, last_loaded_element: null
