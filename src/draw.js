@@ -788,12 +788,15 @@ function update_winrate_trail() {
 function thin_winrate_trail(trail) {
     const len = trail.length
     if (len <= winrate_trail_max_length) {return}
-    const v_now = trail[0].visits, v_init = trail[len - 1].visits
-    const ideal_interval = (v_now - v_init) / (winrate_trail_max_length - 1)
+    const distance = (k1, k2) => {
+        const t1 = trail[k1], t2 = trail[k2], diff = key => Math.abs(t1[key] - t2[key])
+        return diff('visits')
+    }
+    const ideal_interval = distance(0, len - 1) / (winrate_trail_max_length - 1)
     const interval_around = (_, k) => (1 < k && k < len - 1) ?  // except 0, 1, and last
-          trail[k - 1].visits - trail[k + 1].visits : Infinity
+          distance(k - 1, k + 1) : Infinity
     const min_index = a => a.indexOf(Math.min(...a))
-    const victim = trail[1].visits - trail[2].visits < ideal_interval ? 1 :
+    const victim = distance(1, 2) < ideal_interval ? 1 :
           min_index(trail.map(interval_around))
     victim >= 0 && trail.splice(victim, 1)
 }
