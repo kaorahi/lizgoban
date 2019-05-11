@@ -7,3 +7,7 @@ Leelaz is wrapped as if it is a stateless analyzer for convenience.
 The wrapped leelaz receives the history of moves from the beginning to
 the current board state for every analysis.  Only the difference from
 the previous call is sent to leelaz internally for efficiency.
+
+Endstate estimation tends to oscillate between black and white turns.
+So we use the average of recent two moves for score estimation
+and an even number for the width of endstate diff.
