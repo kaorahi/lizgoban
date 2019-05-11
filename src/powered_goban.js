@@ -100,14 +100,15 @@ function suggest_handler(h) {
 // change renderer state and send it to renderer
 
 function set_renderer_state(...args) {
-    const winrate_history = winrate_from_game(M.current_game())
+    const game = M.current_game(), move_count = game.move_count
+    const winrate_history = winrate_from_game(game)
     const previous_suggest = get_previous_suggest()
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
     const network_size = leelaz.network_size()
     const endstate_sum = leelaz_for_endstate && average_endstate_sum()
     const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
-    merge(R, {winrate_history, endstate_sum,
+    merge(R, {move_count, winrate_history, endstate_sum,
               progress_bturn, weight_info, network_size,
               previous_suggest, winrate_trail}, endstate_d_i, ...args)
     // clean me: R.max_visits is needed for auto_progress()

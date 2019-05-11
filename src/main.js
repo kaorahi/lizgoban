@@ -210,7 +210,7 @@ function play(move, force_create, default_tag) {
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
     !pass && aa_set(R.stones, i, j, {stone: true, black: R.bturn, maybe: true})
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create)
-    const tag = R.move_count > 0 && game.new_tag_maybe(new_sequence_p, R.move_count)
+    const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
     pass && wink()
 }
@@ -231,36 +231,36 @@ function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
     const delete_last = () => (game.pop(), P.set_board(game))
-    R.move_count < game.len() ? undo() : wink_if_pass(delete_last)
+    game.move_count < game.len() ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
 function pass() {play(pass_command)}
 function is_pass(move) {return move === pass_command}
 function is_last_move_pass() {return is_pass(game.last_move())}
 
-function undo_ntimes(n) {wink_if_pass(goto_move_count, R.move_count - n)}
+function undo_ntimes(n) {wink_if_pass(goto_move_count, game.move_count - n)}
 function redo_ntimes(n) {undo_ntimes(- n)}
 function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
 
 function goto_move_count(count) {
     const c = clip(count, 0, game.len())
-    if (c === R.move_count) {return}
+    if (c === game.move_count) {return}
     update_state_to_move_count_tentatively(c)
     P.set_board(game, c)
 }
 function update_state_to_move_count_tentatively(count) {
-    const forward = (count > R.move_count)
-    const [from, to] = forward ? [R.move_count, count] : [count, R.move_count]
+    const forward = (count > game.move_count)
+    const [from, to] = forward ? [game.move_count, count] : [count, game.move_count]
     const set_stone_at = (move, stone_array, stone) => {
         aa_set(stone_array, ...move2idx(move), stone)
     }
     game.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
         stone: true, maybe: forward, maybe_empty: !forward, black: m.is_black
     }))
-    const next_h = game.ref(R.move_count + 1)
+    const next_h = game.ref(game.move_count + 1)
     const next_s = P.stone_for_history_elem(next_h, R.stones) || {}
-    next_s.next_move = false; R.move_count = count; R.bturn = (count % 2 === 0)
+    next_s.next_move = false; game.move_count = count; R.bturn = (count % 2 === 0)
     update_state()
 }
 
@@ -493,9 +493,9 @@ function weak_move(weaken_percent) {
     // (3) Do not play too bad moves
     const r = clip((weaken_percent || 0) / 100, 0, 1)
     const initial_target_winrate = 40 * 10**(- r)
-    const target = initial_target_winrate * 2**(- R.move_count / 100)  // (1)
+    const target = initial_target_winrate * 2**(- game.move_count / 100)  // (1)
     const flip_maybe = x => R.bturn ? x : 100 - x
-    const current_winrate = flip_maybe(winrate_after(R.move_count))
+    const current_winrate = flip_maybe(winrate_after(game.move_count))
     const u = Math.random()**(1 - r) * r  // (2)
     const next_target = current_winrate * (1 - u) + target * u  // (3)
     return nearest_move_to_winrate(next_target)
@@ -594,8 +594,8 @@ function endstate_diff_interval_adder(k) {
 /////////////////////////////////////////////////
 // utils for actions
 
-function undoable() {return R.move_count > 0}
-function redoable() {return game.len() > R.move_count}
+function undoable() {return game.move_count > 0}
+function redoable() {return game.len() > game.move_count}
 function pause() {pausing = true; update_ponder_and_ui()}
 function resume() {pausing = false; update_ponder_and_ui()}
 function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
@@ -607,7 +607,7 @@ function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {P.update_leelaz()}
 
 function wink_if_pass(proc, ...args) {
-    const rec = () => game.ref(R.move_count)
+    const rec = () => game.ref(game.move_count)
     const before = rec()
     proc(...args)
     const after = rec(), d = after.move_count - before.move_count
@@ -683,9 +683,9 @@ function backup_game() {
 }
 
 function create_sequence_maybe(force) {
-    const new_game = (R.move_count === 0)
-    return (force || R.move_count < game.len()) &&
-        (backup_game(), game.shorten_to(R.move_count),
+    const new_game = (game.move_count === 0)
+    return (force || game.move_count < game.len()) &&
+        (backup_game(), game.shorten_to(game.move_count),
          merge(game, {trial: !simple_ui && !new_game}))
 }
 
@@ -785,7 +785,7 @@ function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10
 
 function availability() {
     return {
-        undo: R.move_count > 0,
+        undo: game.move_count > 0,
         redo: redoable(),
         attach: !attached,
         detach: attached,
@@ -938,7 +938,7 @@ function attach_to_sabaki() {
     fs.writeSync(sgf_file.fd, sgf_text)
     debug_log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_game()
-    start_sabaki(sgf_file.name + '#' + R.move_count)
+    start_sabaki(sgf_file.name + '#' + game.move_count)
     attached = true; P.update_leelaz(); update_state()
 }
 
