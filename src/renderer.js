@@ -159,7 +159,7 @@ const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
 function draw_wr_graph(canvas) {
     const unset_busy = () => main('unset_busy')
     const goto_move_count = count => main('busy', 'goto_move_count', count)
-    D.draw_winrate_graph(canvas, goto_move_count, unset_busy)
+    D.draw_winrate_graph(canvas, showing_until(), goto_move_count, unset_busy)
 }
 
 function draw_wr_bar(canvas) {

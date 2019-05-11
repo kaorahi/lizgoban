@@ -663,7 +663,7 @@ function puct_info(suggest) {
 /////////////////////////////////////////////////
 // winrate graph
 
-function draw_winrate_graph(canvas, goto_move_count, unset_busy) {
+function draw_winrate_graph(canvas, show_until, goto_move_count, unset_busy) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
     const smax = Math.max(R.history_length, 1)
@@ -671,9 +671,10 @@ function draw_winrate_graph(canvas, goto_move_count, unset_busy) {
     const [sr2coord, coord2sr] =
           uv2coord_translator_pair(canvas, [0, smax], [100, 0], xmargin, 0)
     clear_canvas(canvas, BLACK, g)
+    show_until && draw_winrate_graph_show_until(show_until, w, h, sr2coord, g)
     draw_winrate_graph_frame(w, h, tics, g)
     draw_winrate_graph_move_count(smax, fontsize, sr2coord, g)
-    draw_winrate_graph_future(w, h, sr2coord, g)
+    !show_until && draw_winrate_graph_future(w, h, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
@@ -694,6 +695,12 @@ function draw_winrate_graph_frame(w, h, tics, g) {
     // 50% line
     g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
     line([0, h / 2], [w, h / 2], g)
+}
+
+function draw_winrate_graph_show_until(show_until, w, h, sr2coord, g) {
+    const [s0, s1] = [show_until, R.move_count].sort()
+    const xy0 = sr2coord(s0, 100), xy1 = sr2coord(s1, 0)
+    g.fillStyle = '#330'; fill_rect(xy0, xy1, g)
 }
 
 function draw_winrate_graph_future(w, h, sr2coord, g) {
