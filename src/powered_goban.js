@@ -1,3 +1,8 @@
+// powered_goban.js: board renderer + analysis engine
+// 
+// set_board() indirectly updates displayed board,
+// starts analysis of given game state, and updates displayed suggestions.
+
 require('./util.js').use(); require('./coord.js').use()
 const PATH = require('path')
 

@@ -50,6 +50,7 @@ const R = {stones: aa_new(19, 19, () => ({}))}
 const {create_game} = require('./game.js')
 const P = require('./powered_goban.js')
 P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
+    // functions used in powered_goban.js
     current_game, render, update_state, update_ponder, show_suggest_p,
     auto_progress, is_auto_bturn, leelaz_weight_option_pos_in_args, store,
 })
@@ -200,7 +201,7 @@ ipc.on('close_window_or_cut_sequence', e => {
        })
 
 /////////////////////////////////////////////////
-// main flow (2) change game state
+// main flow (2) change game state and send it to powered_goban
 
 function play(move, force_create, default_tag) {
     const [i, j] = move2idx(move), pass = (i < 0)
