@@ -735,44 +735,6 @@ function draw_winrate_graph_curve(sr2coord, g) {
     })
 }
 
-function draw_winrate_graph_score(sr2coord, g) {
-    const to_r = score => 50 + score
-    R.winrate_history.map(h => h.score_without_komi).forEach((score, s) => {
-        if (!truep(score)) {return}
-        const diff_target_p = R.endstate_diff_interval > 5 &&
-              (s === R.move_count - R.endstate_diff_interval)
-        const [radius, alpha] = diff_target_p ? [3, 0.7] : [2, 0.3]
-        const xy = sr2coord(s, to_r(score))
-        g.fillStyle = `rgba(0,255,255,${alpha})`; fill_circle(xy, radius, g)
-    })
-}
-
-function draw_winrate_graph_hotness(h, sr2coord, g) {
-    const to_r = hot => clip(hot / 3, 0, 100)
-    const hots = R.winrate_history.map(h => h.hotness)
-    const threshold = percentile(hots.filter(truep), 95)
-    hots.forEach((hot, s) => {
-        if (!truep(hot)) {return}
-        const [line_width, alpha] = hot >= threshold ? [2, 0.5] : [1, 0.3]
-        const [x, y] = sr2coord(s, to_r(hot))
-        g.strokeStyle = `rgba(255,128,0,${alpha})`; g.lineWidth = line_width
-        line([x, y], [x, h], g)
-    })
-}
-
-function draw_winrate_graph_uncertainty(h, sr2coord, g) {
-    const to_r = hot => (1 - 0.1 * hot) * 100
-    const hots = R.winrate_history.map(h => h.uncertainty)
-    const threshold = percentile(hots.filter(truep), 95)
-    hots.forEach((hot, s) => {
-        if (!truep(hot)) {return}
-        const [line_width, alpha] = hot >= threshold ? [2, 0.5] : [1, 0.3]
-        const [x, y] = sr2coord(s, to_r(hot))
-        g.strokeStyle = `rgba(255,255,255,${alpha})`; g.lineWidth = line_width
-        line([x, y], [x, 0], g)
-    })
-}
-
 function draw_winrate_graph_tag(fontsize, sr2coord, g) {
     R.winrate_history.forEach((h, s) => {
         if (!h.tag) {return}
@@ -790,6 +752,48 @@ function winrate_graph_goto(e, coord2sr, goto_move_count) {
     const [s, r] = coord2sr(...mouse2coord(e))
     s >= 0 && goto_move_count(clip(s, 0, R.history_length))
 }
+
+// additional plots
+
+function draw_winrate_graph_score(sr2coord, g) {
+    const scores = winrate_history_values_of('score_without_komi')
+    const to_r = score => 50 + score
+    const plotter = (x, y, s, g) => {
+        const diff_target_p = R.endstate_diff_interval > 5 &&
+              (s === R.move_count - R.endstate_diff_interval)
+        const [radius, alpha] = diff_target_p ? [3, 0.7] : [2, 0.3]
+        g.fillStyle = `rgba(0,255,255,${alpha})`; fill_circle([x, y], radius, g)
+    }
+    draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
+}
+
+function draw_winrate_graph_hotness(h, sr2coord, g) {
+    draw_winrate_graph_barchart('hotness', 0.33, '255,128,0', false, h, sr2coord, g)
+}
+
+function draw_winrate_graph_uncertainty(h, sr2coord, g) {
+    draw_winrate_graph_barchart('uncertainty', 10, '255,255,255', true, h, sr2coord, g)
+}
+
+function draw_winrate_graph_history(ary, to_r, plotter, sr2coord, g) {
+    const f = (val, s) => truep(val) && plotter(...sr2coord(s, to_r(val)), s, g)
+    ary.forEach(f)
+}
+
+function draw_winrate_graph_barchart(key, mag, rgb, upside_down, h, sr2coord, g) {
+    const values = winrate_history_values_of(key)
+    const conv = upside_down ? (val => 100 - val) : identity
+    const to_r = val => conv(clip(val * mag, 0, 100))
+    const threshold = percentile(values.filter(truep), 95)
+    const plotter = (x, y, s, g) => {
+        const [line_width, alpha] = values[s] >= threshold ? [2, 0.5] : [1, 0.3]
+        g.strokeStyle = `rgba(${rgb},${alpha})`; g.lineWidth = line_width
+        line([x, y], [x, upside_down ? 0 : h], g)
+    }
+    draw_winrate_graph_history(values, to_r, plotter, sr2coord, g)
+}
+
+function winrate_history_values_of(key) {return R.winrate_history.map(h => h[key])}
 
 /////////////////////////////////////////////////
 // winrate trail
