@@ -75,12 +75,10 @@ function board_handler(h) {
         add_info_to_stones(R.stones, game)
     }
     const endstate_setter = update_p => {
-        const prev = game.move_count - endstate_diff_interval
-        const prev_endstate = update_p && game.ref(prev).endstate
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; update_p && (z.endstate_sum = sum(R.endstate))
         }
-        add_endstate_to_stones(R.stones, R.endstate, prev_endstate)
+        add_endstate_to_stones(R.stones, R.endstate, update_p)
         game.move_count > 0 && add_endstate_to_history(game.ref(game.move_count))
     }
     set_renderer_state(h)
@@ -182,7 +180,7 @@ function append_endstate_tag_maybe(h) {
 function get_endstate_diff_interval() {return endstate_diff_interval}
 function add_endstate_diff_interval(k) {
     endstate_diff_interval = clip(endstate_diff_interval + k, 2)
-    leelaz_for_endstate.update()
+    update_endstate_diff(); M.update_state()
 }
 
 function start_endstate(leelaz_start_args, endstate_option) {
@@ -193,12 +191,16 @@ function start_endstate(leelaz_start_args, endstate_option) {
     leelaz_for_endstate.start(with_handlers(es_args))
     leelaz_for_endstate.set_pondering(false)
 }
-function add_endstate_to_stones(stones, endstate, prev_endstate) {
+function add_endstate_to_stones(stones, endstate, update_diff_p) {
     if (!endstate) {return}
-    stones.forEach((row, i) => row.forEach((s, j) => {
-        s.endstate = endstate[i][j]
-        prev_endstate && (s.endstate_diff = s.endstate - prev_endstate[i][j])
-    }))
+    aa_each(stones, (s, i, j) => (s.endstate = endstate[i][j]))
+    update_diff_p && update_endstate_diff()
+}
+function update_endstate_diff() {
+    const prev = game.move_count - endstate_diff_interval
+    const prev_endstate = game.ref(prev).endstate
+    prev_endstate && aa_each(R.stones, (s, i, j) =>
+                             (s.endstate_diff = s.endstate - prev_endstate[i][j]))
 }
 function average_endstate_sum(move_count) {
     const mc = truep(move_count) || game.move_count

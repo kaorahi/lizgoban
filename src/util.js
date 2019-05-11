@@ -29,6 +29,7 @@ E.aa_new = (m, n, f) => E.seq(m).map(i => E.seq(n).map(j => f(i, j)))
 E.aa_ref = (aa, i, j) => truep(i) && (i >= 0) && aa[i] && aa[i][j]
 E.aa_set = (aa, i, j, val) =>
     truep(i) && (i >= 0) && ((aa[i] = aa[i] || []), (aa[i][j] = val))
+E.aa_each = (aa, f) => aa.forEach((row, i) => row.forEach((s, j) => f(s, i, j)))
 E.aa2hash = aa => {const h = {}; aa.forEach(([k, v]) => h[k] = v); return h}
 
 // str_uniq('zabcacd') = 'zabcd'
