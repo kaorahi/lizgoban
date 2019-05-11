@@ -510,6 +510,12 @@ function nearest_move_to_winrate(target_winrate) {
               `winrate_order=${selected.winrate_order}`)
     return selected.move
 }
+function winrate_after(move_count) {
+    const or_NaN = x => truep(x) ? x : NaN
+    return move_count < 0 ? NaN :
+        move_count === 0 ? initial_b_winrate :
+        or_NaN(game.ref(move_count).b_winrate)
+}
 
 /////////////////////////////////////////////////
 // other actions
