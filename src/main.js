@@ -863,12 +863,8 @@ function leelaz_weight_option_pos_in_args() {
 /////////////////////////////////////////////////
 // another leelaz for white
 
-function load_leelaz_for_black() {
-    P.with_temporary_leelaz(L().leelaz_for_black, load_weight)
-}
-
-function load_leelaz_for_white() {P.load_leelaz_for_white(load_weight)
-}
+function load_leelaz_for_black() {P.load_leelaz_for_black(load_weight)}
+function load_leelaz_for_white() {P.load_leelaz_for_white(load_weight)}
 
 /////////////////////////////////////////////////
 // SGF

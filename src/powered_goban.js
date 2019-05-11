@@ -101,6 +101,10 @@ function set_and_render(...args) {
 /////////////////////////////////////////////////
 // another leelaz for white
 
+function load_leelaz_for_black(load_weight) {
+    with_temporary_leelaz(leelaz_for_black, load_weight)
+}
+
 function load_leelaz_for_white(load_weight) {
     const proc = () => {
         leelaz_for_white.activate(false)
@@ -290,8 +294,8 @@ module.exports = {
     stone_for_history_elem, new_tag, set_renderer_state, set_and_render,
     append_endstate_tag_maybe,
     L,
-    board_handler, suggest_handler,
-    load_leelaz_for_white, unload_leelaz_for_white, with_temporary_leelaz,
+    board_handler, suggest_handler, load_leelaz_for_black,
+    load_leelaz_for_white, unload_leelaz_for_white,
     swap_leelaz_for_black_and_white,
     leelaz_weight_file, start_endstate,
     each_leelaz, update_leelaz,
