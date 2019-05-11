@@ -272,11 +272,6 @@ function update_state_to_move_count_tentatively(count) {
 }
 
 /////////////////////////////////////////////////
-// main flow (3) send game state to leelaz
-
-function reset_board() {P.set_board(game, 0)}
-
-/////////////////////////////////////////////////
 // another source of change: menu
 
 function update_menu() {
@@ -751,7 +746,7 @@ function insert_sequence(new_game, switch_to, before) {
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    store_move_count(game); reset_board(); goto_nth_sequence(wrapped_n)
+    store_move_count(game); P.set_board(null); goto_nth_sequence(wrapped_n)
     R.move_count = 0; redo_ntimes(game.move_count); P.update_state()
 }
 
