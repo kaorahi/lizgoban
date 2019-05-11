@@ -776,7 +776,7 @@ function let_me_think_next(board_type) {
 /////////////////////////////////////////////////
 // game
 
-// example of game.hist:
+// example of history:
 // [{move: "D16", is_black: true, move_count: 1, ...},
 //  {move: "Q4", is_black: false, move_count: 2, ...},
 //  {move: "Q16", is_black: false, move_count: 3, ...},
@@ -791,8 +791,8 @@ function let_me_think_next(board_type) {
 
 function new_game_id() {return next_game_id++}
 
-function create_game(init_hist, init_prop) {
-    const self = {}, hist = init_hist || []  // private
+function create_game(init_history, init_prop) {
+    const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
         // move_count is not updated usually.
         // It is only used as record of return-point when sequence is switched.
@@ -802,25 +802,25 @@ function create_game(init_hist, init_prop) {
     }
     const methods = {
         // mc = move_count (0: empty board, 1: first move, ...)
-        len: () => hist.length,
-        is_empty: () => empty(hist),
-        ref: mc => hist[mc - 1] || {},
-        array_until: mc => hist.slice(0, mc),
-        shorten_to: mc => hist.splice(mc),
-        last_move: () => (last(hist) || {}).move,
-        set_last_loaded_element: () => self.last_loaded_element = last(hist),
-        shallow_copy: () => create_game(hist.slice(), merge({}, prop, {
+        len: () => history.length,
+        is_empty: () => empty(history),
+        ref: mc => history[mc - 1] || {},
+        array_until: mc => history.slice(0, mc),
+        shorten_to: mc => history.splice(mc),
+        last_move: () => (last(history) || {}).move,
+        set_last_loaded_element: () => self.last_loaded_element = last(history),
+        shallow_copy: () => create_game(history.slice(), merge({}, prop, {
             id: new_game_id(), last_loaded_element: null
         })),
-        set_with_reuse: new_hist => {
-            const com = leelaz.common_header_length(hist, new_hist)
+        set_with_reuse: new_history => {
+            const com = leelaz.common_header_length(history, new_history)
             // keep old history for keeping winrate
-            hist.splice(com, Infinity, ...new_hist.slice(com))
+            history.splice(com, Infinity, ...new_history.slice(com))
         },
     }
     const array_methods =
           aa2hash(['push', 'pop', 'map', 'forEach', 'slice', 'splice']
-                  .map(meth => [meth, (...args) => hist[meth](...args)]))
+                  .map(meth => [meth, (...args) => history[meth](...args)]))
     return merge(self, prop, methods, array_methods)
 }
 
