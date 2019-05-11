@@ -841,8 +841,7 @@ function leelaz_start_args(weight_file) {
     const restart_handler = auto_restart, leelaz_args = option.leelaz_args.slice()
     const weight_pos = leelaz_weight_option_pos_in_args()
     weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
-    const {board_handler, suggest_handler} = P
-    const h = {leelaz_args, board_handler, suggest_handler, restart_handler}
+    const h = {leelaz_args, restart_handler}
     const opts = ['leelaz_command', 'analyze_interval_centisec',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])

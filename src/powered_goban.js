@@ -34,10 +34,11 @@ function set_board(game, move_count) {
 // leelaz
 
 function start_leelaz(leelaz_start_args, endstate_option) {
-    leelaz.start(leelaz_start_args())
+    leelaz.start(with_handlers(leelaz_start_args()))
     endstate_option && start_endstate(leelaz_start_args, endstate_option)
 }
 function update_leelaz() {leelaz.update()}
+function restart(h) {leelaz.restart(h && with_handlers(h))}
 function set_pondering(pondering) {
     const b = (leelaz === leelaz_for_black)
     leelaz_for_black.set_pondering(pondering && b)
@@ -55,6 +56,8 @@ function leelaz_weight_file(leelaz_for_black_or_white) {
     const arg = (leelaz_for_black_or_white || leelaz).start_args()
     return (k >= 0) && arg && arg.leelaz_args[k + 1]
 }
+
+function with_handlers(h) {return merge({board_handler, suggest_handler}, h)}
 
 /////////////////////////////////////////////////
 // receive analysis from leelaz
@@ -185,7 +188,8 @@ function start_endstate(leelaz_start_args, endstate_option) {
     const [lz_command, weight] = endstate_option
     const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
     leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start(es_args); leelaz_for_endstate.set_pondering(false)
+    leelaz_for_endstate.start(with_handlers(es_args))
+    leelaz_for_endstate.set_pondering(false)
 }
 function add_endstate_to_stones(stones, endstate, prev_endstate) {
     if (!endstate) {return}
@@ -271,13 +275,13 @@ function pick_properties(orig, keys) {
 /////////////////////////////////////////////////
 // exports
 
-const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'restart']
+const exported_from_leelaz = ['send_to_leelaz', 'peek_value']
 module.exports = {
     // basic
     initialize, set_board,
     // leelaz
-    start_leelaz, update_leelaz, set_pondering, each_leelaz,
-    board_handler, suggest_handler, all_start_args, leelaz_weight_file,
+    start_leelaz, update_leelaz, set_pondering, each_leelaz, restart,
+    all_start_args, leelaz_weight_file,
     // another leelaz for white
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_to_random_leelaz,
     load_leelaz_for_black, load_leelaz_for_white, unload_leelaz_for_white,
