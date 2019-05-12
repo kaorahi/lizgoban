@@ -366,7 +366,7 @@ function menu_template(win) {
 
 function board_type_menu_item(label, type, win) {
     return {label, type: 'radio', checked: window_prop(win).board_type === type,
-            click: (this_item, win) => P.set_board_type(type, win)}
+            click: (this_item, win) => set_board_type(type, win)}
 }
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
