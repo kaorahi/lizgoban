@@ -30,6 +30,7 @@ const R = {
 let temporary_board_type = null
 let keyboard_moves = [], keyboard_tag_move_count = null
 let hovered_move = null, hovered_move_count = null, hovered_canvas = null
+let the_showing_movenum_p = false
 let thumbnails = []
 
 // drawer
@@ -241,7 +242,7 @@ function play_here(e, coord2idx, tag_clickable_p) {
     const move = mouse2move(e, coord2idx); if (!move) {return}
     const idx = move2idx(move)
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
-    const goto_p = e.shiftKey
+    const goto_p = showing_movenum_p()
     if (goto_p) {goto_idx_maybe(idx, another_board, true); return}
     (tag_clickable_p && goto_idx_maybe(idx, another_board)) ||
         (pass && main('pass'), main('play', move, !!another_board))
@@ -250,7 +251,7 @@ function play_here(e, coord2idx, tag_clickable_p) {
 function hover_here(e, coord2idx, canvas) {
     const old = hovered_move
     hovered_move = mouse2move(e, coord2idx) || 'last_move'; hovered_canvas = canvas
-    set_hovered_move_count(e.shiftKey && hovered_move)
+    set_hovered_move_count(showing_movenum_p() && hovered_move)
     if (hovered_move != old) {update_goban()}
 }
 
@@ -447,7 +448,6 @@ function portrait_p() {
 // keyboard operation
 
 document.onkeydown = e => {
-    update_shift_key(e)
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
@@ -478,6 +478,7 @@ document.onkeydown = e => {
                       f(set_keyboard_moves_maybe, to_i(key) - 1))
     key.length === 1 && tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
     switch (key) {
+    case "c" : set_showing_movenum_p(true); return
     case "C-c": m('copy_sgf_to_clipboard'); return
     case "z": f(set_temporary_board_type, "raw", "suggest"); return
     case "x": f(set_temporary_board_type, "winrate_only", "suggest"); return
@@ -513,21 +514,14 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
-    update_shift_key(e)
     reset_keyboard_tag(); set_hovered_move_count(null);
     (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
+    case "c" : set_showing_movenum_p(false); return
     case "z": case "x": set_temporary_board_type(null); return
     }
     main('unset_busy')
 }
-
-let shift_key_down = false
-function update_shift_key(e) {
-    shift_key_down = e.shiftKey
-    set_hovered_move_count(shift_key_down && hovered_move)
-}
-function is_shift_key_down() {return shift_key_down}
 
 function set_keyboard_moves_maybe(n) {
     const h = R.suggest[n]
@@ -548,14 +542,18 @@ function set_keyboard_tag_maybe(key) {
         ((keyboard_tag_move_count = data.move_count), update_goban())
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
+function showing_movenum_p() {return the_showing_movenum_p}
+function set_showing_movenum_p(val) {
+    the_showing_movenum_p = val; set_hovered_move_count(val && hovered_move)
+}
 function showing_until(canvas, accept_showing_until_tag_p) {
     const tag_p = (!canvas || accept_showing_until_tag_p)
     const hover_p = (!canvas || if_hovered_on(canvas, true))
-    const shift_p = is_shift_key_down() && !hovered_move_count
+    const key_p = showing_movenum_p() && !hovered_move_count
           && (!canvas || accept_showing_until_tag_p)
     // ignore "*_count = 0" since it is useless and cannot happen
     return (tag_p && keyboard_tag_move_count) || (hover_p && hovered_move_count) ||
-        (shift_p && R.move_count)
+        (key_p && R.move_count)
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
