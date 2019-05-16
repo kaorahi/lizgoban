@@ -243,8 +243,8 @@ function play_here(e, coord2idx, tag_clickable_p) {
     const idx = move2idx(move)
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
     const goto_p = showing_movenum_p()
-    if (goto_p) {goto_idx_maybe(idx, another_board, true); return}
-    (tag_clickable_p && goto_idx_maybe(idx, another_board)) ||
+    if (goto_p) {goto_idx_maybe(idx, another_board); return}
+    (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
         (pass && main('pass'), main('play', move, !!another_board))
 }
 
@@ -265,9 +265,11 @@ function set_hovered_move_count(move) {
     update_showing_until()
 }
 
-function latest_move_count_for_idx(idx) {
+function latest_move_count_for_idx(idx, tagged_stone_only) {
     const s = idx && aa_ref(R.stones, ...idx)
-    return s && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
+    const go = s && (!tagged_stone_only || (s.tag && s.stone))
+    // use !! for safety (truep('') is true)
+    return !!go && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
 }
 
 function mouse2coord(e) {
@@ -284,9 +286,9 @@ function mouse2move(e, coord2idx) {
     const idx = mouse2idx(e, coord2idx); return idx && idx2move(...idx)
 }
 
-function goto_idx_maybe(idx, another_board, forcep) {
-    const mc = latest_move_count_for_idx(idx)
-    return truep(mc) && (forcep || s.tag) &&
+function goto_idx_maybe(idx, another_board, tagged_stone_only) {
+    const mc = latest_move_count_for_idx(idx, tagged_stone_only)
+    return mc &&
         (duplicate_if(another_board), main('goto_move_count', mc), wink(), true)
 }
 
