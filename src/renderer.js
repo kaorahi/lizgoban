@@ -30,7 +30,6 @@ const R = {
 let temporary_board_type = null
 let keyboard_moves = [], keyboard_tag_move_count = null
 let hovered_move = null, hovered_move_count = null, hovered_canvas = null
-let supporting_show_until_p = false
 let thumbnails = []
 
 // drawer
@@ -138,22 +137,18 @@ function update_body_color() {
 // draw parts
 
 // set option "main_canvas_p" etc. for d(canvas, opts)
-function with_opts(d, opts) {
+function with_opts(d, accept_showing_until_tag_p, opts) {
     return c => d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
+        show_until: showing_until(c, accept_showing_until_tag_p),
         hovered_move: if_hovered_on(c, hovered_move),
         play_here, hover_here, hover_off, ...(opts || {})
     })
 }
 
-const draw_main = c =>
-      // need to eval in runtime
-      with_opts(D.draw_main_goban, {show_until: showing_until(c)})(c)
+const draw_main = with_opts(D.draw_main_goban, true)
 const draw_pv = with_opts(D.draw_goban_with_principal_variation)
-const draw_raw_gen = options => {
-    const draw = (c, opts) => D.draw_goban(c, null, opts)
-    return with_opts(draw, options)
-}
+const draw_raw_gen = options => with_opts(D.draw_raw_goban, false, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
 const draw_raw_pure = draw_raw_gen({})
@@ -225,9 +220,7 @@ function selected_suggest(canvas) {
     const m = keyboard_moves[0] || if_hovered_on(canvas, hovered_move)
     return R.suggest.find(h => h.move === m) || {}
 }
-function if_hovered_on(canvas, val) {
-    return (!canvas || (canvas === hovered_canvas)) && val
-}
+function if_hovered_on(canvas, val) {return (canvas === hovered_canvas) && val}
 
 function current_board_type() {return temporary_board_type || R.board_type}
 
@@ -254,11 +247,10 @@ function play_here(e, coord2idx, tag_clickable_p) {
         (pass && main('pass'), main('play', move, !!another_board))
 }
 
-function hover_here(e, coord2idx, canvas, support_show_until_p) {
+function hover_here(e, coord2idx, canvas) {
     const old = hovered_move
     hovered_move = mouse2move(e, coord2idx); hovered_canvas = canvas
-    supporting_show_until_p = support_show_until_p
-    set_hovered_move_count(e.shiftKey && support_show_until_p && hovered_move)
+    set_hovered_move_count(e.shiftKey && hovered_move)
     if (hovered_move != old) {update_goban()}
 }
 
@@ -556,9 +548,11 @@ function set_keyboard_tag_maybe(key) {
         ((keyboard_tag_move_count = data.move_count), update_goban())
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
-function showing_until(canvas) {
-    return keyboard_tag_move_count ||
-        (supporting_show_until_p && if_hovered_on(canvas, hovered_move_count))
+function showing_until(canvas, accept_showing_until_tag_p) {
+    const tag_p = (!canvas || accept_showing_until_tag_p)
+    const hover_p = (!canvas || if_hovered_on(canvas, true))
+    // ignore "keyboard_tag_move_count = 0" since it is useless and cannot happen
+    return (tag_p && keyboard_tag_move_count) || (hover_p && hovered_move_count)
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
