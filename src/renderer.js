@@ -249,7 +249,7 @@ function play_here(e, coord2idx, tag_clickable_p) {
 
 function hover_here(e, coord2idx, canvas) {
     const old = hovered_move
-    hovered_move = mouse2move(e, coord2idx); hovered_canvas = canvas
+    hovered_move = mouse2move(e, coord2idx) || 'last_move'; hovered_canvas = canvas
     set_hovered_move_count(e.shiftKey && hovered_move)
     if (hovered_move != old) {update_goban()}
 }
