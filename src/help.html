@@ -37,13 +37,26 @@ green (good) circles.
 Small red circles are next candidates that are not searched yet.
 </p>
 
+<p>
+Basic operations:
 <ul>
+ <li>mouse click: put a stone</li>
  <li>mouse hover on a suggested move: show the principal variation</li>
- <li>Shift + hover on an existing stone: hide the stones after the move</li>
- <li>Shift + click on an existing stone: go back to the move</li>
  <li>"z" key (keep holding down): hide suggestions<br>
      (show suggestions in some styles in "View" menu)</li>
 </ul>
+</p>
+
+<p>
+Minor operations:
+<ul>
+ <li>Shift + hover on a stone: hide the stones after the move</li>
+ <li>Shift + click on a stone: go back to the move</li>
+ <li>Shift + hover on an empty grid: show move numbers</li>
+ <li>Shift + click on an empty grid: put the same color stone as the previous move</li>
+ <li>click on a tagged stone: go back to the move</li>
+</ul>
+</p>
 
 <p>
 When the best suggested move is different from the previously expected one,
@@ -90,6 +103,7 @@ and horizontal orange lines indicate LCB (criterion for suggestion order).
  <li>yellow vertical line: evaluation error (difference between evaluations of the move before/after it was played)</li>
  <li>brown vertical line at bottom: uncertainty of the best move</li>
 </ul>
+Click / drag on the graph to go to the corresponding move.
 Push "x" key (keep holding down) to enlarge winrate graph.
 
 <h3>Visits graph</h3>
