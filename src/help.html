@@ -38,23 +38,12 @@ Small red circles are next candidates that are not searched yet.
 </p>
 
 <p>
-Basic operations:
+Mouse operations:
 <ul>
- <li>mouse click: put a stone</li>
- <li>mouse hover on a suggested move: show the principal variation</li>
- <li>"z" key (keep holding down): hide suggestions<br>
-     (show suggestions in some styles in "View" menu)</li>
-</ul>
-</p>
-
-<p>
-Minor operations:
-<ul>
- <li>"c" key: show move numbers</li>
- <li>"c" key + hover on a stone: hide the stones after the move</li>
- <li>"c" key + click on a stone: go back to the move</li>
- <li>click on a tagged stone: go back to the move</li>
+ <li>click: put a stone</li>
+ <li>hover on a suggested move: show the principal variation</li>
  <li>right-click: put the same color stone as the previous move</li>
+ <li>click on a tagged stone: go to this move</li>
 </ul>
 </p>
 
@@ -233,18 +222,30 @@ to get possibly better evaluations when some moves are in "blind spots" of Leela
 </ul>
 
 <h3>View</h3>
+
+(Keep holding down)
 <ul>
- <li>z (keep holding down): show raw board without suggestions, marks, etc.</li>
- <li>x (keep holding down): enlarge winrate graph</li>
- <li>1, 2, ..., 9, 0 (keep holding down): show nth variation (0 = next move)
+ <li>z: hide suggestions, marks, etc. (show suggestions in some styles in "View" menu)</li>
+ <li>x: enlarge winrate graph</li>
+ <li>c: show move numbers
+      <ul>
+       <li>+ mouse hover on stone: hide stones after this move</li>
+       <li>+ mouse click on stone: go to this move</li>
+      </ul>
+ </li>
+ <li>1, 2, ..., 9, 0: show nth variation (0 = next move)
       <ul>
        <li>+Enter: play this move</li>
        <li>+` (backquote): play this move in another board</li>
        <li>+, (comma): play this variation</li>
       </ul>
  </li>
- <li>b, c, d, ... (keep holding down): hide stones after tag letter
+ <li>b, d, e, f, ...: hide stones after tag letter
       (+Enter: go to this move)</li>
+</ul>
+
+(Hit normally)
+<ul>
  <li>Ctrl+Shift+n: new window</li>
  <li>Shift+z: toggle view (current view / raw board)</li>
  <li><a name="Tab">Tab: toggle view (current view / previous view)</a></li>
