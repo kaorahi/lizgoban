@@ -716,6 +716,8 @@ function draw_winrate_graph_show_until(show_until, w, h, sr2coord, g) {
     const [s0, s1] = [show_until, R.move_count].sort()
     const xy0 = sr2coord(s0, 100), xy1 = sr2coord(s1, 0)
     g.fillStyle = '#330'; fill_rect(xy0, xy1, g)
+    g.strokeStyle = g.fillStyle = '#330'; g.lineWidth = 1
+    edged_fill_rect(xy0, xy1, g)
 }
 
 function draw_winrate_graph_future(w, h, sr2coord, g) {
