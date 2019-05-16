@@ -141,7 +141,6 @@ function update_body_color() {
 function with_opts(d, opts) {
     return c => d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
-        reverse_next_color_p: is_shift_key_down() && R.move_count > 0,
         hovered_move: if_hovered_on(c, hovered_move),
         play_here, hover_here, hover_off, ...(opts || {})
     })
@@ -248,7 +247,7 @@ function double_boards_p() {return R.board_type.match(/^double_boards/)}
 function play_here(e, coord2idx, tag_clickable_p) {
     const move = mouse2move(e, coord2idx); if (!move) {return}
     const idx = move2idx(move)
-    const another_board = e.ctrlKey, pass = e.shiftKey && R.move_count > 0;
+    const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
     const goto_p = e.shiftKey && (aa_ref(R.stones, ...idx) || {}).stone
     if (goto_p) {goto_idx_maybe(idx, another_board, true); return}
     (tag_clickable_p && goto_idx_maybe(idx, another_board)) ||
