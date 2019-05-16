@@ -42,7 +42,8 @@ function draw_main_goban(canvas, options) {
 }
 
 function draw_goban_until(canvas, show_until, opts) {
-    const displayed_stones = copy_stones_for_display(), show_movenums = 3
+    const displayed_stones = copy_stones_for_display()
+    const show_movenums = (show_until === R.move_count) ? R.move_count : 3
     each_stone(displayed_stones, (h, idx) => {
         const ss = h.anytime_stones, target = latest_move(ss, show_until)
         if (target) {
