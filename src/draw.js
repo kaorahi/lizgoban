@@ -49,7 +49,7 @@ function draw_goban_until(canvas, show_until, opts) {
             h.black = target.is_black; h.last = (target.move_count === show_until)
             h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
             h.stone = true
-            const m = target.move_count - show_until + show_movenums
+            const m = target.move_count - clip(show_until - show_movenums, 0)
             // clean me: to_s to avoid highlight
             m > 0 && merge(h, {movenums: [to_s(m)], tag: null})
         } else {
