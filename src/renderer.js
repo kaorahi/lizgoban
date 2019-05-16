@@ -248,7 +248,7 @@ function play_here(e, coord2idx, tag_clickable_p) {
     const move = mouse2move(e, coord2idx); if (!move) {return}
     const idx = move2idx(move)
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
-    const goto_p = e.shiftKey && (aa_ref(R.stones, ...idx) || {}).stone
+    const goto_p = e.shiftKey
     if (goto_p) {goto_idx_maybe(idx, another_board, true); return}
     (tag_clickable_p && goto_idx_maybe(idx, another_board)) ||
         (pass && main('pass'), main('play', move, !!another_board))
@@ -267,11 +267,14 @@ function hover_off(canvas) {
 }
 
 function set_hovered_move_count(move) {
-    const f = () => {
-        const ij = move2idx(move), s = ij && aa_ref(R.stones, ...ij)
-        return s && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
-    }
-    hovered_move_count = move && (f() || R.move_count); update_showing_until()
+    hovered_move_count =
+        move && (latest_move_count_for_idx(move2idx(move)) || R.move_count)
+    update_showing_until()
+}
+
+function latest_move_count_for_idx(idx) {
+    const s = idx && aa_ref(R.stones, ...idx)
+    return s && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
 }
 
 function mouse2coord(e) {
@@ -289,10 +292,9 @@ function mouse2move(e, coord2idx) {
 }
 
 function goto_idx_maybe(idx, another_board, forcep) {
-    const s = aa_ref(R.stones, ...idx) || {}
-    return s.stone && (forcep || s.tag) &&
-        (duplicate_if(another_board), main('goto_move_count', s.move_count),
-         wink(), true)
+    const mc = latest_move_count_for_idx(idx)
+    return truep(mc) && (forcep || s.tag) &&
+        (duplicate_if(another_board), main('goto_move_count', mc), wink(), true)
 }
 
 function duplicate_if(x) {x && main('duplicate_sequence')}
