@@ -551,8 +551,11 @@ function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_until(canvas, accept_showing_until_tag_p) {
     const tag_p = (!canvas || accept_showing_until_tag_p)
     const hover_p = (!canvas || if_hovered_on(canvas, true))
-    // ignore "keyboard_tag_move_count = 0" since it is useless and cannot happen
-    return (tag_p && keyboard_tag_move_count) || (hover_p && hovered_move_count)
+    const shift_p = is_shift_key_down() && !hovered_move_count
+          && (!canvas || accept_showing_until_tag_p)
+    // ignore "*_count = 0" since it is useless and cannot happen
+    return (tag_p && keyboard_tag_move_count) || (hover_p && hovered_move_count) ||
+        (shift_p && R.move_count)
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
