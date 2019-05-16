@@ -161,7 +161,8 @@ function draw_goban(canvas, stones, opts) {
     canvas.onmousedown = e =>
         (!read_only && !R.attached &&
          (opts.play_here(e, coord2idx, opts.tag_clickable_p), opts.hover_off(canvas)))
-    canvas.onmousemove = e => opts.hover_here(e, coord2idx, canvas)
+    canvas.onmousemove = canvas.onmouseenter =
+        e => opts.hover_here(e, coord2idx, canvas)
     canvas.onmouseleave = e => opts.hover_off(canvas)
 }
 
