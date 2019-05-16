@@ -42,8 +42,9 @@ function draw_main_goban(canvas, options) {
 }
 
 function draw_goban_until(canvas, show_until, opts) {
-    const displayed_stones = copy_stones_for_display()
-    const show_movenums = (show_until === R.move_count) ? R.move_count : 3
+    const displayed_stones = copy_stones_for_display(), recent_moves = 3
+    const all_p = (show_until === R.move_count)
+    const show_movenums = all_p ? R.move_count : recent_moves
     each_stone(displayed_stones, (h, idx) => {
         const ss = h.anytime_stones, target = latest_move(ss, show_until)
         if (target) {
@@ -51,8 +52,10 @@ function draw_goban_until(canvas, show_until, opts) {
             h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
             h.stone = true
             const m = target.move_count - clip(show_until - show_movenums, 0)
-            // clean me: to_s to avoid highlight
-            m > 0 && merge(h, {movenums: [to_s(m)], tag: null})
+            const variation_last =  // for highlight
+                  all_p && (target.move_count > show_until - recent_moves)
+            // clean me: to_s to avoid highlight of "1"
+            m > 0 && merge(h, {movenums: [to_s(m)], variation_last, tag: null})
         } else {
             h.stone && ((h.displayed_colors = [PALER_BLACK, PALER_WHITE]),
                         (h.last = false))
