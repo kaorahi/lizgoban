@@ -43,7 +43,10 @@ function start_leelaz(leelaz_start_args, endstate_option) {
     endstate_option && start_endstate(leelaz_start_args, endstate_option)
 }
 function update_leelaz() {leelaz.update()}
-function restart(h) {leelaz.restart(h && with_handlers(h))}
+function restart(h) {
+    const error_handler = (leelaz === leelaz_for_white) && invalid_weight_for_white
+    leelaz.restart(h && {...with_handlers(h), error_handler})
+}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 function set_pondering(pondering) {
     const b = (leelaz === leelaz_for_black)
@@ -174,6 +177,10 @@ function switch_leelaz(bturn) {
 function switch_to_another_leelaz(next_leelaz) {
     next_leelaz && next_leelaz !== leelaz &&
         (leelaz = next_leelaz) && (M.update_ponder(), M.update_state())
+}
+function invalid_weight_for_white() {
+    M.error_from_powered_goban('Invalid weights file (for white)')
+    unload_leelaz_for_white()
 }
 
 /////////////////////////////////////////////////

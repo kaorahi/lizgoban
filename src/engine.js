@@ -38,7 +38,7 @@ function create_leelaz () {
     const start = h => {
         const {leelaz_command, leelaz_args, analyze_interval_centisec,
                minimum_suggested_moves, engine_log_line_length,
-               board_handler, suggest_handler, restart_handler}
+               board_handler, suggest_handler, restart_handler, error_handler}
               = the_start_args = h
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
@@ -84,6 +84,8 @@ function create_leelaz () {
         check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
         check_supported('endstate', 'endstate_map')
     }
+    const on_error = () =>
+          (the_start_args.error_handler || the_start_args.restart_handler)()
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
@@ -226,6 +228,7 @@ function create_leelaz () {
         (m = s.match(/Detecting residual layers.*?([0-9]+) channels.*?([0-9]+) blocks/)) &&
             (network_size_text = `${m[1]}x${m[2]}`);
         (m = s.match(/Setting max tree size/) && on_ready());
+        (m = s.match(/Weights file is the wrong version/) && on_error());
         (m = s.match(/NN eval=([0-9.]+)/)) && the_nn_eval_reader(to_f(m[1]));
         (m = s.match(/Passes: *([0-9]+)/)) && (last_passes = to_i(m[1]));
         (m = s.match(/\((.)\) to move/)) && (bturn = m[1] === 'X');
