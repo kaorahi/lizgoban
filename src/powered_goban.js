@@ -285,7 +285,7 @@ function get_previous_suggest() {
 }
 function weight_info_text() {
     const f = lz =>
-          `${PATH.basename(leelaz_weight_file(lz)) || ''} ${lz.network_size() || ''}`
+          `${PATH.basename(leelaz_weight_file(lz) || '')} ${lz.network_size() || ''}`
     return leelaz_for_white ?
         `${f(leelaz_for_black)} / ${f(leelaz_for_white)}` : f(leelaz)
 }
