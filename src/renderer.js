@@ -566,12 +566,15 @@ function set_showing_movenum_p(val) {
     R.pausing && update_goban()  // clean me
 }
 function showing_until(canvas, accept_showing_until_tag_p) {
-    const tag_p = (!canvas || accept_showing_until_tag_p)
-    const hover_p = showing_movenum_p() && (!canvas || if_hover_on(canvas, true))
-    const key_p = showing_movenum_p() && !hovered_canvas &&
-          (!canvas || accept_showing_until_tag_p)
-    return (tag_p && keyboard_tag_move_count) || (hover_p && hovered_move_count) ||
-        (key_p && (hovered_move_count || R.move_count || Infinity))
+    const ret = (by_tag, by_hover) =>
+          (by_tag && keyboard_tag_move_count) ||
+          (by_hover && showing_movenum_p() &&
+           (hovered_move_count || R.move_count || Infinity))
+    const accept_any = !canvas, hover_on_me = if_hover_on(canvas, true)
+    const hover_on_other_board = hovered_canvas && !hover_on_me
+    return accept_any ? ret(true, true) :
+        accept_showing_until_tag_p ? ret(true, !hover_on_other_board) :
+        ret(false, hover_on_me)
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
