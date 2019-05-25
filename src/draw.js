@@ -54,7 +54,7 @@ function draw_goban_until(canvas, show_until, opts) {
     const all_p = [R.move_count, Infinity].includes(show_until)
     const unnumbered = all_p ? 0 : clip(show_until - recent_moves, 0)
     const highlighted_after =
-          all_p ? clip(show_until, 0, R.history_length) - recent_moves : Infinity
+          all_p ? clip(show_until, 0, R.history_length) - recent_moves : show_until - 1
     const thin_before = all_p ? highlighted_after - thick_moves + 1 : 0
     each_stone(displayed_stones, (h, idx) => {
         const ss = h.anytime_stones, target = latest_move(ss, show_until)
