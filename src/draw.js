@@ -133,9 +133,9 @@ function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p,
            draw_endstate_p, draw_endstate_diff_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
-           hovered_move, show_until}
+           hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
           = opts || {}
-    const large_font_p = !opts.main_canvas_p
+    const large_font_p = !main_canvas_p
     const margin = canvas.height * 0.05, hm = margin / 2
     const g = canvas.getContext("2d")
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
@@ -143,7 +143,7 @@ function draw_goban(canvas, stones, opts) {
     // call proc if first_board_canvas is not set yet
     const if_first_board = proc => (first_board_canvas || proc())
     const draw_progress_and_memorize_canvas = () => {
-        draw_progress(!opts.main_canvas_p, margin, canvas, g)
+        draw_progress(!main_canvas_p, margin, canvas, g)
         first_board_canvas = canvas
     }
     // clear
@@ -167,7 +167,7 @@ function draw_goban(canvas, stones, opts) {
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
-    opts.handle_mouse_on_goban(canvas, coord2idx)
+    handle_mouse_on_goban(canvas, coord2idx)
 }
 
 function draw_grid(unit, idx2coord, g) {
