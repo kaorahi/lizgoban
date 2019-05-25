@@ -32,8 +32,15 @@ function set_board(given_game, move_count) {
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
+    set_stones(stones_from_history(hist))
     switch_leelaz()
     on_change()
+}
+
+function set_stones(stones) {
+    R.stones = stones; add_info_to_stones(R.stones, game)
+    // avoid flicker for fast undo/redo
+    add_endstate_to_stones(R.stones, R.endstate)
 }
 
 /////////////////////////////////////////////////
@@ -79,11 +86,7 @@ let leelaz_move_count = 0
 
 function board_handler(h) {
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
-    const board_setter = () => {
-        leelaz_move_count = h.move_count
-        R.stones = stones_from_history(game.array_until(leelaz_move_count))
-        add_info_to_stones(R.stones, game)
-    }
+    const board_setter = () => (leelaz_move_count = h.move_count)
     const endstate_setter = update_p => {
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; if (!update_p) {return}
