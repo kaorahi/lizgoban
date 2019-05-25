@@ -226,9 +226,8 @@ function do_play(move, is_black, tag) {
     // B:D16, W:Q4, B:pass ==> ok
     // B:D16, W:Q4, B:pass, W:D4 ==> ok
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
-    const last_pass = is_last_move_pass(), double_pass = last_pass && is_pass(move)
-    double_pass && game.pop()
-    !double_pass && game.push({move, is_black, tag, move_count: game.len() + 1})
+    is_last_move_pass() && is_pass(move) ? game.pop() :
+        game.push({move, is_black, tag, move_count: game.len() + 1})
     P.set_board(game)
 }
 function undo() {undo_ntimes(1)}
