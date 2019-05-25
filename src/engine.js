@@ -165,7 +165,6 @@ function create_leelaz () {
 
     const do_showboard = cmd => {
         if (!showboard_command_p(cmd)) {return false}
-        finish_board_reader()
         is_supported('endstate') && send_to_leelaz('endstate_map')
         return true
     }
@@ -274,8 +273,6 @@ function create_leelaz () {
     // history[0] is "first move", "first stone color (= black)", "winrate *after* first move"
 
     // replaced with rule.js
-
-    const finish_board_reader = () => the_board_handler({})
 
     /////////////////////////////////////////////////
     // endstate reader

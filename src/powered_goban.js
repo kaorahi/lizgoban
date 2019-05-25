@@ -34,6 +34,7 @@ function set_board(given_game, move_count) {
     set_stones(game.current_stones())
     switch_leelaz()
     on_change()
+    M.is_busy() || M.update_state()
 }
 
 function set_stones(stones) {

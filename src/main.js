@@ -216,8 +216,6 @@ ipc.on('close_window_or_cut_sequence', e => {
 function play(move, force_create, default_tag) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
-    // show tentative stone for click during initialization
-    !pass && aa_set(R.stones, i, j, {stone: true, black: R.bturn, maybe: true})
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
@@ -638,7 +636,7 @@ function resume() {pausing = false; update_ponder_and_ui()}
 function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
 function set_or_unset_busy(bool) {busy = bool; update_ponder()}
 function set_busy() {set_or_unset_busy(true)}
-function unset_busy() {set_or_unset_busy(false)}
+function unset_busy() {set_or_unset_busy(false); update_state(true)}
 function update_ponder() {P.set_pondering(!pausing && !busy)}
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {P.update_leelaz()}
