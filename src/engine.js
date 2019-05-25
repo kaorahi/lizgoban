@@ -20,7 +20,7 @@ function create_leelaz () {
     let network_size_text = '', suggest_only = false
 
     // game state
-    let b_prison = 0, w_prison = 0, last_passes = 0, bturn = true
+    let move_count = 0, bturn = true
 
     // util
     const log = (header, s, show_queue_p) => {
@@ -90,13 +90,12 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history) => {
-        if (empty(history)) {clear_leelaz_board(); bturn = true; return}
+        if (empty(history)) {clear_leelaz_board(); update_state([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
-        bturn = !(last(history) || {}).is_black
-        if (back > 0 || !empty(rest)) {update()}
+        if (back > 0 || !empty(rest)) {update_state(history)}
         leelaz_previous_history = shallow_copy_array(history)
     }
     const play1 = ({move, is_black}) => {leelaz('play ' + (is_black ? 'b ' : 'w ') + move)}
@@ -147,10 +146,22 @@ function create_leelaz () {
     const send_to_leelaz = cmd => {try_send_to_leelaz(cmd)}
     const try_send_to_leelaz = (cmd, on_response) => {
         // see stdout_reader for optional arg "on_response"
+        if (do_update_state(cmd)) {return}
         const cmd_with_id = `${++last_command_id} ${cmd}`
         on_response && (on_response_for_id[last_command_id] = on_response)
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
         cmd === 'showboard' && is_supported('endstate') && send_to_leelaz('endstate_map')
+    }
+
+    const update_state = history => {
+        const move_count = history.length, bturn = !(last(history) || {}).is_black
+        const new_state = JSON.stringify({move_count, bturn})
+        leelaz(`lizgoban_update_state ${new_state}`); update()
+    }
+    const do_update_state = cmd => {
+        const m = cmd.match(/lizgoban_update_state (.*$)/); if (!m) {return false}
+        const h = JSON.parse(m[1]); move_count = h.move_count; bturn = h.bturn
+        try_send_from_queue(); return true
     }
 
     const join_commands = (...a) => a.join(';')
@@ -230,10 +241,6 @@ function create_leelaz () {
         (m = s.match(/Setting max tree size/) && on_ready());
         (m = s.match(/Weights file is the wrong version/) && on_error());
         (m = s.match(/NN eval=([0-9.]+)/)) && the_nn_eval_reader(to_f(m[1]));
-        (m = s.match(/Passes: *([0-9]+)/)) && (last_passes = to_i(m[1]));
-        (m = s.match(/\((.)\) to move/)) && (bturn = m[1] === 'X');
-        (m = s.match(/\((.)\) Prisoners: *([0-9]+)/)) &&
-            (c = to_i(m[2]), m[1] === 'X' ? b_prison = c : w_prison = c)
         s.match(/a b c d e f g h j k l m n o p q r s t/) && (current_reader = board_reader)
         s.match(/endstate:/) && (current_reader = endstate_reader)
     }
@@ -262,9 +269,7 @@ function create_leelaz () {
     // history[0] is "first move", "first stone color (= black)", "winrate *after* first move"
 
     const finish_board_reader = (stones) => {
-        const move_count = b_prison + w_prison + last_passes +
-              flatten(stones).filter(x => x.stone).length
-        the_board_handler({bturn, move_count, stones})
+        the_board_handler({move_count, bturn, stones})
     }
 
     const char2stone = {
