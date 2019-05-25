@@ -158,11 +158,7 @@ const draw_raw_pure = draw_raw_gen({})
 const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
 
 function draw_wr_graph(canvas) {
-    const unset_busy = () => main('unset_busy')
-    const goto_move_count = count => main('busy', 'goto_move_count', count)
-    D.draw_winrate_graph(canvas, showing_until(), goto_move_count,
-                         hover_on_graph, hover_off, unset_busy,
-                         add_mouse_handlers_with_record)
+    D.draw_winrate_graph(canvas, showing_until(), handle_mouse_on_winrate_graph)
 }
 
 function draw_wr_bar(canvas) {
@@ -329,6 +325,26 @@ function handle_mouse_on_goban(canvas, coord2idx, tag_clickable_p) {
     const onmouseleave = e => hover_off(canvas)
     const handlers = {onmousedown, onmousemove, onmouseenter, onmouseleave}
     add_mouse_handlers_with_record(canvas, handlers)
+}
+
+function handle_mouse_on_winrate_graph(canvas, coord2sr) {
+    // helpers
+    const unset_busy = () => main('unset_busy')
+    const goto_here = e => !R.attached && winrate_graph_goto(e, coord2sr)
+    const hover_here = e => hover_on_graph(e, coord2sr, canvas)
+    // handlers
+    const onmousedown = goto_here
+    const onmousemove = e => (e.buttons === 1) ? goto_here(e) : hover_here(e)
+    const onmouseup = unset_busy
+    const onmouseleave = e => (hover_off(), unset_busy())
+    const handlers = {onmousedown, onmousemove, onmouseup, onmouseleave}
+    add_mouse_handlers_with_record(canvas, handlers, hover_here)
+}
+
+function winrate_graph_goto(e, coord2sr) {
+    const goto_move_count = count => main('busy', 'goto_move_count', count)
+    const [s, r] = coord2sr(...mouse2coord(e))
+    s >= 0 && goto_move_count(clip(s, 0, R.history_length))
 }
 
 function add_mouse_handlers_with_record(canvas, handlers, hover_updater) {

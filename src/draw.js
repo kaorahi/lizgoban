@@ -682,9 +682,7 @@ function puct_info(suggest) {
 /////////////////////////////////////////////////
 // winrate graph
 
-function draw_winrate_graph(canvas, show_until, goto_move_count,
-                            hover_on_graph, hover_off, unset_busy,
-                            add_mouse_handlers_with_record) {
+function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
     const smax = Math.max(R.history_length, 1)
@@ -705,15 +703,7 @@ function draw_winrate_graph(canvas, show_until, goto_move_count,
     draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     // mouse events
-    const goto_here = e =>
-          !R.attached && winrate_graph_goto(e, coord2sr, goto_move_count)
-    const hover_here = e => hover_on_graph(e, coord2sr, canvas)
-    const onmousedown = goto_here
-    const onmousemove = e => (e.buttons === 1) ? goto_here(e) : hover_here(e)
-    const onmouseup = unset_busy
-    const onmouseleave = e => (hover_off(), unset_busy())
-    const handlers = {onmousedown, onmousemove, onmouseup, onmouseleave}
-    add_mouse_handlers_with_record(canvas, handlers, hover_here)
+    handle_mouse_on_winrate_graph(canvas, coord2sr)
 }
 
 function draw_winrate_graph_frame(w, h, tics, g) {
@@ -783,11 +773,6 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
         g.fillStyle = BLUE; g.fillText(h.tag, x, yt)
         g.restore()
     })
-}
-
-function winrate_graph_goto(e, coord2sr, goto_move_count) {
-    const [s, r] = coord2sr(...mouse2coord(e))
-    s >= 0 && goto_move_count(clip(s, 0, R.history_length))
 }
 
 // additional plots
