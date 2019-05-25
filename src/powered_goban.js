@@ -270,7 +270,8 @@ function winrate_from_game(game) {
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * (cur.is_black ? 1 : -1)
         const predict = winrate_suggested(s)
-        const pass = (!!h.is_black === !!game.ref(s - 1).is_black)
+        const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
+        const pass = implicit_pass || M.is_pass(h.move)
         const score_without_komi = average_endstate_sum(s)
         const hotness = h.hotness
         const best = (h.suggest || [])[0]

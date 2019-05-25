@@ -62,7 +62,7 @@ const stored_keys_for_renderer =
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
 P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
     // functions used in powered_goban.js
-    render, update_state, update_ponder, show_suggest_p,
+    render, update_state, update_ponder, show_suggest_p, is_pass,
     auto_progress, is_auto_bturn, leelaz_weight_option_pos_in_args, is_busy,
     error_from_powered_goban,
 })
@@ -222,15 +222,12 @@ function play(move, force_create, default_tag) {
     pass && wink()
 }
 function do_play(move, is_black, tag) {
-    // We drop "pass" except for the last of history.
+    // We drop "double pass" to avoid halt of analysis by Leelaz.
     // B:D16, W:Q4, B:pass ==> ok
-    // B:D16, W:Q4, B:pass, W:D4 ==> B:D16, W:Q4, W:D4
+    // B:D16, W:Q4, B:pass, W:D4 ==> ok
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
-    // This is because ...
-    // (1) Leelaz counts only the last passes in "showboard".
-    // (2) Leelaz stops analysis after double pass.
     const last_pass = is_last_move_pass(), double_pass = last_pass && is_pass(move)
-    last_pass && game.pop()
+    double_pass && game.pop()
     !double_pass && game.push({move, is_black, tag, move_count: game.len() + 1})
     P.set_board(game)
 }
