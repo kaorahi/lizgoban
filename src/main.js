@@ -290,6 +290,7 @@ function menu_template(win) {
     const sep = {type: 'separator'}
     const insert_if = (pred, ...items) => pred ? items : []
     const lz_white = P.leelaz_for_white_p()
+    const dup = until_current_move_p => () => duplicate_sequence(until_current_move_p)
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
         item('New handicap game', undefined, ask_handicap_stones, true),
@@ -314,7 +315,8 @@ function menu_template(win) {
         item('Delete board', 'CmdOrCtrl+X', cut_sequence, true),
         item('Undelete board', 'CmdOrCtrl+Z', uncut_sequence, true,
              exist_deleted_sequence()),
-        item('Duplicate board', 'CmdOrCtrl+D', duplicate_sequence, true),
+        item('Duplicate board', 'CmdOrCtrl+D', dup(false), true),
+        item('Duplicate until current move', 'CmdOrCtrl+K', dup(true), true),
         sep,
         {label: 'Trial board', type: 'checkbox', checked: game.trial,
          click: toggle_trial},
@@ -723,9 +725,14 @@ function uncut_sequence() {
         insert_sequence(pop_deleted_sequence(), true, insert_before)
 }
 
-function duplicate_sequence() {
+function duplicate_sequence(until_current_move_p) {
+    const del_future = () => {
+        game.delete_future(); P.set_board(game, game.move_count)
+        P.update_info_in_stones()  // remove next_move mark
+    }
     game.is_empty() ? new_empty_board() :
         (backup_game(), game.set_last_loaded_element(), (game.trial = true),
+         (until_current_move_p && del_future()),
          update_state())
 }
 
