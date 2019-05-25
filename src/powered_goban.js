@@ -74,7 +74,7 @@ function leelaz_weight_file(leelaz_for_black_or_white) {
 function each_leelaz(f) {
     [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
 }
-function with_handlers(h) {return merge({board_handler, suggest_handler}, h)}
+function with_handlers(h) {return merge({endstate_handler, suggest_handler}, h)}
 
 /////////////////////////////////////////////////
 // receive analysis from leelaz
@@ -84,7 +84,7 @@ function with_handlers(h) {return merge({board_handler, suggest_handler}, h)}
 // in this case for efficiency.
 let leelaz_move_count = 0
 
-function board_handler(h) {
+function endstate_handler(h) {
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const endstate_setter = update_p => {
         const leelaz_move_count = R.endstate_move_count

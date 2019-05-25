@@ -15,7 +15,7 @@ const SGF = require('@sabaki/sgf')
 
 // note:
 // * move_count = 1 for the first stone, that is history[0].
-// * See board_handler() and suggest_handler() for "...".
+// * See endstate_handler() and suggest_handler() for "...".
 // * See also do_play() for passes.
 
 let next_game_id = 0
