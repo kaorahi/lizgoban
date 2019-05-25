@@ -1,4 +1,5 @@
 require('./util.js').use(); require('./coord.js').use()
+const {stones_from_history} = require('./rule.js')
 const SGF = require('@sabaki/sgf')
 
 /////////////////////////////////////////////////
@@ -33,6 +34,7 @@ function create_game(init_history, init_prop) {
         is_empty: () => empty(history),
         ref: mc => history[mc - 1] || {},
         ref_current: () => self.ref(self.move_count),
+        current_stones: () => stones_from_history(self.array_until(self.move_count)),
         array_until: mc => history.slice(0, mc),
         delete_future: () => history.splice(self.move_count),
         last_move: () => (last(history) || {}).move,

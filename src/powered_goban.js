@@ -4,7 +4,6 @@
 // starts analysis of given game state, and updates displayed suggestions.
 
 require('./util.js').use(); require('./coord.js').use()
-const {stones_from_history} = require('./rule.js')
 const {create_game} = require('./game.js')
 const PATH = require('path')
 
@@ -32,7 +31,7 @@ function set_board(given_game, move_count) {
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
-    set_stones(stones_from_history(hist))
+    set_stones(game.current_stones())
     switch_leelaz()
     on_change()
 }
