@@ -720,10 +720,10 @@ function create_sequence_maybe(force) {
         (backup_game(), game.delete_future(), merge(game, {trial: true}), true)
 }
 
-function next_sequence() {previous_or_next_sequence(1, next_sequence_effect)}
-function previous_sequence() {previous_or_next_sequence(-1, previous_sequence_effect)}
+function next_sequence() {previous_or_next_sequence(1)}
+function previous_sequence() {previous_or_next_sequence(-1)}
 function previous_or_next_sequence(delta, effect) {
-    sequence.length > 1 && (switch_to_nth_sequence(sequence_cursor + delta), effect())
+    sequence.length > 1 && nth_sequence(sequence_cursor + delta)
 }
 function nth_sequence(n) {
     const old = sequence_cursor
