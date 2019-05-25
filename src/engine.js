@@ -10,7 +10,6 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // setup
 
-    const pondering_delay_millisec = 0  // disabled (obsolete)
     const endstate_delay_millisec = 20
 
     let leelaz_process, the_start_args, the_analyze_interval_centisec
@@ -133,21 +132,13 @@ function create_leelaz () {
         endstate_command_p(s) && remove(endstate_command_p)
         // obsolete endstate / peek
         changer_command_p(s) && [endstate_command_p, peek_command_p].map(remove)
-        command_queue.push(s); try_send_from_queue()
-    }
-
-    const try_send_from_queue = () => {
-        pondering_command_p(command_queue[0] || '') ?
-            send_from_queue_later() : send_from_queue()
+        command_queue.push(s); send_from_queue()
     }
 
     const send_from_queue = () => {
         if (empty(command_queue) || !up_to_date_response()) {return}
         split_commands(command_queue.shift()).map(send_to_leelaz)
     }
-
-    const [send_from_queue_later] =
-          deferred_procs([send_from_queue, pondering_delay_millisec])
 
     const send_to_leelaz = cmd => {try_send_to_leelaz(cmd)}
     const try_send_to_leelaz = (cmd, on_response) => {
@@ -166,7 +157,7 @@ function create_leelaz () {
     const do_update_state = cmd => {
         const m = cmd.match(/lizgoban_update_state (.*$)/); if (!m) {return false}
         const h = JSON.parse(m[1]); move_count = h.move_count; bturn = h.bturn
-        try_send_from_queue(); return true
+        send_from_queue(); return true
     }
 
     const join_commands = (...a) => a.join(';')
@@ -196,7 +187,7 @@ function create_leelaz () {
             on_response && (on_response(ok), delete on_response_for_id[id])
         }
         up_to_date_response() && s.match(/^info /) && suggest_reader(s)
-        try_send_from_queue()
+        send_from_queue()
     }
 
     const suggest_reader = (s) => {
