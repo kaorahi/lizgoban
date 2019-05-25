@@ -216,7 +216,8 @@ function update_goban() {
         }
     }
     const c = Q("#visits_trail_canvas")
-    btype === "winrate_only" ? D.clear_canvas(c) : D.draw_visits_trail(c)
+    btype === "winrate_only" ? D.clear_canvas(c) :
+        !showing_until() && D.draw_visits_trail(c)
 }
 
 function selected_suggest(canvas) {
