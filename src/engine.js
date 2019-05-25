@@ -1,5 +1,4 @@
 require('./util.js').use(); require('./coord.js').use()
-const {stones_from_history} = require('./rule.js')
 
 // util
 function shallow_copy_array(a) {return a.slice()}
@@ -166,9 +165,7 @@ function create_leelaz () {
 
     const do_showboard = cmd => {
         if (!showboard_command_p(cmd)) {return false}
-        const history = leelaz_previous_history
-        move_count = history.length; bturn = !(last(history) || {}).is_black
-        finish_board_reader(stones_from_history(history))
+        finish_board_reader()
         is_supported('endstate') && send_to_leelaz('endstate_map')
         return true
     }
@@ -278,9 +275,7 @@ function create_leelaz () {
 
     // replaced with rule.js
 
-    const finish_board_reader = (stones) => {
-        the_board_handler({move_count, bturn, stones})
-    }
+    const finish_board_reader = () => the_board_handler({move_count, bturn})
 
     /////////////////////////////////////////////////
     // endstate reader

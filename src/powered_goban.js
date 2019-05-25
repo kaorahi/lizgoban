@@ -4,6 +4,7 @@
 // starts analysis of given game state, and updates displayed suggestions.
 
 require('./util.js').use(); require('./coord.js').use()
+const {stones_from_history} = require('./rule.js')
 const {create_game} = require('./game.js')
 const PATH = require('path')
 
@@ -80,6 +81,7 @@ function board_handler(h) {
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const board_setter = () => {
         leelaz_move_count = h.move_count
+        R.stones = stones_from_history(game.array_until(leelaz_move_count))
         add_info_to_stones(R.stones, game)
     }
     const endstate_setter = update_p => {
