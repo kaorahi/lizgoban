@@ -549,6 +549,7 @@ function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_movenum_p() {return the_showing_movenum_p}
 function set_showing_movenum_p(val) {
     the_showing_movenum_p = val; set_hovered_move_count(val && hovered_move)
+    R.pausing && R.move_count === 0 && update_goban()  // clean me
 }
 function showing_until(canvas, accept_showing_until_tag_p) {
     const tag_p = (!canvas || accept_showing_until_tag_p)
@@ -557,7 +558,7 @@ function showing_until(canvas, accept_showing_until_tag_p) {
           && (!canvas || accept_showing_until_tag_p)
     // ignore "*_count = 0" since it is useless and cannot happen
     return (tag_p && keyboard_tag_move_count) || (hover_p && hovered_move_count) ||
-        (key_p && R.move_count)
+        (key_p && (R.move_count || Infinity))
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
