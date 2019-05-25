@@ -186,8 +186,7 @@ function draw_visits(margin, canvas, g) {
 }
 
 function draw_visits_text(margin, canvas, g) {
-    const format = z => Math.round(z * 10) / 10
-    const esum = truep(R.endstate_sum) ? `  endstate = ${format(R.endstate_sum)}` : ''
+    const esum = truep(R.endstate_sum) ? `  endstate = ${f2s(R.endstate_sum)}` : ''
     g.save()
     g.fillStyle = MAYBE_BLACK; set_font(margin / 2, g)
     g.textAlign = 'left'; g.textBaseline = 'middle'
