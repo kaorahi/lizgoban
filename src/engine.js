@@ -275,13 +275,13 @@ function create_leelaz () {
 
     // replaced with rule.js
 
-    const finish_board_reader = () => the_board_handler({move_count, bturn})
+    const finish_board_reader = () => the_board_handler({})
 
     /////////////////////////////////////////////////
     // endstate reader
 
     const finish_endstate_reader = (endstate) => {
-        the_board_handler({endstate})
+        the_board_handler({endstate, endstate_move_count: move_count})
     }
 
     const parse_endstate_line = (line) => {

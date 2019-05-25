@@ -85,8 +85,8 @@ let leelaz_move_count = 0
 
 function board_handler(h) {
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
-    const board_setter = () => (leelaz_move_count = h.move_count)
     const endstate_setter = update_p => {
+        const leelaz_move_count = R.endstate_move_count
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; if (!update_p) {return}
             z.endstate_sum = sum(R.endstate)
@@ -96,7 +96,7 @@ function board_handler(h) {
         leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
     }
     set_renderer_state(h)
-    h.endstate || board_setter(); leelaz_for_endstate && endstate_setter(!!h.endstate)
+    leelaz_for_endstate && endstate_setter(!!h.endstate)
     M.update_state()
 }
 
