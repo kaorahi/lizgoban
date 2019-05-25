@@ -1,4 +1,5 @@
 require('./util.js').use(); require('./coord.js').use()
+const {stones_from_history} = require('./rule.js')
 
 // util
 function shallow_copy_array(a) {return a.slice()}
@@ -146,11 +147,10 @@ function create_leelaz () {
     const send_to_leelaz = cmd => {try_send_to_leelaz(cmd)}
     const try_send_to_leelaz = (cmd, on_response) => {
         // see stdout_reader for optional arg "on_response"
-        if (do_update_state(cmd)) {return}
+        if (do_update_state(cmd) || do_showboard(cmd)) {return}
         const cmd_with_id = `${++last_command_id} ${cmd}`
         on_response && (on_response_for_id[last_command_id] = on_response)
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
-        cmd === 'showboard' && is_supported('endstate') && send_to_leelaz('endstate_map')
     }
 
     const update_state = history => {
@@ -162,6 +162,15 @@ function create_leelaz () {
         const m = cmd.match(/lizgoban_update_state (.*$)/); if (!m) {return false}
         const h = JSON.parse(m[1]); move_count = h.move_count; bturn = h.bturn
         try_send_from_queue(); return true
+    }
+
+    const do_showboard = cmd => {
+        if (!showboard_command_p(cmd)) {return false}
+        const history = leelaz_previous_history
+        move_count = history.length; bturn = !(last(history) || {}).is_black
+        finish_board_reader(stones_from_history(history))
+        is_supported('endstate') && send_to_leelaz('endstate_map')
+        return true
     }
 
     const join_commands = (...a) => a.join(';')
@@ -241,7 +250,6 @@ function create_leelaz () {
         (m = s.match(/Setting max tree size/) && on_ready());
         (m = s.match(/Weights file is the wrong version/) && on_error());
         (m = s.match(/NN eval=([0-9.]+)/)) && the_nn_eval_reader(to_f(m[1]));
-        s.match(/a b c d e f g h j k l m n o p q r s t/) && (current_reader = board_reader)
         s.match(/endstate:/) && (current_reader = endstate_reader)
     }
 
@@ -268,24 +276,11 @@ function create_leelaz () {
     // move_data = {move: "G16", is_black: false, b_winrate: 42.19} etc.
     // history[0] is "first move", "first stone color (= black)", "winrate *after* first move"
 
+    // replaced with rule.js
+
     const finish_board_reader = (stones) => {
         the_board_handler({move_count, bturn, stones})
     }
-
-    const char2stone = {
-        X: {stone: true, black: true}, x: {stone: true, black: true, last: true},
-        O: {stone: true, white: true}, o: {stone: true, white: true, last: true},
-    }
-
-    const parse_board_line = (line) => {
-        // (.) or (+) means suicide.
-        const m = line.replace(/\(X\)/g, ' x ').replace(/\(O\)/g, ' o ').replace(/\([.+]\)/g, ' . ')
-              .replace(/\+/g, '.').replace(/\s/g, '').match(/[0-9]+([XxOo.]+)/)
-        if (!m) {return false}
-        return m[1].split('').map(c => shallow_copy_hash(char2stone[c] || {}))
-    }
-
-    const board_reader = multiline_reader(parse_board_line, finish_board_reader)
 
     /////////////////////////////////////////////////
     // endstate reader

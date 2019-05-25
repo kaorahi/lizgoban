@@ -1,8 +1,5 @@
 Note on implementation:
 
-JavaScript code knows nothing about the rule of Go (liberty, ko, ...).
-It merely parses the output of "showboard" from leelaz for simplicity.
-
 Leelaz is wrapped as if it is a stateless analyzer for convenience.
 The wrapped leelaz receives the history of moves from the beginning to
 the current board state for every analysis.  Only the difference from
