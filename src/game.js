@@ -51,6 +51,7 @@ function create_game(init_history, init_prop) {
             load_sabaki_gametree_to_game(gametree, index, self),
         new_tag_maybe: (new_sequence_p, move_count) =>
             new_tag_maybe_for_game(self, new_sequence_p, move_count),
+        add_or_remove_tag: () => add_or_remove_tag_on_game(self),
     }
     const array_methods =
           aa2hash(['push', 'pop', 'map', 'forEach', 'slice', 'splice']
@@ -148,6 +149,10 @@ function new_tag_for_game(game) {
           % normal_tag_letters.length
     next_tag_count = tag_count + 1
     return normal_tag_letters[tag_count]
+}
+function add_or_remove_tag_on_game(game) {
+    const h = game.ref_current(); if (!h) {return}
+    const t = h.tag; h.tag = (t ? t.slice(0, -1) : new_tag_for_game(game))
 }
 
 /////////////////////////////////////////////////

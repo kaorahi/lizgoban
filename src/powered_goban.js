@@ -346,7 +346,8 @@ module.exports = {
     // renderer
     set_and_render,
     // util
-    stone_for_history_elem, get_initial_b_winrate: () => initial_b_winrate,
+    stone_for_history_elem, update_info_in_stones,
+    get_initial_b_winrate: () => initial_b_winrate,
     // leelaz methods
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)]))

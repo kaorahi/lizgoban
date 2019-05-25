@@ -356,6 +356,7 @@ function menu_template(win) {
                  P.swap_leelaz_for_black_and_white) :
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
+        item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         item('Info', 'CmdOrCtrl+I', info),
     ])
     const debug_menu = menu('Debug', [
@@ -595,6 +596,10 @@ function info() {
 }
 function endstate_diff_interval_adder(k) {
     return () => P.add_endstate_diff_interval(k)
+}
+function tag_or_untag() {
+    if (game.move_count === 0) {wink(); return}
+    game.add_or_remove_tag(); P.update_info_in_stones(); update_state()
 }
 
 /////////////////////////////////////////////////
