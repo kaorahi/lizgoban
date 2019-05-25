@@ -256,8 +256,8 @@ function draw_stone(h, xy, radius, draw_last_p, draw_recent_p, g) {
     g.lineWidth = 1; g.strokeStyle = b_color
     g.fillStyle = h.black ? b_color : w_color
     edged_fill_circle(xy, radius, g)
-    h.movenums && draw_movenums(h, xy, radius, g)
     last_or_recent && draw_last_or_recent_move(h, xy, radius, g)
+    h.movenums && draw_movenums(h, xy, radius, g)
 }
 
 function draw_movenums(h, xy, radius, g) {
