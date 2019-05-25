@@ -46,7 +46,7 @@ debug_log("option: " + JSON.stringify(option))
 // (cf.) "the_board_handler" and "the_suggest_handler" in engine.js
 const stored_keys_for_renderer =
       ['lizzie_style', 'expand_winrate_bar', 'let_me_think', 'show_endstate']
-const R = {stones: aa_new(19, 19, () => ({})), ...renderer_preferences()}
+const R = {stones: aa_new(19, 19, () => ({})), bturn: true, ...renderer_preferences()}
 
 // modules
 const {create_game} = require('./game.js')
