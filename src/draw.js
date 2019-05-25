@@ -167,7 +167,7 @@ function draw_goban(canvas, stones, opts) {
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
-    handle_mouse_on_goban(canvas, coord2idx)
+    handle_mouse_on_goban(canvas, coord2idx, read_only)
 }
 
 function draw_grid(unit, idx2coord, g) {

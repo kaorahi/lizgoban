@@ -143,7 +143,7 @@ function with_opts(d, accept_showing_until_tag_p, opts) {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
         show_until: showing_until(c, accept_showing_until_tag_p),
         hovered_move: if_hover_on(c, hovered_move),
-        handle_mouse_on_goban: (canvas, coord2idx) => handle_mouse_on_goban(canvas, coord2idx, accept_showing_until_tag_p),
+        handle_mouse_on_goban: (canvas, coord2idx, read_only) => handle_mouse_on_goban(canvas, coord2idx, read_only, accept_showing_until_tag_p),
         ...(opts || {})
     })
 }
@@ -241,7 +241,7 @@ function double_boards_p() {return R.board_type.match(/^double_boards/)}
 
 // on goban
 
-function handle_mouse_on_goban(canvas, coord2idx, tag_clickable_p) {
+function handle_mouse_on_goban(canvas, coord2idx, read_only, tag_clickable_p) {
     const onmousedown = e =>
         (!read_only && !R.attached &&
          (play_here(e, coord2idx, tag_clickable_p), hover_off(canvas)))
