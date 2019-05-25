@@ -72,7 +72,7 @@ function create_leelaz () {
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
     }
-    const showboard = () => {!suggest_only && leelaz('lizgoban_showboard')}
+    const endstate = () => {!suggest_only && leelaz('lizgoban_endstate')}
 
     // fixme: unclear
     // up_to_date_response() is turned to be true indirectly
@@ -103,7 +103,7 @@ function create_leelaz () {
 
     // util
     const leelaz = (s) => {log('queue>', s, true); send_to_queue(s)}
-    const update = () => {showboard(); start_analysis()}
+    const update = () => {endstate(); start_analysis()}
     const clear_leelaz_board = () => {leelaz("clear_board"); leelaz_previous_history = []; update()}
     const start_args = () => the_start_args
     const network_size = () => network_size_text
@@ -123,10 +123,10 @@ function create_leelaz () {
         const remove = f => {command_queue = command_queue.filter(x => !f(x))}
         // useless lz-analyze that will be canceled immediately
         remove(pondering_command_p)
-        // duplicated showboard
-        showboard_command_p(s) && remove(showboard_command_p)
-        // obsolete showboard / peek
-        changer_command_p(s) && [showboard_command_p, peek_command_p].map(remove)
+        // duplicated endstate
+        endstate_command_p(s) && remove(endstate_command_p)
+        // obsolete endstate / peek
+        changer_command_p(s) && [endstate_command_p, peek_command_p].map(remove)
         command_queue.push(s); try_send_from_queue()
     }
 
@@ -146,7 +146,7 @@ function create_leelaz () {
     const send_to_leelaz = cmd => {try_send_to_leelaz(cmd)}
     const try_send_to_leelaz = (cmd, on_response) => {
         // see stdout_reader for optional arg "on_response"
-        if (do_update_state(cmd) || do_showboard(cmd)) {return}
+        if (do_update_state(cmd) || do_endstate(cmd)) {return}
         const cmd_with_id = `${++last_command_id} ${cmd}`
         on_response && (on_response_for_id[last_command_id] = on_response)
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
@@ -163,8 +163,8 @@ function create_leelaz () {
         try_send_from_queue(); return true
     }
 
-    const do_showboard = cmd => {
-        if (!showboard_command_p(cmd)) {return false}
+    const do_endstate = cmd => {
+        if (!endstate_command_p(cmd)) {return false}
         is_supported('endstate') && send_to_leelaz('endstate_map')
         return true
     }
@@ -175,7 +175,7 @@ function create_leelaz () {
 
     const command_matcher = re => (command => command.match(re))
     const pondering_command_p = command_matcher(/^lz-analyze/)
-    const showboard_command_p = command_matcher(/^lizgoban_showboard/)
+    const endstate_command_p = command_matcher(/^lizgoban_endstate/)
     const peek_command_p = command_matcher(/play.*undo/)
     const changer_command_p = command_matcher(/play|undo|clear_board/)
 
