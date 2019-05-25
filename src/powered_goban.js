@@ -80,7 +80,6 @@ function board_handler(h) {
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const board_setter = () => {
         leelaz_move_count = h.move_count
-        add_next_mark_to_stones(R.stones, game, game.move_count)
         add_info_to_stones(R.stones, game)
     }
     const endstate_setter = update_p => {
@@ -310,6 +309,7 @@ function add_info_to_stones(stones, game) {
         !s.anytime_stones && (s.anytime_stones = [])
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
+    add_next_mark_to_stones(stones, game, game.move_count)
 }
 function stone_for_history_elem(h, stones) {
     return h && h.move && aa_ref(stones, ...move2idx(h.move))
