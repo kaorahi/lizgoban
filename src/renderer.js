@@ -142,7 +142,7 @@ function with_opts(d, accept_showing_until_tag_p, opts) {
     return c => (update_first_board_canvas(c), d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
         first_board_p: is_first_board_canvas(c),
-        show_until: showing_until(c, accept_showing_until_tag_p),
+        show_until: showing_until(c),
         hovered_move: if_hover_on(c, hovered_move),
         handle_mouse_on_goban: (canvas, coord2idx, read_only) => handle_mouse_on_goban(canvas, coord2idx, read_only, accept_showing_until_tag_p),
         ...(opts || {})
@@ -624,7 +624,7 @@ function showing_movenum_p() {return the_showing_movenum_p}
 function set_showing_movenum_p(val) {
     the_showing_movenum_p = val; val && update_hover_maybe(); update_goban()
 }
-function showing_until(canvas, accept_showing_until_tag_p) {
+function showing_until(canvas) {
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||
           (by_hover && showing_movenum_p() &&
@@ -633,7 +633,7 @@ function showing_until(canvas, accept_showing_until_tag_p) {
     const hover_on_any_board = !!hovered_board_canvas
     const i_am_first_board = is_first_board_canvas(canvas)
     const my_duty_p = hover_on_me || (!hover_on_any_board && i_am_first_board)
-    return accept_any ? ret(true, true) : ret(accept_showing_until_tag_p, my_duty_p)
+    return accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
