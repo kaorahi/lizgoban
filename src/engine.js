@@ -73,7 +73,7 @@ function create_leelaz () {
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
     }
-    const showboard = () => {!suggest_only && leelaz('showboard')}
+    const showboard = () => {!suggest_only && leelaz('lizgoban_showboard')}
 
     // fixme: unclear
     // up_to_date_response() is turned to be true indirectly
@@ -179,7 +179,7 @@ function create_leelaz () {
 
     const command_matcher = re => (command => command.match(re))
     const pondering_command_p = command_matcher(/^lz-analyze/)
-    const showboard_command_p = command_matcher(/^showboard/)
+    const showboard_command_p = command_matcher(/^lizgoban_showboard/)
     const peek_command_p = command_matcher(/play.*undo/)
     const changer_command_p = command_matcher(/play|undo|clear_board/)
 
