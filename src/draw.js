@@ -49,11 +49,13 @@ function draw_main_goban(canvas, options) {
 }
 
 function draw_goban_until(canvas, show_until, opts) {
-    const displayed_stones = copy_stones_for_display(), recent_moves = 3
+    const recent_moves = 3, thick_moves = 7
+    const displayed_stones = copy_stones_for_display()
     const all_p = [R.move_count, Infinity].includes(show_until)
     const unnumbered = all_p ? 0 : clip(show_until - recent_moves, 0)
     const highlighted_after =
           all_p ? clip(show_until, 0, R.history_length) - recent_moves : Infinity
+    const thin_before = all_p ? highlighted_after - thick_moves + 1 : 0
     each_stone(displayed_stones, (h, idx) => {
         const ss = h.anytime_stones, target = latest_move(ss, show_until)
         if (target) {
@@ -62,8 +64,10 @@ function draw_goban_until(canvas, show_until, opts) {
             h.stone = true
             const m = target.move_count - unnumbered
             const variation_last = (target.move_count > highlighted_after)
+            const thin_movenums = (target.move_count < thin_before)
             // clean me: to_s to avoid highlight of "1"
-            m > 0 && merge(h, {movenums: [to_s(m)], variation_last, tag: null})
+            m > 0 && merge(h, {movenums: [to_s(m)], variation_last,
+                               thin_movenums, tag: null})
         } else {
             h.stone && ((h.displayed_colors = [PALER_BLACK, PALER_WHITE]),
                         (h.last = false))
@@ -257,7 +261,8 @@ function draw_stone(h, xy, radius, draw_last_p, draw_recent_p, g) {
 
 function draw_movenums(h, xy, radius, g) {
     const movenums = h.movenums.slice().sort((a, b) => a - b)
-    const bw = h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
+    const bw = h.thin_movenums ? ['rgba(0,0,0,0.2)', 'rgba(255,255,255,0.3)'] :
+          h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
     const color = (movenums[0] === 1) ? GREEN : h.variation_last ? RED :
           bw[h.black ? 1 : 0]
     draw_text_on_stone(movenums.join(','), color, xy, radius, g)
