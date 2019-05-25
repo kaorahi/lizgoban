@@ -697,10 +697,11 @@ function draw_winrate_graph(canvas, show_until, goto_move_count,
           uv2coord_translator_pair(canvas, [0, smax], [100, 0], xmargin, 0)
     const overlay = graph_overlay_canvas.getContext("2d")
     clear_canvas(graph_overlay_canvas)
+    show_until && draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord,
+                                                overlay)
     !show_until && draw_winrate_graph_future(w, h, sr2coord, overlay)
-    if (R.busy) {return}
+    if (R.busy || show_until) {return}
     clear_canvas(canvas, BLACK, g)
-    show_until && draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g)
     draw_winrate_graph_frame(w, h, tics, g)
     draw_winrate_graph_hotness(h, sr2coord, g)
     draw_winrate_graph_uncertainty(h, sr2coord, g)
@@ -731,7 +732,7 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
     // area
     const [s0, s1] = [show_until, R.move_count].sort()
     const xy0 = sr2coord(s0, 100), xy1 = sr2coord(s1, 0)
-    g.strokeStyle = g.fillStyle = '#330'; g.lineWidth = 1
+    g.strokeStyle = g.fillStyle = 'rgba(128,128,0,0.3)'; g.lineWidth = 1
     edged_fill_rect(xy0, xy1, g)
     // move number
     const delta = R.move_count - show_until
@@ -739,7 +740,7 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
     const left_limit = (delta < 0 ? w - margin : margin)
     g.save()
     g.textAlign = x < left_limit ? 'left' : 'right'; g.textBaseline = 'bottom'
-    set_font(fontsize, g); g.fillStyle = '#cc0'
+    set_font(fontsize, g); g.fillStyle = 'rgba(128,128,0,0.7)'
     g.fillText(' ' + show_until + ' ', x, y)
     g.restore()
 }
