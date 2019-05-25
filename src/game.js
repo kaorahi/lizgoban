@@ -6,17 +6,20 @@ const SGF = require('@sabaki/sgf')
 // game
 
 // example of history:
-// [{move: "D16", is_black: true, move_count: 1, ...},
+// [{move: "D16", is_black: true, move_count: 1, b_winrate: 42.19, ...},
 //  {move: "Q4", is_black: false, move_count: 2, tag: "b", ...},
 //  {move: "Q16", is_black: false, move_count: 3, ...},
 //  {move: "pass", is_black: true, move_count: 4, ...}]
 // 
 // Black played pass for the third move and the last move in this example.
-
-// note:
-// * move_count = 1 for the first stone, that is history[0].
+// * move_count = 1 for the first stone, that is history[0]
+//   ("first move", "first stone color (= black)", "winrate *after* first move")
 // * See endstate_handler() and suggest_handler() for "...".
 // * See also do_play() for passes.
+
+// game.current_stones() =
+//   [[stone, ..., stone], ..., [stone, ..., stone]] (19x19, see coord.js)
+// stone = {stone: true, black: true} etc. or {} for empty position
 
 let next_game_id = 0
 function new_game_id() {return next_game_id++}

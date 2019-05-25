@@ -254,18 +254,6 @@ function create_leelaz () {
     }
 
     /////////////////////////////////////////////////
-    // board reader
-
-    // stones = [[stone, ..., stone], ..., [stone, ..., stone]] (19x19, see coord.js)
-    // stone = {stone: true, black: true} etc. or {} for empty position
-
-    // history = [move_data, ..., move_data]
-    // move_data = {move: "G16", is_black: false, b_winrate: 42.19} etc.
-    // history[0] is "first move", "first stone color (= black)", "winrate *after* first move"
-
-    // replaced with rule.js
-
-    /////////////////////////////////////////////////
     // endstate reader
 
     const finish_endstate_reader = (endstate) => {
