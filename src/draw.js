@@ -59,7 +59,8 @@ function draw_goban_until(canvas, show_until, opts) {
     each_stone(displayed_stones, (h, idx) => {
         const ss = h.anytime_stones, target = latest_move(ss, show_until)
         if (target) {
-            h.black = target.is_black; h.last = (target.move_count === show_until)
+            h.black = target.is_black
+            h.last = [show_until, thin_before - 1].includes(target.move_count)
             h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
             h.stone = true
             const m = target.move_count - unnumbered
