@@ -27,7 +27,7 @@ const R = {
     lizzie_style: false,
     window_id: -1,
 }
-let temporary_board_type = null
+let temporary_board_type = null, the_first_board_canvas = null
 let keyboard_moves = [], keyboard_tag_move_count = null
 let hovered_move = null, hovered_move_count = null, hovered_board_canvas = null
 let the_showing_movenum_p = false
@@ -139,13 +139,14 @@ function update_body_color() {
 
 // set option "main_canvas_p" etc. for d(canvas, opts)
 function with_opts(d, accept_showing_until_tag_p, opts) {
-    return c => d(c, {
+    return c => (update_first_board_canvas(c), d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
+        first_board_p: is_first_board_canvas(c),
         show_until: showing_until(c, accept_showing_until_tag_p),
         hovered_move: if_hover_on(c, hovered_move),
         handle_mouse_on_goban: (canvas, coord2idx, read_only) => handle_mouse_on_goban(canvas, coord2idx, read_only, accept_showing_until_tag_p),
         ...(opts || {})
-    })
+    }))
 }
 
 const ignore_mouse = {handle_mouse_on_goban: ignore_mouse_on_goban}
@@ -165,6 +166,13 @@ function draw_wr_bar(canvas) {
     const wr_only = (current_board_type() === 'winrate_only')
     const large_bar = R.expand_winrate_bar || wr_only
     D.draw_winrate_bar(canvas, large_bar, wr_only)
+}
+
+function first_board_canvas() {return the_first_board_canvas}
+function is_first_board_canvas(canvas) {return canvas === the_first_board_canvas}
+function reset_first_board_canvas() {the_first_board_canvas = null}
+function update_first_board_canvas(canvas) {
+    !the_first_board_canvas && (the_first_board_canvas = canvas)
 }
 
 /////////////////////////////////////////////////
@@ -191,7 +199,7 @@ const double_boards_rule = {
 }
 
 function update_goban() {
-    D.reset_first_board_canvas()
+    reset_first_board_canvas()
     const btype = current_board_type()
     const f = (m, w, s) => (m(main_canvas),
                             (w || draw_wr_graph)(winrate_graph_canvas),
@@ -381,7 +389,7 @@ const [try_thumbnail, store_thumbnail_later] =
                      [store_thumbnail, thumbnail_deferring_millisec])
 
 function take_thumbnail() {
-    const canvas = D.first_board_canvas(); if (!canvas) {return}
+    const canvas = first_board_canvas(); if (!canvas) {return}
     let fired = false
     canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???

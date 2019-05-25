@@ -22,7 +22,7 @@ const EXPECTED_COLOR = 'rgba(0,0,255,0.3)', UNEXPECTED_COLOR = 'rgba(255,0,0,0.8
 const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
 
 // state
-let R = {}, target_move = null, first_board_canvas = null
+let R = {}, target_move = null
 function set_state(given_R) {R = given_R}  // fixme: ugly
 
 // util
@@ -130,7 +130,7 @@ function draw_goban_with_principal_variation(canvas, options) {
 // generic goban
 
 function draw_goban(canvas, stones, opts) {
-    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p,
+    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
            draw_endstate_p, draw_endstate_diff_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
@@ -140,12 +140,6 @@ function draw_goban(canvas, stones, opts) {
     const g = canvas.getContext("2d")
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
-    // call proc if first_board_canvas is not set yet
-    const if_first_board = proc => (first_board_canvas || proc())
-    const draw_progress_and_memorize_canvas = () => {
-        draw_progress(!main_canvas_p, margin, canvas, g)
-        first_board_canvas = canvas
-    }
     // clear
     g.strokeStyle = BLACK; g.fillStyle = goban_bg(true); g.lineWidth = 1
     edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
@@ -155,7 +149,7 @@ function draw_goban(canvas, stones, opts) {
     draw_grid(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(margin, canvas, g)
-    if_first_board(draw_progress_and_memorize_canvas)
+    first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
     mapping_to_winrate_bar &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
@@ -1088,6 +1082,4 @@ module.exports = {
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail,
     update_winrate_trail, clear_canvas, is_next_move, latest_move,
     target_move: () => target_move,
-    first_board_canvas: () => first_board_canvas,
-    reset_first_board_canvas: () => (first_board_canvas = null),
 }
