@@ -141,7 +141,7 @@ function with_opts(d, accept_showing_until_tag_p, opts) {
     return c => d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
         show_until: showing_until(c, accept_showing_until_tag_p),
-        hovered_move: if_hovered_on(c, hovered_move),
+        hovered_move: if_hover_on(c, hovered_move),
         play_here, hover_here, hover_off, ...(opts || {})
     })
 }
@@ -220,10 +220,10 @@ function update_goban() {
 }
 
 function selected_suggest(canvas) {
-    const m = keyboard_moves[0] || if_hovered_on(canvas, hovered_move)
+    const m = keyboard_moves[0] || if_hover_on(canvas, hovered_move)
     return R.suggest.find(h => h.move === m) || {}
 }
-function if_hovered_on(canvas, val) {return (canvas === hovered_canvas) && val}
+function if_hover_on(canvas, val) {return (canvas === hovered_canvas) && val}
 
 function current_board_type() {return temporary_board_type || R.board_type}
 
@@ -564,7 +564,7 @@ function set_showing_movenum_p(val) {
 }
 function showing_until(canvas, accept_showing_until_tag_p) {
     const tag_p = (!canvas || accept_showing_until_tag_p)
-    const hover_p = showing_movenum_p() && (!canvas || if_hovered_on(canvas, true))
+    const hover_p = showing_movenum_p() && (!canvas || if_hover_on(canvas, true))
     const key_p = showing_movenum_p() && !hovered_canvas &&
           (!canvas || accept_showing_until_tag_p)
     return (tag_p && keyboard_tag_move_count) || (hover_p && hovered_move_count) ||
