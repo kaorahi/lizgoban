@@ -143,13 +143,12 @@ function with_opts(d, accept_showing_until_tag_p, opts) {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
         show_until: showing_until(c, accept_showing_until_tag_p),
         hovered_move: if_hover_on(c, hovered_move),
-        play_here, hover_here, hover_off, add_mouse_handlers_with_record,
+        handle_mouse_on_goban: (canvas, coord2idx) => handle_mouse_on_goban(canvas, coord2idx, accept_showing_until_tag_p),
         ...(opts || {})
     })
 }
 
-const ignore_mouse =
-      {play_here: do_nothing, hover_here: do_nothing, hover_off: do_nothing}
+const ignore_mouse = {handle_mouse_on_goban: ignore_mouse_on_goban}
 const draw_main = with_opts(D.draw_main_goban, true)
 const draw_pv = with_opts(D.draw_goban_with_principal_variation, false, ignore_mouse)
 const draw_raw_gen = options => with_opts(D.draw_raw_goban, false, options)
@@ -320,6 +319,17 @@ main_canvas.addEventListener("wheel", e => {
 
 // When board is switched without mouse move,
 // we need to update hovered_move_count.
+
+function handle_mouse_on_goban(canvas, coord2idx, tag_clickable_p) {
+    const onmousedown = e =>
+        (!read_only && !R.attached &&
+         (play_here(e, coord2idx, tag_clickable_p), hover_off(canvas)))
+    const onmousemove = e => hover_here(e, coord2idx, canvas)
+    const onmouseenter = onmousemove
+    const onmouseleave = e => hover_off(canvas)
+    const handlers = {onmousedown, onmousemove, onmouseenter, onmouseleave}
+    add_mouse_handlers_with_record(canvas, handlers)
+}
 
 function add_mouse_handlers_with_record(canvas, handlers, hover_updater) {
     const with_record_gen = bool => f =>

@@ -167,14 +167,7 @@ function draw_goban(canvas, stones, opts) {
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
-    const onmousedown = e =>
-        (!read_only && !R.attached &&
-         (opts.play_here(e, coord2idx, opts.tag_clickable_p), opts.hover_off(canvas)))
-    const onmousemove = e => opts.hover_here(e, coord2idx, canvas)
-    const onmouseenter = onmousemove
-    const onmouseleave = e => opts.hover_off(canvas)
-    const handlers = {onmousedown, onmousemove, onmouseenter, onmouseleave}
-    opts.add_mouse_handlers_with_record(canvas, handlers)
+    opts.handle_mouse_on_goban(canvas, coord2idx)
 }
 
 function draw_grid(unit, idx2coord, g) {
