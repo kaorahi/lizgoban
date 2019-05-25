@@ -250,22 +250,25 @@ function play_here(e, coord2idx, tag_clickable_p) {
         (pass && main('pass'), main('play', move, !!another_board))
 }
 
+
 function hover_here(e, coord2idx, canvas) {
-    const old = hovered_move
-    hovered_move = mouse2move(e, coord2idx) || 'last_move'; hovered_canvas = canvas
-    set_hovered_move_count(hovered_move)
-    if (hovered_move != old) {update_goban()}
+    set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
 }
 
 function hover_on_graph(e, coord2sr) {
-    const old = hovered_move_count, [s, r] = coord2sr(...mouse2coord(e))
-    set_hovered_move_count_as(s)
-    if (hovered_move_count !== old) {update_goban()}
+    set_hovered(null, coord2sr(...mouse2coord(e))[0], null)
 }
 
-function hover_off(canvas) {
-    hovered_move = hovered_canvas = null; set_hovered_move_count(null)
-    update_goban()
+function hover_off(canvas) {set_hovered(null, null, null)}
+
+function set_hovered(move, count, canvas) {
+    const [old_move, old_count] = [hovered_move, hovered_move_count]
+    hovered_move = move
+    truep(count) ? set_hovered_move_count_as(count) :
+        set_hovered_move_count(hovered_move)
+    hovered_canvas = canvas
+    const changed = (hovered_move !== old_move) || (hovered_move_count !== old_count)
+    changed && update_goban()
 }
 
 function set_hovered_move_count(move) {
