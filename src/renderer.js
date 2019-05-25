@@ -512,7 +512,7 @@ document.onkeydown = e => {
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
     case "a": f(toggle_auto_analyze_visits); break;
-    case "q": R.trial && m('cut_sequence'); break;
+    case "q": R.trial ? m('cut_sequence') : wink(); break;
     }
 }
 
