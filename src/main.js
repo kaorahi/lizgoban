@@ -42,16 +42,24 @@ function toggle_debug_log() {debug_log(!!toggle_stored(debug_log_key))}
 update_debug_log()
 debug_log("option: " + JSON.stringify(option))
 
+// modules
+const {create_game} = require('./game.js')
+const P = require('./powered_goban.js')
+
+// state
+let game = create_game()
+let sequence = [game], sequence_cursor = 0
+let auto_analysis_signed_visits = Infinity, auto_play_count = 0
+const simple_ui = false
+let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
+let pausing = false, busy = false
+
 // renderer state
 // (cf.) "set_renderer_state" in powered_goban.js
 // (cf.) "the_endstate_handler" and "the_suggest_handler" in engine.js
 const stored_keys_for_renderer =
       ['lizzie_style', 'expand_winrate_bar', 'let_me_think', 'show_endstate']
-const R = {stones: aa_new(19, 19, () => ({})), bturn: true, ...renderer_preferences()}
-
-// modules
-const {create_game} = require('./game.js')
-const P = require('./powered_goban.js')
+const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
 P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
     // functions used in powered_goban.js
     render, update_state, update_ponder, show_suggest_p,
@@ -66,14 +74,6 @@ function is_busy() {return busy}
 function error_from_powered_goban(message) {
     dialog.showMessageBox({type: "error", buttons: ["OK"], message})
 }
-
-// state
-let game = create_game()
-let sequence = [game], sequence_cursor = 0
-let auto_analysis_signed_visits = Infinity, auto_play_count = 0
-const simple_ui = false
-let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
-let pausing = false, busy = false
 
 // sabaki
 let attached = false, has_sabaki = true
