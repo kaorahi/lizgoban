@@ -582,8 +582,8 @@ document.onkeydown = e => {
     case "p": m('pass'); break;
     case "Enter": play_it(e.shiftKey ? 5 : 1); break;
     case "`": f(play_it, false, true); break;
-    case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves : R.suggest[0].pv);
-        break;
+    case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves :
+                (R.suggest[0] || {}).pv); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
     case "a": f(toggle_auto_analyze_visits); break;
