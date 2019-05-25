@@ -138,21 +138,21 @@ function update_body_color() {
 // draw parts
 
 // set option "main_canvas_p" etc. for d(canvas, opts)
-function with_opts(d, accept_showing_until_tag_p, opts) {
+function with_opts(d, opts) {
     return c => (update_first_board_canvas(c), d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
         first_board_p: is_first_board_canvas(c),
         show_until: showing_until(c),
         hovered_move: if_hover_on(c, hovered_move),
-        handle_mouse_on_goban: (canvas, coord2idx, read_only) => handle_mouse_on_goban(canvas, coord2idx, read_only, accept_showing_until_tag_p),
+        handle_mouse_on_goban,
         ...(opts || {})
     }))
 }
 
 const ignore_mouse = {handle_mouse_on_goban: ignore_mouse_on_goban}
-const draw_main = with_opts(D.draw_main_goban, true)
-const draw_pv = with_opts(D.draw_goban_with_principal_variation, false, ignore_mouse)
-const draw_raw_gen = options => with_opts(D.draw_raw_goban, false, options)
+const draw_main = with_opts(D.draw_main_goban)
+const draw_pv = with_opts(D.draw_goban_with_principal_variation, ignore_mouse)
+const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
 const draw_raw_pure = draw_raw_gen({})
