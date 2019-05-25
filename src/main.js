@@ -692,8 +692,7 @@ function create_sequence_maybe(force) {
     const create_p = force || game.move_count < game.len()
     const empty_now = game.move_count === 0
     return !create_p ? false : empty_now ? (new_empty_board(), true) :
-        (backup_game(), game.shorten_to(game.move_count),
-         merge(game, {trial: true}), true)
+        (backup_game(), game.delete_future(), merge(game, {trial: true}), true)
 }
 
 function next_sequence() {previous_or_next_sequence(1, next_sequence_effect)}

@@ -34,7 +34,7 @@ function create_game(init_history, init_prop) {
         ref: mc => history[mc - 1] || {},
         ref_current: () => self.ref(self.move_count),
         array_until: mc => history.slice(0, mc),
-        shorten_to: mc => history.splice(mc),
+        delete_future: () => history.splice(self.move_count),
         last_move: () => (last(history) || {}).move,
         set_last_loaded_element: () => self.last_loaded_element = last(history),
         shallow_copy: () => create_game(history.slice(), merge({}, self, {
