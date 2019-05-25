@@ -29,7 +29,7 @@ const R = {
 }
 let temporary_board_type = null
 let keyboard_moves = [], keyboard_tag_move_count = null
-let hovered_move = null, hovered_move_count = null, hovered_canvas = null
+let hovered_move = null, hovered_move_count = null, hovered_board_canvas = null
 let the_showing_movenum_p = false
 let thumbnails = []
 
@@ -227,7 +227,7 @@ function selected_suggest(canvas) {
     const m = keyboard_moves[0] || if_hover_on(canvas, hovered_move)
     return R.suggest.find(h => h.move === m) || {}
 }
-function if_hover_on(canvas, val) {return (canvas === hovered_canvas) && val}
+function if_hover_on(canvas, val) {return (canvas === hovered_board_canvas) && val}
 
 function current_board_type() {return temporary_board_type || R.board_type}
 
@@ -270,7 +270,7 @@ function set_hovered(move, count, canvas) {
     hovered_move = move
     truep(count) ? set_hovered_move_count_as(count) :
         set_hovered_move_count(hovered_move)
-    hovered_canvas = canvas
+    hovered_board_canvas = canvas
     const changed = (hovered_move !== old_move) || (hovered_move_count !== old_count)
     changed && update_goban()
 }
@@ -330,7 +330,7 @@ function add_mouse_handlers_with_record(canvas, handlers, hover_updater) {
     canvas.lizgoban_hover_updater = hover_updater || canvas.onmousemove
 }
 function update_hover_maybe() {
-    const c = hovered_canvas || winrate_graph_canvas
+    const c = hovered_board_canvas || winrate_graph_canvas
     const updater = c.lizgoban_hover_updater || do_nothing
     const e = c.lizgoban_last_mouse_move_event
     e && updater(e)
@@ -592,7 +592,7 @@ function showing_until(canvas, accept_showing_until_tag_p) {
           (by_hover && showing_movenum_p() &&
            (hovered_move_count || R.move_count || Infinity))
     const accept_any = !canvas, hover_on_me = if_hover_on(canvas, true)
-    const hover_on_other_board = hovered_canvas && !hover_on_me
+    const hover_on_other_board = hovered_board_canvas && !hover_on_me
     return accept_any ? ret(true, true) :
         accept_showing_until_tag_p ? ret(true, !hover_on_other_board) :
         ret(false, hover_on_me)
