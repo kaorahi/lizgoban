@@ -167,12 +167,14 @@ function draw_goban(canvas, stones, opts) {
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     // mouse events
-    canvas.onmousedown = e =>
+    const onmousedown = e =>
         (!read_only && !R.attached &&
          (opts.play_here(e, coord2idx, opts.tag_clickable_p), opts.hover_off(canvas)))
-    canvas.onmousemove = canvas.onmouseenter =
-        e => opts.hover_here(e, coord2idx, canvas)
-    canvas.onmouseleave = e => opts.hover_off(canvas)
+    const onmousemove = e => opts.hover_here(e, coord2idx, canvas)
+    const onmouseenter = onmousemove
+    const onmouseleave = e => opts.hover_off(canvas)
+    const handlers = {onmousedown, onmousemove, onmouseenter, onmouseleave}
+    opts.add_mouse_handlers_with_record(canvas, handlers)
 }
 
 function draw_grid(unit, idx2coord, g) {
@@ -688,7 +690,8 @@ function puct_info(suggest) {
 // winrate graph
 
 function draw_winrate_graph(canvas, show_until, goto_move_count,
-                            hover_on_graph, hover_off, unset_busy) {
+                            hover_on_graph, hover_off, unset_busy,
+                            add_mouse_handlers_with_record) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
     const smax = Math.max(R.history_length, 1)
@@ -708,12 +711,16 @@ function draw_winrate_graph(canvas, show_until, goto_move_count,
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_score(sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
+    // mouse events
     const goto_here = e =>
           !R.attached && winrate_graph_goto(e, coord2sr, goto_move_count)
     const hover_here = e => hover_on_graph(e, coord2sr, canvas)
-    canvas.onmousedown = goto_here
-    canvas.onmousemove = e => (e.buttons === 1) ? goto_here(e) : hover_here(e)
-    canvas.onmouseup = canvas.onmouseleave = e => (hover_off(), unset_busy())
+    const onmousedown = goto_here
+    const onmousemove = e => (e.buttons === 1) ? goto_here(e) : hover_here(e)
+    const onmouseup = unset_busy
+    const onmouseleave = e => (hover_off(), unset_busy())
+    const handlers = {onmousedown, onmousemove, onmouseup, onmouseleave}
+    add_mouse_handlers_with_record(canvas, handlers, hover_here)
 }
 
 function draw_winrate_graph_frame(w, h, tics, g) {

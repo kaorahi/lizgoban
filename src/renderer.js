@@ -143,7 +143,8 @@ function with_opts(d, accept_showing_until_tag_p, opts) {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
         show_until: showing_until(c, accept_showing_until_tag_p),
         hovered_move: if_hover_on(c, hovered_move),
-        play_here, hover_here, hover_off, ...(opts || {})
+        play_here, hover_here, hover_off, add_mouse_handlers_with_record,
+        ...(opts || {})
     })
 }
 
@@ -161,7 +162,8 @@ function draw_wr_graph(canvas) {
     const unset_busy = () => main('unset_busy')
     const goto_move_count = count => main('busy', 'goto_move_count', count)
     D.draw_winrate_graph(canvas, showing_until(), goto_move_count,
-                         hover_on_graph, hover_off, unset_busy)
+                         hover_on_graph, hover_off, unset_busy,
+                         add_mouse_handlers_with_record)
 }
 
 function draw_wr_bar(canvas) {
@@ -257,7 +259,7 @@ function hover_here(e, coord2idx, canvas) {
     set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
 }
 
-function hover_on_graph(e, coord2sr) {
+function hover_on_graph(e, coord2sr, canvas) {
     set_hovered(null, coord2sr(...mouse2coord(e))[0], null)
 }
 
@@ -315,6 +317,24 @@ function duplicate_if(x) {x && main('duplicate_sequence')}
 main_canvas.addEventListener("wheel", e => {
     (e.deltaY !== 0) && (e.preventDefault(), main(e.deltaY < 0 ? 'undo' : 'redo'))
 })
+
+// When board is switched without mouse move,
+// we need to update hovered_move_count.
+
+function add_mouse_handlers_with_record(canvas, handlers, hover_updater) {
+    const with_record_gen = bool => f =>
+          e => (f(e), (canvas.lizgoban_last_mouse_move_event = bool && e))
+    const with_record = with_record_gen(true), with_unrecord = with_record_gen(false)
+    const with_it = {onmousemove: with_record, onmouseleave: with_unrecord}
+    each_key_value(handlers, (k, f) => (canvas[k] = (with_it[k] || identity)(f)))
+    canvas.lizgoban_hover_updater = hover_updater || canvas.onmousemove
+}
+function update_hover_maybe() {
+    const c = hovered_canvas || winrate_graph_canvas
+    const updater = c.lizgoban_hover_updater || do_nothing
+    const e = c.lizgoban_last_mouse_move_event
+    e && updater(e)
+}
 
 /////////////////////////////////////////////////
 // thmubnails
@@ -563,7 +583,9 @@ function set_keyboard_tag_maybe(key) {
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_movenum_p() {return the_showing_movenum_p}
-function set_showing_movenum_p(val) {the_showing_movenum_p = val; update_goban()}
+function set_showing_movenum_p(val) {
+    the_showing_movenum_p = val; val && update_hover_maybe(); update_goban()
+}
 function showing_until(canvas, accept_showing_until_tag_p) {
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||
