@@ -630,10 +630,10 @@ function showing_until(canvas, accept_showing_until_tag_p) {
           (by_hover && showing_movenum_p() &&
            (hovered_move_count || R.move_count || Infinity))
     const accept_any = !canvas, hover_on_me = if_hover_on(canvas, true)
-    const hover_on_other_board = hovered_board_canvas && !hover_on_me
-    return accept_any ? ret(true, true) :
-        accept_showing_until_tag_p ? ret(true, !hover_on_other_board) :
-        ret(false, hover_on_me)
+    const hover_on_any_board = !!hovered_board_canvas
+    const i_am_first_board = is_first_board_canvas(canvas)
+    const my_duty_p = hover_on_me || (!hover_on_any_board && i_am_first_board)
+    return accept_any ? ret(true, true) : ret(accept_showing_until_tag_p, my_duty_p)
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
