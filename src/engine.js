@@ -289,7 +289,7 @@ function create_leelaz () {
 
     let supported = {}
     const check_supported = (feature, cmd) => {
-        try_send_to_leelaz(cmd, ok => {supported[feature] = ok; start_analysis()})
+        try_send_to_leelaz(cmd, ok => {supported[feature] = ok; update()})
         send_to_leelaz('name')  // relax (stop analysis)
     }
     const is_supported = feature => supported[feature]
