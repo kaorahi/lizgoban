@@ -14,6 +14,7 @@ const option = {
     minimum_auto_restart_millisec: 5000,
     endstate_leelaz: null,
     weight_dir: undefined,
+    shortcut: null,
 }
 process.argv.forEach((x, i, a) => (x === "-j") && Object.assign(option, JSON.parse(a[i + 1])))
 
@@ -368,7 +369,8 @@ function menu_template(win) {
     const help_menu = menu('Help', [
         item('Help', undefined, help),
     ])
-    return [file_menu, edit_menu, view_menu, tool_menu, debug_menu, help_menu]
+    return [file_menu, edit_menu, view_menu, tool_menu,
+            ...shortcut_menu_maybe(menu, item, win), debug_menu, help_menu]
 }
 
 function board_type_menu_item(label, type, win) {
@@ -384,6 +386,25 @@ function store_toggler_menu_item(label, key, accelerator, on_click) {
 
 function toggle_stored(key) {
     const val = !get_stored(key); set_stored(key, val); update_state(); return val
+}
+
+function shortcut_menu_maybe(menu, item, win) {
+    // option.shortcut = [rule, rule, ...]
+    // rule = {label: "mixture", accelerator: "F2", board_type: "raw", weight_file: "/foo/035.gz", "weight_file_for_white": "/foo/157.gz"}
+    if (!option.shortcut) {return []}
+    const shortcut_menu_click = a => () => {
+        const {board_type, weight_file, weight_file_for_white} = a
+        const load = (switcher, file) => switcher(() => load_weight_file(file))
+        new_empty_board()
+        board_type && set_board_type(board_type, win)
+        weight_file && load(P.load_leelaz_for_black, weight_file)
+        weight_file_for_white ? load(P.load_leelaz_for_white, weight_file_for_white) :
+            P.unload_leelaz_for_white()
+        resume()
+    }
+    const shortcut_menu_item = a =>
+          item(a.label, a.accelerator, shortcut_menu_click(a), true)
+    return [menu('Shortcut', option.shortcut.map(shortcut_menu_item))]
 }
 
 /////////////////////////////////////////////////
