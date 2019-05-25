@@ -11,6 +11,7 @@ function create_leelaz () {
     // setup
 
     const pondering_delay_millisec = 0  // disabled (obsolete)
+    const endstate_delay_millisec = 20
 
     let leelaz_process, the_start_args, the_analyze_interval_centisec
     let the_minimum_suggested_moves, the_engine_log_line_length
@@ -105,7 +106,10 @@ function create_leelaz () {
 
     // util
     const leelaz = (s) => {log('queue>', s, true); send_to_queue(s)}
-    const update = () => {endstate(); start_analysis()}
+    const update_now = () => {endstate(); start_analysis()}
+    const [update_later] = deferred_procs([update_now, endstate_delay_millisec])
+    // avoid flicker of endstate
+    const update = () => is_supported('endstate') ? update_later() : update_now()
     const clear_leelaz_board = () => {leelaz("clear_board"); leelaz_previous_history = []; update()}
     const start_args = () => the_start_args
     const network_size = () => network_size_text
@@ -289,7 +293,7 @@ function create_leelaz () {
 
     let supported = {}
     const check_supported = (feature, cmd) => {
-        try_send_to_leelaz(cmd, ok => {supported[feature] = ok; update()})
+        try_send_to_leelaz(cmd, ok => {supported[feature] = ok; update_now()})
         send_to_leelaz('name')  // relax (stop analysis)
     }
     const is_supported = feature => supported[feature]
