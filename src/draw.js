@@ -25,6 +25,9 @@ const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"
 let R = {}, target_move = null, first_board_canvas = null
 function set_state(given_R) {R = given_R}  // fixme: ugly
 
+// util
+function f2s(z) {return truep(z) ? z.toFixed(1) : ''}
+
 /////////////////////////////////////////////////
 // various gobans
 

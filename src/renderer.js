@@ -45,7 +45,6 @@ function update()  {set_all_canvas_size(); update_goban()}
 
 function setq(x, val) {Q(x).textContent = val}
 function setdebug(x) {setq('#debug', JSON.stringify(x))}
-const f2s = (new Intl.NumberFormat(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})).format
 
 // for debug from Developper Tool
 function send_to_leelaz(cmd) {main('send_to_leelaz', cmd)}
