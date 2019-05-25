@@ -239,82 +239,7 @@ function double_boards_p() {return R.board_type.match(/^double_boards/)}
 /////////////////////////////////////////////////
 // mouse action
 
-function play_here(e, coord2idx, tag_clickable_p) {
-    const move = mouse2move(e, coord2idx); if (!move) {return}
-    const idx = move2idx(move)
-    const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
-    const goto_p = showing_movenum_p()
-    if (goto_p) {goto_idx_maybe(idx, another_board); return}
-    (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
-        (pass && main('pass'), main('play', move, !!another_board))
-}
-
-
-function hover_here(e, coord2idx, canvas) {
-    set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
-}
-
-function hover_on_graph(e, coord2sr, canvas) {
-    set_hovered(null, coord2sr(...mouse2coord(e))[0], null)
-}
-
-function hover_off(canvas) {set_hovered(null, null, null)}
-
-function set_hovered(move, count, canvas) {
-    const [old_move, old_count] = [hovered_move, hovered_move_count]
-    hovered_move = move
-    truep(count) ? set_hovered_move_count_as(count) :
-        set_hovered_move_count(hovered_move)
-    hovered_board_canvas = canvas
-    const changed = (hovered_move !== old_move) || (hovered_move_count !== old_count)
-    changed && update_goban()
-}
-
-function set_hovered_move_count(move) {
-    const count = move && (latest_move_count_for_idx(move2idx(move)) || R.move_count)
-    set_hovered_move_count_as(count)
-}
-
-function set_hovered_move_count_as(count) {
-    hovered_move_count = truep(count) && clip(count, 1, R.history_length)
-    update_showing_until()
-}
-
-function latest_move_count_for_idx(idx, tagged_stone_only) {
-    const s = idx && aa_ref(R.stones, ...idx)
-    const go = s && (!tagged_stone_only || (s.tag && s.stone))
-    // use !! for safety (truep('') is true)
-    return !!go && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
-}
-
-function mouse2coord(e) {
-    const bbox = e.target.getBoundingClientRect()
-    return [e.clientX - bbox.left, e.clientY - bbox.top]
-}
-
-function mouse2idx(e, coord2idx) {
-    const [i, j] = coord2idx(...mouse2coord(e))
-    return (0 <= i && i < board_size && 0 <= j && j < board_size) && [i, j]
-}
-
-function mouse2move(e, coord2idx) {
-    const idx = mouse2idx(e, coord2idx); return idx && idx2move(...idx)
-}
-
-function goto_idx_maybe(idx, another_board, tagged_stone_only) {
-    const mc = latest_move_count_for_idx(idx, tagged_stone_only)
-    return mc &&
-        (duplicate_if(another_board), main('goto_move_count', mc), wink(), true)
-}
-
-function duplicate_if(x) {x && main('duplicate_sequence')}
-
-main_canvas.addEventListener("wheel", e => {
-    (e.deltaY !== 0) && (e.preventDefault(), main(e.deltaY < 0 ? 'undo' : 'redo'))
-})
-
-// When board is switched without mouse move,
-// we need to update hovered_move_count.
+// on goban
 
 function handle_mouse_on_goban(canvas, coord2idx, tag_clickable_p) {
     const onmousedown = e =>
@@ -326,6 +251,37 @@ function handle_mouse_on_goban(canvas, coord2idx, tag_clickable_p) {
     const handlers = {onmousedown, onmousemove, onmouseenter, onmouseleave}
     add_mouse_handlers_with_record(canvas, handlers)
 }
+function ignore_mouse_on_goban(canvas) {
+    const ks = ['onmousedown', 'onmousemove', 'onmouseenter', 'onmouseleave']
+    ks.forEach(k => canvas[k] = do_nothing)
+}
+
+function play_here(e, coord2idx, tag_clickable_p) {
+    const move = mouse2move(e, coord2idx); if (!move) {return}
+    const idx = move2idx(move)
+    const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
+    const goto_p = showing_movenum_p()
+    if (goto_p) {goto_idx_maybe(idx, another_board); return}
+    (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
+        (pass && main('pass'), main('play', move, !!another_board))
+}
+function hover_here(e, coord2idx, canvas) {
+    set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
+}
+function hover_off(canvas) {set_hovered(null, null, null)}
+
+function goto_idx_maybe(idx, another_board, tagged_stone_only) {
+    const mc = latest_move_count_for_idx(idx, tagged_stone_only)
+    return mc &&
+        (duplicate_if(another_board), main('goto_move_count', mc), wink(), true)
+}
+function duplicate_if(x) {x && main('duplicate_sequence')}
+
+main_canvas.addEventListener("wheel", e => {
+    (e.deltaY !== 0) && (e.preventDefault(), main(e.deltaY < 0 ? 'undo' : 'redo'))
+})
+
+// on winrate graph
 
 function handle_mouse_on_winrate_graph(canvas, coord2sr) {
     // helpers
@@ -346,7 +302,14 @@ function winrate_graph_goto(e, coord2sr) {
     const [s, r] = coord2sr(...mouse2coord(e))
     s >= 0 && goto_move_count(clip(s, 0, R.history_length))
 }
+function hover_on_graph(e, coord2sr, canvas) {
+    set_hovered(null, coord2sr(...mouse2coord(e))[0], null)
+}
 
+// record mouse position
+
+// When board is switched without mouse move,
+// we need to re-calculate hovered_move_count.
 function add_mouse_handlers_with_record(canvas, handlers, hover_updater) {
     const with_record_gen = bool => f =>
           e => (f(e), (canvas.lizgoban_last_mouse_move_event = bool && e))
@@ -360,6 +323,47 @@ function update_hover_maybe() {
     const updater = c.lizgoban_hover_updater || do_nothing
     const e = c.lizgoban_last_mouse_move_event
     e && updater(e)
+}
+
+// hover
+
+function set_hovered(move, count, canvas) {
+    const [old_move, old_count] = [hovered_move, hovered_move_count]
+    hovered_move = move
+    truep(count) ? set_hovered_move_count_as(count) :
+        set_hovered_move_count(hovered_move)
+    hovered_board_canvas = canvas
+    const changed = (hovered_move !== old_move) || (hovered_move_count !== old_count)
+    changed && update_goban()
+}
+function set_hovered_move_count(move) {
+    const count = move && (latest_move_count_for_idx(move2idx(move)) || R.move_count)
+    set_hovered_move_count_as(count)
+}
+function set_hovered_move_count_as(count) {
+    hovered_move_count = truep(count) && clip(count, 1, R.history_length)
+    update_showing_until()
+}
+
+// util
+
+function latest_move_count_for_idx(idx, tagged_stone_only) {
+    const s = idx && aa_ref(R.stones, ...idx)
+    const go = s && (!tagged_stone_only || (s.tag && s.stone))
+    // use !! for safety (truep('') is true)
+    return !!go && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
+}
+
+function mouse2coord(e) {
+    const bbox = e.target.getBoundingClientRect()
+    return [e.clientX - bbox.left, e.clientY - bbox.top]
+}
+function mouse2idx(e, coord2idx) {
+    const [i, j] = coord2idx(...mouse2coord(e))
+    return (0 <= i && i < board_size && 0 <= j && j < board_size) && [i, j]
+}
+function mouse2move(e, coord2idx) {
+    const idx = mouse2idx(e, coord2idx); return idx && idx2move(...idx)
 }
 
 /////////////////////////////////////////////////
