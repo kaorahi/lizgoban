@@ -687,7 +687,8 @@ function puct_info(suggest) {
 /////////////////////////////////////////////////
 // winrate graph
 
-function draw_winrate_graph(canvas, show_until, goto_move_count, unset_busy) {
+function draw_winrate_graph(canvas, show_until, goto_move_count,
+                            hover_on_graph, hover_off, unset_busy) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
     const smax = Math.max(R.history_length, 1)
@@ -708,9 +709,10 @@ function draw_winrate_graph(canvas, show_until, goto_move_count, unset_busy) {
     draw_winrate_graph_curve(sr2coord, g)
     const goto_here = e =>
           !R.attached && winrate_graph_goto(e, coord2sr, goto_move_count)
+    const hover_here = e => hover_on_graph(e, coord2sr, canvas)
     canvas.onmousedown = goto_here
-    canvas.onmousemove = e => (e.buttons === 1) && goto_here(e)
-    canvas.onmouseup = e => unset_busy()
+    canvas.onmousemove = e => (e.buttons === 1) ? goto_here(e) : hover_here(e)
+    canvas.onmouseup = canvas.onmouseleave = e => (hover_off(), unset_busy())
 }
 
 function draw_winrate_graph_frame(w, h, tics, g) {

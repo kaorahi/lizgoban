@@ -159,7 +159,8 @@ const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
 function draw_wr_graph(canvas) {
     const unset_busy = () => main('unset_busy')
     const goto_move_count = count => main('busy', 'goto_move_count', count)
-    D.draw_winrate_graph(canvas, showing_until(), goto_move_count, unset_busy)
+    D.draw_winrate_graph(canvas, showing_until(), goto_move_count,
+                         hover_on_graph, hover_off, unset_busy)
 }
 
 function draw_wr_bar(canvas) {
@@ -252,17 +253,28 @@ function play_here(e, coord2idx, tag_clickable_p) {
 function hover_here(e, coord2idx, canvas) {
     const old = hovered_move
     hovered_move = mouse2move(e, coord2idx) || 'last_move'; hovered_canvas = canvas
-    set_hovered_move_count(showing_movenum_p() && hovered_move)
+    set_hovered_move_count(hovered_move)
     if (hovered_move != old) {update_goban()}
 }
 
+function hover_on_graph(e, coord2sr) {
+    const old = hovered_move_count, [s, r] = coord2sr(...mouse2coord(e))
+    set_hovered_move_count_as(s)
+    if (hovered_move_count !== old) {update_goban()}
+}
+
 function hover_off(canvas) {
-    hovered_move = undefined; set_hovered_move_count(null); update_goban()
+    hovered_move = hovered_canvas = null; set_hovered_move_count(null)
+    update_goban()
 }
 
 function set_hovered_move_count(move) {
-    hovered_move_count =
-        move && (latest_move_count_for_idx(move2idx(move)) || R.move_count)
+    const count = move && (latest_move_count_for_idx(move2idx(move)) || R.move_count)
+    set_hovered_move_count_as(count)
+}
+
+function set_hovered_move_count_as(count) {
+    hovered_move_count = truep(count) && clip(count, 1, R.history_length)
     update_showing_until()
 }
 
@@ -517,7 +529,7 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
-    reset_keyboard_tag(); set_hovered_move_count(null);
+    reset_keyboard_tag();
     (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
     case "c" : set_showing_movenum_p(false); return
@@ -547,17 +559,16 @@ function set_keyboard_tag_maybe(key) {
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_movenum_p() {return the_showing_movenum_p}
 function set_showing_movenum_p(val) {
-    the_showing_movenum_p = val; set_hovered_move_count(val && hovered_move)
-    R.pausing && R.move_count === 0 && update_goban()  // clean me
+    the_showing_movenum_p = val
+    R.pausing && update_goban()  // clean me
 }
 function showing_until(canvas, accept_showing_until_tag_p) {
     const tag_p = (!canvas || accept_showing_until_tag_p)
-    const hover_p = (!canvas || if_hovered_on(canvas, true))
-    const key_p = showing_movenum_p() && !hovered_move_count
-          && (!canvas || accept_showing_until_tag_p)
-    // ignore "*_count = 0" since it is useless and cannot happen
+    const hover_p = showing_movenum_p() && (!canvas || if_hovered_on(canvas, true))
+    const key_p = showing_movenum_p() && !hovered_canvas &&
+          (!canvas || accept_showing_until_tag_p)
     return (tag_p && keyboard_tag_move_count) || (hover_p && hovered_move_count) ||
-        (key_p && (R.move_count || Infinity))
+        (key_p && (hovered_move_count || R.move_count || Infinity))
 }
 function update_showing_until() {
     R.show_endstate && main('set_endstate_diff_from', showing_until())
