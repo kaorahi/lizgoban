@@ -84,7 +84,8 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 /////////////////////////////////////////////////
 // from main
 
-ipc.on('render', (e, h) => {
+ipc.on('render', (e, h, is_board_changed) => {
+    if (showing_until() && !is_board_changed) {return}  // for smooth reaction
     merge(R, h)
     setq('#move_count', R.move_count)
     setq('#history_length', ' (' + R.history_length + ')')
@@ -562,10 +563,7 @@ function set_keyboard_tag_maybe(key) {
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_movenum_p() {return the_showing_movenum_p}
-function set_showing_movenum_p(val) {
-    the_showing_movenum_p = val
-    R.pausing && update_goban()  // clean me
-}
+function set_showing_movenum_p(val) {the_showing_movenum_p = val; update_goban()}
 function showing_until(canvas, accept_showing_until_tag_p) {
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||

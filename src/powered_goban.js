@@ -103,7 +103,7 @@ function suggest_handler(h) {
     const cur = game.ref(game.move_count)
     game.move_count > 0 && ((cur.suggest = h.suggest), (cur.visits = h.visits))
     game.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
-    set_and_render(h); on_suggest()
+    set_and_render_maybe(h); on_suggest()
 }
 
 /////////////////////////////////////////////////
@@ -127,10 +127,12 @@ function set_renderer_state(...args) {
               progress_bturn, weight_info, network_size,
               previous_suggest, winrate_trail}, endstate_d_i)
 }
-function set_and_render(...args) {
+function set_and_render(...args) {set_and_render_gen(true, ...args)}
+function set_and_render_maybe(...args) {set_and_render_gen(false, ...args)}
+function set_and_render_gen(is_board_changed, ...args) {
     set_renderer_state(...args)
     const masked_R = merge({}, R, M.show_suggest_p() ? {} : {suggest: [], visits: null})
-    M.render(masked_R)
+    M.render(masked_R, is_board_changed)
 }
 
 /////////////////////////////////////////////////

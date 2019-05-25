@@ -58,7 +58,9 @@ P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
     auto_progress, is_auto_bturn, leelaz_weight_option_pos_in_args, is_busy,
     error_from_powered_goban,
 })
-function render(given_R) {renderer('render', given_R)}
+function render(given_R, is_board_changed) {
+    renderer('render', given_R, is_board_changed)
+}
 function is_auto_bturn() {return auto_bturn}
 function is_busy() {return busy}
 function error_from_powered_goban(message) {
