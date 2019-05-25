@@ -92,8 +92,10 @@ function board_handler(h) {
             z.endstate_sum = sum(R.endstate)
             z.hotness = sum_of_endstate_change(leelaz_move_count)
         }
-        add_endstate_to_stones(R.stones, R.endstate, update_p)
+        // need add_endstate_to_history before add_endstate_to_stones
+        // because update_endstate_diff depends on game.ref_current().endstate
         leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
+        add_endstate_to_stones(R.stones, R.endstate, update_p)
     }
     set_renderer_state(h)
     leelaz_for_endstate && endstate_setter(!!h.endstate)
