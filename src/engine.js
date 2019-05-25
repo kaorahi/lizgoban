@@ -92,12 +92,12 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history) => {
-        if (empty(history)) {clear_leelaz_board(); update_state([]); return}
+        if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
-        if (back > 0 || !empty(rest)) {update_state(history)}
+        if (back > 0 || !empty(rest)) {update_move_count(history)}
         leelaz_previous_history = shallow_copy_array(history)
     }
     const play1 = ({move, is_black}) => {leelaz('play ' + (is_black ? 'b ' : 'w ') + move)}
@@ -143,19 +143,19 @@ function create_leelaz () {
     const send_to_leelaz = cmd => {try_send_to_leelaz(cmd)}
     const try_send_to_leelaz = (cmd, on_response) => {
         // see stdout_reader for optional arg "on_response"
-        if (do_update_state(cmd)) {return}
+        if (do_update_move_count(cmd)) {return}
         const cmd_with_id = `${++last_command_id} ${cmd}`
         on_response && (on_response_for_id[last_command_id] = on_response)
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
     }
 
-    const update_state = history => {
+    const update_move_count = history => {
         const move_count = history.length, bturn = !(last(history) || {}).is_black
         const new_state = JSON.stringify({move_count, bturn})
-        leelaz(`lizgoban_update_state ${new_state}`); update()
+        leelaz(`lizgoban_set ${new_state}`); update()
     }
-    const do_update_state = cmd => {
-        const m = cmd.match(/lizgoban_update_state (.*$)/); if (!m) {return false}
+    const do_update_move_count = cmd => {
+        const m = cmd.match(/lizgoban_set (.*$)/); if (!m) {return false}
         const h = JSON.parse(m[1]); move_count = h.move_count; bturn = h.bturn
         send_from_queue(); return true
     }
