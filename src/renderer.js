@@ -545,7 +545,6 @@ document.onkeydown = e => {
         busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
     case "ArrowRight": case "ArrowDown":
         busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
-    case "Backspace": case "Delete": busy('explicit_undo'); break;
     case ";": busy('let_me_think_next', R.board_type); break;
     }
     if (e.repeat) {return}
@@ -586,6 +585,7 @@ document.onkeydown = e => {
                 (R.suggest[0] || {}).pv); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
+    case "Backspace": case "Delete": m('explicit_undo'); break;
     case "a": f(toggle_auto_analyze_visits); break;
     case "q": R.trial ? m('cut_sequence') : wink(); break;
     }
