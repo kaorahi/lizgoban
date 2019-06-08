@@ -712,8 +712,8 @@ function set_let_me_think(val) {
 function let_me_think_p() {return store.get('let_me_think')}
 
 function let_me_think_next(board_type) {
-    const stay = (board_type === let_me_think_board_type.first_half || !redoable())
-    stay || redo()
+    const stay = (board_type === let_me_think_board_type.first_half)
+    stay || (redoable() ? redo() : play_best())
     let_me_think_set_board_type_for(stay ? 'latter_half' : 'first_half')
 }
 
