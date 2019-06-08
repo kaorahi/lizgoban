@@ -299,6 +299,7 @@ function menu_template(win) {
         item('New window', 'CmdOrCtrl+Shift+N',
              (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
                                             'variation' : 'suggest')),
+        sep,
         item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
