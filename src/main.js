@@ -347,12 +347,11 @@ function menu_template(win) {
                  false, R.show_endstate, true))
     ])
     const tool_menu = menu('Tool', [
-        has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
-                       accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('Self play', 'Shift+P', ask_sec(false), true),
         item('...Skip to next', 'CmdOrCtrl+E', skip_auto,
              true, auto_analyzing_or_playing(), true),
+        sep,
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
          type: 'checkbox', checked: lz_white,
          click: stop_auto_and(lz_white ?
@@ -362,7 +361,10 @@ function menu_template(win) {
                  P.swap_leelaz_for_black_and_white) :
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
+        sep,
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
+        has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
+                       accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         item('Info', 'CmdOrCtrl+I', info),
     ])
     const debug_menu = menu('Debug', [
