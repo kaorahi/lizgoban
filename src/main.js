@@ -4,13 +4,16 @@
 // example:
 // npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 
+const PATH = require('path')
+const default_path_for = name => PATH.join(__dirname, '..', 'external', name)
+
 const option = {
-    leelaz_command: __dirname + "/../external/leelaz",
-    leelaz_args: ["-g", "-w", __dirname + "/../external/network.gz"],
+    leelaz_command: default_path_for('leelaz'),
+    leelaz_args: ["-g", "-w", default_path_for('network.gz')],
     analyze_interval_centisec: 10,
     minimum_suggested_moves: 30,
     engine_log_line_length: 500,
-    sabaki_command: __dirname + '/../external/sabaki',
+    sabaki_command: default_path_for('sabaki'),
     minimum_auto_restart_millisec: 5000,
     endstate_leelaz: null,
     weight_dir: undefined,
@@ -28,7 +31,7 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 // util
 require('./util.js').use(); require('./coord.js').use()
 function safely(proc, ...args) {try {return proc(...args)} catch(e) {return null}}
-const PATH = require('path'), fs = require('fs'), TMP = require('tmp')
+const fs = require('fs'), TMP = require('tmp')
 const store = new (safely(require, 'electron-store') ||
                    // try old name for backward compatibility
                    safely(require, 'electron-config') ||
