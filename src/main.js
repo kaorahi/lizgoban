@@ -89,12 +89,12 @@ fs.access(option.sabaki_command, null,
 
 // app
 
-app.on('ready', () => {
-    P.start_leelaz(leelaz_start_args, option.endstate_leelaz)
-    update_menu(); new_window('double_boards')
-})
+app.on('ready', () => {start_leelaz(); new_window('double_boards')})
 app.on('window-all-closed', app.quit)
-app.on('quit', P.kill_all_leelaz)
+app.on('quit', kill_all_leelaz)
+
+function start_leelaz() {P.start_leelaz(leelaz_start_args, option.endstate_leelaz); update_menu()}
+function kill_all_leelaz() {P.kill_all_leelaz()}
 
 // window
 
