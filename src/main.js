@@ -231,12 +231,12 @@ function do_play(move, is_black, tag) {
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
     is_last_move_pass() && is_pass(move) ? game.pop() :
         game.push({move, is_black, tag, move_count: game.len() + 1})
-    P.set_board(game, Infinity)
+    P.set_board(game)
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (game.pop(), P.set_board(game, Infinity))
+    const delete_last = () => (game.pop(), P.set_board(game))
     game.move_count < game.len() ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'

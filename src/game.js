@@ -31,6 +31,9 @@ function create_game(init_history, init_prop) {
         sgf_file: "", sgf_str: "", id: new_game_id(),
         trial: false, last_loaded_element: null
     }
+    const update_move_count_after = f => (...args) => {
+        const ret = f(...args); self.move_count = self.len(); return ret
+    }
     const methods = {
         // mc = move_count (0: empty board, 1: first move, ...)
         len: () => history.length,
@@ -57,9 +60,11 @@ function create_game(init_history, init_prop) {
         new_tag_maybe: (new_sequence_p, move_count) =>
             new_tag_maybe_for_game(self, new_sequence_p, move_count),
         add_or_remove_tag: () => add_or_remove_tag_on_game(self),
+        push: update_move_count_after(z => history.push(z)),
+        pop: update_move_count_after(() => history.pop()),
     }
     const array_methods =
-          aa2hash(['push', 'pop', 'map', 'forEach', 'slice']
+          aa2hash(['map', 'forEach', 'slice']
                   .map(meth => [meth, (...args) => history[meth](...args)]))
     return merge(self, prop, methods, array_methods)
 }
