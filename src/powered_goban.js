@@ -24,9 +24,9 @@ let R, on_change, on_suggest, M
 function initialize(...args) {[R, {on_change, on_suggest}, M] = args}  // fixme: ugly
 
 function set_board(given_game, move_count) {
-    // use entire history if move_count is omitted
+    // use game.move_count if move_count is omitted
     game = given_game
-    const hist = game.array_until(move_count)
+    const hist = game.array_until(truep(move_count) ? move_count : game.move_count)
     each_leelaz(z => z.set_board(hist))
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black

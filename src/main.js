@@ -231,12 +231,12 @@ function do_play(move, is_black, tag) {
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
     is_last_move_pass() && is_pass(move) ? game.pop() :
         game.push({move, is_black, tag, move_count: game.len() + 1})
-    P.set_board(game)
+    P.set_board(game, Infinity)
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (game.pop(), P.set_board(game))
+    const delete_last = () => (game.pop(), P.set_board(game, Infinity))
     game.move_count < game.len() ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
@@ -748,7 +748,7 @@ function uncut_sequence() {
 
 function duplicate_sequence(until_current_move_p) {
     const del_future = () => {
-        game.delete_future(); P.set_board(game, game.move_count)
+        game.delete_future(); P.set_board(game)
         P.update_info_in_stones()  // remove next_move mark
     }
     game.is_empty() ? new_empty_board() :
@@ -774,7 +774,7 @@ function insert_sequence(new_game, switch_to, before) {
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    goto_nth_sequence(wrapped_n); P.set_board(game, game.move_count); update_state()
+    goto_nth_sequence(wrapped_n); P.set_board(game); update_state()
 }
 
 function goto_nth_sequence(n) {game = sequence[sequence_cursor = n]}
@@ -939,7 +939,7 @@ function load_sabaki_gametree_on_new_game(gametree) {
 
 function load_sabaki_gametree(gametree, index) {
     if (!game.load_sabaki_gametree(gametree, index)) {return}
-    P.set_board(game, game.move_count)
+    P.set_board(game)
     // force update of board color when C-c and C-v are typed successively
     update_state()
 }
