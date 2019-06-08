@@ -409,8 +409,20 @@ function shortcut_menu_maybe(menu, item, win) {
         resume()
     }
     const shortcut_menu_item = a =>
+          a.option ? shortcut2_menu_item(a, item) :
           item(a.label, a.accelerator, shortcut_menu_click(a), true)
     return [menu('Shortcut', option.shortcut.map(shortcut_menu_item))]
+}
+
+function shortcut2_menu_item(rule, item) {
+    // rule = {label: "foo", accelerator: "F1", new_empty_board: true, option: {...}}
+    // example:
+    // npx electron src -j '{"shortcut": [{"label": "weight1", "accelerator": "F1", "option": {"leelaz_args": ["-g", "-w", "/foo/weight1.gz"]}}, {"label": "weight2", "accelerator": "F2", "option": {"leelaz_args": ["-g", "-w", "/foo/weight2.gz"]}}]}'
+    const set_and_restart = rule => {
+        rule.new_empty_board && new_empty_board()
+        merge(option, rule.option); kill_all_leelaz(); start_leelaz()
+    }
+    return item(rule.label, rule.accelerator, () => set_and_restart(rule), true)
 }
 
 /////////////////////////////////////////////////
