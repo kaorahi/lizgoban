@@ -236,7 +236,7 @@ function do_play(move, is_black, tag) {
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (game.pop(), P.set_board(game))
+    const delete_last = () => (game.pop(), P.set_board(game), update_state())
     game.move_count < game.len() ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
