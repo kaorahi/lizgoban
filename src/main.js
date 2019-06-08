@@ -4,18 +4,34 @@
 // example:
 // npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 
+const os = require('os');
+
+let generalDir = function() {
+    if (os.platform() === 'win32') {
+        leelaz_command_gen = 'D:\\AI\\leela-zero\\leelaz.exe';
+        leelaz_args_gen = ['-g', '-w', 'D:\\AI\\Weights\\LeelaZero\\LZ_227.gz'];
+        sabaki_command_gen = 'C:\\Program Files\\Sabaki\\Sabaki.exe';
+    } else {
+        leelaz_command_gen = __dirname + '/../external/leelaz';
+        leelaz_args_gen = ['-g', '-w', __dirname + '/../external/network.gz'];
+        sabaki_command_gen = __dirname + '/../external/sabaki';
+    }
+};
+
+generalDir();
+
 const option = {
-    leelaz_command: __dirname + "/../external/leelaz",
-    leelaz_args: ["-g", "-w", __dirname + "/../external/network.gz"],
+    leelaz_command: leelaz_command_gen,
+    leelaz_args: leelaz_args_gen,
     analyze_interval_centisec: 10,
     minimum_suggested_moves: 30,
     engine_log_line_length: 500,
-    sabaki_command: __dirname + '/../external/sabaki',
+    sabaki_command: sabaki_command_gen,
     minimum_auto_restart_millisec: 5000,
     endstate_leelaz: null,
     weight_dir: undefined,
-    shortcut: null,
-}
+    shortcut: null
+};
 process.argv.forEach((x, i, a) => (x === "-j") && Object.assign(option, JSON.parse(a[i + 1])))
 
 /////////////////////////////////////////////////
