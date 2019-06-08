@@ -112,12 +112,11 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     game.set_last_loaded_element()
     const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
+    game.move_count = history_from_sabaki_nodes(nodes_until_index).length
     const player_name = bw => (nodes_until_index[0][bw] || [""])[0]
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
                  trial: false})
-    const history_until_index = history_from_sabaki_nodes(nodes_until_index)
-    const move_count = history_until_index.length
-    return move_count
+    return true
 }
 
 function history_from_sabaki_nodes(nodes) {

@@ -938,9 +938,8 @@ function load_sabaki_gametree_on_new_game(gametree) {
 }
 
 function load_sabaki_gametree(gametree, index) {
-    const move_count = game.load_sabaki_gametree(gametree, index)
-    if (!truep(move_count)) {return}
-    P.set_board(game, move_count)
+    if (!game.load_sabaki_gametree(gametree, index)) {return}
+    P.set_board(game, game.move_count)
     // force update of board color when C-c and C-v are typed successively
     update_state()
 }
