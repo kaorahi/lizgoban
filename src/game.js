@@ -59,7 +59,7 @@ function create_game(init_history, init_prop) {
         add_or_remove_tag: () => add_or_remove_tag_on_game(self),
     }
     const array_methods =
-          aa2hash(['push', 'pop', 'map', 'forEach', 'slice', 'splice']
+          aa2hash(['push', 'pop', 'map', 'forEach', 'slice']
                   .map(meth => [meth, (...args) => history[meth](...args)]))
     return merge(self, prop, methods, array_methods)
 }
