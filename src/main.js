@@ -291,7 +291,8 @@ function menu_template(win) {
     const sep = {type: 'separator'}
     const insert_if = (pred, ...items) => pred ? items : []
     const lz_white = P.leelaz_for_white_p()
-    const dup = until_current_move_p => () => duplicate_sequence(until_current_move_p)
+    const dup = until_current_move_p =>
+          () => duplicate_sequence(until_current_move_p, true)
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
         item('New handicap game', undefined, ask_handicap_stones, true),
@@ -746,13 +747,13 @@ function uncut_sequence() {
         insert_sequence(pop_deleted_sequence(), true, insert_before)
 }
 
-function duplicate_sequence(until_current_move_p) {
+function duplicate_sequence(until_current_move_p, explicit) {
     const del_future = () => {
         game.delete_future(); P.set_board(game)
         P.update_info_in_stones()  // remove next_move mark
     }
     game.is_empty() ? new_empty_board() :
-        (backup_game(), game.set_last_loaded_element(), (game.trial = true),
+        (backup_game(), game.set_last_loaded_element(), (game.trial = !explicit),
          (until_current_move_p && del_future()),
          update_state())
 }
