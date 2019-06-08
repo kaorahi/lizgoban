@@ -54,7 +54,6 @@ function create_game(init_history, init_prop) {
             history.splice(com, Infinity, ...new_history.slice(com))
         },
         to_sgf: () => game_to_sgf(self),
-        import_sgf: sgf_str => import_sgf_to_game(sgf_str, self),
         load_sabaki_gametree: (gametree, index) =>
             load_sabaki_gametree_to_game(gametree, index, self),
         new_tag_maybe: (new_sequence_p, move_count) =>
@@ -80,10 +79,14 @@ function game_to_sgf(game) {
         ')'
 }
 
-function import_sgf_to_game(sgf_str, game) {
-    const clipped = clip_sgf(sgf_str)
-    game.load_sabaki_gametree(parse_sgf(clipped)[0])
-    game.sgf_str = clipped
+function create_game_from_sgf(sgf_str) {
+    try {return create_game_from_sgf_unsafe(sgf_str)} catch (e) {return false}
+}
+function create_game_from_sgf_unsafe(sgf_str) {
+    const clipped_sgf = clip_sgf(sgf_str), gametree = parse_sgf(clipped_sgf)[0]
+    const game = create_game()
+    game.load_sabaki_gametree(gametree); game.sgf_str = clipped_sgf
+    return game
 }
 
 function parse_sgf(sgf_str) {
@@ -167,4 +170,4 @@ function add_or_remove_tag_on_game(game) {
 /////////////////////////////////////////////////
 // exports
 
-module.exports = {create_game}
+module.exports = {create_game, create_game_from_sgf}

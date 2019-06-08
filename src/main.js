@@ -46,7 +46,7 @@ update_debug_log()
 debug_log("option: " + JSON.stringify(option))
 
 // modules
-const {create_game} = require('./game.js')
+const {create_game, create_game_from_sgf} = require('./game.js')
 const P = require('./powered_goban.js')
 
 // state
@@ -930,9 +930,9 @@ function save_sgf() {
 }
 
 function read_sgf(sgf_str) {
-    try {backup_game(); game.import_sgf(sgf_str); P.set_board(game)}
-    catch (e) {dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"')}
-    update_state()
+    const new_game = create_game_from_sgf(sgf_str)
+    new_game ? backup_and_replace_game(new_game) :
+        dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"')
 }
 
 /////////////////////////////////////////////////
