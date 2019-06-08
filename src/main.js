@@ -711,9 +711,9 @@ function let_me_think_next(board_type) {
 
 function new_empty_board() {insert_sequence(create_game(), true)}
 
-function backup_game() {
-    if (game.is_empty()) {return}
-    insert_sequence(game.shallow_copy())
+function backup_game() {backup_and_replace_game(game.shallow_copy())}
+function backup_and_replace_game(new_game) {
+    game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game, true)
 }
 
 function create_sequence_maybe(force) {
@@ -759,17 +759,22 @@ function duplicate_sequence(until_current_move_p) {
 
 function delete_sequence() {
     sequence.length === 1 && (sequence[1] = create_game())
-    sequence.splice(sequence_cursor, 1)
+    delete_sequence_internal()
     const nextp = (sequence_cursor === 0)
     switch_to_nth_sequence(Math.max(sequence_cursor - 1, 0))
     nextp ? next_sequence_effect() : previous_sequence_effect()
 }
+function delete_sequence_internal() {sequence.splice(sequence_cursor, 1)}
 
 function insert_sequence(new_game, switch_to, before) {
     if (!new_game) {return}
     const f = switch_to ? switch_to_nth_sequence : goto_nth_sequence
     const n = sequence_cursor + (before ? 0 : 1)
     sequence.splice(n, 0, new_game); f(n); next_sequence_effect()
+}
+function replace_sequence(new_game) {
+    sequence.splice(sequence_cursor, 1, new_game)
+    switch_to_nth_sequence(sequence_cursor)
 }
 
 function switch_to_nth_sequence(n) {
