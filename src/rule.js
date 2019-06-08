@@ -29,7 +29,7 @@ function remove_dead(ij, is_black, stones) {
 }
 
 function search_for_liberty(state) {
-    return around(state.hope.pop()).find(idx => check_if_liberty(idx, state))
+    return around(state.hope.shift()).find(idx => check_if_liberty(idx, state))
 }
 
 function check_if_liberty(ij, state) {
