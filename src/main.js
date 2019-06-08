@@ -351,6 +351,8 @@ function menu_template(win) {
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('Self play', 'Shift+P', ask_sec(false), true),
+        item('...Skip to next', 'CmdOrCtrl+E', skip_auto,
+             true, auto_analyzing_or_playing(), true),
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
          type: 'checkbox', checked: lz_white,
          click: stop_auto_and(lz_white ?
@@ -412,15 +414,19 @@ function shortcut_menu_maybe(menu, item, win) {
 // another source of change: auto-analyze / auto-play
 
 // common
-function try_auto() {auto_playing() ? try_auto_play() : try_auto_analyze()}
+function try_auto(force_next) {
+    auto_playing() ? try_auto_play(force_next) :
+        auto_analyzing() ? try_auto_analyze(force_next) : do_nothing()}
+function skip_auto() {try_auto(true)}
 function auto_progress() {
     return Math.max(auto_analysis_progress(), auto_play_progress())
 }
 function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
+function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing()}
 
 // auto-analyze (redo after given visits)
-function try_auto_analyze() {
-    const done = auto_analysis_progress() >= 1
+function try_auto_analyze(force_next) {
+    const done = force_next || (auto_analysis_progress() >= 1)
     const next = (pred, proc) => pred() ?
           proc() : (pause(), stop_auto_analyze(), update_ui())
     auto_bturn = xor(R.bturn, done)
@@ -458,7 +464,8 @@ function auto_play(sec, explicitly_playing_best) {
     auto_play_sec = sec || -1; stop_auto_analyze()
     update_auto_play_time(); update_let_me_think(); resume(); update_ui()
 }
-function try_auto_play() {
+function try_auto_play(force_next) {
+    force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() && (auto_replaying ? try_auto_replay() : try_play_best())
     update_let_me_think(true)
 }
@@ -842,7 +849,7 @@ function availability() {
         bturn: R.bturn,
         wturn: !R.bturn,
         auto_analyze: !game.is_empty(),
-        start_auto_analyze: !auto_analyzing() && !auto_playing(),
+        start_auto_analyze: !auto_analyzing_or_playing(),
         stop_auto: auto_progress() >= 0,
         simple_ui: simple_ui, normal_ui: !simple_ui,
         trial: game.trial,
