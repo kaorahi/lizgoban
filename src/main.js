@@ -43,7 +43,6 @@ const debug_log_key = 'debug_log'
 function update_debug_log() {debug_log(!!store.get(debug_log_key))}
 function toggle_debug_log() {debug_log(!!toggle_stored(debug_log_key))}
 update_debug_log()
-debug_log("option: " + JSON.stringify(option))
 
 // modules
 const {create_game, create_game_from_sgf} = require('./game.js')
@@ -93,7 +92,10 @@ app.on('ready', () => {start_leelaz(); new_window('double_boards')})
 app.on('window-all-closed', app.quit)
 app.on('quit', kill_all_leelaz)
 
-function start_leelaz() {P.start_leelaz(leelaz_start_args, option.endstate_leelaz); update_menu()}
+function start_leelaz() {
+    debug_log("option: " + JSON.stringify(option))
+    P.start_leelaz(leelaz_start_args, option.endstate_leelaz); update_menu()
+}
 function kill_all_leelaz() {P.kill_all_leelaz()}
 
 // window
@@ -396,13 +398,25 @@ function toggle_stored(key) {
 
 function shortcut_menu_maybe(menu, item, win) {
     // option.shortcut = [rule, rule, ...]
-    // rule = {label: "mixture", accelerator: "F2", board_type: "raw", weight_file: "/foo/035.gz", "weight_file_for_white": "/foo/157.gz"}
+    // rule = {label: "mixture", accelerator: "F2", board_type: "raw",
+    //         empty_board: true, leelaz_command: "/foo/leelaz",
+    //         leelaz_args: ["-g", "-w", "/foo/227.gz"],
+    //         weight_file: "/foo/035.gz", "weight_file_for_white": "/foo/157.gz"}
     if (!option.shortcut) {return []}
-    const shortcut_menu_click = a => () => {
-        const {board_type, weight_file, weight_file_for_white} = a
+    const shortcut_menu_click = arg => () => {
+        // merge arg.option for backward compatibility to 1a88dd40
+        const a = merge({}, arg, arg.option || {})
+        const {empty_board, board_type, weight_file, weight_file_for_white} = a
+        const {leelaz_command, leelaz_args} = merge({}, option, a)
+        const need_restart = a.leelaz_command || a.leelaz_args
+        const merge_and_restart = () => {
+            P.unload_leelaz_for_white(); kill_all_leelaz();
+            merge(option, {leelaz_command, leelaz_args}); start_leelaz(); on_restart()
+        }
         const load = (switcher, file) => switcher(() => load_weight_file(file))
-        new_empty_board()
+        empty_board && !game.is_empty() && new_empty_board()
         board_type && set_board_type(board_type, win)
+        need_restart && merge_and_restart()
         weight_file && load(P.load_leelaz_for_black, weight_file)
         weight_file_for_white ? load(P.load_leelaz_for_white, weight_file_for_white) :
             P.unload_leelaz_for_white()
@@ -885,9 +899,8 @@ function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 
 // restart
 function restart() {restart_with_args()}
-function restart_with_args(h) {
-    P.restart(h); switch_to_nth_sequence(sequence_cursor); stop_auto()
-}
+function restart_with_args(h) {P.restart(h); on_restart()}
+function on_restart() {switch_to_nth_sequence(sequence_cursor); stop_auto()}
 let last_restart_time = 0
 function auto_restart() {
     const buttons = ["retry", "load weight file", "save SGF and quit", "quit"]
