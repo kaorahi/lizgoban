@@ -52,6 +52,16 @@ And more...
 
     npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 
+or
+
+    npx electron src -c config.json
+
+with the file config.json:
+
+    {"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}
+
+The latter style will be preferred in Windows.
+
 ### To enable endstate estimation (experimental):
 
 This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zero/leela-zero/issues/2331).
@@ -60,15 +70,18 @@ This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zer
 
 1. Build [a modified leelaz](https://github.com/kaorahi/leela-zero/tree/endstate_map) and rename "leelaz" to "leelaz_endstate".
 2. Download [the weight file](https://drive.google.com/open?id=1ZotPAUG0zz-y7K-e934AHyYF8_StWmyN) and rename it to "network_endstate.gz".
-3. Start LizGoban with options:
+3. Start LizGoban as `npx electron src -c config.json` with the file config.json:
 
-    npx electron src -j '{"endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}'
+    {"endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}
 
 Then you will find "Endstate" in "View" menu. Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves". The estimated score without komi is plotted by cyan dots in the winrate graph though it is not quite accurate. The start of "recent moves" is shown as the larger cyan dot there. Use "c" key (keep holding down) + mouse hover to view the change of endstates from a specified move. Cyan vertical lines on the top of the graph denote large changes of endstates.
 
-You can also combine "leelaz_args" and "endstate_leelaz":
+You can also combine "leelaz_args" and "endstate_leelaz" in config.json:
 
-    npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"], "endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}'
+    {
+      "leelaz_args": ["-g", "-w", "/foo/bar/network.gz"],
+      "endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]
+    }
 
 ### To attach it to Sabaki:
 

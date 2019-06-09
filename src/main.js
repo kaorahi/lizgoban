@@ -3,8 +3,9 @@
 
 // example:
 // npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
+// npx electron src -j /foo/bar/config.json
 
-const PATH = require('path')
+const PATH = require('path'), fs = require('fs')
 const default_path_for = name => PATH.join(__dirname, '..', 'external', name)
 
 const option = {
@@ -19,7 +20,14 @@ const option = {
     weight_dir: undefined,
     shortcut: null,
 }
-process.argv.forEach((x, i, a) => (x === "-j") && Object.assign(option, JSON.parse(a[i + 1])))
+process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
+function parse_option(cur, succ) {
+    const merge_json = str => Object.assign(option, JSON.parse(str))
+    switch (cur) {
+    case '-j': merge_json(succ); break
+    case '-c': merge_json(fs.readFileSync(succ)); break
+    }
+}
 
 /////////////////////////////////////////////////
 // setup
@@ -31,7 +39,7 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 // util
 require('./util.js').use(); require('./coord.js').use()
 function safely(proc, ...args) {try {return proc(...args)} catch(e) {return null}}
-const fs = require('fs'), TMP = require('tmp')
+const TMP = require('tmp')
 const store = new (safely(require, 'electron-store') ||
                    // try old name for backward compatibility
                    safely(require, 'electron-config') ||
