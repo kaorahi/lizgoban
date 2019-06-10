@@ -222,8 +222,8 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
         draw_endstate_diff_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
-    each_coord((h, xy) => h.suggest && (h.data.visits > 0)
-               && draw_winrate_mapping_line(h, xy, unit, g))
+    !R.lizzie_style && each_coord((h, xy) => h.suggest && (h.data.visits > 0)
+                                  && draw_winrate_mapping_line(h, xy, unit, g))
 }
 
 function goban_bg(border) {
