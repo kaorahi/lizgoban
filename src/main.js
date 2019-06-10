@@ -411,28 +411,29 @@ function shortcut_menu_maybe(menu, item, win) {
     //         leelaz_args: ["-g", "-w", "/foo/227.gz"],
     //         weight_file: "/foo/035.gz", "weight_file_for_white": "/foo/157.gz"}
     if (!option.shortcut) {return []}
-    const shortcut_menu_click = arg => () => {
-        // merge arg.option for backward compatibility to 1a88dd40
-        const a = merge({}, arg, arg.option || {})
-        const {empty_board, board_type, weight_file, weight_file_for_white} = a
-        const {leelaz_command, leelaz_args} = merge({}, option, a)
-        const need_restart = a.leelaz_command || a.leelaz_args
-        const merge_and_restart = () => {
-            P.unload_leelaz_for_white(); kill_all_leelaz();
-            merge(option, {leelaz_command, leelaz_args}); start_leelaz(); on_restart()
-        }
-        const load = (switcher, file) => switcher(() => load_weight_file(file))
-        empty_board && !game.is_empty() && new_empty_board()
-        board_type && set_board_type(board_type, win)
-        need_restart && merge_and_restart()
-        weight_file && load(P.load_leelaz_for_black, weight_file)
-        weight_file_for_white ? load(P.load_leelaz_for_white, weight_file_for_white) :
-            P.unload_leelaz_for_white()
-        resume()
-    }
     const shortcut_menu_item = a =>
-          item(a.label, a.accelerator, shortcut_menu_click(a), true)
+          item(a.label, a.accelerator, () => apply_option_shortcut(a, win), true)
     return [menu('Shortcut', option.shortcut.map(shortcut_menu_item))]
+}
+
+function apply_option_shortcut(rule, win) {
+    // merge arg.option for backward compatibility to 1a88dd40
+    const a = merge({}, rule, rule.option || {})
+    const {empty_board, board_type, weight_file, weight_file_for_white} = a
+    const {leelaz_command, leelaz_args} = merge({}, option, a)
+    const need_restart = a.leelaz_command || a.leelaz_args
+    const merge_and_restart = () => {
+        P.unload_leelaz_for_white(); kill_all_leelaz();
+        merge(option, {leelaz_command, leelaz_args}); start_leelaz(); on_restart()
+    }
+    const load = (switcher, file) => switcher(() => load_weight_file(file))
+    empty_board && !game.is_empty() && new_empty_board()
+    board_type && set_board_type(board_type, win)
+    need_restart && merge_and_restart()
+    weight_file && load(P.load_leelaz_for_black, weight_file)
+    weight_file_for_white ? load(P.load_leelaz_for_white, weight_file_for_white) :
+        P.unload_leelaz_for_white()
+    resume()
 }
 
 /////////////////////////////////////////////////
