@@ -96,7 +96,10 @@ fs.access(option.sabaki_command, null,
 
 // app
 
-app.on('ready', () => {start_leelaz(); new_window('double_boards')})
+app.on('ready', () => {
+    start_leelaz(); new_window('double_boards')
+    option.shortcut && apply_option_shortcut(option.shortcut[0], get_windows()[0])
+})
 app.on('window-all-closed', app.quit)
 app.on('quit', kill_all_leelaz)
 
