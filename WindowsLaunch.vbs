@@ -1,5 +1,5 @@
 '==========================================================================
-' VBScript Source File -- Created with SAPIEN Technologies PrimalScript 4.0
+' VBScript Source File
 '==========================================================================
 
 set objshell=createobject("wscript.shell")
