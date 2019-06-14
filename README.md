@@ -46,7 +46,7 @@ And more...
 1. Install [Node.js](https://nodejs.org/).
 2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install".
 3. Put Leela Zero binary (version 0.17 or later) as "external/leelaz" together with its network weight as "external/network.gz".
-4. Type "npx electron src".
+4. Type "npx electron src". (Windows: Double-click lizgoban_windows.vbs.)
 
 ### To set options for leelaz (experimental):
 
@@ -60,7 +60,7 @@ with the file config.json:
 
     {"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}
 
-The latter style will be preferred in Windows.
+(Windows: Write config.json and double-click lizgoban_windows.vbs.)
 
 ### To enable endstate estimation (experimental):
 
