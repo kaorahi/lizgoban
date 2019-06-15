@@ -137,7 +137,8 @@ function get_new_window(file_name, opt) {
 function new_window(default_board_type) {
     const window_id = ++last_window_id, conf_key = 'window.id' + window_id
     const ss = electron.screen.getPrimaryDisplay().size
-    const {board_type, previous_board_type, position, size} = store.get(conf_key) || {}
+    const {board_type, previous_board_type, position, size, maximized}
+          = store.get(conf_key) || {}
     const [x, y] = position || [0, 0]
     const [width, height] = size || [ss.height, ss.height * 0.6]
     const webPreferences = {nodeIntegration: true}
@@ -149,9 +150,10 @@ function new_window(default_board_type) {
     })
     win.on('close', () => set_stored(conf_key, {
         board_type: prop.board_type, previous_board_type: prop.previous_board_type,
-        position: win.getPosition(), size: win.getSize()
+        position: win.getPosition(), size: win.getSize(), maximized: win.isMaximized(),
     }))
     windows.push(win)
+    maximized && win.maximize()
     win.once('ready-to-show', () => {update_ui(); win.show()})
 }
 
