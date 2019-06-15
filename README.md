@@ -60,7 +60,7 @@ with the file config.json:
 
     {"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}
 
-(Windows: Write config.json and double-click lizgoban_windows.vbs.)
+(Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
 ### To enable endstate estimation (experimental):
 
