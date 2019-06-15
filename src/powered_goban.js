@@ -52,7 +52,8 @@ function start_leelaz(leelaz_start_args, endstate_option) {
 }
 function update_leelaz() {leelaz.update()}
 function restart(h) {
-    const error_handler = (leelaz === leelaz_for_white) && invalid_weight_for_white
+    const error_handler =
+          (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
     leelaz.restart(h && {...with_handlers(h), error_handler})
 }
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
