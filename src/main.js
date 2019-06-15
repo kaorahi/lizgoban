@@ -320,6 +320,7 @@ function menu_template(win) {
         lz_white ?
             item('Load weights for black', 'Shift+L', load_leelaz_for_black) :
             item('Load network weights', 'Shift+L', load_weight),
+        item('Load engine', undefined, load_engine),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
@@ -425,18 +426,19 @@ function apply_option_shortcut(rule, win) {
     const {empty_board, board_type, weight_file, weight_file_for_white} = a
     const {leelaz_command, leelaz_args} = merge({}, option, a)
     const need_restart = a.leelaz_command || a.leelaz_args
-    const merge_and_restart = () => {
-        P.unload_leelaz_for_white(); kill_all_leelaz();
-        merge(option, {leelaz_command, leelaz_args}); start_leelaz(); on_restart()
-    }
     const load = (switcher, file) => switcher(() => load_weight_file(file))
     empty_board && !game.is_empty() && new_empty_board()
     board_type && set_board_type(board_type, win)
-    need_restart && merge_and_restart()
+    need_restart && merge_option_and_restart({leelaz_command, leelaz_args})
     weight_file && load(P.load_leelaz_for_black, weight_file)
     weight_file_for_white ? load(P.load_leelaz_for_white, weight_file_for_white) :
         P.unload_leelaz_for_white()
     resume()
+}
+
+function merge_option_and_restart(opts) {
+    P.unload_leelaz_for_white(); kill_all_leelaz()
+    merge(option, opts); start_leelaz(); on_restart()
 }
 
 /////////////////////////////////////////////////
@@ -909,14 +911,22 @@ function select_files(title) {
 }
 function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 
+// load engine
+function load_engine() {
+    const leelaz_command = select_files('Select engine')[0]
+    leelaz_command && merge_option_and_restart({leelaz_command})
+}
+
 // restart
 function restart() {restart_with_args()}
 function restart_with_args(h) {P.restart(h); on_restart()}
 function on_restart() {switch_to_nth_sequence(sequence_cursor); stop_auto()}
 let last_restart_time = 0
 function auto_restart() {
-    const buttons = ["retry", "load weight file", "save SGF and quit", "quit"]
-    const actions = [restart, load_weight, () => (save_sgf(), app.quit()), app.quit];
+    const buttons =
+          ["retry", "load weight", "load engine", "save & quit", "quit"]
+    const actions =
+          [restart, load_weight, load_engine, () => (save_sgf(), app.quit()), app.quit];
     (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
         (restart(), last_restart_time = Date.now()) :
         dialog.showMessageBox(null, {
