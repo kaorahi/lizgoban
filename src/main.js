@@ -423,8 +423,8 @@ function shortcut_menu_maybe(menu, item, win) {
     //         leelaz_args: ["-g", "-w", "/foo/227.gz"],
     //         weight_file: "/foo/035.gz", "weight_file_for_white": "/foo/157.gz"}
     if (!option.shortcut) {return []}
-    const shortcut_menu_item = a =>
-          item(a.label, a.accelerator, () => apply_option_shortcut(a, win), true)
+    const doit = a => (wink(), apply_option_shortcut(a, win))
+    const shortcut_menu_item = a => item(a.label, a.accelerator, () => doit(a), true)
     return [menu('Shortcut', option.shortcut.map(shortcut_menu_item))]
 }
 
