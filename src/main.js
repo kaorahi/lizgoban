@@ -5,6 +5,7 @@
 // npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 // npx electron src -j /foo/bar/config.json
 
+require('./util.js').use(); require('./coord.js').use()
 const PATH = require('path'), fs = require('fs')
 const default_path_for = name => PATH.join(__dirname, '..', 'external', name)
 
@@ -22,7 +23,13 @@ const option = {
 }
 process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
 function parse_option(cur, succ) {
-    const merge_json = str => Object.assign(option, JSON.parse(str))
+    const merge_json = str => merge_with_shortcut(JSON.parse(str))
+    const merge_with_shortcut = orig => merge(option, orig, from_shortcut(orig))
+    const from_shortcut = orig => {
+        const first_shortcut = (orig.shortcut || [{}])[0]
+        const keys = ['leelaz_command', 'leelaz_args']
+        return aa2hash(keys.map(k => [k, first_shortcut[k] || orig[k]]))
+    }
     switch (cur) {
     case '-j': merge_json(succ); break
     case '-c': merge_json(fs.readFileSync(succ)); break
@@ -37,7 +44,6 @@ const electron = require('electron')
 const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 
 // util
-require('./util.js').use(); require('./coord.js').use()
 function safely(proc, ...args) {try {return proc(...args)} catch(e) {return null}}
 const TMP = require('tmp')
 const store = new (safely(require, 'electron-store') ||
