@@ -127,12 +127,11 @@ function set_renderer_state(...args) {
     const progress = M.auto_progress()
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
-    const network_size = leelaz.network_size()
     const endstate_sum = leelaz_for_endstate && average_endstate_sum()
     const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
     merge(R, {move_count, busy, winrate_history, endstate_sum,
               max_visits, progress,
-              progress_bturn, weight_info, network_size,
+              progress_bturn, weight_info,
               previous_suggest, winrate_trail}, endstate_d_i)
 }
 function set_and_render(...args) {set_and_render_gen(true, ...args)}
