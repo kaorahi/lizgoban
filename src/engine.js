@@ -12,9 +12,7 @@ function create_leelaz () {
 
     const endstate_delay_millisec = 20
 
-    let leelaz_process, the_start_args, the_analyze_interval_centisec
-    let the_minimum_suggested_moves, the_engine_log_line_length
-    let the_endstate_handler, the_suggest_handler
+    let leelaz_process, arg
     let command_queue, last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', suggest_only = false
@@ -28,7 +26,7 @@ function create_leelaz () {
         const ti = format(Date.now() / 1000 + 0.0001)
         debug_log(`${ti} [${(leelaz_process || {}).pid}] ${header} ${s}` +
                   (show_queue_p ? ` [${command_queue}]` : ''),
-                  the_engine_log_line_length)
+                  arg.engine_log_line_length)
     }
 
     /////////////////////////////////////////////////
@@ -39,20 +37,16 @@ function create_leelaz () {
         const {leelaz_command, leelaz_args, analyze_interval_centisec,
                minimum_suggested_moves, engine_log_line_length,
                endstate_handler, suggest_handler, restart_handler, error_handler}
-              = the_start_args = h
+              = arg = h
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
         leelaz_process.stdout.on('data', each_line(stdout_reader))
         leelaz_process.stderr.on('data', each_line(reader))
         set_error_handler(leelaz_process, restart_handler)
-        the_endstate_handler = endstate_handler; the_suggest_handler = suggest_handler
-        the_analyze_interval_centisec = analyze_interval_centisec
-        the_minimum_suggested_moves = minimum_suggested_moves
-        the_engine_log_line_length = engine_log_line_length
         command_queue = []; block_commands_until_ready()
         clear_leelaz_board() // for restart
     }
-    const restart = h => {kill(); network_size_text = ''; start(h || the_start_args)}
+    const restart = h => {kill(); network_size_text = ''; start(h || arg)}
     const kill = () => {
         if (!leelaz_process) {return}
         ['stdin', 'stdout', 'stderr']
@@ -64,8 +58,8 @@ function create_leelaz () {
 
     const start_analysis = () => {
         const command = is_supported('minmoves') ?
-              `lz-analyze interval ${the_analyze_interval_centisec} minmoves ${the_minimum_suggested_moves}` :
-              `lz-analyze ${the_analyze_interval_centisec}`
+              `lz-analyze interval ${arg.analyze_interval_centisec} minmoves ${arg.minimum_suggested_moves}` :
+              `lz-analyze ${arg.analyze_interval_centisec}`
         pondering && leelaz(command)
     }
     const stop_analysis = () => {leelaz('name')}
@@ -87,7 +81,7 @@ function create_leelaz () {
         check_supported('endstate', 'endstate_map')
     }
     const on_error = () =>
-          (the_start_args.error_handler || the_start_args.restart_handler)()
+          (arg.error_handler || arg.restart_handler)()
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
@@ -110,7 +104,7 @@ function create_leelaz () {
     // avoid flicker of endstate
     const update = () => is_supported('endstate') ? update_later() : update_now()
     const clear_leelaz_board = () => {leelaz("clear_board"); leelaz_previous_history = []; update()}
-    const start_args = () => the_start_args
+    const start_args = () => arg
     const network_size = () => network_size_text
     const activate = bool => (suggest_only = !bool)
     const peek_value = (move, cont) => {
@@ -204,7 +198,7 @@ function create_leelaz () {
         // winrate is NaN if suggest = []
         add_order('visits', 'visits_order')
         add_order('winrate', 'winrate_order')
-        the_suggest_handler({suggest, visits, b_winrate})
+        arg.suggest_handler({suggest, visits, b_winrate})
     }
 
     // (sample of leelaz output for "lz-analyze 10")
@@ -257,7 +251,7 @@ function create_leelaz () {
     // endstate reader
 
     const finish_endstate_reader = (endstate) => {
-        the_endstate_handler({endstate, endstate_move_count: move_count})
+        arg.endstate_handler({endstate, endstate_move_count: move_count})
     }
 
     const parse_endstate_line = (line) => {
