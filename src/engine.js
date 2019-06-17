@@ -35,7 +35,7 @@ function create_leelaz () {
     // process
     const start = h => {
         const {leelaz_command, leelaz_args, analyze_interval_centisec,
-               minimum_suggested_moves, engine_log_line_length,
+               minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler}
               = arg = h
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
@@ -79,6 +79,7 @@ function create_leelaz () {
     const on_ready = () => {
         check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
         check_supported('endstate', 'endstate_map')
+        arg.ready_handler()
     }
     const on_error = () =>
           (arg.error_handler || arg.restart_handler)()
