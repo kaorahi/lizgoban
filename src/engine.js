@@ -60,7 +60,7 @@ function create_leelaz () {
     }
 
     const start_analysis = () => {
-        const analyzer = is_katago() ? 'kata-analyze' : 'lz-analyze'
+        const analyzer = is_katago() ? 'kata-analyze ownership true' : 'lz-analyze'
         const command = is_supported('minmoves') ?
               `${analyzer} interval ${arg.analyze_interval_centisec} minmoves ${arg.minimum_suggested_moves}` :
               `${analyzer} ${arg.analyze_interval_centisec}`
@@ -198,7 +198,9 @@ function create_leelaz () {
     }
 
     const suggest_reader = (s) => {
-        const suggest = s.split(/info/).slice(1).map(suggest_parser).filter(truep)
+        const [i_str, o_str] = s.split(/\s*ownership\s*/)
+        const ownership = ownership_parser(o_str)
+        const suggest = i_str.split(/info/).slice(1).map(suggest_parser).filter(truep)
               .sort((a, b) => (a.order - b.order))
         const [wsum, visits, scsum] =
               suggest.map(h => [h.winrate, h.visits, h.scoreMean || 0])
@@ -215,7 +217,7 @@ function create_leelaz () {
         // winrate is NaN if suggest = []
         add_order('visits', 'visits_order')
         add_order('winrate', 'winrate_order')
-        arg.suggest_handler({suggest, visits, b_winrate, score_without_komi})
+        arg.suggest_handler({suggest, visits, b_winrate, score_without_komi, ownership})
     }
 
     // (sample of leelaz output for "lz-analyze 10")
@@ -224,9 +226,8 @@ function create_leelaz () {
     // info move pass visits 65 winrate 0 prior 340 order 0 pv pass H4 pass H5 pass G3 pass G1 pass
     // (sample of LCB)
     // info move D4 visits 171 winrate 4445 prior 1890 lcb 4425 order 0 pv D4 Q16 Q4 D16
-    // (sample kata-analyze)
-    // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4
-
+    // (sample "kata-analyze interval 10 ownership true")
+    // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4 ... pv D17 R16 ownership -0.0261067 -0.0661169 ... 0.203051
     const suggest_parser = (s) => {
         const to_percent = (is_katago() ? 100 : 1/100)
         const [a, b] = s.split(/pv/); if (!b) {return false}
@@ -237,6 +238,8 @@ function create_leelaz () {
         h.prior = to_f(h.prior) * to_percent / 100
         return h
     }
+    const ownership_parser = s => s && s.trim().split(/\s+/)
+          .map(z => to_f(z) * (bturn ? 1 : -1))
 
     /////////////////////////////////////////////////
     // stderr reader

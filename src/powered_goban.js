@@ -107,12 +107,22 @@ function endstate_handler(h) {
 const too_small_prior = 1e-3
 function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
+    const mc = game.move_count, cur = game.ref(mc) || {}
     h.suggest = h.suggest.filter(considerable)
-    const cur = game.ref(game.move_count)
-    game.move_count > 0 && ((cur.suggest = h.suggest), (cur.visits = h.visits),
-                            (cur.score_without_komi = h.score_without_komi))
-    game.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
+    R.show_endstate && h.ownership &&
+        ((cur.endstate = h.endstate = endstate_from_ownership(h.ownership)),
+         (cur.hotness = sum_of_endstate_change(game.move_count)),
+         (cur.score_without_komi = h.score_without_komi),
+         add_endstate_to_stones(R.stones, h.endstate, true))
+    cur.suggest = h.suggest; cur.visits = h.visits;
+    mc > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
     set_and_render_maybe(h); on_suggest()
+}
+
+function endstate_from_ownership(ownership) {
+    const endstate = [[]]
+    aa_each(R.stones, (_, i, j) => aa_set(endstate, i, j, ownership.shift()))
+    return endstate
 }
 
 /////////////////////////////////////////////////
@@ -130,7 +140,7 @@ function set_renderer_state(...args) {
     const weight_info = weight_info_text()
     const endstate_sum = leelaz_for_endstate ? average_endstate_sum() :
           game.ref(game.move_count).score_without_komi
-    const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
+    const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
     merge(R, {move_count, busy, winrate_history, endstate_sum,
               max_visits, progress,
               progress_bturn, weight_info,
@@ -196,10 +206,10 @@ function invalid_weight_for_white() {
 /////////////////////////////////////////////////
 // endstate
 
-function leelaz_for_endstate_p() {return !!leelaz_for_endstate}
+function leelaz_for_endstate_p() {return leelaz.is_katago() || !!leelaz_for_endstate}
 function append_endstate_tag_maybe(h) {
     const h_copy = merge({}, h)
-    leelaz_for_endstate && R.show_endstate &&
+    leelaz_for_endstate_p() && R.show_endstate &&
         h.move_count === game.move_count - endstate_diff_interval &&
         add_tag(h_copy, endstate_diff_tag_letter)
     return h_copy
