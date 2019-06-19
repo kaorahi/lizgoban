@@ -109,7 +109,8 @@ function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     h.suggest = h.suggest.filter(considerable)
     const cur = game.ref(game.move_count)
-    game.move_count > 0 && ((cur.suggest = h.suggest), (cur.visits = h.visits))
+    game.move_count > 0 && ((cur.suggest = h.suggest), (cur.visits = h.visits),
+                            (cur.score_without_komi = h.score_without_komi))
     game.move_count > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
     set_and_render_maybe(h); on_suggest()
 }
@@ -127,7 +128,8 @@ function set_renderer_state(...args) {
     const progress = M.auto_progress()
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
-    const endstate_sum = leelaz_for_endstate && average_endstate_sum()
+    const endstate_sum = leelaz_for_endstate ? average_endstate_sum() :
+          game.ref(game.move_count).score_without_komi
     const endstate_d_i = leelaz_for_endstate ? {endstate_diff_interval} : {}
     merge(R, {move_count, busy, winrate_history, endstate_sum,
               max_visits, progress,
@@ -272,7 +274,8 @@ function winrate_from_game(game) {
         const predict = winrate_suggested(s)
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const pass = implicit_pass || M.is_pass(h.move)
-        const score_without_komi = average_endstate_sum(s)
+        const score_without_komi = truep(cur.score_without_komi) ?
+              cur.score_without_komi : average_endstate_sum(s)
         const hotness = h.hotness
         const best = (h.suggest || [])[0]
         const uncertainty = best && (1 - best.visits / h.visits)

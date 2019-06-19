@@ -74,6 +74,8 @@ Start LizGoban as `npx electron src -c katago.json` with the file katago.json:
         "leelaz_args": ["gtp", "-model", "/foo/bar/model.txt.gz", "-config", "/foo/bar/KataGo/cpp/configs/gtp_example.cfg"]
     }
 
+The estimated score without komi is plotted by cyan dots in the winrate graph.
+
 ### To enable endstate estimation (experimental):
 
 This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zero/leela-zero/issues/2331).

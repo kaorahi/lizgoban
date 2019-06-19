@@ -11,6 +11,7 @@ function create_leelaz () {
     // setup
 
     const endstate_delay_millisec = 20
+    const komi = 7.5
 
     let leelaz_process, arg, is_ready = false
     let command_queue, last_command_id, last_response_id, pondering = true
@@ -198,9 +199,13 @@ function create_leelaz () {
     const suggest_reader = (s) => {
         const suggest = s.split(/info/).slice(1).map(suggest_parser).filter(truep)
               .sort((a, b) => (a.order - b.order))
-        const [wsum, visits] = suggest.map(h => [h.winrate, h.visits])
-              .reduce(([ws, vs], [w, v]) => [ws + w * v, vs + v], [0, 0])
+        const [wsum, visits, scsum] =
+              suggest.map(h => [h.winrate, h.visits, h.scoreMean || 0])
+              .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
+                      [0, 0, 0])
         const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
+        const score_without_komi = is_supported('kata-analyze') &&
+              ((scsum / visits) * (bturn ? 1 : -1) + komi)
         const wrs = suggest.map(h => h.winrate)
         const add_order = (sort_key, order_key) => {
             suggest.slice().sort((a, b) => (b[sort_key] - a[sort_key]))
@@ -209,7 +214,7 @@ function create_leelaz () {
         // winrate is NaN if suggest = []
         add_order('visits', 'visits_order')
         add_order('winrate', 'winrate_order')
-        arg.suggest_handler({suggest, visits, b_winrate})
+        arg.suggest_handler({suggest, visits, b_winrate, score_without_komi})
     }
 
     // (sample of leelaz output for "lz-analyze 10")
