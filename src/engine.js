@@ -16,7 +16,7 @@ function create_leelaz () {
     let leelaz_process, arg, is_ready = false
     let command_queue, last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
-    let network_size_text = '', suggest_only = false
+    let network_size_text = ''
 
     // game state
     let move_count = 0, bturn = true
@@ -71,7 +71,7 @@ function create_leelaz () {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
     }
     const endstate = () => {
-        !suggest_only && is_supported('endstate') && leelaz('endstate_map')
+        arg.endstate_handler && is_supported('endstate') && leelaz('endstate_map')
     }
 
     // fixme: unclear
@@ -119,7 +119,6 @@ function create_leelaz () {
     const clear_leelaz_board = () => {leelaz("clear_board"); leelaz_previous_history = []; update()}
     const start_args = () => arg
     const network_size = () => network_size_text
-    const activate = bool => (suggest_only = !bool)
     const peek_value = (move, cont) => {
         the_nn_eval_reader = value => {the_nn_eval_reader = NOP; cont(value); update()}
         leelaz(join_commands('lz-setoption name visits value 1',
@@ -276,7 +275,8 @@ function create_leelaz () {
     // endstate reader
 
     const finish_endstate_reader = (endstate) => {
-        arg.endstate_handler({endstate, endstate_move_count: move_count})
+        const f = arg.endstate_handler
+        f && f({endstate, endstate_move_count: move_count})
     }
 
     const parse_endstate_line = (line) => {
@@ -302,7 +302,7 @@ function create_leelaz () {
 
     return {
         start, restart, kill, set_board, update, set_pondering,
-        start_args, activate, network_size, peek_value, is_katago,
+        start_args, network_size, peek_value, is_katago,
         // for debug
         send_to_leelaz,
     }

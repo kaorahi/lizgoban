@@ -75,7 +75,7 @@ function leelaz_weight_file(leelaz_for_black_or_white) {
 function each_leelaz(f) {
     [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
 }
-function with_handlers(h) {return merge({endstate_handler, suggest_handler}, h)}
+function with_handlers(h) {return merge({suggest_handler}, h)}
 
 /////////////////////////////////////////////////
 // receive analysis from leelaz
@@ -162,7 +162,6 @@ function swap_leelaz_for_black_and_white() {
     if (!leelaz_for_white) {return}
     const old_black = leelaz_for_black
     leelaz_for_black = leelaz_for_white; leelaz_for_white = old_black
-    leelaz_for_black.activate(!leelaz_for_endstate); leelaz_for_white.activate(false)
     switch_leelaz()
 }
 function switch_to_random_leelaz(percent) {
@@ -173,7 +172,6 @@ function load_leelaz_for_black(load_weight) {
 }
 function load_leelaz_for_white(load_weight) {
     const proc = () => {
-        leelaz_for_white.activate(false)
         load_weight() || (leelaz_for_white.kill(), (leelaz_for_white = null))
     }
     with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
@@ -234,11 +232,10 @@ function change_endstate_diff_target(proc) {
 }
 
 function start_endstate(leelaz_start_args, endstate_option) {
-    leelaz.activate(false)
     const [lz_command, weight] = endstate_option
     const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
     leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start(with_handlers(es_args))
+    leelaz_for_endstate.start(with_handlers({...es_args, endstate_handler}))
     leelaz_for_endstate.set_pondering(false)
 }
 function add_endstate_to_stones(stones, endstate, update_diff_p) {
