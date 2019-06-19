@@ -1,7 +1,8 @@
-# LizGoban - Leela Zero visualizer
+# LizGoban - Leela Zero & KataGo visualizer
 
 LizGoban is an analysis tool of the game Go with
-[Leela Zero](https://github.com/gcp/leela-zero).
+[Leela Zero](https://github.com/gcp/leela-zero)
+and [KataGo](https://github.com/lightvector/KataGo).
 It is an implementation of
 [Lizzie](https://github.com/featurecat/lizzie)-style real-time UI
 on [Electron](https://electronjs.org/).
@@ -61,6 +62,17 @@ with the file config.json:
     {"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
+
+### To use KataGo instead of Leela Zero (experimental):
+
+Start LizGoban as `npx electron src -c katago.json` with the file katago.json:
+
+    {
+        "analyze_interval_centisec": 30,
+        "wait_for_startup": false,
+        "leelaz_command": "/foo/bar/KataGo/cpp/main",
+        "leelaz_args": ["gtp", "-model", "/foo/bar/model.txt.gz", "-config", "/foo/bar/KataGo/cpp/configs/gtp_example.cfg"]
+    }
 
 ### To enable endstate estimation (experimental):
 

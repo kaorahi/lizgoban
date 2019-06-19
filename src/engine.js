@@ -12,7 +12,7 @@ function create_leelaz () {
 
     const endstate_delay_millisec = 20
 
-    let leelaz_process, arg
+    let leelaz_process, arg, is_ready = false
     let command_queue, last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', suggest_only = false
@@ -34,16 +34,18 @@ function create_leelaz () {
 
     // process
     const start = h => {
-        const {leelaz_command, leelaz_args, analyze_interval_centisec,
+        const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler}
               = arg = h
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
+        is_ready = false
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
         leelaz_process.stdout.on('data', each_line(stdout_reader))
         leelaz_process.stderr.on('data', each_line(reader))
         set_error_handler(leelaz_process, restart_handler)
         command_queue = []; block_commands_until_ready()
+        wait_for_startup || on_ready()
         clear_leelaz_board() // for restart
     }
     const restart = h => {kill(); network_size_text = ''; start(h || arg)}
@@ -76,7 +78,8 @@ function create_leelaz () {
     const block_commands_until_ready = () => {
         last_command_id = -1; last_response_id = -2
     }
-    const on_ready = () => {
+    let on_ready = () => {
+        if (is_ready) {return}; is_ready = true
         check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
         check_supported('endstate', 'endstate_map')
         arg.ready_handler()
