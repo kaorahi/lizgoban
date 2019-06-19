@@ -365,9 +365,9 @@ function menu_template(win) {
         ...insert_if(P.leelaz_for_endstate_p(),
             sep,
             store_toggler_menu_item(`Endstate (diff: ${P.get_endstate_diff_interval()} moves)`, 'show_endstate', 'Shift+E'),
-            item('...longer diff', '{', endstate_diff_interval_adder(10),
+            item('...longer diff', '{', endstate_diff_interval_adder(1),
                  false, R.show_endstate, true),
-            item('...shorter diff', '}', endstate_diff_interval_adder(-10),
+            item('...shorter diff', '}', endstate_diff_interval_adder(-1),
                  false, R.show_endstate, true))
     ])
     const tool_menu = menu('Tool', [
