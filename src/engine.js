@@ -60,7 +60,7 @@ function create_leelaz () {
     }
 
     const start_analysis = () => {
-        const analyzer = is_supported('kata-analyze') ? 'kata-analyze' : 'lz-analyze'
+        const analyzer = is_katago() ? 'kata-analyze' : 'lz-analyze'
         const command = is_supported('minmoves') ?
               `${analyzer} interval ${arg.analyze_interval_centisec} minmoves ${arg.minimum_suggested_moves}` :
               `${analyzer} ${arg.analyze_interval_centisec}`
@@ -204,7 +204,7 @@ function create_leelaz () {
               .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
                       [0, 0, 0])
         const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
-        const score_without_komi = is_supported('kata-analyze') &&
+        const score_without_komi = is_katago() &&
               ((scsum / visits) * (bturn ? 1 : -1) + komi)
         const wrs = suggest.map(h => h.winrate)
         const add_order = (sort_key, order_key) => {
@@ -227,7 +227,7 @@ function create_leelaz () {
     // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4
 
     const suggest_parser = (s) => {
-        const to_percent = (is_supported('kata-analyze') ? 100 : 1/100)
+        const to_percent = (is_katago() ? 100 : 1/100)
         const [a, b] = s.split(/pv/); if (!b) {return false}
         const h = array2hash(a.trim().split(/\s+/))
         h.pv = b.trim().split(/\s+/); h.lcb = to_f(h.lcb || h.winrate) * to_percent
@@ -290,13 +290,14 @@ function create_leelaz () {
         send_to_leelaz('name')  // relax (stop analysis)
     }
     const is_supported = feature => supported[feature]
+    const is_katago = () => is_supported('kata-analyze')
 
     /////////////////////////////////////////////////
     // exported methods
 
     return {
         start, restart, kill, set_board, update, set_pondering,
-        start_args, activate, network_size, peek_value,
+        start_args, activate, network_size, peek_value, is_katago,
         // for debug
         send_to_leelaz,
     }
