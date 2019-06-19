@@ -955,7 +955,8 @@ function leelaz_start_args(weight_file) {
     return h
 }
 function leelaz_weight_option_pos_in_args() {
-    return option.leelaz_args.findIndex(z => z === "-w" || z === "--weights")
+    const weight_options = ['-w', '--weights', '-model']  // -model for KataGo
+    return option.leelaz_args.findIndex(z => weight_options.includes(z))
 }
 
 /////////////////////////////////////////////////
