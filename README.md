@@ -63,7 +63,9 @@ with the file config.json:
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
-### To use KataGo instead of Leela Zero (experimental):
+### To use KataGo and its score/ownership estimations (experimental):
+
+![The last white move increases possible black territories indirectly (small green squares).](katago.png)
 
 Start LizGoban as `npx electron src -c katago.json` with the file katago.json:
 
@@ -74,13 +76,11 @@ Start LizGoban as `npx electron src -c katago.json` with the file katago.json:
         "leelaz_args": ["gtp", "-model", "/foo/bar/model.txt.gz", "-config", "/foo/bar/KataGo/cpp/configs/gtp_example.cfg"]
     }
 
-The estimated score without komi is plotted by cyan dots in the winrate graph.
+Then you will find "Endstate" in "View" menu. Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves". The estimated score without komi is plotted by cyan dots in the winrate graph. The start of "recent moves" is shown as the larger cyan dot there. Use "c" key (keep holding down) + mouse hover to view the change of endstates from a specified move. Cyan vertical lines on the top of the graph denote large changes of endstates.
 
 ### To enable endstate estimation (experimental):
 
 This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zero/leela-zero/issues/2331).
-
-![The last white move increases possible black territories indirectly (small green squares).](endstate.png)
 
 1. Build [a modified leelaz](https://github.com/kaorahi/leela-zero/tree/endstate_map) and rename "leelaz" to "leelaz_endstate".
 2. Download [the weight file](https://drive.google.com/open?id=1ZotPAUG0zz-y7K-e934AHyYF8_StWmyN) and rename it to "network_endstate.gz".
@@ -88,8 +88,7 @@ This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zer
 
     {"endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}
 
-Then you will find "Endstate" in "View" menu. Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves". The estimated score without komi is plotted by cyan dots in the winrate graph though it is not quite accurate. The start of "recent moves" is shown as the larger cyan dot there. Use "c" key (keep holding down) + mouse hover to view the change of endstates from a specified move. Cyan vertical lines on the top of the graph denote large changes of endstates.
-
+See the above "KataGo" section for usage.
 You can also combine "leelaz_args" and "endstate_leelaz" in config.json:
 
     {
