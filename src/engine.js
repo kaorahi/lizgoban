@@ -86,7 +86,8 @@ function create_leelaz () {
         check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
         check_supported('endstate', 'endstate_map')
         check_supported('kata-analyze', 'kata-analyze interval 1')
-        arg.ready_handler()
+        // call ready_handler after all checks
+        try_send_to_leelaz('name', arg.ready_handler)
     }
     const on_error = () =>
           (arg.error_handler || arg.restart_handler)()
