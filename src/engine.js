@@ -59,9 +59,10 @@ function create_leelaz () {
     }
 
     const start_analysis = () => {
+        const analyzer = is_supported('kata-analyze') ? 'kata-analyze' : 'lz-analyze'
         const command = is_supported('minmoves') ?
-              `lz-analyze interval ${arg.analyze_interval_centisec} minmoves ${arg.minimum_suggested_moves}` :
-              `lz-analyze ${arg.analyze_interval_centisec}`
+              `${analyzer} interval ${arg.analyze_interval_centisec} minmoves ${arg.minimum_suggested_moves}` :
+              `${analyzer} ${arg.analyze_interval_centisec}`
         pondering && leelaz(command)
     }
     const stop_analysis = () => {leelaz('name')}
@@ -83,6 +84,7 @@ function create_leelaz () {
         send_to_leelaz('play b a1'); check_supported('undo', 'undo')
         check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
         check_supported('endstate', 'endstate_map')
+        check_supported('kata-analyze', 'kata-analyze interval 1')
         arg.ready_handler()
     }
     const on_error = () =>
@@ -168,7 +170,7 @@ function create_leelaz () {
     const up_to_date_response = () => {return last_response_id >= last_command_id}
 
     const command_matcher = re => (command => command.match(re))
-    const pondering_command_p = command_matcher(/^lz-analyze/)
+    const pondering_command_p = command_matcher(/^(lz|kata)-analyze/)
     const endstate_command_p = command_matcher(/^endstate_map/)
     const peek_command_p = command_matcher(/play.*undo/)
     const changer_command_p = command_matcher(/play|undo|clear_board/)
@@ -216,13 +218,17 @@ function create_leelaz () {
     // info move pass visits 65 winrate 0 prior 340 order 0 pv pass H4 pass H5 pass G3 pass G1 pass
     // (sample of LCB)
     // info move D4 visits 171 winrate 4445 prior 1890 lcb 4425 order 0 pv D4 Q16 Q4 D16
+    // (sample kata-analyze)
+    // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4
 
     const suggest_parser = (s) => {
+        const to_percent = (is_supported('kata-analyze') ? 100 : 1/100)
         const [a, b] = s.split(/pv/); if (!b) {return false}
         const h = array2hash(a.trim().split(/\s+/))
-        h.pv = b.trim().split(/\s+/); h.lcb = to_f(h.lcb || h.winrate) / 100
-        h.visits = to_i(h.visits); h.order = to_i(h.order); h.winrate = to_f(h.winrate) / 100
-        h.prior = to_f(h.prior) / 10000
+        h.pv = b.trim().split(/\s+/); h.lcb = to_f(h.lcb || h.winrate) * to_percent
+        h.visits = to_i(h.visits); h.order = to_i(h.order)
+        h.winrate = to_f(h.winrate) * to_percent
+        h.prior = to_f(h.prior) * to_percent / 100
         return h
     }
 
