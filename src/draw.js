@@ -1,3 +1,5 @@
+// -*- coding: utf-8 -*-
+
 /////////////////////////////////////////////////
 // setup
 
@@ -26,7 +28,7 @@ let R = {}, target_move = null
 function set_state(given_R) {R = given_R}  // fixme: ugly
 
 // util
-function f2s(z) {return truep(z) ? z.toFixed(1) : ''}
+function f2s(z, digits) {return truep(z) ? z.toFixed(truep(digits) ? digits : 1) : ''}
 
 /////////////////////////////////////////////////
 // various gobans
@@ -402,10 +404,13 @@ function draw_mapping_tics(unit, canvas, g) {
 }
 
 function mapping_text(suggest) {
-    const [winrate_text, visits_text, prior_text] = suggest_texts(suggest) || []
+    const [winrate_text, visits_text, prior_text, score_text, score_stdev_text]
+          = suggest_texts(suggest) || []
     const v = visits_text ? ` (${visits_text})` : ''
     const text = winrate_text && `${winrate_text}${v}`
-    const subtext = text && ` prior = ${prior_text} `
+    const pr = ` prior = ${prior_text} `
+    const sc = score_text ? ` score = ${score_text}(±${score_stdev_text}) ` : ''
+    const subtext = text && (pr + sc)
     const at = flip_maybe(suggest.winrate)
     return text && {text, subtext, at}
 }
@@ -1024,10 +1029,12 @@ function latest_move(moves, show_until) {
 // visits & winrate
 
 function suggest_texts(suggest) {
-    const prior = to_s(suggest.prior).slice(0, 5)
+    const conv = (key, digits) => f2s(suggest[key], digits), prior = conv('prior', 3)
+    const score = conv('score_without_komi', 2), score_stdev = conv('scoreStdev', 2)
     // need ' ' because '' is falsy
     return suggest.visits === 0 ? [' ', '', prior] :
-        ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior]
+        ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior,
+         score, score_stdev]
 }
 
 function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
