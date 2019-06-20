@@ -202,12 +202,11 @@ function create_leelaz () {
         const suggest = i_str.split(/info/).slice(1).map(suggest_parser).filter(truep)
               .sort((a, b) => (a.order - b.order))
         const [wsum, visits, scsum] =
-              suggest.map(h => [h.winrate, h.visits, h.scoreMean || 0])
+              suggest.map(h => [h.winrate, h.visits, h.score_without_komi || 0])
               .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
                       [0, 0, 0])
         const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
-        const score_without_komi = is_katago() &&
-              ((scsum / visits) * (bturn ? 1 : -1) + komi)
+        const score_without_komi = is_katago() && (scsum / visits)
         const wrs = suggest.map(h => h.winrate)
         const add_order = (sort_key, order_key) => {
             suggest.slice().sort((a, b) => (b[sort_key] - a[sort_key]))
@@ -234,8 +233,9 @@ function create_leelaz () {
         h.pv = b.trim().split(/\s+/); h.lcb = to_percent(h.lcb || h.winrate)
         h.visits = to_i(h.visits); h.order = to_i(h.order)
         h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
-        const to_f_maybe = key => truep(h[key]) && (h[key] = to_f(h[key]))
-        ['scoreMean', 'scoreStdev'].map(to_f_maybe)
+        truep(h.scoreMean) &&
+            (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
+        h.scoreStdev = to_f(h.scoreStdev || 0)
         return h
     }
     const ownership_parser = s => s && s.trim().split(/\s+/)
