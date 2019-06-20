@@ -234,6 +234,8 @@ function create_leelaz () {
         h.pv = b.trim().split(/\s+/); h.lcb = to_percent(h.lcb || h.winrate)
         h.visits = to_i(h.visits); h.order = to_i(h.order)
         h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
+        const to_f_maybe = key => truep(h[key]) && (h[key] = to_f(h[key]))
+        ['scoreMean', 'scoreStdev'].map(to_f_maybe)
         return h
     }
     const ownership_parser = s => s && s.trim().split(/\s+/)
