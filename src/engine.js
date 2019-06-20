@@ -49,7 +49,7 @@ function create_leelaz () {
         wait_for_startup || on_ready()
         clear_leelaz_board() // for restart
     }
-    const restart = h => {kill(); network_size_text = ''; start(h || arg)}
+    const restart = h => {kill(); network_size_text = ''; start(h ? {...arg, ...h} : arg)}
     const kill = () => {
         if (!leelaz_process) {return}
         ['stdin', 'stdout', 'stderr']
