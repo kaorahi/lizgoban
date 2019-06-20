@@ -39,7 +39,7 @@ function create_leelaz () {
                endstate_handler, suggest_handler, restart_handler, error_handler}
               = arg = h
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
-        is_ready = false
+        is_ready = false; network_size_text = ''
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
         leelaz_process.stdout.on('data', each_line(stdout_reader))
         leelaz_process.stderr.on('data', each_line(reader))
@@ -48,7 +48,7 @@ function create_leelaz () {
         wait_for_startup || on_ready()
         clear_leelaz_board() // for restart
     }
-    const restart = h => {kill(); network_size_text = ''; start(h ? {...arg, ...h} : arg)}
+    const restart = h => {kill(); start(h ? {...arg, ...h} : arg)}
     const kill = () => {
         if (!leelaz_process) {return}
         ['stdin', 'stdout', 'stderr']
