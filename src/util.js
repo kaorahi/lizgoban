@@ -9,7 +9,8 @@ E.xor = (a, b) => (!a === !!b)
 E.truep = x => (x || x === 0 || x === '')
 E.do_nothing = () => {}
 E.identity = x => x
-E.clip = (x, lower, upper) => Math.max(lower, Math.min(x, upper || Infinity))
+E.clip = (x, lower, upper) =>
+    Math.max(lower, Math.min(x, E.truep(upper) ? upper : Infinity))
 // E.sum = a => a.reduce((r,x) => r + x, 0)
 // E.clone = x => JSON.parse(JSON.stringify(x))
 E.merge = Object.assign
