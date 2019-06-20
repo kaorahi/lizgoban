@@ -629,14 +629,13 @@ function add_handicap_stones(k) {
     moves.forEach(m => do_play(m, true))
 }
 function ask_handicap_stones() {
-    const ks = seq(8, 2), buttons = [...ks.map(to_s), 'cancel']
-    const action = response => {
-        const k = ks[response]; if (!k) {return}
-        game.is_empty() || new_empty_board(); add_handicap_stones(k)
-    }
-    dialog.showMessageBox(null, {
-        type: "question", message: "Handicap stones", buttons: buttons,
-    }, action)
+    const proc = k => {game.is_empty() || new_empty_board(); add_handicap_stones(k)}
+    ask_choice("Handicap stones", seq(8, 2), proc)
+}
+function ask_choice(message, values, proc) {
+    const buttons = [...values.map(to_s), 'cancel']
+    const action = response => {const v = values[response]; truep(v) && proc(v)}
+    dialog.showMessageBox(null, {type: "question", message, buttons}, action)
 }
 
 // misc.
