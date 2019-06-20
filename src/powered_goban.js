@@ -263,10 +263,11 @@ function average_endstate_sum(move_count) {
                                              (cur, prev) => (cur + prev) / 2)
 }
 function sum_of_endstate_change(move_count) {
-    let sum = 0
+    // delta = 2 for leelaz_for_endstate since it tends to oscillate
+    let sum = 0, delta = leelaz.is_katago() ? 1 : 2
     const f = (cur, prev) =>
           (aa_each(cur, (c, i, j) => (sum += Math.abs(c - prev[i][j]))), true)
-    return for_current_and_previous_endstate(move_count, 'endstate', 2, f) && sum
+    return for_current_and_previous_endstate(move_count, 'endstate', delta, f) && sum
 }
 function for_current_and_previous_endstate(move_count, key, delta, f) {
     const mc = truep(move_count) || game.move_count
