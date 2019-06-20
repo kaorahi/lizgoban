@@ -40,7 +40,7 @@ function set_board(given_game, move_count) {
 function set_stones(stones) {
     R.stones = stones; add_info_to_stones(R.stones, game)
     // avoid flicker for fast undo/redo
-    add_endstate_to_stones(R.stones, R.endstate)
+    leelaz_for_endstate_p() && add_endstate_to_stones(R.stones, R.endstate)
 }
 
 /////////////////////////////////////////////////
