@@ -57,8 +57,10 @@ function restart(h) {
     leelaz.restart(h && {...with_handlers(h), error_handler})
 }
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
-function set_pondering(pondering) {
+function set_pondering(pausing, busy) {
+    const pondering = !pausing && !busy
     const b = (leelaz === leelaz_for_black)
+    pausing && clear_endstate()
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
 }
@@ -153,6 +155,8 @@ function set_and_render_gen(is_board_changed, ...args) {
     const masked_R = merge({}, R, M.show_suggest_p() ? {} : {suggest: [], visits: null})
     M.render(masked_R, is_board_changed)
 }
+
+function clear_endstate() {R.endstate = null}
 
 /////////////////////////////////////////////////
 // another leelaz for white
