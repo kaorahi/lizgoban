@@ -141,7 +141,8 @@ function set_renderer_state(...args) {
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
     const endstate_sum = leelaz_for_endstate ? average_endstate_sum() :
-          game.ref(game.move_count).score_without_komi
+          // avoid "undefined" for IPC
+          move_count === 0 ? null : game.ref(move_count).score_without_komi
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
     merge(R, {move_count, busy, winrate_history, endstate_sum,
               max_visits, progress,

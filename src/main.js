@@ -171,11 +171,12 @@ function renderer_with_window_prop(channel, ...args) {
     renderer_gen(channel, true, ...args)
 }
 function renderer_gen(channel, win_prop_p, ...args) {
-    // Caution [2018-08-08]
-    // (1) JSON.stringify(NaN) is 'null' (2) ipc converts {foo: NaN} to {}
+    // Caution [2018-08-08] [2019-06-20]
+    // (1) JSON.stringify(NaN) is 'null' and JSON.stringify({foo: undefined}) is '{}'.
+    // (2) IPC converts {foo: NaN} and {bar: undefined} to {}.
     // example:
-    // [main.js] renderer('foo', {bar: NaN, baz: null, qux: 3})
-    // [renderer.js] ipc.on('foo', (e, x) => tmp = x)
+    // [main.js] renderer('foo', {bar: NaN, baz: null, qux: 3, quux: undefined})
+    // [renderer.js] ipc.on('foo', (e, x) => (tmp = x))
     // [result] tmp is {baz: null, qux: 3}
     get_windows().forEach(win => win.webContents
                           .send(channel, ...(win_prop_p ? [window_prop(win)] : []),
