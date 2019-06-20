@@ -228,13 +228,12 @@ function create_leelaz () {
     // (sample "kata-analyze interval 10 ownership true")
     // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4 ... pv D17 R16 ownership -0.0261067 -0.0661169 ... 0.203051
     const suggest_parser = (s) => {
-        const to_percent = (is_katago() ? 100 : 1/100)
+        const to_percent = str => to_f(str) * (is_katago() ? 100 : 1/100)
         const [a, b] = s.split(/pv/); if (!b) {return false}
         const h = array2hash(a.trim().split(/\s+/))
-        h.pv = b.trim().split(/\s+/); h.lcb = to_f(h.lcb || h.winrate) * to_percent
+        h.pv = b.trim().split(/\s+/); h.lcb = to_percent(h.lcb || h.winrate)
         h.visits = to_i(h.visits); h.order = to_i(h.order)
-        h.winrate = to_f(h.winrate) * to_percent
-        h.prior = to_f(h.prior) * to_percent / 100
+        h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
         return h
     }
     const ownership_parser = s => s && s.trim().split(/\s+/)
