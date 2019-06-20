@@ -51,10 +51,11 @@ function start_leelaz(leelaz_start_args, endstate_option) {
     endstate_option && start_endstate(leelaz_start_args, endstate_option)
 }
 function update_leelaz() {leelaz.update()}
-function restart(h) {
+function restart(h, new_weight_p) {
+    const cooked = h && with_handlers(h)
     const error_handler =
           (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
-    leelaz.restart(h && {...with_handlers(h), error_handler})
+    leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 function set_pondering(pausing, busy) {

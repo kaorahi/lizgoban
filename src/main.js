@@ -909,7 +909,7 @@ function load_weight_file(weight_file) {
     if (!weight_file) {return false}
     weight_file !== current_weight_file &&
         (previous_weight_file = current_weight_file)
-    restart_with_args(leelaz_start_args(weight_file))
+    restart_with_args(leelaz_start_args(weight_file), true)
     return weight_file
 }
 function select_files(title) {
@@ -928,7 +928,7 @@ function load_engine() {
 
 // restart
 function restart() {restart_with_args()}
-function restart_with_args(h) {P.restart(h); on_restart()}
+function restart_with_args(h, new_weight_p) {P.restart(h, new_weight_p); on_restart()}
 function on_restart() {switch_to_nth_sequence(sequence_cursor); stop_auto()}
 let last_restart_time = 0
 function auto_restart() {
