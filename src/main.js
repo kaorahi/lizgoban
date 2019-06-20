@@ -387,6 +387,8 @@ function menu_template(win) {
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
         sep,
+        ...insert_if(P.support_komi_p(),
+            item(`Komi (${P.get_engine_komi()})`, undefined, ask_engine_komi)),
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
@@ -617,7 +619,7 @@ function set_board_type(type, win, keep_let_me_think) {
     merge(prop, {board_type: type, previous_board_type: board_type}); update_ui()
 }
 
-// handicap stones
+// handicap stones & komi
 function add_handicap_stones(k) {
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
@@ -631,6 +633,11 @@ function add_handicap_stones(k) {
 function ask_handicap_stones() {
     const proc = k => {game.is_empty() || new_empty_board(); add_handicap_stones(k)}
     ask_choice("Handicap stones", seq(8, 2), proc)
+}
+function ask_engine_komi() {
+    const values = [-0.5, 0.5, 4.5, 5.5, 6.5, 7.5, 8.5]
+    const proc = k => {P.set_engine_komi(k)}
+    ask_choice(`Engine Komi (${P.get_engine_komi()})`, values, proc)
 }
 function ask_choice(message, values, proc) {
     const buttons = [...values.map(to_s), 'cancel']
@@ -948,7 +955,9 @@ function leelaz_start_args(weight_file) {
     const leelaz_args = option.leelaz_args.slice()
     const weight_pos = leelaz_weight_option_pos_in_args()
     weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
-    const h = {leelaz_args, restart_handler: auto_restart, ready_handler: update_state}
+    const komi = P.get_engine_komi()
+    const h = {leelaz_args, komi,
+               restart_handler: auto_restart, ready_handler: update_state}
     const opts = ['leelaz_command', 'analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])

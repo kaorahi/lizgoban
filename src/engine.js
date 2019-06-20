@@ -11,7 +11,6 @@ function create_leelaz () {
     // setup
 
     const endstate_delay_millisec = 20
-    const komi = 7.5
 
     let leelaz_process, arg, is_ready = false
     let command_queue, last_command_id, last_response_id, pondering = true
@@ -36,7 +35,7 @@ function create_leelaz () {
     // process
     const start = h => {
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
-               minimum_suggested_moves, engine_log_line_length, ready_handler,
+               komi, minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler}
               = arg = h
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
@@ -82,6 +81,7 @@ function create_leelaz () {
     }
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
+        send_to_leelaz(`komi ${arg.komi}`)
         send_to_leelaz('play b a1'); check_supported('undo', 'undo')
         check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
         check_supported('endstate', 'endstate_map')
@@ -234,7 +234,7 @@ function create_leelaz () {
         h.visits = to_i(h.visits); h.order = to_i(h.order)
         h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
         truep(h.scoreMean) &&
-            (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
+            (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + arg.komi)
         h.scoreStdev = to_f(h.scoreStdev || 0)
         return h
     }

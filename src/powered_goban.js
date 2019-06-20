@@ -278,6 +278,15 @@ function for_current_and_previous_endstate(move_count, key, delta, f) {
 function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
 /////////////////////////////////////////////////
+// komi
+
+const leelaz_komi = 7.5
+let engine_komi = leelaz_komi
+function support_komi_p() {return leelaz.is_katago()}
+function get_engine_komi() {return support_komi_p() ? engine_komi : leelaz_komi}
+function set_engine_komi(komi) {engine_komi = komi; restart({komi})}
+
+/////////////////////////////////////////////////
 // winrate history
 
 function winrate_from_game(game) {
@@ -320,10 +329,13 @@ function get_previous_suggest() {
     return ret
 }
 function weight_info_text() {
+    const ek = get_engine_komi()
+    const engine_komi = (ek === leelaz_komi) ? '' : `komi=${ek} `
     const f = lz =>
           `${PATH.basename(leelaz_weight_file(lz) || '')} ${lz.network_size() || ''}`
-    return leelaz_for_white ?
-        `${f(leelaz_for_black)} / ${f(leelaz_for_white)}` : f(leelaz)
+    const weight_info = leelaz_for_white ?
+          `${f(leelaz_for_black)} / ${f(leelaz_for_white)}` : f(leelaz)
+    return engine_komi + weight_info
 }
 function add_next_mark_to_stones(stones, game, move_count) {
     const h = game.ref(move_count + 1), s = stone_for_history_elem(h, stones)
@@ -373,6 +385,8 @@ module.exports = {
     // endstate
     leelaz_for_endstate_p, append_endstate_tag_maybe,
     get_endstate_diff_interval, add_endstate_diff_interval, set_endstate_diff_from,
+    // komi
+    support_komi_p, get_engine_komi, set_engine_komi,
     // renderer
     set_and_render,
     // util
