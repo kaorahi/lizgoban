@@ -197,6 +197,7 @@ function create_leelaz () {
     }
 
     const suggest_reader = (s) => {
+        if (!arg.suggest_handler) {return}
         const [i_str, o_str] = s.split(/\s*ownership\s*/)
         const ownership = ownership_parser(o_str)
         const suggest = i_str.split(/info/).slice(1).map(suggest_parser).filter(truep)

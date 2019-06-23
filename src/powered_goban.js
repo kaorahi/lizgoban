@@ -237,10 +237,13 @@ function change_endstate_diff_target(proc) {
 }
 
 function start_endstate(leelaz_start_args, endstate_option) {
-    const [lz_command, weight] = endstate_option
-    const es_args = {...leelaz_start_args(weight), leelaz_command: lz_command}
+    const [lz_command, x] = endstate_option, x_type = typeof x
+    const weight = (x_type === 'string') ? x : 'dummy'
+    const more = (x_type === 'object') ? {leelaz_args: x} : {}
+    const start_args = {...leelaz_start_args(weight), endstate_handler,
+                        leelaz_command: lz_command, ...more}
     leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start(with_handlers({...es_args, endstate_handler}))
+    leelaz_for_endstate.start(start_args)
     leelaz_for_endstate.set_pondering(false)
 }
 function add_endstate_to_stones(stones, endstate, update_diff_p) {
