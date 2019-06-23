@@ -982,7 +982,7 @@ function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
 
 function open_sgf() {select_files('Select SGF file').forEach(load_sgf)}
 function load_sgf(filename) {
-    read_sgf(fs.readFileSync(filename, {encoding: 'binary'}));
+    read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}))
     game.sgf_file = filename
 }
 
