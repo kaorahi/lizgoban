@@ -27,7 +27,7 @@ function set_board(given_game, move_count) {
     // use game.move_count if move_count is omitted
     game = given_game
     const hist = game.array_until(truep(move_count) ? move_count : game.move_count)
-    each_leelaz(z => z.set_board(hist))
+    each_leelaz(z => z.set_board(hist), leelaz.is_katago())
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
@@ -75,8 +75,9 @@ function leelaz_weight_file(leelaz_for_black_or_white) {
     return (k >= 0) && arg && arg.leelaz_args[k + 1]
 }
 
-function each_leelaz(f) {
-    [leelaz_for_black, leelaz_for_white, leelaz_for_endstate].forEach(z => z && f(z))
+function each_leelaz(f, for_black_and_white_only) {
+    [leelaz_for_black, leelaz_for_white,
+     !for_black_and_white_only && leelaz_for_endstate].forEach(z => z && f(z))
 }
 function with_handlers(h) {return merge({suggest_handler}, h)}
 
