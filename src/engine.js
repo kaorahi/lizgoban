@@ -208,7 +208,6 @@ function create_leelaz () {
                       [0, 0, 0])
         const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
         const score_without_komi = is_katago() && (scsum / visits)
-        const wrs = suggest.map(h => h.winrate)
         const add_order = (sort_key, order_key) => {
             suggest.slice().sort((a, b) => (b[sort_key] - a[sort_key]))
                 .forEach((h, i) => (h[order_key] = i))
