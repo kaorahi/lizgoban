@@ -10,6 +10,6 @@
     "@sabaki/sgf": "^3.2.1",
     "electron": "^4.1.0",
     "electron-store": "^3.0.0",
-    "tmp": "0.0.33"
+    "tmp": "^0.0.33"
   }
 }
