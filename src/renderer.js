@@ -17,6 +17,7 @@ const graph_overlay_canvas = Q('#graph_overlay')
 // renderer state
 const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
+    visits_per_sec: 0,
     winrate_history: [], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
     expand_winrate_bar: false, let_me_think: false,

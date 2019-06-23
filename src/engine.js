@@ -11,6 +11,8 @@ function create_leelaz () {
     // setup
 
     const endstate_delay_millisec = 20
+    const speedo_interval_sec = 3, speedo_premature_sec = 0.5
+    const speedometer = make_speedometer(speedo_interval_sec, speedo_premature_sec)
 
     let leelaz_process, arg, is_ready = false
     let command_queue, last_command_id, last_response_id, pondering = true
@@ -152,6 +154,7 @@ function create_leelaz () {
         if (do_update_move_count(cmd)) {return}
         const cmd_with_id = `${++last_command_id} ${cmd}`
         on_response && (on_response_for_id[last_command_id] = on_response)
+        pondering_command_p(cmd) && speedometer.reset()
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
     }
 
@@ -207,6 +210,7 @@ function create_leelaz () {
               .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
                       [0, 0, 0])
         const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
+        const visits_per_sec = speedometer.per_sec(visits)
         const score_without_komi = is_katago() && (scsum / visits)
         const add_order = (sort_key, order_key) => {
             suggest.slice().sort((a, b) => (b[sort_key] - a[sort_key]))
@@ -215,7 +219,8 @@ function create_leelaz () {
         // winrate is NaN if suggest = []
         add_order('visits', 'visits_order')
         add_order('winrate', 'winrate_order')
-        arg.suggest_handler({suggest, visits, b_winrate, score_without_komi, ownership})
+        arg.suggest_handler({suggest, visits, b_winrate, visits_per_sec,
+                             score_without_komi, ownership})
     }
 
     // (sample of leelaz output for "lz-analyze 10")
