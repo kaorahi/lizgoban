@@ -778,7 +778,9 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 
 function draw_winrate_graph_score(sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
-    const to_r = score => 50 + score
+    const max_score = Math.max(...scores.filter(truep).map(Math.abs))
+    const scale = max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
+    const to_r = score => 50 + score * scale
     const plotter = (x, y, s, g) => {
         const diff_target_p = R.endstate_diff_interval > 5 &&
               (s === R.move_count - R.endstate_diff_interval)
