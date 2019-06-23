@@ -608,7 +608,7 @@ function winrate_bar_suggest_prop(s) {
 }
 
 function suggest_color(suggest, alpha) {
-    const hue = winrate_color_hue(suggest.winrate)
+    const hue = winrate_color_hue(suggest.winrate, suggest.score_without_komi)
     const alpha_emphasis = emph => {
         const max_alpha = 0.5, visits_ratio = suggest.visits / (R.visits + 1)
         return max_alpha * visits_ratio ** (1 - emph)
@@ -619,11 +619,21 @@ function suggest_color(suggest, alpha) {
     return {stroke, fill, lizzie_text_color}
 }
 
-function winrate_color_hue(winrate) {
+function winrate_color_hue(winrate, score) {
     const cyan_hue = 180, green_hue = 120, yellow_hue = 60, red_hue = 0
-    const unit_delta_points = 5, unit_delta_hue = green_hue - yellow_hue
+    const unit_delta_hue = green_hue - yellow_hue
+    const unit_delta_winrate = 5, unit_delta_score = 5
+    // winrate gain
     const wr0 = flip_maybe(b_winrate(1) || b_winrate())
-    const delta_hue = (winrate - wr0) * unit_delta_hue / unit_delta_points
+    const delta_by_winrate = (winrate - wr0) / unit_delta_winrate
+    // score gain
+    const prev_score = nth_prev => winrate_history_ref('score_without_komi', nth_prev)
+    const s0 = [1, 0].map(prev_score).find(truep)
+    const delta_by_score_maybe = truep(score) && truep(s0) &&
+          (score - s0) * (R.bturn ? 1 : -1) / unit_delta_score
+    const delta_by_score = delta_by_score_maybe || delta_by_winrate
+    // color for gain
+    const delta_hue = (delta_by_winrate + delta_by_score) / 2 * unit_delta_hue
     return to_i(clip(yellow_hue + delta_hue, red_hue, cyan_hue))
 }
 
