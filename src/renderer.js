@@ -22,7 +22,7 @@ const R = {
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
     expand_winrate_bar: false, let_me_think: false,
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',
-    progress: 0.0, progress_bturn: true, weight_info: '',
+    progress: 0.0, progress_bturn: true, weight_info: '', is_katago: false,
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [],
     lizzie_style: false,

@@ -142,12 +142,13 @@ function set_renderer_state(...args) {
     const progress = M.auto_progress()
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
+    const is_katago = leelaz.is_katago()
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           leelaz_for_endstate ? average_endstate_sum() : null
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
     merge(R, {move_count, busy, winrate_history, endstate_sum,
               max_visits, progress,
-              progress_bturn, weight_info,
+              progress_bturn, weight_info, is_katago,
               previous_suggest, winrate_trail}, endstate_d_i)
 }
 function set_and_render(...args) {set_and_render_gen(true, ...args)}

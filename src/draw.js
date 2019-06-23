@@ -569,7 +569,7 @@ function draw_with_aura(proc,
     g.save(); proc(); g.restore()
     // line
     g.lineWidth = 2
-    draw_puct_p && line([x, y], [x_puct, clip(y_puct, 0, h)], g)
+    draw_puct_p && !R.is_katago && line([x, y], [x_puct, clip(y_puct, 0, h)], g)
     draw_lcb_p && line([x, y], [x_lcb, y], g)
 }
 
