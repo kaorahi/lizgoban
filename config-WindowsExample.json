@@ -1,0 +1,17 @@
+{
+  "wait_for_startup": false,
+  "shortcut": [
+    {
+      "label": "KataGo",
+      "accelerator": "Ctrl + 0",
+      "leelaz_command": ".\\external\\main.exe",
+      "leelaz_args": ["gtp", "-model", ".\\external\\g104-b20c256.txt", "-config", ".\\external\\gtp.cfg"]
+    },
+    {
+      "label": "LZ_newest",
+      "accelerator": "Ctrl + 1",
+      "leelaz_command": ".\\external\\leela-zero\\leelaz.exe",
+      "leelaz_args": ["-g", "-w", ".\\external\\leela-zero\\LZ_229.txt"]
+    }
+  ]
+}
