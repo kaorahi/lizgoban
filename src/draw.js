@@ -300,9 +300,10 @@ function draw_suggest(h, xy, radius, large_font_p, g) {
         const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
         const fontsize = to_i(radius * 0.8), next_y = y + fontsize
         const [winrate_text, visits_text] = suggest_texts(suggest)
+        const score_text = score_bar_p() && f2s(suggest.score_without_komi)
         g.save(); set_font(fontsize, g); g.textAlign = 'center'
         g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
-        g.fillText(winrate_text, x, y, max_width)
+        g.fillText(score_text || winrate_text, x, y, max_width)
         g.fillStyle = suggest.order === 0 ? champ_color : lizzie_text_color
         g.fillText(visits_text, x, next_y , max_width)
         g.restore()
@@ -367,7 +368,7 @@ function draw_endstate_diff(diff, xy, radius, g) {
 // mapping from goban to winrate bar
 
 function draw_winrate_mapping_line(h, xy, unit, g) {
-    const b_winrate = flip_maybe(h.data.winrate)
+    const b_winrate = flip_maybe(fake_winrate(h.data))
     const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
     g.lineWidth = 1.5 / (order * 2 + 1)
     g.strokeStyle = RED
@@ -413,7 +414,7 @@ function mapping_text(suggest) {
     const pr = ` prior = ${prior_text} `
     const sc = score_text ? ` score = ${score_text}(±${score_stdev_text}) ` : ''
     const subtext = text && (pr + sc)
-    const at = flip_maybe(suggest.winrate)
+    const at = flip_maybe(fake_winrate(suggest))
     return text && {text, subtext, at}
 }
 
@@ -429,10 +430,14 @@ let winrate_bar_prev = 50
 
 function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    const tics = 9
+    const score_p = score_bar_p(), tics = score_p ? 19 : 9
     const xfor = percent => w * percent / 100
     const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
-    const b_wr0 = b_winrate(), b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
+    const z = R.winrate_history[R.move_count] || {}
+    const b_wr0 = fake_winrate_for(z.r, z.score_without_komi, true)
+    const b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
+    const prev_score = score_p &&
+          (R.winrate_history[R.move_count - 1] || {}).score_without_komi
     winrate_bar_prev = b_wr
     if (R.pausing && !truep(b_wr0)) {
         draw_winrate_bar_unavailable(w, h, g)
@@ -442,33 +447,43 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
     large_bar && draw_winrate_bar_horizontal_lines(w, h, g)
     draw_winrate_bar_tics(b_wr, tics, vline, g)
-    draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g)
+    draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g)
     R.winrate_trail && draw_winrate_trail(canvas)
     draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
-    draw_winrate_bar_text(w, h, pale_text_p, g)
+    draw_winrate_bar_text(prev_score, w, h, pale_text_p, g)
 }
 
-function draw_winrate_bar_text(w, h, pale_text_p, g) {
-    const b_wr = b_winrate(), eval = last_move_eval()
+function draw_winrate_bar_text(prev_score, w, h, pale_text_p, g) {
+    const b_wr = b_winrate(); if (!truep(b_wr)) {return}
+    const scorep = score_bar_p()
+    const eval = scorep ? - (R.score_without_komi - prev_score) * (R.bturn ? 1 : -1)
+          : last_move_eval()
     const visits = R.max_visits && kilo_str(R.max_visits)
     const fontsize = Math.min(h * 0.5, w * 0.04)
-    if (!truep(b_wr)) {return}
+    const [wr_color, vis_color] = pale_text_p ?
+          ['rgba(0,192,0,0.3)', 'rgba(160,160,160,0.3)'] :
+          [GREEN, WINRATE_TRAIL_COLOR]
     g.save()
     set_font(fontsize, g); g.textBaseline = 'middle'
-    const f = (wr, x, align, myturn) => {
+    const write = (text, x, y_rel) => g.fillText(text, x, fontsize * (y_rel || 0.5))
+    const score_str = wr => (wr % 10 === 0) ? wr : ''
+    const f = (wr_text, x, align, myturn) => {
         const cond = (pred, s) => (pred ? ` ${s} ` : '')
         const vis = cond(visits, visits)
         const ev = cond(truep(eval), `(${eval > 0 ? '+' : ''}${f2s(eval)})`)
-        const win = cond(true, `${f2s(wr)}%`)
-        const [wr_color, vis_color] = pale_text_p ?
-              ['rgba(0,192,0,0.3)', 'rgba(160,160,160,0.3)'] :
-              [GREEN, WINRATE_TRAIL_COLOR]
-        g.textAlign = align; g.fillStyle = wr_color; g.fillText(win, x, fontsize * 0.5)
-        myturn && (g.fillStyle = vis_color)
-        g.fillText(myturn ? vis : ev, x, fontsize * 1.5)
+        const win = cond(true, wr_text)
+        g.textAlign = align; g.fillStyle = wr_color; write(win, x)
+        myturn && (g.fillStyle = vis_color); write(myturn ? vis : ev, x, 1.5)
     }
-    f(b_wr, 0, 'left', R.bturn)
-    f(100 - b_wr, w, 'right', !R.bturn)
+    const {lower, l_quarter, center, u_quarter, upper} = score_bar_fitter.range()
+    const [left, right] = scorep ? [lower, upper].map(score_str) :
+          [b_wr, 100 - b_wr].map(wr => f2s(wr) + '%')
+    f(left, 0, 'left', R.bturn); f(right, w, 'right', !R.bturn)
+    if (scorep) {
+        g.textAlign = 'center'; g.fillStyle = wr_color
+        const tics = [[l_quarter, 0.25], [center, 0.5], [u_quarter, 0.75]]
+        tics.forEach(([wr, rel_x]) => write(score_str(wr), w * rel_x))
+    }
     g.restore()
 }
 
@@ -494,18 +509,23 @@ function draw_winrate_bar_horizontal_lines(w, h, g) {
 }
 
 function draw_winrate_bar_tics(b_wr, tics, vline, g) {
+    const thick = [25, 50, 75]
     seq(tics, 1).forEach(i => {
         const r = 100 * i / (tics + 1)
-        g.lineWidth = 1; g.strokeStyle = (r < b_wr) ? WHITE : BLACK; vline(r)
+        g.lineWidth = thick.includes(Math.round(r)) ? 3 : 1
+        g.strokeStyle = (r < b_wr) ? WHITE : BLACK; vline(r)
     })
-    g.lineWidth = 3; g.strokeStyle = (b_wr > 50) ? WHITE : BLACK; vline(50)
 }
 
-function draw_winrate_bar_last_move_eval(b_wr, h, xfor, vline, g) {
-    const eval = last_move_eval(), b_eval = last_move_b_eval()
+function draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g) {
+    const eval = last_move_eval(), b_eval = last_move_b_eval(), dummy = 0
     if (!truep(eval)) {return}
-    const [x1, x2] = [b_wr, b_wr - b_eval].map(xfor).sort()
-    const [stroke, fill] = (eval >= 0 ? [GREEN, PALE_GREEN] : [RED, PALE_RED])
+    const prev_b_wr = score_bar_p() ?
+          fake_winrate_for(dummy, prev_score, true) : (b_wr - b_eval)
+    const [x1, x2] = [b_wr, prev_b_wr].map(xfor).sort()
+    const last_gain = - (b_wr - prev_b_wr) * (R.bturn ? 1 : -1)
+    if (!truep(last_gain)) {return}
+    const [stroke, fill] = (last_gain >= 0 ? [GREEN, PALE_GREEN] : [RED, PALE_RED])
     const lw = g.lineWidth = 3; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_rect([x1, lw / 2], [x2, h - lw / 2], g)
 }
@@ -592,7 +612,7 @@ function winrate_bar_suggest_prop(s) {
     const normal_aura_color = 'rgba(235,148,0,0.8)'
     const target_aura_color = 'rgba(0,192,0,0.8)'
     // main
-    const {move, winrate} = s
+    const {move} = s, winrate = fake_winrate(s)
     const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
     const target_p = (move === target_move), next_p = is_next_move(move)
     const alpha = target_p ? 1.0 : target_move ? 0.3 : 0.8
@@ -650,14 +670,17 @@ function winrate_bar_order_set_style(s, fontsize, g) {
 // calc
 
 function winrate_bar_xy(suggest, w, h, supplementary, bturn) {
-    const wr = suggest.winrate, max_radius = winrate_bar_max_radius(w, h)
+    const real_wr = suggest.winrate, max_radius = winrate_bar_max_radius(w, h)
+    const wr = fake_winrate(suggest, bturn)
     const x_for = winrate => w * flip_maybe(winrate, bturn) / 100
     const y_for = visits => winrate_bar_y(visits, w, h, max_radius)
     const x = x_for(wr), y = y_for(suggest.visits)
     if (!supplementary) {return [x, y]}
+    // omit PUCT and LCB for score_bar
+    const maybe_x_for = winrate => x_for(score_bar_p() ? wr : winrate)
     const [puct, equilibrium_visits] = puct_info(suggest)
     return [x, y, max_radius * Math.sqrt(suggest.prior), max_radius,
-            x_for(wr + puct), y_for(equilibrium_visits), x_for(suggest.lcb)]
+            maybe_x_for(wr + puct), y_for(equilibrium_visits), maybe_x_for(suggest.lcb)]
 }
 
 function winrate_bar_y(visits, w, h, max_radius) {
@@ -688,6 +711,38 @@ function puct_info(suggest) {
           (s0.winrate - suggest.winrate) / (cfg_puct * numerator * 100)
     const equilibrium_visits = psa / clip(psa_per_denom, 1e-10) - 1
     return [puct, equilibrium_visits]
+}
+
+/////////////////////////////////////////////////
+// score bar
+
+function score_bar_p() {return R.score_bar && R.is_katago}
+
+function make_center_fitter(step) {
+    let center = 0
+    const update_center = sc => {
+        const d = sc - center, out = Math.abs(d) > step
+        out && ((center = center + step * Math.sign(d)), update_center(sc))
+    }
+    const range = () => ({
+        lower: center - step * 2, l_quarter: center - step,
+        center, u_quarter: center + step, upper: center + step * 2
+    })
+    return {update_center, range}
+}
+const score_bar_fitter = make_center_fitter(5)
+
+// convert score to "winrate of corresponding position on winrate bar"
+// to cheat drawing functions in score_bar mode
+function fake_winrate(suggest, bturn) {
+    return fake_winrate_for(suggest.winrate, suggest.score_without_komi, bturn)
+}
+function fake_winrate_for(winrate, score_without_komi, bturn) {
+    if (!score_bar_p()) {return winrate}
+    score_bar_fitter.update_center(R.score_without_komi)
+    const {lower, upper} = score_bar_fitter.range()
+    const fake_b_wr = 100 * (score_without_komi - lower) / (upper - lower)
+    return clip(flip_maybe(fake_b_wr, bturn), 0, 100)
 }
 
 /////////////////////////////////////////////////

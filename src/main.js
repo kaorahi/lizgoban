@@ -75,7 +75,8 @@ let pausing = false, busy = false
 // (cf.) "set_renderer_state" in powered_goban.js
 // (cf.) "the_endstate_handler" and "the_suggest_handler" in engine.js
 const stored_keys_for_renderer =
-      ['lizzie_style', 'expand_winrate_bar', 'let_me_think', 'show_endstate']
+      ['lizzie_style', 'expand_winrate_bar', 'score_bar',
+       'let_me_think', 'show_endstate']
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
 P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
     // functions used in powered_goban.js
@@ -363,6 +364,8 @@ function menu_template(win) {
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
+        ...insert_if(P.katago_p(),
+                     store_toggler_menu_item('Score bar', 'score_bar', 'Shift+C')),
         ...insert_if(P.leelaz_for_endstate_p(),
             sep,
             store_toggler_menu_item(`Endstate (diff: ${P.get_endstate_diff_interval()} moves)`, 'show_endstate', 'Shift+E'),

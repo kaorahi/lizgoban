@@ -384,7 +384,7 @@ module.exports = {
     initialize, set_board,
     // leelaz
     start_leelaz, update_leelaz, set_pondering, restart, kill_all_leelaz,
-    all_start_args, leelaz_weight_file,
+    all_start_args, leelaz_weight_file, katago_p,
     // another leelaz for white
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_to_random_leelaz,
     load_leelaz_for_black, load_leelaz_for_white, unload_leelaz_for_white,
