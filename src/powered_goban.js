@@ -27,7 +27,7 @@ function set_board(given_game, move_count) {
     // use game.move_count if move_count is omitted
     game = given_game
     const hist = game.array_until(truep(move_count) ? move_count : game.move_count)
-    each_leelaz(z => z.set_board(hist), leelaz.is_katago())
+    each_leelaz(z => z.set_board(hist), katago_p())
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
@@ -80,6 +80,8 @@ function each_leelaz(f, for_black_and_white_only) {
      !for_black_and_white_only && leelaz_for_endstate].forEach(z => z && f(z))
 }
 function with_handlers(h) {return merge({suggest_handler}, h)}
+
+function katago_p() {return leelaz.is_katago()}
 
 /////////////////////////////////////////////////
 // receive analysis from leelaz
@@ -142,7 +144,7 @@ function set_renderer_state(...args) {
     const progress = M.auto_progress()
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
-    const is_katago = leelaz.is_katago()
+    const is_katago = katago_p()
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           leelaz_for_endstate ? average_endstate_sum() : null
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
@@ -211,7 +213,7 @@ function invalid_weight_for_white() {
 /////////////////////////////////////////////////
 // endstate
 
-function leelaz_for_endstate_p() {return leelaz.is_katago() || !!leelaz_for_endstate}
+function leelaz_for_endstate_p() {return katago_p() || !!leelaz_for_endstate}
 function append_endstate_tag_maybe(h) {
     const h_copy = merge({}, h)
     leelaz_for_endstate_p() && R.show_endstate &&
@@ -269,7 +271,7 @@ function average_endstate_sum(move_count) {
 }
 function sum_of_endstate_change(move_count) {
     // delta = 2 for leelaz_for_endstate since it tends to oscillate
-    let sum = 0, delta = leelaz.is_katago() ? 1 : 2
+    let sum = 0, delta = katago_p() ? 1 : 2
     const f = (cur, prev) =>
           (aa_each(cur, (c, i, j) => (sum += Math.abs(c - prev[i][j]))), true)
     return for_current_and_previous_endstate(move_count, 'endstate', delta, f) && sum
@@ -286,7 +288,7 @@ function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
 const leelaz_komi = 7.5
 let engine_komi = leelaz_komi
-function support_komi_p() {return leelaz.is_katago()}
+function support_komi_p() {return katago_p()}
 function get_engine_komi() {return support_komi_p() ? engine_komi : leelaz_komi}
 function set_engine_komi(komi) {engine_komi = komi; restart({komi})}
 
