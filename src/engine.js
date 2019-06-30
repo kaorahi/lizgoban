@@ -84,7 +84,6 @@ function create_leelaz () {
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
         send_to_leelaz(`komi ${arg.komi}`)
-        send_to_leelaz('play b a1'); check_supported('undo', 'undo')
         check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
         check_supported('endstate', 'endstate_map')
         check_supported('kata-analyze', 'kata-analyze interval 1')
@@ -101,11 +100,7 @@ function create_leelaz () {
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
-        // KataGo v1.1 does not have 'undo'
-        const rewind = () => back <= 0 ? do_nothing() :
-              is_supported('undo') ? do_ntimes(back, undo1) :
-              (leelaz('clear_board'), history.slice(0, beg).forEach(play1))
-        rewind(); rest.forEach(play1)
+        do_ntimes(back, undo1); rest.forEach(play1)
         if (back > 0 || !empty(rest)) {update_move_count(history)}
         leelaz_previous_history = shallow_copy_array(history)
     }
