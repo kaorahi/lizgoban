@@ -25,7 +25,8 @@ const option = {
 process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
 function parse_option(cur, succ) {
     const merge_json = str => merge_with_shortcut(JSON.parse(str))
-    const merge_with_shortcut = orig => merge(option, orig, from_shortcut(orig))
+    const merge_with_shortcut = orig =>
+          (merge(option, orig), merge(option, from_shortcut(option)))
     const from_shortcut = orig => {
         const first_shortcut = (orig.shortcut || [{}])[0]
         const keys = ['leelaz_command', 'leelaz_args']
