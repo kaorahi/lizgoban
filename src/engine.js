@@ -292,8 +292,7 @@ function create_leelaz () {
 
     let supported = {}
     const check_supported = (feature, cmd) => {
-        try_send_to_leelaz(cmd, ok => {supported[feature] = ok; update_now()})
-        send_to_leelaz('name')  // relax (stop analysis)
+        try_send_to_leelaz(cmd, ok => {supported[feature] = ok; send_to_leelaz('name'); update_now()})
     }
     const is_supported = feature => supported[feature]
     const is_katago = () => is_supported('kata-analyze')
