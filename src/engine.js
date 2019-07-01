@@ -84,9 +84,9 @@ function create_leelaz () {
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
         send_to_leelaz(`komi ${arg.komi}`)
-        // check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
-        // check_supported('endstate', 'endstate_map')
-        // check_supported('kata-analyze', 'kata-analyze interval 1')
+        check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
+        check_supported('endstate', 'endstate_map')
+        check_supported('kata-analyze', 'kata-analyze interval 1')
         // call ready_handler after all checks
         try_send_to_leelaz('name', arg.ready_handler)
     }
