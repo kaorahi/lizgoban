@@ -399,6 +399,9 @@ function menu_template(win) {
         item('Info', 'CmdOrCtrl+I', info),
     ])
     const debug_menu = menu('Debug', [
+        item('Send name', undefined, () => P.send_to_leelaz('name')),
+        item('Send lz-analyze', undefined, () => P.send_to_leelaz('lz-analyze interval 10')),
+        sep,
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
         {role: 'toggleDevTools'},
     ])
@@ -960,8 +963,9 @@ function leelaz_start_args(weight_file) {
     const weight_pos = leelaz_weight_option_pos_in_args()
     weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
     const komi = P.get_engine_komi()
+    const ready_handler = () => {play('A1'); update_state()}
     const h = {leelaz_args, komi,
-               restart_handler: auto_restart, ready_handler: update_state}
+               restart_handler: auto_restart, ready_handler}
     const opts = ['leelaz_command', 'analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])
