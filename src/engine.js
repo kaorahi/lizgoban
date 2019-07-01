@@ -296,7 +296,8 @@ function create_leelaz () {
         if (empty(checker_queue)) {on_finished(); return}
         const [feature, cmd] = checker_queue.shift()
         try_send_to_leelaz(cmd, ok => {
-            supported[feature] = ok; do_check_supported(on_finished)
+            supported[feature] = ok
+            setTimeout(() => do_check_supported(on_finished), 1000)
         })
     }
     const do_above_check_supported_one_by_one = do_check_supported
