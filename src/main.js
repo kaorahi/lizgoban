@@ -697,7 +697,7 @@ function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false); update_state(true)}
 function update_ponder() {P.set_pondering(pausing, busy)}
 function update_ponder_and_ui() {update_ponder(); update_ui()}
-function init_from_renderer() {P.update_leelaz(); update_state()}
+function init_from_renderer() {update_state()}
 
 function wink_if_pass(proc, ...args) {
     const rec = () => game.ref(game.move_count)
