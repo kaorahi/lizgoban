@@ -82,13 +82,13 @@ function create_leelaz () {
     }
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
-        // clear_leelaz_board for restart
-        const on_finished = () => {clear_leelaz_board(); arg.ready_handler()}
         send_to_leelaz(`komi ${arg.komi}`)
-        check_supported('minmoves', 'lz-analyze interval 1 minmoves 30')
-        check_supported('endstate', 'endstate_map')
-        check_supported('kata-analyze', 'kata-analyze interval 1')
-        do_above_check_supported_one_by_one(on_finished)
+        // clear_leelaz_board for restart
+        const after_all_checks = () => {clear_leelaz_board(); arg.ready_handler()}
+        check_supported([['minmoves', 'lz-analyze interval 1 minmoves 30'],
+                         ['endstate', 'endstate_map'],
+                         ['kata-analyze', 'kata-analyze interval 1']],
+                        after_all_checks)
     }
     const on_error = () =>
           (arg.error_handler || arg.restart_handler)()
@@ -290,16 +290,14 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // feature checker
 
-    let supported = {}, checker_queue = []
-    const check_supported = (feature, cmd) => checker_queue.push([feature, cmd])
-    const do_check_supported = (on_finished) => {
-        if (empty(checker_queue)) {on_finished(); return}
-        const [feature, cmd] = checker_queue.shift()
+    let supported = {}
+    const check_supported = (rules, after_all_checks) => {
+        if (empty(rules)) {after_all_checks(); return}
+        const [feature, cmd] = rules.shift()
         try_send_to_leelaz(cmd, ok => {
-            supported[feature] = ok; do_check_supported(on_finished)
+            supported[feature] = ok; check_supported(rules, after_all_checks)
         })
     }
-    const do_above_check_supported_one_by_one = do_check_supported
     const is_supported = feature => supported[feature]
     const is_katago = () => is_supported('kata-analyze')
 
