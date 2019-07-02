@@ -1,3 +1,13 @@
+Note on design:
+
+We try to avoid a confirmation dialog for any action and enable "undo"
+of it instead.  UI is kept modeless as far as possible.  See "humane
+interface" for these points
+(https://en.wikipedia.org/wiki/The_Humane_Interface).
+
+Preferences are also kept as small as possible because they make
+debugging difficult.
+
 Note on implementation:
 
 Leelaz is wrapped as if it is a stateless analyzer for convenience.
@@ -5,6 +15,7 @@ The wrapped leelaz receives the history of moves from the beginning to
 the current board state for every analysis.  Only the difference from
 the previous call is sent to leelaz internally for efficiency.
 
-Endstate estimation tends to oscillate between black and white turns.
-So we use the average of recent two moves for score estimation
-and an even number for the width of endstate diff.
+Endstate estimation (by ihavnoid's version) tends to oscillate between
+black and white turns.  So we use the average of recent two moves for
+score estimation and an even number for the width of endstate diff.
+These are not applied to Katago as its estimation seems more stable.
