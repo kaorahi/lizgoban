@@ -71,7 +71,6 @@ Start LizGoban as `npx electron src -c katago.json` with the file katago.json:
 
     {
         "analyze_interval_centisec": 30,
-        "wait_for_startup": false,
         "leelaz_command": "/foo/bar/KataGo/cpp/main",
         "leelaz_args": ["gtp", "-model", "/foo/bar/model.txt.gz", "-config", "/foo/bar/KataGo/cpp/configs/gtp_example.cfg"]
     }
