@@ -441,7 +441,8 @@ function apply_option_shortcut(rule, win) {
     const a = merge({}, rule, rule.option || {})
     const {empty_board, board_type, weight_file, weight_file_for_white} = a
     const {leelaz_command, leelaz_args} = merge({}, option, a)
-    const need_restart = a.leelaz_command || a.leelaz_args
+    const need_restart = (a.leelaz_command !== option.leelaz_command) ||
+          (a.leelaz_args !== option.leelaz_args)
     const load = (switcher, file) => switcher(() => load_weight_file(file))
     empty_board && !game.is_empty() && new_empty_board()
     board_type && set_board_type(board_type, win)
