@@ -454,7 +454,7 @@ function apply_option_shortcut(rule, win) {
 
 function merge_option_and_restart(opts) {
     P.unload_leelaz_for_white(); kill_all_leelaz()
-    merge(option, opts); start_leelaz(); on_restart()
+    merge(option, opts); start_leelaz()
 }
 
 /////////////////////////////////////////////////
@@ -939,8 +939,7 @@ function load_engine() {
 
 // restart
 function restart() {restart_with_args()}
-function restart_with_args(h, new_weight_p) {P.restart(h, new_weight_p); on_restart()}
-function on_restart() {switch_to_nth_sequence(sequence_cursor); stop_auto()}
+function restart_with_args(h, new_weight_p) {P.restart(h, new_weight_p)}
 let last_restart_time = 0
 function auto_restart() {
     const buttons =
@@ -961,11 +960,14 @@ function leelaz_start_args(weight_file) {
     weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
     const komi = P.get_engine_komi()
     const h = {leelaz_args, komi,
-               restart_handler: auto_restart, ready_handler: update_state}
+               restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['leelaz_command', 'analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])
     return h
+}
+function on_ready() {
+    switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
 }
 function leelaz_weight_option_pos_in_args() {
     const weight_options = ['-w', '--weights', '-model']  // -model for KataGo
