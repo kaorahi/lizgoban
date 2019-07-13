@@ -298,11 +298,15 @@ function update_state_to_move_count_tentatively(count) {
 /////////////////////////////////////////////////
 // another source of change: menu
 
-function update_menu() {
-    get_windows()
-        .forEach(win => win.setMenu(simple_ui ? null :
-                                    Menu.buildFromTemplate(menu_template(win))))
+function update_menu() {mac_p() ? update_app_menu() : update_window_menu()}
+function update_app_menu() {
+    const win = electron.BrowserWindow.getFocusedWindow() || get_windows()[0]
+    win && electron.Menu.setApplicationMenu(menu_for_window(win))
 }
+function update_window_menu() {
+    get_windows().forEach(win => win.setMenu(menu_for_window(win)))
+}
+function menu_for_window(win) {return Menu.buildFromTemplate(menu_template(win))}
 
 function menu_template(win) {
     const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
