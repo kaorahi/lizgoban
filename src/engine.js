@@ -134,13 +134,13 @@ function create_leelaz () {
         // duplicated endstate
         endstate_command_p(s) && remove(endstate_command_p)
         // obsolete endstate / peek
-        changer_command_p(s) && [endstate_command_p, peek_command_p].map(remove)
+        changer_command_p(s) && [endstate_command_p, peek_command_p].forEach(remove)
         command_queue.push(s); send_from_queue()
     }
 
     const send_from_queue = () => {
         if (empty(command_queue) || !up_to_date_response()) {return}
-        split_commands(command_queue.shift()).map(send_to_leelaz)
+        split_commands(command_queue.shift()).forEach(send_to_leelaz)
     }
 
     const send_to_leelaz = cmd => {try_send_to_leelaz(cmd)}
