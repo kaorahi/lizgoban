@@ -33,10 +33,13 @@ function create_leelaz () {
 
     // process
     const start = h => {
+        arg = {...h}
+        arg.weight_file && overwrite_weight_file_in_leelaz_args(arg.weight_file)
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
+               weight_file,
                komi, minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler}
-              = arg = h
+              = arg
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
         is_ready = false; network_size_text = ''
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
@@ -117,6 +120,21 @@ function create_leelaz () {
                              `play ${bturn ? 'b' : 'w'} ${move}`,
                              'lz-analyze interval 0',
                              'lz-setoption name visits value 0', 'undo'))
+    }
+
+    /////////////////////////////////////////////////
+    // weights file
+
+    const get_weight_file = () =>
+          arg && arg.leelaz_args[weight_option_pos_in_leelaz_args()]
+    const overwrite_weight_file_in_leelaz_args = path => {
+        const as = arg.leelaz_args.slice()
+        as[weight_option_pos_in_leelaz_args()] = path
+        arg.leelaz_args = as
+    }
+    const weight_option_pos_in_leelaz_args = () => {
+        const weight_options = ['-w', '--weights', '-model']  // -model for KataGo
+        return arg.leelaz_args.findIndex(z => weight_options.includes(z)) + 1
     }
 
     /////////////////////////////////////////////////
@@ -305,7 +323,7 @@ function create_leelaz () {
     // exported methods
 
     return {
-        start, restart, kill, set_board, update, set_pondering,
+        start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, network_size, peek_value, is_katago,
         // for debug
         send_to_leelaz,

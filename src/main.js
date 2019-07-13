@@ -82,7 +82,7 @@ const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()
 P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
     // functions used in powered_goban.js
     render, update_state, update_ponder, show_suggest_p, is_pass,
-    auto_progress, is_auto_bturn, leelaz_weight_option_pos_in_args, is_busy,
+    auto_progress, is_auto_bturn, is_busy,
     error_from_powered_goban,
 })
 function render(given_R, is_board_changed) {
@@ -957,10 +957,8 @@ function auto_restart() {
 // util
 function leelaz_start_args(weight_file) {
     const leelaz_args = option.leelaz_args.slice()
-    const weight_pos = leelaz_weight_option_pos_in_args()
-    weight_file && weight_pos >= 0 && (leelaz_args[weight_pos + 1] = weight_file)
     const komi = P.get_engine_komi()
-    const h = {leelaz_args, komi,
+    const h = {leelaz_args, komi, weight_file,
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['leelaz_command', 'analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length']
@@ -972,10 +970,6 @@ function on_ready() {
     // (leelaz_for_black, leelaz_for_white, and leelaz_for_endstate).
     // This interferes starting-up sequence of another leelaz in engine.js.
     switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
-}
-function leelaz_weight_option_pos_in_args() {
-    const weight_options = ['-w', '--weights', '-model']  // -model for KataGo
-    return option.leelaz_args.findIndex(z => weight_options.includes(z))
 }
 
 /////////////////////////////////////////////////

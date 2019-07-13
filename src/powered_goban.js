@@ -70,9 +70,7 @@ function all_start_args() {
     return {black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
 }
 function leelaz_weight_file(leelaz_for_black_or_white) {
-    const k = M.leelaz_weight_option_pos_in_args()
-    const arg = (leelaz_for_black_or_white || leelaz).start_args()
-    return (k >= 0) && arg && arg.leelaz_args[k + 1]
+    return (leelaz_for_black_or_white || leelaz).get_weight_file()
 }
 
 function each_leelaz(f, for_black_and_white_only) {
@@ -242,7 +240,7 @@ function change_endstate_diff_target(proc) {
 
 function start_endstate(leelaz_start_args, endstate_option) {
     const [lz_command, x] = endstate_option, x_type = typeof x
-    const weight = (x_type === 'string') ? x : 'dummy'
+    const weight = (x_type === 'string') && x
     const more = (x_type === 'object') ? {leelaz_args: x} : {}
     const start_args = {...leelaz_start_args(weight), endstate_handler,
                         leelaz_command: lz_command, ...more}
