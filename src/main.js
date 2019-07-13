@@ -437,7 +437,7 @@ function shortcut_menu_maybe(menu, item, win) {
 }
 
 function apply_option_shortcut(rule, win) {
-    // merge arg.option for backward compatibility to 1a88dd40
+    // merge rule.option for backward compatibility to 1a88dd40
     const a = merge({}, rule, rule.option || {})
     const {empty_board, board_type, weight_file, weight_file_for_white} = a
     const {leelaz_command, leelaz_args} = merge({}, option, a)
