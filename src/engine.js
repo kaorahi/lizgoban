@@ -262,8 +262,8 @@ function create_leelaz () {
         (m = s.match(/Detecting residual layers.*?([0-9]+) channels.*?([0-9]+) blocks/)) &&
             (network_size_text = `${m[1]}x${m[2]}`);
         // "GTP ready" for KataGo
-        (m = s.match(/(Setting max tree size)|(GTP ready)/) && on_ready());
-        (m = s.match(/Weights file is the wrong version/) && on_error());
+        s.match(/(Setting max tree size)|(GTP ready)/) && on_ready();
+        s.match(/Weights file is the wrong version/) && on_error();
         (m = s.match(/NN eval=([0-9.]+)/)) && the_nn_eval_reader(to_f(m[1]));
         s.match(/endstate:/) && (current_reader = endstate_reader)
     }
