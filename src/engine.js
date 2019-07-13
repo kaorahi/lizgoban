@@ -1,10 +1,5 @@
 require('./util.js').use(); require('./coord.js').use()
 
-// util
-function shallow_copy_array(a) {return a.slice()}
-function shallow_copy_hash(b) {return Object.assign({}, b)}
-function NOP() {}
-
 function create_leelaz () {
 
     /////////////////////////////////////////////////
@@ -99,7 +94,7 @@ function create_leelaz () {
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
         if (back > 0 || !empty(rest)) {update_move_count(history)}
-        leelaz_previous_history = shallow_copy_array(history)
+        leelaz_previous_history = history.slice()
     }
     const play1 = ({move, is_black}) => {leelaz('play ' + (is_black ? 'b ' : 'w ') + move)}
     const undo1 = () => {leelaz('undo')}
@@ -116,7 +111,8 @@ function create_leelaz () {
     const start_args = () => arg
     const network_size = () => network_size_text
     const peek_value = (move, cont) => {
-        the_nn_eval_reader = value => {the_nn_eval_reader = NOP; cont(value); update()}
+        the_nn_eval_reader =
+            value => {the_nn_eval_reader = do_nothing; cont(value); update()}
         leelaz(join_commands('lz-setoption name visits value 1',
                              `play ${bturn ? 'b' : 'w'} ${move}`,
                              'lz-analyze interval 0',
@@ -253,7 +249,7 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // stderr reader
 
-    let current_reader, the_nn_eval_reader = NOP
+    let current_reader, the_nn_eval_reader = do_nothing
 
     const reader = (s) => {log('stderr|', s); current_reader(s)}
 
