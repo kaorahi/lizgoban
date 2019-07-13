@@ -46,7 +46,7 @@ function create_leelaz () {
         leelaz_process.stdout.on('data', each_line(stdout_reader))
         leelaz_process.stderr.on('data', each_line(reader))
         set_error_handler(leelaz_process, restart_handler)
-        command_queue = []; block_commands_until_ready()
+        command_queue = []; last_command_id = last_response_id = -1
         wait_for_startup || on_ready()
     }
     const restart = h => {kill(); start(h ? {...arg, ...h} : arg)}
@@ -74,12 +74,6 @@ function create_leelaz () {
         arg.endstate_handler && is_supported('endstate') && leelaz('endstate_map')
     }
 
-    // fixme: unclear
-    // up_to_date_response() is turned to be true indirectly
-    // by send_to_leelaz as a side effect in check_supported.
-    const block_commands_until_ready = () => {
-        last_command_id = -1; last_response_id = -2
-    }
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
         send_to_leelaz(`komi ${arg.komi}`)
