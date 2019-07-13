@@ -137,12 +137,13 @@ function create_leelaz () {
         split_commands(command_queue.shift()).forEach(send_to_leelaz)
     }
 
-    const send_to_leelaz = cmd => {try_send_to_leelaz(cmd)}
-    const try_send_to_leelaz = (cmd, on_response) => {
+    const send_to_leelaz = (cmd, on_response) => {
         // see stdout_reader for optional arg "on_response"
         if (do_update_move_count(cmd)) {return}
         const cmd_with_id = `${++last_command_id} ${cmd}`
-        on_response && (on_response_for_id[last_command_id] = on_response)
+        // ignore unintentional wrong on_response by a.forEach(send_to_leelaz)
+        typeof on_response === 'function' &&
+            (on_response_for_id[last_command_id] = on_response)
         pondering_command_p(cmd) && speedometer.reset()
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
     }
@@ -288,7 +289,7 @@ function create_leelaz () {
     const check_supported = (rules, after_all_checks) => {
         if (empty(rules)) {after_all_checks(); return}
         const [feature, cmd] = rules.shift()
-        try_send_to_leelaz(cmd, ok => {
+        send_to_leelaz(cmd, ok => {
             supported[feature] = ok; check_supported(rules, after_all_checks)
         })
     }
