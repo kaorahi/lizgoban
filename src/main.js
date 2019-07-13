@@ -481,7 +481,7 @@ function try_auto_analyze(force_next) {
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
-    if (game.is_empty()) {return}
+    if (game.is_empty()) {wink(); return}
     (auto_analysis_signed_visits === visits) ?
         (stop_auto_analyze(), update_ui()) :
         start_auto_analyze(visits)
