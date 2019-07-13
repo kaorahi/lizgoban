@@ -968,6 +968,9 @@ function leelaz_start_args(weight_file) {
     return h
 }
 function on_ready() {
+    // fixme: on_ready is called by *every* leelaz
+    // (leelaz_for_black, leelaz_for_white, and leelaz_for_endstate).
+    // This interferes starting-up sequence of another leelaz in engine.js.
     switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
 }
 function leelaz_weight_option_pos_in_args() {
