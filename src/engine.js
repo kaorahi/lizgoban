@@ -26,8 +26,10 @@ function create_leelaz () {
     const log = (header, s, show_queue_p) => {
         const format = x => (to_s(x).match(/.{0,4}[.].{2}/) || [''])[0]
         const ti = format(Date.now() / 1000 + 0.0001)
+        const t2s = task => (task.protect_p ? '!' : '') +
+              (with_response_p(task) ? '*' : '') + task.command
         debug_log(`${ti} [${(leelaz_process || {}).pid}] ${header} ${s}` +
-                  (show_queue_p ? ` [${command_queue}]` : ''),
+                  (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
                   arg.engine_log_line_length)
     }
 
@@ -102,7 +104,9 @@ function create_leelaz () {
     const undo1 = () => {leelaz('undo')}
 
     // util
-    const leelaz = (s) => {log('queue>', s, true); send_to_queue(s)}
+    const leelaz = (command, on_response, protect_p) => {
+        log('queue>', command, true); send_to_queue({command, on_response, protect_p})
+    }
     const update_now = () => {endstate(); start_analysis()}
     const [update_later] = deferred_procs([update_now, endstate_delay_millisec])
     // avoid flicker of endstate
@@ -121,32 +125,39 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // command queue
 
-    const send_to_queue = (s) => {
-        const remove = f => {command_queue = command_queue.filter(x => !f(x))}
+    // task = {command: "play b D4", on_response: ok => {...}, protect_p: false}
+
+    const send_to_queue = task => {
+        const remove = f => {
+            command_queue = command_queue.filter(x => !f(x) || x.protect_p)
+        }
         // useless lz-analyze that will be canceled immediately
         remove(pondering_command_p)
         // duplicated endstate
-        endstate_command_p(s) && remove(endstate_command_p)
+        endstate_command_p(task) && remove(endstate_command_p)
         // obsolete endstate / peek
-        changer_command_p(s) && [endstate_command_p, peek_command_p].forEach(remove)
-        command_queue.push(s); send_from_queue()
+        changer_command_p(task) && [endstate_command_p, peek_command_p].forEach(remove)
+        command_queue.push(task); send_from_queue()
     }
 
     const send_from_queue = () => {
         if (empty(command_queue) || !up_to_date_response()) {return}
-        split_commands(command_queue.shift()).forEach(send_to_leelaz)
+        split_task(command_queue.shift()).forEach(send_task_to_leelaz)
     }
 
-    const send_to_leelaz = (cmd, on_response) => {
-        // see stdout_reader for optional arg "on_response"
+    const send_task_to_leelaz = task => {
+        // see stdout_reader for optional "on_response"
+        const {command, on_response} = task, cmd = command
         if (do_update_move_count(cmd)) {return}
         const cmd_with_id = `${++last_command_id} ${cmd}`
-        // ignore unintentional wrong on_response by a.forEach(send_to_leelaz)
-        typeof on_response === 'function' &&
-            (on_response_for_id[last_command_id] = on_response)
-        pondering_command_p(cmd) && speedometer.reset()
+        with_response_p(task) && (on_response_for_id[last_command_id] = on_response)
+        pondering_command_p(task) && speedometer.reset()
         log('leelaz> ', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
     }
+    // ignore unintentional wrong on_response by a.forEach(send_to_leelaz)
+    const with_response_p = task => (typeof task.on_response === 'function')
+    const send_to_leelaz = (command, on_response) =>
+          send_task_to_leelaz({command, on_response})
 
     const update_move_count = history => {
         const move_count = history.length, bturn = !(last(history) || {}).is_black
@@ -160,10 +171,14 @@ function create_leelaz () {
     }
 
     const join_commands = (...a) => a.join(';')
-    const split_commands = s => s.split(';')
+    const split_task = task => {
+        const ts = task.command.split(';').map(command => ({command}))
+        last(ts).on_response = task.on_response
+        return ts
+    }
     const up_to_date_response = () => {return last_response_id >= last_command_id}
 
-    const command_matcher = re => (command => command.match(re))
+    const command_matcher = re => (task => task.command.match(re))
     const pondering_command_p = command_matcher(/^(lz|kata)-analyze/)
     const endstate_command_p = command_matcher(/^endstate_map/)
     const peek_command_p = command_matcher(/play.*undo/)
