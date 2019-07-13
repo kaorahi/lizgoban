@@ -147,8 +147,8 @@ function create_leelaz () {
 
     const send_task_to_leelaz = task => {
         // see stdout_reader for optional "on_response"
-        const {command, on_response} = task, cmd = command
-        if (do_update_move_count(cmd)) {return}
+        const {command, on_response} = task
+        const cmd = dummy_command_p(task) ? 'name' : command
         const cmd_with_id = `${++last_command_id} ${cmd}`
         with_response_p(task) && (on_response_for_id[last_command_id] = on_response)
         pondering_command_p(task) && speedometer.reset()
@@ -160,14 +160,11 @@ function create_leelaz () {
           send_task_to_leelaz({command, on_response})
 
     const update_move_count = history => {
-        const move_count = history.length, bturn = !(last(history) || {}).is_black
-        const new_state = JSON.stringify({move_count, bturn})
-        leelaz(`lizgoban_set ${new_state}`); update()
-    }
-    const do_update_move_count = cmd => {
-        const m = cmd.match(/lizgoban_set (.*$)/); if (!m) {return false}
-        const h = JSON.parse(m[1]); move_count = h.move_count; bturn = h.bturn
-        send_from_queue(); return true
+        const new_state =
+              {move_count: history.length, bturn: !(last(history) || {}).is_black}
+        const dummy_command = `lizgoban_set ${JSON.stringify(new_state)}`
+        const on_response = () => ({move_count, bturn} = new_state)
+        leelaz(dummy_command, on_response); update()
     }
 
     const join_commands = (...a) => a.join(';')
@@ -183,6 +180,7 @@ function create_leelaz () {
     const endstate_command_p = command_matcher(/^endstate_map/)
     const peek_command_p = command_matcher(/play.*undo/)
     const changer_command_p = command_matcher(/play|undo|clear_board/)
+    const dummy_command_p = command_matcher(/lizgoban/)
 
     /////////////////////////////////////////////////
     // stdout reader
