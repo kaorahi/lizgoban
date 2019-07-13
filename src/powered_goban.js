@@ -183,6 +183,13 @@ function load_leelaz_for_white(load_weight) {
     }
     with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
 }
+function set_engine_for_white(command_args) {
+    unload_leelaz_for_white()
+    const [leelaz_command, ...leelaz_args] = command_args
+    const start_args = {...leelaz_for_black.start_args(), leelaz_command, leelaz_args}
+    const proc = () => leelaz_for_white.start(start_args)
+    with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
+}
 function unload_leelaz_for_white() {
     switch_to_another_leelaz(leelaz_for_black)
     leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
@@ -386,6 +393,7 @@ module.exports = {
     // another leelaz for white
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_to_random_leelaz,
     load_leelaz_for_black, load_leelaz_for_white, unload_leelaz_for_white,
+    set_engine_for_white,
     // endstate
     leelaz_for_endstate_p, append_endstate_tag_maybe,
     get_endstate_diff_interval, add_endstate_diff_interval, set_endstate_diff_from,

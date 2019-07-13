@@ -439,7 +439,8 @@ function shortcut_menu_maybe(menu, item, win) {
 function apply_option_shortcut(rule, win) {
     // merge rule.option for backward compatibility to 1a88dd40
     const a = merge({}, rule, rule.option || {})
-    const {empty_board, board_type, weight_file, weight_file_for_white} = a
+    const {empty_board, board_type, weight_file, weight_file_for_white,
+           engine_for_white} = a
     const {leelaz_command, leelaz_args} = merge({}, option, a)
     const need_restart = (a.leelaz_command !== option.leelaz_command) ||
           (a.leelaz_args !== option.leelaz_args)
@@ -450,6 +451,7 @@ function apply_option_shortcut(rule, win) {
     weight_file && load(P.load_leelaz_for_black, weight_file)
     weight_file_for_white ? load(P.load_leelaz_for_white, weight_file_for_white) :
         P.unload_leelaz_for_white()
+    engine_for_white && P.set_engine_for_white(engine_for_white)
     resume()
 }
 
