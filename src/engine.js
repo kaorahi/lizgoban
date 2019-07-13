@@ -78,13 +78,14 @@ function create_leelaz () {
 
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
-        send_to_leelaz(`komi ${arg.komi}`)
+        leelaz(`komi ${arg.komi}`)
+        const checks = [['minmoves', 'lz-analyze interval 1 minmoves 30'],
+                        ['endstate', 'endstate_map'],
+                        ['kata-analyze', 'kata-analyze interval 1']]
+        checks.map(a => check_supported(...a))
         // clear_leelaz_board for restart
         const after_all_checks = () => {clear_leelaz_board(); arg.ready_handler()}
-        check_supported([['minmoves', 'lz-analyze interval 1 minmoves 30'],
-                         ['endstate', 'endstate_map'],
-                         ['kata-analyze', 'kata-analyze interval 1']],
-                        after_all_checks)
+        leelaz('lizgoban_after_all_checks', after_all_checks)
     }
     const on_error = () =>
           (arg.error_handler || arg.restart_handler)()
@@ -299,13 +300,8 @@ function create_leelaz () {
     // feature checker
 
     let supported = {}
-    const check_supported = (rules, after_all_checks) => {
-        if (empty(rules)) {after_all_checks(); return}
-        const [feature, cmd] = rules.shift()
-        send_to_leelaz(cmd, ok => {
-            supported[feature] = ok; check_supported(rules, after_all_checks)
-        })
-    }
+    const check_supported =
+          (feature, cmd) => leelaz(cmd, ok => (supported[feature] = ok), true)
     const is_supported = feature => supported[feature]
     const is_katago = () => is_supported('kata-analyze')
 
