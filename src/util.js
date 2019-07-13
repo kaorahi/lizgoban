@@ -64,10 +64,10 @@ E.make_speedometer = (interval_sec, premature_sec) => {
     let t0, k0, t1, k1  // t0 = origin, t1 = next origin
     const reset = () => {[t0, k0, t1, k1] = [Date.now(), NaN, null, null]}
     const per_sec = k => {
-        const t = Date.now(), dt_sec = (t - t0) / 1000, ready = !isNaN(k0)
-        !ready && (dt_sec >= premature_sec) && ([t0, k0, t1, k1] = [t, k, t, k])
+        const t = Date.now(), ready = !isNaN(k0), dt_sec = () => (t - t0) / 1000
+        !ready && (dt_sec() >= premature_sec) && ([t0, k0, t1, k1] = [t, k, t, k])
         ready && (t - t1 >= interval_sec * 1000) && ([t0, k0, t1, k1] = [t1, k1, t, k])
-        const ret = (k - k0) / dt_sec
+        const ret = (k - k0) / dt_sec()
         return ready && !isNaN(ret) && (ret < Infinity) && ret
     }
     reset(); per_sec(0); return {reset, per_sec}
