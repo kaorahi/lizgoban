@@ -667,7 +667,7 @@ function help() {
 }
 function info() {
     const f = (label, s) => s ?
-          `<${label}>\n` + fold_text(JSON.stringify(s), 80, 5) + '\n\n' : ''
+          `<${label}>\n` + fold_text(JSON.stringify(s), 60, 5) + '\n\n' : ''
     const sa = P.all_start_args()
     const lz = P.leelaz_for_white_p() ?
           (f("leelaz (black)", sa.black) + f("leelaz (white)", sa.white)) :
