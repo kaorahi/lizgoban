@@ -200,7 +200,8 @@ function draw_progress(highlightp, margin, canvas, g) {
 }
 
 function draw_cursor(hovered_move, unit, idx2coord, g) {
-    const xy = idx2coord(...move2idx(hovered_move))
+    const [i, j] = move2idx(hovered_move); if (i < 0) {return}
+    const xy = idx2coord(i, j)
     g.fillStyle = R.bturn ? PALE_BLACK : PALE_WHITE
     fill_circle(xy, unit / 4, g)
 }
