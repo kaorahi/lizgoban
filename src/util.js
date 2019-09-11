@@ -35,7 +35,12 @@ E.aa_ref = (aa, i, j) => truep(i) && (i >= 0) && aa[i] && aa[i][j]
 E.aa_set = (aa, i, j, val) =>
     truep(i) && (i >= 0) && ((aa[i] = aa[i] || []), (aa[i][j] = val))
 E.aa_each = (aa, f) => aa.forEach((row, i) => row.forEach((s, j) => f(s, i, j)))
+E.aa_map = (aa, f) => aa.map((row, i) => row.map((s, j) => f(s, i, j)))
 E.aa2hash = aa => {const h = {}; aa.forEach(([k, v]) => h[k] = v); return h}
+E.around_idx = ([i, j]) => {
+    const neighbor = ([di, dj]) => [i + di, j + dj]
+    return [[1, 0], [0, 1], [-1, 0], [0, -1]].map(neighbor)
+}
 
 // str_uniq('zabcacd') = 'zabcd'
 E.str_uniq = str => [...new Set(str.split(''))].join('')

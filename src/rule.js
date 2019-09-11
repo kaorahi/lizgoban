@@ -15,7 +15,7 @@ function put({move, is_black}, stones, last) {
 }
 
 function remove_dead_by(ij, is_black, stones) {
-    around(ij).forEach(idx => remove_dead(idx, !is_black, stones))
+    around_idx(ij).forEach(idx => remove_dead(idx, !is_black, stones))
     remove_dead(ij, is_black, stones)
 }
 
@@ -29,7 +29,7 @@ function remove_dead(ij, is_black, stones) {
 }
 
 function search_for_liberty(state) {
-    return around(state.hope.shift()).find(idx => check_if_liberty(idx, state))
+    return around_idx(state.hope.shift()).find(idx => check_if_liberty(idx, state))
 }
 
 function check_if_liberty(ij, state) {
@@ -41,11 +41,6 @@ function push_hope(ij, s, state) {
     if (xor(s.black, state.is_black) || aa_ref(state.dead_map, ...ij)) {return}
     state.hope.push(ij)
     state.dead_pool.push(ij); aa_set(state.dead_map, ...ij, true)
-}
-
-function around([i, j]) {
-    const neighbor = ([di, dj]) => [i + di, j + dj]
-    return [[1, 0], [0, 1], [-1, 0], [0, -1]].map(neighbor)
 }
 
 module.exports = {
