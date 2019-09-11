@@ -4,6 +4,7 @@
 // setup
 
 require('./util.js').use(); require('./coord.js').use()
+const {endstate_clusters} = require('./area.js')
 
 // color constant
 const BLACK = "#000", WHITE = "#fff"
@@ -162,6 +163,7 @@ function draw_goban(canvas, stones, opts) {
         tag_clickable_p, hovered_move,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
+    draw_endstate_p && draw_endstate_clusters(unit, idx2coord, g)
     // mouse events
     handle_mouse_on_goban(canvas, coord2idx, read_only, tag_clickable_p)
 }
@@ -233,6 +235,21 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
 
 function goban_bg(border) {
     return GOBAN_BG_COLOR[(R.pausing ? 'p' : '') + (R.trial && border ? 't' : '')]
+}
+
+function draw_endstate_clusters(unit, idx2coord, g) {
+    R.endstate && endstate_clusters(R.endstate).forEach(cluster => {
+        const {ownership_sum, center_idx} = cluster
+        const area_count = Math.round(Math.abs(ownership_sum))
+        if (area_count < 1.0) {return}
+        const fontsize = unit * 3, xy = idx2coord(...center_idx)
+        const color = ownership_sum > 0 ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,255,0.2)'
+        const text = to_s(area_count)
+        g.save()
+        set_font(fontsize, g); g.textAlign = 'center'; g.textBaseline = 'middle'
+        g.fillStyle = color; g.fillText(text, ...xy)
+        g.restore()
+    })
 }
 
 /////////////////////////////////////////////////
