@@ -2,41 +2,50 @@
 
 require('./util.js').use(); require('./coord.js').use()
 
-const ignorable_ownership = 0.01
+const scan_rules = [{type: 'major', threshold: 0.1},
+                    {type: 'minor', threshold: 0.5 / 361}]
 
 function endstate_clusters(endstate) {
-    const grid = aa_map(endstate, z => ({ownership: z, done: is_ignorable(z)}))
+    const grid = aa_map(endstate, z => ({ownership: z, done: false}))
     const result = []
-    aa_each(grid, (h, i, j) => h.done || result.push(cluster_from(i, j, grid)))
+    scan_rules.forEach(rule => scan(grid, result, rule))
     return result
 }
 
-function is_ignorable(ownership) {return Math.abs(ownership) < ignorable_ownership}
+function scan(grid, result, rule) {
+    aa_each(grid, (g, i, j) =>
+            ignorable(g, rule) || result.push(cluster_from(i, j, grid, rule)))
+}
 
-function cluster_from(i, j, grid) {
-    const cluster = {ownership_sum: 0.0, i_sum: 0.0, j_sum: 0.0, newcomers: []}
-    add_newcomer_maybe([i, j], cluster, grid)
-    while (!empty(cluster.newcomers)) {
-        search_around(cluster.newcomers.pop(), cluster, grid)
+function ignorable(g, rule) {return g.done || Math.abs(g.ownership) < rule.threshold}
+
+function cluster_from(i, j, grid, rule) {
+    const state = {ownership_sum: 0.0, i_sum: 0.0, j_sum: 0.0,
+                   newcomers: [], rule}
+    add_newcomer_maybe([i, j], state, grid)
+    while (!empty(state.newcomers)) {
+        search_around(state.newcomers.pop(), state, grid)
     }
-    const {ownership_sum} = cluster, center_idx = center_idx_of(cluster)
-    return {ownership_sum, center_idx}
+    const {ownership_sum} = state, {type} = rule, center_idx = center_idx_for(state)
+    return {type, ownership_sum, center_idx}
 }
 
-function add_newcomer_maybe(ij, cluster, grid) {
-    const g = aa_ref(grid, ...ij), c = cluster
-    if (!g || g.done || g.ownership * c.ownership_sum < 0) {return}
+function add_newcomer_maybe(ij, state, grid) {
+    const g = aa_ref(grid, ...ij), s = state
+    const skip = !g || ignorable(g, state.rule) ||
+          g.ownership * s.ownership_sum < 0
+    if (skip) {return}
     const [i, j] = ij, weight = Math.abs(g.ownership)
-    c.newcomers.push(ij); g.done = true
-    c.ownership_sum += g.ownership; c.i_sum += i * weight; c.j_sum += j * weight
+    s.newcomers.push(ij); g.done = true
+    s.ownership_sum += g.ownership; s.i_sum += i * weight; s.j_sum += j * weight
 }
 
-function search_around(ij, cluster, grid) {
-    around_idx(ij).forEach(idx => add_newcomer_maybe(idx, cluster, grid))
+function search_around(ij, state, grid) {
+    around_idx(ij).forEach(idx => add_newcomer_maybe(idx, state, grid))
 }
 
-function center_idx_of(cluster) {
-    const {ownership_sum, i_sum, j_sum} = cluster, weight_sum = Math.abs(ownership_sum)
+function center_idx_for(state) {
+    const {ownership_sum, i_sum, j_sum} = state, weight_sum = Math.abs(ownership_sum)
     return [i_sum, j_sum].map(z => z / weight_sum)
 }
 

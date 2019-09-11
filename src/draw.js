@@ -239,10 +239,11 @@ function goban_bg(border) {
 
 function draw_endstate_clusters(unit, idx2coord, g) {
     R.endstate && endstate_clusters(R.endstate).forEach(cluster => {
-        const {ownership_sum, center_idx} = cluster
+        const {type, ownership_sum, center_idx} = cluster
         const area_count = Math.round(Math.abs(ownership_sum))
         if (area_count < 1.0) {return}
-        const fontsize = unit * 3, xy = idx2coord(...center_idx)
+        const fontsize = unit * {major: 3, minor: 2}[type]
+        const xy = idx2coord(...center_idx)
         const color = ownership_sum > 0 ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,255,0.2)'
         const text = to_s(area_count)
         g.save()
