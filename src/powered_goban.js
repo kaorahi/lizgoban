@@ -5,6 +5,7 @@
 
 require('./util.js').use(); require('./coord.js').use()
 const {create_game} = require('./game.js')
+const {endstate_clusters_for} = require('./area.js')
 const PATH = require('path')
 
 // leelaz
@@ -145,8 +146,10 @@ function set_renderer_state(...args) {
     const is_katago = katago_p()
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           leelaz_for_endstate ? average_endstate_sum() : null
+    const endstate = aa_map(R.stones, h => h.endstate || 0)
+    const endstate_clusters = endstate_clusters_for(endstate)
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
-    merge(R, {move_count, busy, winrate_history, endstate_sum,
+    merge(R, {move_count, busy, winrate_history, endstate_sum, endstate_clusters,
               max_visits, progress,
               progress_bturn, weight_info, is_katago,
               previous_suggest, winrate_trail}, endstate_d_i)

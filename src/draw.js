@@ -4,7 +4,6 @@
 // setup
 
 require('./util.js').use(); require('./coord.js').use()
-const {endstate_clusters} = require('./area.js')
 
 // color constant
 const BLACK = "#000", WHITE = "#fff"
@@ -238,17 +237,17 @@ function goban_bg(border) {
 }
 
 function draw_endstate_clusters(unit, idx2coord, g) {
-    R.endstate && endstate_clusters(R.endstate).forEach(cluster => {
-        const {type, ownership_sum, center_idx} = cluster
+    const style = {black: 'rgba(0,255,0,0.2)', white: 'rgba(255,0,255,0.2)'}
+    const size = {major: 3, minor: 2}
+    R.endstate_clusters.forEach(cluster => {
+        const {color, type, ownership_sum, center_idx} = cluster
         const area_count = Math.round(Math.abs(ownership_sum))
-        if (area_count < 1.0) {return}
-        const fontsize = unit * {major: 3, minor: 2}[type]
-        const xy = idx2coord(...center_idx)
-        const color = ownership_sum > 0 ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,255,0.2)'
-        const text = to_s(area_count)
+        if (area_count < 1) {return}
+        const text = to_s(area_count), xy = idx2coord(...center_idx)
         g.save()
-        set_font(fontsize, g); g.textAlign = 'center'; g.textBaseline = 'middle'
-        g.fillStyle = color; g.fillText(text, ...xy)
+        g.textAlign = 'center'; g.textBaseline = 'middle'
+        set_font(size[type] * unit, g); g.fillStyle = style[color]
+        g.fillText(text, ...xy)
         g.restore()
     })
 }

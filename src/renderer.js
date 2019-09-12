@@ -24,7 +24,7 @@ const R = {
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',
     progress: 0.0, progress_bturn: true, weight_info: '', is_katago: false,
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
-    history_tags: [],
+    history_tags: [], endstate_clusters: [],
     lizzie_style: false,
     window_id: -1,
 }
