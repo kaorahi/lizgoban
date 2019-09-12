@@ -65,7 +65,7 @@ with the file config.json:
 
 ### To use KataGo and its score/ownership estimations (experimental):
 
-![The last white move increases possible black territories indirectly (small green squares).](katago.png)
+![katago screenshot](area_count.png)
 
 Start LizGoban as `npx electron src -c katago.json` with the file katago.json:
 
