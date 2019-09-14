@@ -233,7 +233,7 @@ function get_endstate_diff_interval() {return endstate_diff_interval}
 function add_endstate_diff_interval(k) {
     // only allow an even number as the interval in leelaz_for_endstate
     // since its estimation tends to oscillate with black / white turns
-    const [unit, minimum] = leelaz_for_endstate ? [10, 2] : [1, 1]
+    const [unit, minimum] = (leelaz_for_endstate && !katago_p()) ? [10, 2] : [1, 1]
     change_endstate_diff_target(() => {
         endstate_diff_interval = clip(endstate_diff_interval + k * unit, minimum)
         update_info_in_stones()  // update "recent stone" marks
