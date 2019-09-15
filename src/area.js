@@ -98,6 +98,7 @@ function cluster_characteristics(ijs, grid) {
 // separate corridors for "natural" clustering
 
 function corridor_clusters_in(region, grid, category, corridor_radius) {
+    if (corridor_radius <=0) {return []}
     const corridors = corridors_in(region, grid, corridor_radius)
     const clusters = clusters_with_ijs_in_region(corridors, grid, category)
     // cancel annoying small clusters
