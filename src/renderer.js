@@ -31,7 +31,7 @@ const R = {
 let temporary_board_type = null, the_first_board_canvas = null
 let keyboard_moves = [], keyboard_tag_move_count = null
 let hovered_move = null, hovered_move_count = null, hovered_board_canvas = null
-let the_showing_movenum_p = false
+let the_showing_movenum_p = false, the_showing_endstate_value_p = false
 let thumbnails = []
 
 // drawer
@@ -147,6 +147,7 @@ function with_opts(d, opts) {
         first_board_p: is_first_board_canvas(c),
         show_until: showing_until(c),
         hovered_move: if_hover_on(c, hovered_move),
+        draw_endstate_value_p: showing_endstate_value_p(),
         handle_mouse_on_goban,
         ...(opts || {})
     }))
@@ -559,6 +560,7 @@ document.onkeydown = e => {
     key.length === 1 && tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
     switch (key) {
     case "c" : set_showing_movenum_p(true); return
+    case "v" : set_showing_endstate_value_p(true); return
     case "C-c": m('copy_sgf_to_clipboard'); return
     case "z": f(set_temporary_board_type, "raw", "suggest"); return
     case "x": f(set_temporary_board_type, "winrate_only", "suggest"); return
@@ -599,6 +601,7 @@ document.onkeyup = e => {
     (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
     case "c" : set_showing_movenum_p(false); return
+    case "v" : set_showing_endstate_value_p(false); return
     case "z": case "x": set_temporary_board_type(null); return
     }
     main('unset_busy')
@@ -626,6 +629,10 @@ function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_movenum_p() {return the_showing_movenum_p}
 function set_showing_movenum_p(val) {
     the_showing_movenum_p = val; val && update_hover_maybe(); update_goban()
+}
+function showing_endstate_value_p() {return the_showing_endstate_value_p}
+function set_showing_endstate_value_p(val) {
+    the_showing_endstate_value_p = val; update_goban()
 }
 function showing_until(canvas) {
     const ret = (by_tag, by_hover) =>

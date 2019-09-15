@@ -133,7 +133,7 @@ function draw_goban_with_principal_variation(canvas, options) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
-           draw_endstate_p, draw_endstate_diff_p,
+           draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
           = opts || {}
@@ -157,7 +157,7 @@ function draw_goban(canvas, stones, opts) {
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p,
-        draw_endstate_p, draw_endstate_diff_p, large_font_p,
+        draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
         draw_recent_p: draw_last_p && draw_endstate_p && !show_until,
         tag_clickable_p, hovered_move,
     }
@@ -209,7 +209,7 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_recent_p, draw_next_p, draw_expected_p,
-           draw_endstate_p, draw_endstate_diff_p,
+           draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            large_font_p, tag_clickable_p, hovered_move}
           = drawp
     const stone_radius = unit * 0.5
@@ -227,6 +227,8 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
         draw_endstate_diff_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
+        draw_endstate_value_p && draw_endstate_p &&
+            draw_endstate_value(h.endstate, xy, stone_radius, g)
     })
     !R.lizzie_style && each_coord((h, xy) => h.suggest && (h.data.visits > 0)
                                   && draw_winrate_mapping_line(h, xy, unit, g))
@@ -372,6 +374,15 @@ function draw_endstate(endstate, xy, radius, g) {
     const c = (endstate >= 0) ? 64 : 255, alpha = Math.abs(endstate) * 0.7
     g.fillStyle = `rgba(${c},${c},${c},${alpha})`
     fill_square_around(xy, radius, g)
+}
+
+function draw_endstate_value(endstate, xy, radius, g) {
+    if (!truep(endstate)) {return}
+    g.save()
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    set_font(radius, g); g.fillStyle = (endstate >= 0) ? '#080' : '#f0f'
+    g.fillText(to_s(Math.round(Math.abs(endstate) * 100)), ...xy)
+    g.restore()
 }
 
 function draw_endstate_diff(diff, xy, radius, g) {

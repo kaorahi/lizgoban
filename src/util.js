@@ -99,7 +99,7 @@ E.set_error_handler = (process, handler) => {
 }
 
 // avoid letters for keyboard operation in renderer.js
-const normal_tag_letters = 'bdefghijklmnorstuvwy'
+const normal_tag_letters = 'bdefghijklmnorstuwy'
 const last_loaded_element_tag_letter = '.'
 const start_moves_tag_letter = "'"
 const endstate_diff_tag_letter = "/"
