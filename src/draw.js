@@ -162,7 +162,7 @@ function draw_goban(canvas, stones, opts) {
         tag_clickable_p, hovered_move,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
-    draw_endstate_p && draw_endstate_clusters(unit, idx2coord, g)
+    draw_endstate_p && draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     // mouse events
     handle_mouse_on_goban(canvas, coord2idx, read_only, tag_clickable_p)
 }
@@ -238,7 +238,7 @@ function goban_bg(border) {
     return GOBAN_BG_COLOR[(R.pausing ? 'p' : '') + (R.trial && border ? 't' : '')]
 }
 
-function draw_endstate_clusters(unit, idx2coord, g) {
+function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
     const style = {black: 'rgba(0,255,0,0.2)', white: 'rgba(255,0,255,0.2)'}
     const size = {major: 3, minor: 2}
     R.endstate_clusters.forEach(cluster => {
@@ -251,6 +251,22 @@ function draw_endstate_clusters(unit, idx2coord, g) {
         set_font(size[type] * unit, g); g.fillStyle = style[color]
         g.fillText(text, ...xy)
         g.restore()
+        boundary_p && draw_endstate_boundary(cluster, unit, idx2coord, g)
+    })
+}
+
+function draw_endstate_boundary(cluster, unit, idx2coord, g) {
+    const style = {black: '#080', white: '#f0f'}
+    cluster.boundary.forEach(([ij, direction]) => {
+        const width = unit * 0.1, r = unit / 2
+        const [di, dj] = around_idx_diff[direction]
+        const [qi, qj] = [Math.abs(dj), Math.abs(di)]
+        const mul = (a, coef) => a.map(z => z * coef)
+        // See coord.js for the relation between [i][j] and (x, y).
+        const [dx, dy] = mul([dj, di], r - width / 2), [qx, qy] = mul([qj, qi], r)
+        const [x0, y0] = idx2coord(...ij), [x, y] = [x0 + dx, y0 + dy]
+        g.strokeStyle = style[cluster.color]; g.lineWidth = width
+        line([x - qx, y - qy], [x + qx, y + qy], g)
     })
 }
 
@@ -384,6 +400,8 @@ function draw_endstate_value(endstate, xy, radius, g) {
     g.fillText(to_s(Math.round(Math.abs(endstate) * 100)), ...xy)
     g.restore()
 }
+
+
 
 function draw_endstate_diff(diff, xy, radius, g) {
     if (!diff) {return}

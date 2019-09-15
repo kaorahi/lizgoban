@@ -23,7 +23,8 @@ const category_spec = [
 // main
 
 function endstate_clusters_for(endstate) {
-    const grid_for = z => ({ownership: z, done: false})
+    initialize()
+    const grid_for = z => ({ownership: z, id: null})
     const grid = aa_map(endstate, grid_for)
     return flatten(category_spec.map((_, cat) => clusters_in_category(cat, grid)))
 }
@@ -31,7 +32,7 @@ function endstate_clusters_for(endstate) {
 function clusters_in_category(category, grid) {
     const {corridor_radius} = category_spec[category]
     const region = region_for_category(category, grid)
-    // (1) exclude corridor parts first (by marking "done" on grid)
+    // (1) exclude corridor parts first (by setting id on grid)
     const corridor_clusters =
           corridor_clusters_in(region, grid, category, corridor_radius)
     // (2) get clusters in rest parts
@@ -40,7 +41,7 @@ function clusters_in_category(category, grid) {
 }
 
 function region_for_category(category, grid) {
-    const region = [], ok = g => !g.done && in_category(category, g.ownership)
+    const region = [], ok = g => !truep(g.id) && in_category(category, g.ownership)
     aa_each(grid, (g, i, j) => ok(g) && region.push([i, j]))
     return region
 }
@@ -49,6 +50,10 @@ function in_category(category, ownership) {
     const {ownership_range: [a, b]} = category_spec[category]
     return a <= ownership && ownership < b
 }
+
+let last_category_id = 0
+function initialize() {last_category_id = 0}
+function new_cluster_id() {return ++last_category_id}
 
 //////////////////////////////////////
 // clustering
@@ -67,31 +72,40 @@ function clusters_with_ijs_in_region(region, grid, category) {
 }
 
 function cluster_from([i, j], region, grid, category) {
-    if (grid[i][j].done) {return null}
-    const {color, type} = category_spec[category]
-    const state = {ijs: [], newcomers: [], region}
+    if (truep(grid[i][j].id)) {return null}
+    const {color, type} = category_spec[category], id = new_cluster_id()
+    const state = {ijs: [], newcomers: [], region, id}
     add_newcomer_maybe([i, j], state, grid)
     while (!empty(state.newcomers)) {search_around(state.newcomers.pop(), state, grid)}
     const {ijs} = state
-    return {color, type, ijs, ...cluster_characteristics(ijs, grid)}
+    return {color, type, ijs, ...cluster_characteristics(id, ijs, grid)}
 }
 
 function add_newcomer_maybe(ij, state, grid) {
     const g = aa_ref(grid, ...ij)
-    if (!g || g.done || !is_member(ij, state.region)) {return}
-    state.ijs.push(ij); state.newcomers.push(ij); g.done = true
+    if (!g || truep(g.id) || !is_member(ij, state.region)) {return}
+    state.ijs.push(ij); state.newcomers.push(ij); g.id = state.id
 }
 
 function search_around(ij, state, grid) {
     around_idx(ij).forEach(idx => add_newcomer_maybe(idx, state, grid))
 }
 
-function cluster_characteristics(ijs, grid) {
+function cluster_characteristics(id, ijs, grid) {
     const sum = (v, w) => v.map((_, k) => v[k] + w[k]), zero = [0, 0, 0]
     const f = ([i, j]) => {const ow = grid[i][j].ownership; return [ow, i * ow, j * ow]}
     const [ownership_sum, i_sum, j_sum] = ijs.map(f).reduce(sum, zero)
     const center_idx = [i_sum, j_sum].map(z => z / ownership_sum)
-    return {ownership_sum, center_idx}
+    const boundary = boundary_of(id, ijs, grid)
+    return {ownership_sum, center_idx, boundary}
+}
+
+function boundary_of(id, ijs, grid) {
+    const same_cluster_p = idx => (aa_ref(grid, ...idx) || {}).id === id
+    const checker_for = ij =>
+          (idx, direction) => same_cluster_p(idx) ? null : [ij, direction]
+    const boundary_around = ij => around_idx(ij).map(checker_for(ij)).filter(truep)
+    return flatten(ijs.map(boundary_around))
 }
 
 //////////////////////////////////////
@@ -106,7 +120,7 @@ function corridor_clusters_in(region, grid, category, corridor_radius) {
     const inacceptable = c => !acceptable(c)
     const acceptable_clusters = clusters.filter(acceptable)
     const inacceptable_clusters = clusters.filter(inacceptable)
-    const cancel = c => c.ijs.forEach(([i, j]) => (grid[i][j].done = false))
+    const cancel = c => c.ijs.forEach(([i, j]) => (grid[i][j].id = null))
     inacceptable_clusters.forEach(cancel)
     return cleanup_clusters(acceptable_clusters)
 }
