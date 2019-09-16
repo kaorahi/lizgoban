@@ -152,7 +152,7 @@ function draw_goban(canvas, stones, opts) {
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(margin, canvas, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
-    mapping_to_winrate_bar &&
+    mapping_to_winrate_bar && !(draw_endstate_value_p && draw_endstate_p) &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     const drawp = {
@@ -217,6 +217,9 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
           draw_expected_mark(h, xy, exp_p, stone_radius, g)
     const each_coord =
           proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx), idx))
+    if (draw_endstate_value_p && draw_endstate_p) {
+        draw_endstate_stones(each_coord, stone_radius, g); return
+    }
     each_coord((h, xy, idx) => {
         draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, draw_recent_p, g) :
@@ -227,11 +230,13 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
         draw_endstate_diff_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
-        draw_endstate_value_p && draw_endstate_p &&
-            draw_endstate_value(h.endstate, xy, stone_radius, g)
     })
     !R.lizzie_style && each_coord((h, xy) => h.suggest && (h.data.visits > 0)
                                   && draw_winrate_mapping_line(h, xy, unit, g))
+}
+
+function draw_endstate_stones(each_coord, stone_radius, g) {
+    each_coord((h, xy, idx) => draw_endstate_value(h, xy, stone_radius, g))
 }
 
 function goban_bg(border) {
@@ -392,16 +397,17 @@ function draw_endstate(endstate, xy, radius, g) {
     fill_square_around(xy, radius, g)
 }
 
-function draw_endstate_value(endstate, xy, radius, g) {
-    if (!truep(endstate)) {return}
-    g.save()
-    g.textAlign = 'center'; g.textBaseline = 'middle'
-    set_font(radius, g); g.fillStyle = (endstate >= 0) ? '#080' : '#f0f'
-    g.fillText(to_s(Math.round(Math.abs(endstate) * 100)), ...xy)
-    g.restore()
+function draw_endstate_value(h, xy, radius, g) {
+    const {endstate} = h, r = Math.sqrt(Math.abs(endstate)) * radius
+    const consistent = h.stone && !xor(h.black, endstate > 0)
+    const [b_color, w_color] = consistent ? [BLACK, WHITE] : [PALE_BLACK, PALE_WHITE]
+    g.lineWidth = 1; g.strokeStyle = b_color
+    g.fillStyle = (endstate > 0) ? b_color : w_color
+    edged_fill_circle(xy, r, g)
+    if (h.stone && !consistent) {
+        g.strokeStyle = h.black ? BLACK : WHITE; x_shape_around(xy, r, g)
+    }
 }
-
-
 
 function draw_endstate_diff(diff, xy, radius, g) {
     if (!diff) {return}
