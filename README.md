@@ -42,6 +42,16 @@ And more...
 
 ## Usage
 
+### Windows installer:
+
+On Windows with GPU,
+[BadukMegapack](https://github.com/wonsiks/BadukMegapack)
+may be the easiest way to install LizGoban.
+(Though it is not tested by the author of LizGoban,
+who does not have a Windows machine.)
+
+Otherwise, read the following instructions.
+
 ### To try it (stand alone):
 
 1. Install [Node.js](https://nodejs.org/).
