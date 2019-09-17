@@ -250,13 +250,13 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
         const {color, type, ownership_sum, center_idx} = cluster
         const area_count = Math.round(Math.abs(ownership_sum))
         if (area_count < 1) {return}
+        boundary_p && draw_endstate_boundary(cluster, unit, idx2coord, g)
         const text = to_s(area_count), xy = idx2coord(...center_idx)
         g.save()
         g.textAlign = 'center'; g.textBaseline = 'middle'
         set_font(size[type] * unit, g); g.fillStyle = style[color]
         g.fillText(text, ...xy)
         g.restore()
-        boundary_p && draw_endstate_boundary(cluster, unit, idx2coord, g)
     })
 }
 
