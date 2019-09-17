@@ -244,7 +244,9 @@ function goban_bg(border) {
 }
 
 function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
-    const style = {black: 'rgba(0,255,0,0.2)', white: 'rgba(255,0,255,0.2)'}
+    const style = boundary_p ?
+          {black: 'rgba(0,255,255,0.5)', white: 'rgba(255,0,0,0.5)'} :
+          {black: 'rgba(0,255,0,0.2)', white: 'rgba(255,0,255,0.2)'}
     const size = {major: 3, minor: 2}
     R.endstate_clusters.forEach(cluster => {
         const {color, type, ownership_sum, center_idx} = cluster
@@ -398,15 +400,28 @@ function draw_endstate(endstate, xy, radius, g) {
 }
 
 function draw_endstate_value(h, xy, radius, g) {
-    const {endstate} = h, r = Math.sqrt(Math.abs(endstate)) * radius
-    const consistent = h.stone && !xor(h.black, endstate > 0)
-    const [b_color, w_color] = consistent ? [BLACK, WHITE] : [PALE_BLACK, PALE_WHITE]
-    g.lineWidth = 1; g.strokeStyle = b_color
-    g.fillStyle = (endstate > 0) ? b_color : w_color
-    edged_fill_circle(xy, r, g)
-    if (h.stone && !consistent) {
-        g.strokeStyle = h.black ? BLACK : WHITE; x_shape_around(xy, r, g)
+    const high_ownership = 2/3, low_ownership = 1/3
+    const {abs, sqrt, PI} = Math
+    const {endstate} = h, a = abs(endstate), r = sqrt(a) * radius
+    const square_r = r * sqrt(PI / 4), triangle_r = r * sqrt(PI / sqrt(3))
+    const actual = {black: BLACK, white: WHITE, edge: BLACK}
+    const imaginary = (h.stone && h.black) ?
+          {black: 'rgba(0,128,0,0.7)', white: 'rgba(192,0,192,0.5)',
+           edge: TRANSPARENT} :
+          {black: 'rgba(0,128,0,0.2)', white: 'rgba(192,0,192,0.2)',
+           edge: TRANSPARENT}
+    const set_style = (is_black, rule) => {
+        g.lineWidth = 1; g.strokeStyle = rule.edge
+        g.fillStyle = rule[is_black ? 'black' : 'white']
     }
+    const painter = (f, u) => () => f(xy, u, g)
+    const high = painter(edged_fill_circle, r)
+    const middle = painter(edged_fill_square_around, square_r)
+    const low = painter(edged_fill_triangle_around, triangle_r)
+    const draw = (is_black, rule, proc) => {set_style(is_black, rule); proc()}
+    h.stone && draw(h.black, actual, painter(edged_fill_circle, radius))
+    draw(endstate > 0, imaginary,
+         a > high_ownership ? high : a > low_ownership ? middle : low)
 }
 
 function draw_endstate_diff(diff, xy, radius, g) {
@@ -1090,6 +1105,12 @@ function fan_gen([x, y], r, [deg1, deg2], g) {
 function square_around_gen([x, y], radius, g) {
     rect_gen([x - radius, y - radius], [x + radius, y + radius], g)
 }
+function triangle_around_gen([x, y], half_width, g) {
+    // u = (height / 3 of regular triangle)
+    const u = half_width / Math.sqrt(3), top = y - u * 2, bottom = y + u
+    line_gen([x, top], [x - half_width, bottom], [x + half_width, bottom], g)
+    g.closePath()
+}
 
 const [line, fill_line, edged_fill_line] = drawers_trio(line_gen)
 const [rect, fill_rect, edged_fill_rect] = drawers_trio(rect_gen)
@@ -1097,6 +1118,8 @@ const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
 const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
 const [square_around, fill_square_around, edged_fill_square_around] =
       drawers_trio(square_around_gen)
+const [triangle_around, fill_triangle_around, edged_fill_triangle_around] =
+      drawers_trio(triangle_around_gen)
 
 function x_shape_around([x, y], radius, g) {
     line([x - radius, y - radius], [x + radius, y + radius], g)
