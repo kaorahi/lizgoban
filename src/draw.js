@@ -261,7 +261,7 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
 }
 
 function draw_endstate_boundary(cluster, unit, idx2coord, g) {
-    const style = {black: '#080', white: '#f0f'}
+    const style = {black: '#080', white: '#c4c'}
     cluster.boundary.forEach(([ij, direction]) => {
         const width = unit * 0.1, r = unit / 2
         const [di, dj] = around_idx_diff[direction]
