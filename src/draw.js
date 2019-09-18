@@ -236,7 +236,10 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
 }
 
 function draw_endstate_stones(each_coord, stone_radius, g) {
-    each_coord((h, xy, idx) => draw_endstate_value(h, xy, stone_radius, g))
+    each_coord((h, xy, idx) => {
+        h.stone && draw_stone(h, xy, stone_radius, false, false, g)
+        draw_endstate_value(h, xy, stone_radius, g)
+    })
 }
 
 function goban_bg(border) {
@@ -400,28 +403,15 @@ function draw_endstate(endstate, xy, radius, g) {
 }
 
 function draw_endstate_value(h, xy, radius, g) {
-    const high_ownership = 2/3, low_ownership = 1/3
-    const {abs, sqrt, PI} = Math
-    const {endstate} = h, a = abs(endstate), r = sqrt(a) * radius
-    const square_r = r * sqrt(PI / 4), triangle_r = r * sqrt(PI / sqrt(3))
-    const actual = {black: BLACK, white: WHITE, edge: BLACK}
-    const imaginary = (h.stone && h.black) ?
-          {black: 'rgba(0,128,0,0.7)', white: 'rgba(192,0,192,0.5)',
-           edge: TRANSPARENT} :
-          {black: 'rgba(0,128,0,0.2)', white: 'rgba(192,0,192,0.2)',
-           edge: TRANSPARENT}
-    const set_style = (is_black, rule) => {
-        g.lineWidth = 1; g.strokeStyle = rule.edge
-        g.fillStyle = rule[is_black ? 'black' : 'white']
-    }
-    const painter = (f, u) => () => f(xy, u, g)
-    const high = painter(edged_fill_circle, r)
-    const middle = painter(edged_fill_square_around, square_r)
-    const low = painter(edged_fill_triangle_around, triangle_r)
-    const draw = (is_black, rule, proc) => {set_style(is_black, rule); proc()}
-    h.stone && draw(h.black, actual, painter(edged_fill_circle, radius))
-    draw(endstate > 0, imaginary,
-         a > high_ownership ? high : a > low_ownership ? middle : low)
+    const quantized = false, ten = '10', max_width = radius * 1.5
+    const {endstate} = h; if (!truep(endstate)) {return}
+    const a = Math.abs(endstate), v = Math.round(a * 10)
+    const c = quantized ? ((v > 6) ? 2 : (v > 3) ? 1 : 0.5) : Math.sqrt(a) * 2
+    g.save()
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    set_font(radius * c, g); g.fillStyle = (endstate >= 0) ? '#080' : '#f0f'
+    g.fillText(v === 10 ? ten : to_s(v), ...xy, max_width)
+    g.restore()
 }
 
 function draw_endstate_diff(diff, xy, radius, g) {
