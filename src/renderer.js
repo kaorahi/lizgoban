@@ -24,7 +24,7 @@ const R = {
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',
     progress: 0.0, progress_bturn: true, weight_info: '', is_katago: false,
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
-    history_tags: [], endstate_clusters: [],
+    history_tags: [], endstate_clusters: [], prev_endstate_clusters: null,
     lizzie_style: false,
     window_id: -1,
 }
@@ -147,7 +147,6 @@ function with_opts(d, opts) {
         first_board_p: is_first_board_canvas(c),
         show_until: showing_until(c),
         hovered_move: if_hover_on(c, hovered_move),
-        draw_endstate_value_p: showing_endstate_value_p(),
         handle_mouse_on_goban,
         ...(opts || {})
     }))
@@ -161,9 +160,15 @@ const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
 const draw_raw_pure = draw_raw_gen({})
 const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
+const draw_es_gen = options => with_opts(D.draw_endstate_goban, options)
+const draw_current_endstate_value = draw_es_gen({draw_endstate_value_p: true})
+const draw_past_endstate_value = draw_es_gen({draw_endstate_value_p: 'past'})
 
 function draw_wr_graph(canvas) {
-    D.draw_winrate_graph(canvas, showing_until(), handle_mouse_on_winrate_graph)
+    const endstate_at = showing_endstate_value_p() && R.prev_endstate_clusters &&
+          (R.move_count - R.endstate_diff_interval)
+    const until = showing_until() || endstate_at
+    D.draw_winrate_graph(canvas, until, handle_mouse_on_winrate_graph)
 }
 
 function draw_wr_bar(canvas) {
@@ -209,7 +214,11 @@ function update_goban() {
                             (w || draw_wr_graph)(winrate_graph_canvas),
                             do_on_sub_canvas_when_idle(s),
                             draw_wr_bar(winrate_bar_canvas))
-    if (double_boards_p()) {
+    if (showing_endstate_value_p()) {
+        const sub = R.prev_endstate_clusters ?
+              draw_past_endstate_value : draw_raw_unclickable
+        f(draw_current_endstate_value, null, sub)
+    } else if (double_boards_p()) {
         const {normal, raw} = double_boards_rule[R.board_type]
         switch (btype) {
         case "winrate_only":

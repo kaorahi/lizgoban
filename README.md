@@ -87,7 +87,7 @@ Start LizGoban as `npx electron src -c katago.json` with the file katago.json:
 
 Then you will find "Komi" in "Tool" menu and "Score bar" in "View" menu.
 
-You will also find "Endstate" in "View" menu. Push "v" key (keep holding down) to peek the boundary of each cluster and the ownership (10=100%, 9=90%, ...) on each grid. Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves". The estimated score without komi is plotted by cyan dots in the winrate graph. The start of "recent moves" is shown as the larger cyan dot there. Use "c" key (keep holding down) + mouse hover to view the change of endstates from a specified move. Cyan vertical lines on the top of the graph denote large changes of endstates.
+You will also find "Endstate" in "View" menu. Push "v" key (keep holding down) to peek the boundary of each cluster, the ownership (10=100%, 9=90%, ...) on each grid, and the past ownerships if available. Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves". The estimated score without komi is plotted by cyan dots in the winrate graph. The start of "recent moves" is shown as the larger cyan dot there. Use "c" key (keep holding down) + mouse hover to view the change of endstates from a specified move. Cyan vertical lines on the top of the graph denote large changes of endstates.
 
 ### To enable endstate estimation (experimental):
 

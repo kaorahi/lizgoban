@@ -128,6 +128,21 @@ function draw_goban_with_principal_variation(canvas, options) {
     draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
 }
 
+function draw_endstate_goban(canvas, options) {
+    const past_p = past_endstate_p(options.draw_endstate_value_p)
+    const scores = winrate_history_values_of('score_without_komi')
+    const past_score = scores[R.move_count - R.endstate_diff_interval]
+    const past_text = (d_i, es) =>
+          `  (${d_i} move${d_i > 1 ? 's' : ''} before)` +
+          (truep(es) ? `  endstate = ${f2s(es)}` : '')
+    const common = {read_only: true, draw_endstate_p: R.show_endstate,
+                    draw_endstate_diff_p: R.show_endstate}
+    const current = {draw_visits_p: true}
+    const past = {draw_visits_p: past_text(R.endstate_diff_interval, past_score)}
+    const opts = {...common, ...(past_p ? past : current), ...(options || {})}
+    draw_goban(canvas, null, opts)
+}
+
 /////////////////////////////////////////////////
 // generic goban
 
@@ -150,7 +165,7 @@ function draw_goban(canvas, stones, opts) {
     // draw
     draw_grid(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
-    draw_visits_p && draw_visits(margin, canvas, g)
+    draw_visits_p && draw_visits(draw_visits_p, margin, canvas, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
     mapping_to_winrate_bar && !(draw_endstate_value_p && draw_endstate_p) &&
         draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
@@ -177,19 +192,23 @@ function draw_grid(unit, idx2coord, g) {
     stars.forEach(i => stars.forEach(j => fill_circle(idx2coord(i, j), star_radius, g)))
 }
 
-function draw_visits(margin, canvas, g) {
+function draw_visits(text_maybe, margin, canvas, g) {
+    if (typeof text_maybe === 'string') {
+        draw_visits_text(text_maybe, margin, canvas, g); return
+    }
     if (!truep(R.visits)) {return}
-    draw_visits_text(margin, canvas, g)
-}
-
-function draw_visits_text(margin, canvas, g) {
     const maybe = (z, g) => truep(z) ? g(z >= 1000 ? kilo_str(z) : f2s(z)) : ''
     const vps = maybe(R.visits_per_sec, z => `  (${z} v/s)`)
     const esum = maybe(R.endstate_sum, z => `  endstate = ${z}`)
+    const text = `  visits = ${R.visits}${esum}${vps}`
+    draw_visits_text(text, margin, canvas, g)
+}
+
+function draw_visits_text(text, margin, canvas, g) {
     g.save()
     g.fillStyle = MAYBE_BLACK; set_font(margin / 2, g)
     g.textAlign = 'left'; g.textBaseline = 'middle'
-    g.fillText(`  visits = ${R.visits}${esum}${vps}`, 0, margin / 4)
+    g.fillText(text, 0, margin / 4)
     g.restore()
 }
 
@@ -218,7 +237,8 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const each_coord =
           proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx), idx))
     if (draw_endstate_value_p && draw_endstate_p) {
-        draw_endstate_stones(each_coord, stone_radius, g); return
+        const past_p = past_endstate_p(draw_endstate_value_p)
+        draw_endstate_stones(each_coord, past_p, stone_radius, g); return
     }
     each_coord((h, xy, idx) => {
         draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
@@ -235,10 +255,13 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                                   && draw_winrate_mapping_line(h, xy, unit, g))
 }
 
-function draw_endstate_stones(each_coord, stone_radius, g) {
+function draw_endstate_stones(each_coord, past_p, stone_radius, g) {
+    if (past_p && !R.prev_endstate_clusters) {return}
     each_coord((h, xy, idx) => {
-        h.stone && draw_stone(h, xy, stone_radius, false, false, g)
-        draw_endstate_value(h, xy, stone_radius, g)
+        const stone_p = h.stone && !(past_p && h.recent)
+        past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
+        stone_p && draw_stone(h, xy, stone_radius, false, false, g)
+        draw_endstate_value(h, past_p, xy, stone_radius, g)
     })
 }
 
@@ -251,7 +274,9 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
           {black: 'rgba(0,255,255,0.5)', white: 'rgba(255,0,0,0.5)'} :
           {black: 'rgba(0,255,0,0.2)', white: 'rgba(255,0,255,0.2)'}
     const size = {major: 3, minor: 2}
-    R.endstate_clusters.forEach(cluster => {
+    const past_p = past_endstate_p(boundary_p)
+    const cs = (past_p ? R.prev_endstate_clusters : R.endstate_clusters) || []
+    cs.forEach(cluster => {
         const {color, type, ownership_sum, center_idx} = cluster
         const area_count = Math.round(Math.abs(ownership_sum))
         if (area_count < 1) {return}
@@ -279,6 +304,8 @@ function draw_endstate_boundary(cluster, unit, idx2coord, g) {
         line([x - qx, y - qy], [x + qx, y + qy], g)
     })
 }
+
+function past_endstate_p(flag) {return flag === 'past'}
 
 /////////////////////////////////////////////////
 // on goban grids
@@ -402,14 +429,16 @@ function draw_endstate(endstate, xy, radius, g) {
     fill_square_around(xy, radius, g)
 }
 
-function draw_endstate_value(h, xy, radius, g) {
+function draw_endstate_value(h, past_p, xy, radius, g) {
     const quantized = false, ten = '10', max_width = radius * 1.5
-    const {endstate} = h; if (!truep(endstate)) {return}
-    const a = Math.abs(endstate), v = Math.round(a * 10)
+    const {endstate, endstate_diff} = h
+    if (!truep(endstate) || (past_p && !truep(endstate_diff))) {return}
+    const e = endstate - (past_p ? endstate_diff : 0)
+    const a = Math.abs(e), v = Math.round(a * 10)
     const c = quantized ? ((v > 6) ? 2 : (v > 3) ? 1 : 0.5) : Math.sqrt(a) * 2
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'middle'
-    set_font(radius * c, g); g.fillStyle = (endstate >= 0) ? '#080' : '#f0f'
+    set_font(radius * c, g); g.fillStyle = (e >= 0) ? '#080' : '#f0f'
     g.fillText(v === 10 ? ten : to_s(v), ...xy, max_width)
     g.restore()
 }
@@ -1221,6 +1250,7 @@ function kilo_str_sub(x, rules) {
 module.exports = {
     set_state,
     draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
+    draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail,
     update_winrate_trail, clear_canvas, is_next_move, latest_move,
     target_move: () => target_move,

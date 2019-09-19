@@ -40,6 +40,7 @@ function set_board(given_game, move_count) {
 
 function set_stones(stones) {
     R.stones = stones; add_info_to_stones(R.stones, game)
+    R.prev_endstate_clusters = null
     // avoid flicker for fast undo/redo
     leelaz_for_endstate_p() && add_endstate_to_stones(R.stones, R.endstate)
 }
@@ -269,6 +270,7 @@ function update_endstate_diff() {
     const ok = prev_endstate && game.ref_current().endstate
     aa_each(R.stones, (s, i, j) =>
             (s.endstate_diff = ok ? sign * (s.endstate - prev_endstate[i][j]) : 0))
+    R.prev_endstate_clusters = ok && endstate_clusters_for(prev_endstate)
 }
 function endstate_diff_move_count() {
     return endstate_diff_from || (game.move_count - endstate_diff_interval)
