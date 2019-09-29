@@ -44,7 +44,7 @@ And more...
 
 ### Windows installer:
 
-On Windows with GPU,
+On 64bit Windows with GPU,
 [BadukMegapack](https://github.com/wonsiks/BadukMegapack)
 may be the easiest way to install LizGoban.
 (Though it is not tested by the author of LizGoban,
