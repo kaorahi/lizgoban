@@ -202,6 +202,7 @@ const api = merge({}, simple_api, {
     let_me_think_next,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
     paste_sgf_from_clipboard, open_sgf, save_sgf,
+    read_sgf,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
     // for debug

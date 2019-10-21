@@ -659,6 +659,31 @@ function update_showing_until() {
 }
 
 /////////////////////////////////////////////////
+// drag and drop
+
+function read_sgf_file(file) {
+    const r = new FileReader();
+    r.onload = e => {
+        main('read_sgf', e.target.result);
+    }
+    r.readAsText(file);
+}
+
+window.ondragover = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files) {
+        e.dataTransfer.dropEffect = "copy";
+    }
+}
+
+window.ondrop = (e) => {
+    e.preventDefault()
+    if (e.dataTransfer.files) {
+        read_sgf_file(e.dataTransfer.files[0])
+    }
+}
+
+/////////////////////////////////////////////////
 // controller
 
 // board type selector
