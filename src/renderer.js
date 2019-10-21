@@ -679,7 +679,8 @@ window.ondragover = (e) => {
 window.ondrop = (e) => {
     e.preventDefault()
     if (e.dataTransfer.files) {
-        read_sgf_file(e.dataTransfer.files[0])
+        // files is not an array
+        each_key_value(e.dataTransfer.files, (_, f) => read_sgf_file(f))
     }
 }
 
