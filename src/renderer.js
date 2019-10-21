@@ -662,27 +662,17 @@ function update_showing_until() {
 // drag and drop
 
 function read_sgf_file(file) {
-    const r = new FileReader();
-    r.onload = e => {
-        main('read_sgf', e.target.result);
-    }
-    r.readAsText(file);
+    const r = new FileReader()
+    r.onload = e => main('read_sgf', e.target.result)
+    r.readAsText(file)
 }
 
-window.ondragover = (e) => {
-    e.preventDefault();
-    if (e.dataTransfer.files) {
-        e.dataTransfer.dropEffect = "copy";
-    }
+function drag_and_drop_handler(func) {
+    return e => {const dt = e.dataTransfer; e.preventDefault(); dt.files && func(dt)}
 }
 
-window.ondrop = (e) => {
-    e.preventDefault()
-    if (e.dataTransfer.files) {
-        // files is not an array
-        each_key_value(e.dataTransfer.files, (_, f) => read_sgf_file(f))
-    }
-}
+window.ondragover = drag_and_drop_handler(dt => {dt.dropEffect = "copy"})
+window.ondrop = drag_and_drop_handler(dt => each_value(dt.files, read_sgf_file))
 
 /////////////////////////////////////////////////
 // controller

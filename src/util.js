@@ -20,6 +20,7 @@ E.flatten = a => [].concat(...a)
 E.sort_by = (a, f) => a.slice().sort((x, y) => f(x) - f(y))
 E.num_sort = a => sort_by(a, E.identity)
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
+E.each_value = (h, f) => each_key_value(h, (_, v) => f(v))  // for non-array
 E.array2hash = a => {
     const h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h
 }
