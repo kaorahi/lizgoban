@@ -321,7 +321,7 @@ function handle_mouse_on_winrate_graph(canvas, coord2sr) {
 function winrate_graph_goto(e, coord2sr) {
     const goto_move_count = count => main('busy', 'goto_move_count', count)
     const [s, r] = coord2sr(...mouse2coord(e))
-    s >= 0 && goto_move_count(clip(s, 0, R.history_length))
+    goto_move_count(clip(s, 0, R.history_length))
 }
 function hover_on_graph(e, coord2sr, canvas) {
     set_hovered(null, coord2sr(...mouse2coord(e))[0], null)
