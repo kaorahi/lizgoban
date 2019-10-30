@@ -12,7 +12,12 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 
 require('./util.js').use(); require('./coord.js').use()
 const PATH = require('path'), fs = require('fs')
-const default_path_for = name => PATH.join(__dirname, '..', 'external', name)
+const default_path_for = name =>
+      // suppose three cases:
+      // 1. npx electron src (obsolete)
+      // 2. npx electron .
+      // 3. *.AppImage, *.exe, etc.
+      PATH.join(app.isPackaged ? app.getAppPath() : __dirname, '..', 'external', name)
 
 const option = {
     leelaz_command: default_path_for('leelaz'),

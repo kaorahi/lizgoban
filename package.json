@@ -1,6 +1,8 @@
 {
   "name": "LizGoban",
   "version": "0.0.1pre1",
+  "description": "An analysis tool of the game Go with Leela Zero and KataGo",
+  "author": "kaorahi <khi@users.osdn.me>",
   "license": "GPL-3.0",
   "main": "./src/main.js",
   "repository": {
@@ -9,11 +11,48 @@
   },
   "dependencies": {
     "@sabaki/sgf": "^3.2.1",
-    "electron": "^4.1.0",
     "electron-store": "^3.0.0",
     "tmp": "^0.0.33"
   },
+  "devDependencies": {
+    "electron": "^4.1.0",
+    "electron-builder": "^21.2.0"
+  },
+  "build": {
+    "files": [
+      "src/{*.js,*.html,*.png}"
+    ],
+    "extraFiles": [
+      {
+        "from": "tmp_extra",
+        "to": "resources/external",
+        "filter": ["network.gz"]
+      }
+    ],
+    "linux": {
+      "target": "AppImage",
+      "category": "Game",
+      "extraFiles": [
+        {
+          "from": "tmp_extra/linux",
+          "to": "resources/external"
+        }
+      ]
+    },
+    "win": {
+      "target": "portable",
+      "extraFiles": [
+        {
+          "from": "tmp_extra/win",
+          "to": "resources/external",
+          "filter": ["leelaz.exe", "*.dll"]
+        }
+      ]
+    }
+  },
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build_lin": "electron-builder -l --x64",
+    "build_win": "electron-builder -w --x64"
   }
 }
