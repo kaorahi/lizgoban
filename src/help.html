@@ -10,7 +10,14 @@
  .nav {position: -webkit-sticky; position: sticky; z-index: 1; bottom: 0;}
  </style>
  <script>
- function open_ext(url) {require('electron').shell.openExternal(url)}
+ const electron = require('electron')
+ function open_ext(url) {electron.shell.openExternal(url)}
+ function for_class(name, proc) {
+   Array.prototype.forEach.call(document.getElementsByClassName(name), proc)
+ }
+ window.onload = () => {
+   for_class('ext', z => {z.onclick = () => open_ext(z.dataset.url)})
+ }
  </script>
 </head>
 
@@ -180,7 +187,7 @@ let-me-think-first style without autoplay.
 <h3>Backward scan in auto-analysis</h3>
 
 There is a
-<span class="ext" onclick="open_ext('https://github.com/kaorahi/leela-zero/tree/ladder_revtrans')">modified Leela Zero</span>
+<span class="ext" data-url="https://github.com/kaorahi/leela-zero/tree/ladder_revtrans">modified Leela Zero</span>
 that do not forget promising moves after undo.
 Replace leelaz with it and
 set auto analysis visits as a negative value for backward analysis
@@ -274,8 +281,8 @@ to get possibly better evaluations when some moves are in "blind spots" of Leela
 <hr>
 
 <a name="Misc"></a>
-<span class="ext" onclick="open_ext('https://github.com/kaorahi/lizgoban')">Project Home</span>
-<span class="ext" onclick="open_ext('https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt')">License (GPL3)</span>
+<span class="ext" data-url="https://github.com/kaorahi/lizgoban">Project Home</span>
+<span class="ext" data-url="https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt">License (GPL3)</span>
 
 <hr>
 
