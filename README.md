@@ -57,15 +57,15 @@ Otherwise, read the following instructions.
 1. Install [Node.js](https://nodejs.org/).
 2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install".
 3. Put Leela Zero binary (version 0.17 or later) as "external/leelaz" together with its network weight as "external/network.gz".
-4. Type "npx electron src". (Windows: Double-click lizgoban_windows.vbs.)
+4. Type "npm start". (Windows: Double-click lizgoban_windows.vbs.)
 
 ### To set options for leelaz (experimental):
 
-    npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
+    npm start -- -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 
 or
 
-    npx electron src -c config.json
+    npm start -- -c config.json
 
 with the file config.json:
 
@@ -77,7 +77,7 @@ with the file config.json:
 
 ![katago screenshot](area_count.png)
 
-Start LizGoban as `npx electron src -c katago.json` with the file katago.json:
+Start LizGoban as `npm start -- -c katago.json` with the file katago.json:
 
     {
         "analyze_interval_centisec": 30,
@@ -95,7 +95,7 @@ This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zer
 
 1. Build [a modified leelaz](https://github.com/kaorahi/leela-zero/tree/endstate_map) and rename "leelaz" to "leelaz_endstate".
 2. Download [the weight file](https://drive.google.com/open?id=1ZotPAUG0zz-y7K-e934AHyYF8_StWmyN) and rename it to "network_endstate.gz".
-3. Start LizGoban as `npx electron src -c config.json` with the file config.json:
+3. Start LizGoban as `npm start -- -c config.json` with the file config.json:
 
     {"endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}
 

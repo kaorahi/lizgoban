@@ -11,5 +11,8 @@
     "electron": "^4.1.0",
     "electron-store": "^3.0.0",
     "tmp": "^0.0.33"
+  },
+  "scripts": {
+    "start": "electron src"
   }
 }
