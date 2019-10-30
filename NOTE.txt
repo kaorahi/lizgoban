@@ -19,3 +19,6 @@ Endstate estimation (by ihavnoid's version) tends to oscillate between
 black and white turns.  So we use the average of recent two moves for
 score estimation and an even number for the width of endstate diff.
 These are not applied to Katago as its estimation seems more stable.
+
+src/package.json exists only for backward compatibility to enable "npx
+electron src".

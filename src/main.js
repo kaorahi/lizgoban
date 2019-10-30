@@ -1,4 +1,9 @@
 /////////////////////////////////////////////////
+// electron
+const electron = require('electron')
+const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
+
+/////////////////////////////////////////////////
 // command line option
 
 // example:
@@ -40,10 +45,6 @@ function parse_option(cur, succ) {
 
 /////////////////////////////////////////////////
 // setup
-
-// electron
-const electron = require('electron')
-const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 
 // util
 function safely(proc, ...args) {try {return proc(...args)} catch(e) {return null}}
