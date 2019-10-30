@@ -62,7 +62,7 @@ const store = new (safely(require, 'electron-store') ||
 
 // debug log
 const debug_log_key = 'debug_log'
-function update_debug_log() {debug_log(!!store.get(debug_log_key))}
+function update_debug_log() {debug_log(!!store.get(debug_log_key) && !app.isPackaged)}
 function toggle_debug_log() {debug_log(!!toggle_stored(debug_log_key))}
 update_debug_log()
 
@@ -419,7 +419,9 @@ function menu_template(win) {
         item('Help', undefined, help),
     ])
     return [file_menu, edit_menu, view_menu, tool_menu,
-            ...shortcut_menu_maybe(menu, item, win), debug_menu, help_menu]
+            ...shortcut_menu_maybe(menu, item, win),
+            ...(app.isPackaged ? [] : [debug_menu]),
+            help_menu]
 }
 
 function board_type_menu_item(label, type, win) {
