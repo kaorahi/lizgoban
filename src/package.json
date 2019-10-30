@@ -1,3 +1,4 @@
 {
-  "main": "main.js"
+  "main": "main.js",
+  "version": "['npx electron src' is obsolete. Use 'npm start' instead.]"
 }

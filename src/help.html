@@ -11,11 +11,13 @@
  </style>
  <script>
  const electron = require('electron')
+ const version = electron.remote.app.getVersion()
  function open_ext(url) {electron.shell.openExternal(url)}
  function for_class(name, proc) {
    Array.prototype.forEach.call(document.getElementsByClassName(name), proc)
  }
  window.onload = () => {
+   for_class('ver', z => z.textContent = version)
    for_class('ext', z => {z.onclick = () => open_ext(z.dataset.url)})
  }
  </script>
@@ -23,7 +25,7 @@
 
 <body>
 
-<h1><a name="top">LizGoban Help</a></h1>
+<h1><a name="top">LizGoban <span class="ver"></span> Help</h1>
 
 LizGoban is an analysis tool of the game Go with
 <span class="ext" data-url="https://github.com/gcp/leela-zero">Leela Zero</span>
