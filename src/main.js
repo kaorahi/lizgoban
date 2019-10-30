@@ -75,9 +75,11 @@ let pausing = false, busy = false
 // renderer state
 // (cf.) "set_renderer_state" in powered_goban.js
 // (cf.) "the_endstate_handler" and "the_suggest_handler" in engine.js
-const stored_keys_for_renderer =
-      ['lizzie_style', 'expand_winrate_bar', 'score_bar',
-       'let_me_think', 'show_endstate']
+const default_for_stored_key = {
+    lizzie_style: true, expand_winrate_bar: false, score_bar: true,
+    let_me_think: false, show_endstate: true,
+}
+const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
 P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
     // functions used in powered_goban.js
@@ -892,7 +894,8 @@ function get_stored(key) {
     return stored_keys_for_renderer.includes(key) ? R[key] : store.get(key)
 }
 function renderer_preferences() {
-    return aa2hash(stored_keys_for_renderer.map(key => [key, store.get(key, false)]))
+    const key_and_val = key => [key, store.get(key, default_for_stored_key[key])]
+    return aa2hash(stored_keys_for_renderer.map(key_and_val))
 }
 
 function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
