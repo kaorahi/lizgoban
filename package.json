@@ -1,6 +1,6 @@
 {
   "name": "LizGoban",
-  "version": "0.1.0-pre1",
+  "version": "0.1.0-pre1.1",
   "description": "An analysis tool of the game Go with Leela Zero and KataGo",
   "author": "kaorahi <khi@users.osdn.me>",
   "license": "GPL-3.0",
@@ -10,13 +10,13 @@
     "url": "https://github.com/kaorahi/lizgoban"
   },
   "dependencies": {
-    "@sabaki/sgf": "^3.2.1",
-    "electron-store": "^3.0.0",
-    "tmp": "^0.0.33"
+    "@sabaki/sgf": "^3.4.1",
+    "electron-store": "^5.1.0",
+    "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^4.1.0",
-    "electron-builder": "^21.2.0"
+    "electron": "^4.2.12",
+    "electron-builder": "^22.1.0"
   },
   "build": {
     "files": [
@@ -26,7 +26,9 @@
       {
         "from": "tmp_extra",
         "to": "resources/external",
-        "filter": ["network.gz"]
+        "filter": [
+          "network.gz"
+        ]
       }
     ],
     "linux": {
@@ -45,7 +47,10 @@
         {
           "from": "tmp_extra/win",
           "to": "resources/external",
-          "filter": ["leelaz.exe", "*.dll"]
+          "filter": [
+            "leelaz.exe",
+            "*.dll"
+          ]
         }
       ]
     }
