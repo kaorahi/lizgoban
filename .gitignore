@@ -1,3 +1,6 @@
-external
-node_modules
+/dist/
+/external/
+/tmp_extra/
+
+node_modules/
 package-lock.json
