@@ -42,24 +42,27 @@ And more...
 
 ## Usage
 
-### Windows installer:
+### Case I: CPU-only Leela Zero on 64bit Windows
 
-On 64bit Windows with GPU,
-[BadukMegapack](https://github.com/wonsiks/BadukMegapack)
-may be the easiest way to install LizGoban.
+Just download the [all-in-one package (*.exe)](https://github.com/kaorahi/lizgoban/releases) and double-click it. You do not need installation, configuration, additional downloads, etc.
+
+### Case II: Leela Zero and KataGo on 64bit Windows with GPU
+
+[BadukMegapack by wonsiks](https://github.com/wonsiks/BadukMegapack)
+may be the easiest way to install LizGoban together with many other tools.
 (Though it is not tested by the author of LizGoban,
 who does not have a Windows machine.)
 
-Otherwise, read the following instructions.
+### Case III: Otherwise...
 
-### To try it (stand alone):
+#### To try it (stand alone):
 
 1. Install [Node.js](https://nodejs.org/).
 2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install".
 3. Put Leela Zero binary (version 0.17 or later) as "external/leelaz" together with its network weight as "external/network.gz".
 4. Type "npm start". (Windows: Double-click lizgoban_windows.vbs.)
 
-### To set options for leelaz (experimental):
+#### To set options for leelaz (experimental):
 
     npm start -- -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 
@@ -73,7 +76,7 @@ with the file config.json:
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
-### To use KataGo and its score/ownership estimations (experimental):
+#### To use KataGo and its score/ownership estimations (experimental):
 
 ![katago screenshot](area_count.png)
 
@@ -89,7 +92,7 @@ Then you will find "Komi" in "Tool" menu and "Score bar" in "View" menu.
 
 You will also find "Endstate" in "View" menu. Push "v" key (keep holding down) to peek the boundary of each cluster, the ownership (10=100%, 9=90%, ...) on each grid, and the past ownerships if available. Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves". The estimated score without komi is plotted by cyan dots in the winrate graph. The start of "recent moves" is shown as the larger cyan dot there. Use "c" key (keep holding down) + mouse hover to view the change of endstates from a specified move. Cyan vertical lines on the top of the graph denote large changes of endstates.
 
-### To enable endstate estimation (experimental):
+#### To enable endstate estimation (experimental):
 
 This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zero/leela-zero/issues/2331).
 
@@ -107,7 +110,7 @@ You can also combine "leelaz_args" and "endstate_leelaz" in config.json:
       "endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]
     }
 
-### To attach it to Sabaki:
+#### To attach it to Sabaki:
 
 1. Build a [customized Sabaki](https://github.com/kaorahi/Sabaki/tree/dump_state2) in "dump_state2" branch.
 2. Put Sabaki binary as "external/sabaki".
