@@ -12,13 +12,13 @@ const PATH = require('path')
 let endstate_diff_interval = 12, endstate_diff_from = null, initial_b_winrate = NaN
 let game = create_game()  // dummy empty game until first set_board()
 const winrate_trail = true
-let R, AI, on_change, on_suggest, M
+let R, AI, on_suggest, M
 
 /////////////////////////////////////////////////
 // basic
 
 function initialize(...args) {  // fixme: ugly
-    [R, AI, {on_change, on_suggest}, M] = args
+    [R, AI, {on_suggest}, M] = args
     const clear_endstate = () => {R.endstate = null}
     const is_bturn = () => R.bturn
     const invalid_weight_for_white = () => {
@@ -38,9 +38,6 @@ function set_board(given_game, move_count) {
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
     set_stones(game.current_stones())
-    AI.switch_leelaz() && (M.update_ponder(), M.update_state())
-    on_change()
-    M.is_busy() || M.update_state()
 }
 
 function set_stones(stones) {

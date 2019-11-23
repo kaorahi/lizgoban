@@ -91,9 +91,9 @@ const default_for_stored_key = {
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
-P.initialize(R, AI, {on_change: update_let_me_think, on_suggest: try_auto}, {
+P.initialize(R, AI, {on_suggest: try_auto}, {
     // functions used in powered_goban.js
-    render, update_state, update_ponder, show_suggest_p, is_pass,
+    render, update_state, show_suggest_p, is_pass,
     auto_progress, is_auto_bturn, is_busy,
     error_from_powered_goban,
 })
@@ -269,12 +269,12 @@ function do_play(move, is_black, tag) {
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
     is_last_move_pass() && is_pass(move) ? game.pop() :
         game.push({move, is_black, tag, move_count: game.len() + 1})
-    P.set_board(game)
+    set_board(game)
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (game.pop(), P.set_board(game), update_state())
+    const delete_last = () => (game.pop(), set_board(game), update_state())
     game.move_count < game.len() ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
@@ -291,7 +291,7 @@ function goto_move_count(count) {
     const c = clip(count, 0, game.len())
     if (c === game.move_count) {return}
     update_state_to_move_count_tentatively(c)
-    P.set_board(game, c)
+    set_board(game, c)
 }
 function update_state_to_move_count_tentatively(count) {
     const forward = (count > game.move_count)
@@ -724,6 +724,13 @@ function update_ponder() {AI.set_pondering(pausing, busy)}
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {update_state()}
 
+function set_board(given_game, move_count) {
+    P.set_board(given_game, move_count)
+    AI.switch_leelaz() && (update_ponder(), update_state())
+    update_let_me_think()
+    is_busy() || update_state()
+}
+
 function wink_if_pass(proc, ...args) {
     const rec = () => game.ref(game.move_count)
     const before = rec()
@@ -832,7 +839,7 @@ function uncut_sequence() {
 
 function duplicate_sequence(until_current_move_p, explicit) {
     const del_future = () => {
-        game.delete_future(); P.set_board(game)
+        game.delete_future(); set_board(game)
         P.update_info_in_stones()  // remove next_move mark
     }
     game.is_empty() ? new_empty_board() :
@@ -863,7 +870,7 @@ function replace_sequence(new_game) {
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    goto_nth_sequence(wrapped_n); P.set_board(game); update_state()
+    goto_nth_sequence(wrapped_n); set_board(game); update_state()
 }
 
 function goto_nth_sequence(n) {game = sequence[sequence_cursor = n]}
@@ -1032,7 +1039,7 @@ function load_sabaki_gametree_on_new_game(gametree) {
 
 function load_sabaki_gametree(gametree, index) {
     if (!game.load_sabaki_gametree(gametree, index)) {return}
-    P.set_board(game)
+    set_board(game)
     // force update of board color when C-c and C-v are typed successively
     update_state()
 }
