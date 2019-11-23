@@ -84,10 +84,8 @@ function update_debug_log() {debug_log(!!store.get(debug_log_key) && !app.isPack
 function toggle_debug_log() {debug_log(!!toggle_stored(debug_log_key))}
 update_debug_log()
 
-// modules
+// game
 const {create_game, create_game_from_sgf} = require('./game.js')
-const P = require('./powered_goban.js')
-const AI = require('./ai.js')
 
 // state
 let game = create_game()
@@ -106,18 +104,20 @@ const default_for_stored_key = {
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
-P.initialize(R, AI, {on_suggest: try_auto}, {
-    // functions used in powered_goban.js
-    render, update_state, show_suggest_p, is_pass,
-    auto_progress, is_auto_bturn, is_busy,
-})
-AI.initialize({
+
+const AI = require('./ai.js').pay({
     is_bturn: () => R.bturn,
     invalid_weight_for_white: () => {
         show_error('Invalid weights file (for white)')
         unload_leelaz_for_white()
     },
     max_cached_engines: option.max_cached_engines
+})
+const P = require('./powered_goban.js')
+P.initialize(R, AI, {on_suggest: try_auto}, {
+    // functions used in powered_goban.js
+    render, update_state, show_suggest_p, is_pass,
+    auto_progress, is_auto_bturn, is_busy,
 })
 
 function render(given_R, is_board_changed) {

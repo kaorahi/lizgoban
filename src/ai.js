@@ -13,10 +13,6 @@ function create_leelaz() {return create_leelaz_proxy()}
 let leelaz = create_leelaz(), leelaz_for_black = leelaz
 let leelaz_for_white = null, leelaz_for_endstate = null
 
-// from main.js
-let is_bturn, invalid_weight_for_white, max_cached_engines
-function initialize(h) {({is_bturn, invalid_weight_for_white, max_cached_engines} = h)}
-
 // from powered_goban.js
 let suggest_handler, endstate_handler
 function set_handlers(h) {({suggest_handler, endstate_handler} = h)}
@@ -186,9 +182,10 @@ function shrink_cache() {
 // exports
 
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi']
-module.exports = {
+
+require('./give_and_take.js').offer(module, {
     // main.js only
-    initialize, set_board,
+    set_board,
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_weight_file,
@@ -200,4 +197,4 @@ module.exports = {
     set_handlers, another_leelaz_for_endstate_p,
     // both
     katago_p, support_endstate_p, engine_info,
-}
+}, global)
