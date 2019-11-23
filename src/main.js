@@ -968,7 +968,7 @@ function auto_restart() {
     (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
         (restart(), last_restart_time = Date.now()) :
         dialog.showMessageBox(null, {
-            type: "error", message: "Leela Zero is down.", buttons: buttons,
+            type: "error", message: "Engine is down.", buttons: buttons,
         }, response => actions[response]())
 }
 
