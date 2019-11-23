@@ -30,7 +30,8 @@ let R, on_change, on_suggest, M
 
 function initialize(...args) {  // fixme: ugly
     [R, {on_change, on_suggest}, M] = args
-    AI.initialize(R, M, {suggest_handler, endstate_handler, clear_endstate})
+    const is_bturn = () => R.bturn
+    AI.initialize(M, {suggest_handler, endstate_handler, clear_endstate, is_bturn})
 }
 
 function set_board(given_game, move_count) {

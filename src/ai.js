@@ -1,8 +1,8 @@
 require('./util.js').use(); require('./coord.js').use()
 
-let R, M, suggest_handler, endstate_handler, clear_endstate
+let M, suggest_handler, endstate_handler, clear_endstate, is_bturn
 function initialize(...args) {  // fixme: ugly
-    [R, M, {suggest_handler, endstate_handler, clear_endstate}] = args
+    [M, {suggest_handler, endstate_handler, clear_endstate, is_bturn}] = args
 }
 
 // leelaz
@@ -70,7 +70,7 @@ function swap_leelaz_for_black_and_white() {
     switch_leelaz()
 }
 function switch_to_random_leelaz(percent) {
-    switch_leelaz(xor(R.bturn, Math.random() < percent / 100))
+    switch_leelaz(xor(is_bturn(), Math.random() < percent / 100))
 }
 function load_leelaz_for_black(load_weight) {
     with_temporary_leelaz(leelaz_for_black, load_weight)
@@ -94,7 +94,7 @@ function unload_leelaz_for_white() {
     M.update_state()
 }
 function switch_leelaz(bturn) {
-    switch_to_another_leelaz((bturn === undefined ? R.bturn : bturn) ?
+    switch_to_another_leelaz((bturn === undefined ? is_bturn() : bturn) ?
                              leelaz_for_black : leelaz_for_white)
 }
 
