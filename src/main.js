@@ -406,12 +406,13 @@ function menu_template(win) {
         item('...Skip to next', 'CmdOrCtrl+E', skip_auto,
              true, auto_analyzing_or_playing(), true),
         sep,
-        {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
-         type: 'checkbox', checked: lz_white,
-         click: stop_auto_and(lz_white ?
-                              unload_leelaz_for_white : load_leelaz_for_white)},
+        item('Alternative weights for white', 'CmdOrCtrl+Shift+L',
+             load_leelaz_for_white),
+        ...insert_if(lz_white,
+                     item('Unload white engine', 'CmdOrCtrl+Shift+U',
+                          unload_leelaz_for_white)),
         lz_white ?
-            item('Swap black/white weights', 'Shift+S',
+            item('Swap black/white engines', 'Shift+S',
                  AI.swap_leelaz_for_black_and_white) :
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
