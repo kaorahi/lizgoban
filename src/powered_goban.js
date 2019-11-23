@@ -226,8 +226,8 @@ function weight_info_text() {
     const game_komi = truep(gk) && gk != ek && ` (game komi=${gk})`
     const engine_komi = (game_komi || (ek !== leelaz_komi)) ?
           `komi=${ek}${game_komi || ''} ` : ''
-    const f = z =>
-          `${PATH.basename(z.weight_file || '')} ${z.network_size || ''}`
+    const f = z => z ?
+          `${PATH.basename(z.weight_file || '')} ${z.network_size || ''}` : ''
     const weight_info = h.leelaz_for_white_p ?
           `${f(h.black)} / ${f(h.white)}` : f(h.black)
     return engine_komi + weight_info

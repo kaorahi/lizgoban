@@ -1042,7 +1042,7 @@ function switch_to_previous_weight() {
 function restart() {AI.restart()}
 let last_restart_time = 0, warned_engine_trouble = false, asking_recovery = false
 function auto_restart() {
-    const {leelaz_command, weight_file} = AI.engine_info().black
+    const {leelaz_command, weight_file} = AI.engine_info().black || {}
     const [e, w] = [leelaz_command, weight_file].map(s => PATH.basename(s || ''))
     const info = `\n(engine) ${leelaz_command}\n(weight) ${weight_file}`
     const message = `Engine is down.

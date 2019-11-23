@@ -10,7 +10,7 @@ function create_leelaz () {
     const speedometer = make_speedometer(speedo_interval_sec, speedo_premature_sec)
 
     let leelaz_process, arg, is_ready = false
-    let command_queue, last_command_id, last_response_id, pondering = true
+    let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi
 
@@ -25,7 +25,7 @@ function create_leelaz () {
               (with_response_p(task) ? '*' : '') + task.command
         debug_log(`${ti} [${(leelaz_process || {}).pid}] ${header} ${s}` +
                   (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
-                  arg.engine_log_line_length)
+                  arg && arg.engine_log_line_length || 500)
     }
 
     /////////////////////////////////////////////////
@@ -38,8 +38,8 @@ function create_leelaz () {
                weight_file,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler}
-              = arg
-        log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
+              = arg || {}
+        log('start leela zero:', JSON.stringify(arg && [leelaz_command, ...leelaz_args]))
         is_ready = false; network_size_text = ''
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
         leelaz_process.stdout.on('data', each_line(stdout_reader))
@@ -106,7 +106,7 @@ function create_leelaz () {
     const leelaz = (command, on_response, protect_p) => {
         log('queue>', command, true); send_to_queue({command, on_response, protect_p})
     }
-    const update_now = () => {endstate(); start_analysis()}
+    const update_now = () => arg && (endstate(), start_analysis())
     const [update_later] = deferred_procs([update_now, endstate_delay_millisec])
     // avoid flicker of endstate
     const update = () => is_supported('endstate') ? update_later() : update_now()
@@ -127,7 +127,7 @@ function create_leelaz () {
     // weights file
 
     const cook_arg = h => {
-        if (!h.weight_file) {return h}
+        if (!h || !h.weight_file) {return h}
         const leelaz_args = h.leelaz_args.slice()
         leelaz_args[weight_option_pos_in_leelaz_args(h)] = h.weight_file
         return {...h, leelaz_args}
