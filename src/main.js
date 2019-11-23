@@ -734,7 +734,7 @@ function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {update_state()}
 
 function set_board(given_game, move_count) {
-    P.set_board(given_game, move_count)
+    AI.set_board(P.set_board(given_game, move_count))
     AI.switch_leelaz() && (update_ponder(), update_state())
     update_let_me_think()
     is_busy() || update_state()

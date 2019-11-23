@@ -144,7 +144,7 @@ function engine_info() {
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value']
 module.exports = {
     // main.js only
-    initialize,
+    initialize, set_board,
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_leelaz_for_black, load_leelaz_for_white,
@@ -153,7 +153,7 @@ module.exports = {
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
-    set_handlers, set_board, engine_info, another_leelaz_for_endstate_p,
+    set_handlers, engine_info, another_leelaz_for_endstate_p,
     // both
     katago_p, support_endstate_p,
 }

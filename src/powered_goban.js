@@ -26,11 +26,11 @@ function set_board(given_game, move_count) {
     // use game.move_count if move_count is omitted
     game = given_game
     const hist = game.array_until(truep(move_count) ? move_count : game.move_count)
-    AI.set_board(hist)
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
     set_stones(game.current_stones())
+    return hist
 }
 
 function set_stones(stones) {
