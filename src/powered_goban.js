@@ -23,7 +23,6 @@ function initialize(...args) {  // fixme: ugly
     const is_bturn = () => R.bturn
     const invalid_weight_for_white = () => {
         M.error_from_powered_goban('Invalid weights file (for white)')
-        AI.unload_leelaz_for_white()
     }
     AI.initialize({suggest_handler, endstate_handler,
                    clear_endstate, is_bturn, invalid_weight_for_white})

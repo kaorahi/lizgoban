@@ -25,8 +25,11 @@ function start_leelaz(leelaz_start_args, endstate_option) {
 function update_leelaz() {leelaz.update()}
 function restart(h, new_weight_p) {
     const cooked = h && with_handlers(h)
+    const error_handler_for_white = () => {
+        invalid_weight_for_white(); unload_leelaz_for_white()
+    }
     const error_handler =
-          (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
+          (leelaz === leelaz_for_white) ? error_handler_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
@@ -145,6 +148,7 @@ module.exports = {
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
     each_leelaz, leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_leelaz_for_black, load_leelaz_for_white,
+    unload_leelaz_for_white,
     set_engine_for_white, support_komi_p, set_engine_komi,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
@@ -152,6 +156,6 @@ module.exports = {
     initialize, engine_info,
     leelaz_for_endstate: () => leelaz_for_endstate,
     // both
-    restart, leelaz_weight_file, katago_p, unload_leelaz_for_white,
+    restart, leelaz_weight_file, katago_p,
     support_endstate_p, get_engine_komi,
 }
