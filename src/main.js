@@ -97,7 +97,6 @@ P.initialize(R, AI, {on_suggest: try_auto}, {
     auto_progress, is_auto_bturn, is_busy,
 })
 AI.initialize({
-    clear_endstate: () => {R.endstate = null},
     is_bturn: () => R.bturn,
     invalid_weight_for_white: () => {
         error_from_powered_goban('Invalid weights file (for white)')
@@ -728,7 +727,9 @@ function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
 function set_or_unset_busy(bool) {busy = bool; update_ponder()}
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false); update_state(true)}
-function update_ponder() {AI.set_pondering(pausing, busy)}
+function update_ponder() {
+    AI.set_pondering(pausing, busy); pausing && (R.endstate = null)
+}
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {update_state()}
 

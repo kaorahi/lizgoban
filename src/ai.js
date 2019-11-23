@@ -8,9 +8,9 @@ let leelaz = create_leelaz(), leelaz_for_black = leelaz
 let leelaz_for_white = null, leelaz_for_endstate = null
 
 // from main.js
-let clear_endstate, is_bturn, invalid_weight_for_white
+let is_bturn, invalid_weight_for_white
 function initialize(h) {  // fixme: ugly
-    [{clear_endstate, is_bturn, invalid_weight_for_white}] = [h]
+    [{is_bturn, invalid_weight_for_white}] = [h]
 }
 
 // from powered_goban.js
@@ -38,7 +38,6 @@ function kill_all_leelaz() {each_leelaz(z => z.kill())}
 function set_pondering(pausing, busy) {
     const pondering = !pausing && !busy
     const b = (leelaz === leelaz_for_black)
-    pausing && clear_endstate()
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
 }
