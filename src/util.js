@@ -60,6 +60,13 @@ function do_debug_log(arg, limit_len) {
     console.log(sec + (over <= 0 ? s : snip(s)))
 }
 
+E.change_detector = init_val => {
+    let prev
+    const is_changed = val => {const changed = (val != prev); prev = val; return changed}
+    const reset = () => (prev = init_val); reset()
+    return {is_changed, reset}
+}
+
 // [d_f, d_g] = deferred_procs([f, 200], [g, 300])
 // d_f(1,2,3) ==> f(1,2,3) is called after 200 ms
 // d_f(1,2,3) and then d_g(4,5) within 200 ms

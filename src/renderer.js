@@ -638,8 +638,11 @@ function set_keyboard_tag_maybe(key) {
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
 function showing_movenum_p() {return the_showing_movenum_p}
+const checker_for_showing_until = change_detector()
 function set_showing_movenum_p(val) {
-    the_showing_movenum_p = val; val && update_hover_maybe(); update_goban()
+    the_showing_movenum_p = val
+    val && (checker_for_showing_until.reset(), update_hover_maybe())
+    update_goban()
 }
 function showing_endstate_value_p() {return the_showing_endstate_value_p}
 function set_showing_endstate_value_p(val) {
@@ -657,7 +660,9 @@ function showing_until(canvas) {
     return accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
 }
 function update_showing_until() {
-    R.show_endstate && main('set_endstate_diff_from', showing_until())
+    const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)
+    if (!showing_movenum_p() || !R.show_endstate || !changed) {return}
+    main('set_endstate_diff_from', cur)
 }
 
 /////////////////////////////////////////////////
