@@ -117,7 +117,7 @@ const P = require('./powered_goban.js').pay({
     R, AI, on_suggest: try_auto, M: {
         // functions used in powered_goban.js
         render, update_state, show_suggest_p, is_pass,
-        auto_progress, is_auto_bturn, is_busy,
+        auto_progress, is_auto_bturn, is_busy, is_pausing,
     }
 })
 
@@ -126,6 +126,7 @@ function render(given_R, is_board_changed) {
 }
 function is_auto_bturn() {return auto_bturn}
 function is_busy() {return busy}
+function is_pausing() {return pausing}
 function show_error(message) {
     dialog.showMessageBox({type: "error", buttons: ["OK"], message})
 }
@@ -1079,7 +1080,7 @@ function leelaz_start_args(weight_file) {
 }
 function on_ready() {
     // fixme: on_ready is called by *every* leelaz
-    // (leelaz_for_black, leelaz_for_white, and leelaz_for_endstate).
+    // (leelaz_for_black and leelaz_for_white).
     // This interferes starting-up sequence of another leelaz in engine.js.
     switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
 }

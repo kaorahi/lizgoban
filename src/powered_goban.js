@@ -43,6 +43,7 @@ function set_stones(stones) {
 let leelaz_move_count = 0
 
 function endstate_handler(h) {
+    if (M.is_pausing()) {return}
     const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const endstate_setter = update_p => {
         const leelaz_move_count = R.endstate_move_count

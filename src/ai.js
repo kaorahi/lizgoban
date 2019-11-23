@@ -34,11 +34,14 @@ function restart(h, new_weight_p) {
 }
 function set_board(hist, komi) {each_leelaz(z => z.set_board(hist, komi), katago_p())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
+let prev_pondering
 function set_pondering(pausing, busy) {
     const pondering = !pausing && !busy
     const b = (leelaz === leelaz_for_black)
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
+    leelaz_for_endstate && pondering && !prev_pondering && leelaz_for_endstate.endstate()
+    prev_pondering = pondering
 }
 function all_start_args() {
     const f = lz => lz && lz.start_args()
@@ -67,7 +70,7 @@ function start_endstate(leelaz_start_args, endstate_option) {
     const start_args = {...leelaz_start_args(weight), endstate_handler,
                         leelaz_command: lz_command, ...more}
     leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start(start_args)
+    leelaz_for_endstate.start({...start_args, ready_handler: do_nothing})
     leelaz_for_endstate.set_pondering(false)
 }
 function support_endstate_p() {return katago_p() || !!leelaz_for_endstate}
