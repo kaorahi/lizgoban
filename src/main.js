@@ -976,7 +976,7 @@ function load_weight_file(weight_file) {
     return weight_file
 }
 function select_files(title) {
-    return files = dialog.showOpenDialog(null, {
+    return dialog.showOpenDialog(null, {
         properties: ['openFile'], title: title,
         defaultPath: option.weight_dir,
     }) || []
