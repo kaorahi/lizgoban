@@ -345,7 +345,6 @@ function menu_template(win) {
         lz_white ?
             item('Load weights for black', 'Shift+L', load_leelaz_for_black) :
             item('Load network weights', 'Shift+L', load_weight),
-        item('Load engine', undefined, load_engine),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
@@ -413,6 +412,7 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
+        item('Load engine', undefined, load_engine),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
