@@ -146,16 +146,15 @@ const exported_from_leelaz = ['send_to_leelaz', 'peek_value']
 module.exports = {
     // main.js only
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
-    each_leelaz, leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
+    leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_leelaz_for_black, load_leelaz_for_white,
-    unload_leelaz_for_white,
-    set_engine_for_white, support_komi_p, set_engine_komi,
+    unload_leelaz_for_white, leelaz_weight_file, restart,
+    set_engine_for_white, support_komi_p, set_engine_komi, get_engine_komi,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
-    initialize, engine_info,
+    initialize, each_leelaz, engine_info,
     leelaz_for_endstate: () => leelaz_for_endstate,
     // both
-    restart, leelaz_weight_file, katago_p,
-    support_endstate_p, get_engine_komi,
+    katago_p, support_endstate_p,
 }
