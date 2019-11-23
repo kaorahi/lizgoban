@@ -100,25 +100,26 @@ Here is a more practical example of config.json:
                        "-config", "/foo/bar/gtp.cfg"]
         },
         {
-            "label": "Leela Zero vs. KataGo",
-            "accelerator": "Shift+F3",
+            "label": "LZ vs. KATA",
             "empty_board": true,
             "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/bar/network.gz"],
             "engine_for_white": ["/foo/bar/katago", "gtp",
                        "-model", "/foo/bar/kata_network.gz",
                        "-config", "/foo/bar/gtp.cfg"]
         },
-        {"label": "Hide hints", "accelerator": "CmdOrCtrl+F4", "board_type": "raw"},
-        {"label": "Show hints", "accelerator": "Alt+F5", "board_type": "double_boards"}
+        {"label": "Hide hints", "accelerator": "F3", "board_type": "raw"},
+        {"label": "Show hints", "accelerator": "F4", "board_type": "double_boards"}
     ]
 }
 ~~~~
 
-* sgf_dir: The default directory for [Open SGF] and [Save SGF] menus.
-* weight_dir: The default directory for [Load network weights] menu.
-* exercise_dir: (Experimental) The directory for your personal exercise book. If you specify this, you can use [Store as exercise] in [Tool] menu to remember the current board. Use [Exercise] in [Tool] menu to show one of the stored boards randomly and hit Tab or Z key to show its analysis.
-* max_cached_engines: (Experimental) The maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.
+* analyze_interval_centisec: Update interval of analysis display (1 = 0.01sec).
+* sgf_dir: Default directory for [Open SGF] and [Save SGF] menus.
+* weight_dir: Default directory for [Load network weights] menu.
+* exercise_dir: (Experimental) Directory for your personal exercise book. If you specify this, you can use [Store as exercise] in [Tool] menu to remember the current board. Use [Exercise] in [Tool] menu to show one of the stored boards randomly and hit Tab or Z key to show its analysis.
+* max_cached_engines: (Experimental) Maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.
 * preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
+  * accelerator: Shortcut key like "Shift+F3", "CmdOrCtrl+F4", "Alt+F5", etc. It can be omitted as the above "LZ vs. KATA".
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
   * empty_board: Set it true for creating new empty board.
 
