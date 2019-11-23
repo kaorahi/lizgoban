@@ -37,7 +37,7 @@ And more...
 * Real-time display of area counts by KataGo [3]
 * Trial boards that can be used like tabs in web browsers [1]
 * Detection of inconsistency between analyses before/after a move [4]
-* Watch Leela Zero vs. Leela Zero with different network weights (with real-time comparison of their plans) [3]
+* Watch Leela Zero vs. KataGo etc. with real-time comparison of their plans [3]
 * Play against weakened Leela Zero in several ways [3]
 * Keyboard shortcuts, e.g. "3" key for the third variation [5]
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move [3]
@@ -97,11 +97,13 @@ Here is a more practical example of config.json:
                        "-config", "/foo/bar/gtp.cfg"]
         },
         {
-            "label": "New game vs. LZ40",
+            "label": "Leela Zero vs. KataGo",
             "accelerator": "Shift+F3",
-            "board_type": "raw",
             "empty_board": true,
-            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/bar/network40.gz"]
+            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/bar/network.gz"],
+            "engine_for_white": ["/foo/bar/katago", "gtp",
+                       "-model", "/foo/bar/kata_network.gz",
+                       "-config", "/foo/bar/gtp.cfg"]
         },
         {"label": "Hide hints", "accelerator": "CmdOrCtrl+F4", "board_type": "raw"},
         {"label": "Show hints", "accelerator": "Alt+F5", "board_type": "double_boards"}
