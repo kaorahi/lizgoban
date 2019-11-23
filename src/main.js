@@ -72,6 +72,7 @@ update_debug_log()
 // modules
 const {create_game, create_game_from_sgf} = require('./game.js')
 const P = require('./powered_goban.js')
+const AI = require('./ai.js')
 
 // state
 let game = create_game()
@@ -90,7 +91,7 @@ const default_for_stored_key = {
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
-P.initialize(R, {on_change: update_let_me_think, on_suggest: try_auto}, {
+P.initialize(R, AI, {on_change: update_let_me_think, on_suggest: try_auto}, {
     // functions used in powered_goban.js
     render, update_state, update_ponder, show_suggest_p, is_pass,
     auto_progress, is_auto_bturn, is_busy,
@@ -125,9 +126,9 @@ app.on('quit', kill_all_leelaz)
 
 function start_leelaz() {
     debug_log("option: " + JSON.stringify(option))
-    P.start_leelaz(leelaz_start_args, option.endstate_leelaz); update_menu()
+    AI.start_leelaz(leelaz_start_args, option.endstate_leelaz); update_menu()
 }
-function kill_all_leelaz() {P.kill_all_leelaz()}
+function kill_all_leelaz() {AI.kill_all_leelaz()}
 
 // window
 
@@ -331,7 +332,7 @@ function menu_template(win) {
           }
     const sep = {type: 'separator'}
     const insert_if = (pred, ...items) => pred ? items : []
-    const lz_white = P.leelaz_for_white_p()
+    const lz_white = AI.leelaz_for_white_p()
     const dup = until_current_move_p =>
           () => duplicate_sequence(until_current_move_p, true)
     const file_menu = menu('File', [
@@ -380,9 +381,9 @@ function menu_template(win) {
         sep,
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
-        ...insert_if(P.katago_p(),
+        ...insert_if(AI.katago_p(),
                      store_toggler_menu_item('Score bar', 'score_bar', 'Shift+C')),
-        ...insert_if(P.leelaz_for_endstate_p(),
+        ...insert_if(AI.leelaz_for_endstate_p(),
             sep,
             store_toggler_menu_item(`Endstate (diff: ${P.get_endstate_diff_interval()} moves)`, 'show_endstate', 'Shift+E'),
             item('...longer diff', '{', endstate_diff_interval_adder(1),
@@ -402,7 +403,7 @@ function menu_template(win) {
                               unload_leelaz_for_white : load_leelaz_for_white)},
         lz_white ?
             item('Swap black/white weights', 'Shift+S',
-                 P.swap_leelaz_for_black_and_white) :
+                 AI.swap_leelaz_for_black_and_white) :
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
         sep,
@@ -465,10 +466,10 @@ function apply_option_preset(rule, win) {
     empty_board && !game.is_empty() && new_empty_board()
     board_type && set_board_type(board_type, win)
     need_restart && merge_option_and_restart({leelaz_command, leelaz_args})
-    weight_file && load(P.load_leelaz_for_black, weight_file)
-    weight_file_for_white ? load(P.load_leelaz_for_white, weight_file_for_white) :
+    weight_file && load(AI.load_leelaz_for_black, weight_file)
+    weight_file_for_white ? load(AI.load_leelaz_for_white, weight_file_for_white) :
         unload_leelaz_for_white()
-    engine_for_white && P.set_engine_for_white(engine_for_white)
+    engine_for_white && AI.set_engine_for_white(engine_for_white)
     resume()
 }
 
@@ -478,7 +479,7 @@ function merge_option_and_restart(opts) {
 }
 
 function unload_leelaz_for_white() {
-    P.unload_leelaz_for_white(); update_ponder(); update_state()
+    AI.unload_leelaz_for_white(); update_ponder(); update_state()
 }
 
 /////////////////////////////////////////////////
@@ -575,7 +576,7 @@ function play_best(n, weaken_method, ...weaken_args) {
     try_play_best(weaken_method, ...weaken_args)
 }
 function play_weak(percent) {
-    play_best(null, P.leelaz_for_white_p() ? 'random_leelaz' : 'random_candidate', percent)
+    play_best(null, AI.leelaz_for_white_p() ? 'random_leelaz' : 'random_candidate', percent)
 }
 function try_play_best(weaken_method, ...weaken_args) {
     // (ex)
@@ -583,7 +584,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     // try_play_best('pass_maybe')
     // try_play_best('random_candidate', 30)
     // try_play_best('random_leelaz', 30)
-    weaken_method === 'random_leelaz' && P.switch_to_random_leelaz(...weaken_args)
+    weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     if (empty(R.suggest)) {return}
     const move = (weaken_method === 'random_candidate' ?
                   weak_move(...weaken_args) : best_move())
@@ -691,8 +692,8 @@ function help() {
 function info() {
     const f = (label, s) => s ?
           `<${label}>\n` + fold_text(JSON.stringify(s), 60, 5) + '\n\n' : ''
-    const sa = P.all_start_args()
-    const lz = P.leelaz_for_white_p() ?
+    const sa = AI.all_start_args()
+    const lz = AI.leelaz_for_white_p() ?
           (f("leelaz (black)", sa.black) + f("leelaz (white)", sa.white)) :
           f("leelaz", sa.both)
     const message = lz +
@@ -719,7 +720,7 @@ function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
 function set_or_unset_busy(bool) {busy = bool; update_ponder()}
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false); update_state(true)}
-function update_ponder() {P.set_pondering(pausing, busy)}
+function update_ponder() {AI.set_pondering(pausing, busy)}
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {update_state()}
 
@@ -941,7 +942,7 @@ function load_weight() {
     return load_weight_file(select_files('Select weight file for leela zero')[0])
 }
 function load_weight_file(weight_file) {
-    const current_weight_file = P.leelaz_weight_file()
+    const current_weight_file = AI.leelaz_weight_file()
     if (!weight_file) {return false}
     weight_file !== current_weight_file &&
         (previous_weight_file = current_weight_file)
@@ -958,7 +959,7 @@ function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 
 // restart
 function restart() {restart_with_args()}
-function restart_with_args(h, new_weight_p) {P.restart(h, new_weight_p)}
+function restart_with_args(h, new_weight_p) {AI.restart(h, new_weight_p)}
 let last_restart_time = 0
 function auto_restart() {
     const buttons =
@@ -993,8 +994,8 @@ function on_ready() {
 /////////////////////////////////////////////////
 // another leelaz for white
 
-function load_leelaz_for_black() {P.load_leelaz_for_black(load_weight)}
-function load_leelaz_for_white() {P.load_leelaz_for_white(load_weight)}
+function load_leelaz_for_black() {AI.load_leelaz_for_black(load_weight)}
+function load_leelaz_for_white() {AI.load_leelaz_for_white(load_weight)}
 
 /////////////////////////////////////////////////
 // SGF
@@ -1072,12 +1073,12 @@ function attach_to_sabaki() {
     debug_log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_game()
     start_sabaki(sgf_file.name + '#' + game.move_count)
-    attached = true; P.update_leelaz(); update_state()
+    attached = true; AI.update_leelaz(); update_state()
 }
 
 function detach_from_sabaki() {
     if (!attached || !has_sabaki) {return}
-    stop_sabaki(); attached = false; P.update_leelaz(); update_state()
+    stop_sabaki(); attached = false; AI.update_leelaz(); update_state()
 }
 
 function toggle_sabaki() {

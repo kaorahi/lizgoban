@@ -61,6 +61,8 @@ function start_endstate(leelaz_start_args, endstate_option) {
     leelaz_for_endstate.set_pondering(false)
 }
 
+function leelaz_for_endstate_p() {return katago_p() || !!leelaz_for_endstate}
+
 /////////////////////////////////////////////////
 // another leelaz for white
 
@@ -123,4 +125,5 @@ module.exports = {
     leelaz_for_endstate: () => leelaz_for_endstate,
     // both
     restart, leelaz_weight_file, katago_p, unload_leelaz_for_white,
+    leelaz_for_endstate_p,
 }
