@@ -1119,8 +1119,10 @@ function load_random_exercise() {
     load_exercise(random_choice)
 }
 function load_exercise(selector) {
-    const dir = option.exercise_dir
-    const files = (fs.readdirSync(dir) || []).filter(is_exercise_filename)
+    const dir = option.exercise_dir, basename = z => PATH.basename(z)
+    const seen = sequence.map(h => h.sgf_file).filter(truep).map(basename)
+    const valid = f => is_exercise_filename(f) && seen.indexOf(f) < 0
+    const files = (fs.readdirSync(dir) || []).filter(valid)
     if (empty(files)) {wink(); return}
     const f = PATH.join(dir, selector(files))
     set_board_type('raw', exercise_window())
