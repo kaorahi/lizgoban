@@ -40,6 +40,7 @@ function parse_option(cur, succ) {
         // accept obsolete key "shortcut" for backward compatibility
         orig.shortcut && (orig.preset = [...(orig.preset || []), ...orig.shortcut])
         merge(option, orig); merge(option, from_preset(option))
+        merge(option, convert_preset_to_white(option.preset))
     }
     const from_preset = orig => {
         const preset = orig.preset; if (!preset) {return {}}
@@ -47,6 +48,15 @@ function parse_option(cur, succ) {
         const first_preset = preset[0]
         const keys = ['leelaz_command', 'leelaz_args']
         return aa2hash(keys.map(k => [k, first_preset[k] || orig[k]]))
+    }
+    const convert_preset_to_white = preset => {
+        if (!preset) return {}
+        const white_preset = preset.map(h => {
+            const {label, leelaz_command, leelaz_args, engine_for_white} = h
+            return (leelaz_command && leelaz_args && !engine_for_white) &&
+                {label, engine_for_white: [leelaz_command, ...leelaz_args]}
+        }).filter(truep)
+        return empty(white_preset) ? {} : {white_preset}
     }
     switch (cur) {
     case '-j': merge_json(succ); break
@@ -332,7 +342,8 @@ function update_window_menu() {
 function menu_for_window(win) {return Menu.buildFromTemplate(menu_template(win))}
 
 function menu_template(win) {
-    const menu = (label, submenu) => ({label, submenu: submenu.filter(truep)})
+    const menu = (label, submenu) =>
+          ({label, submenu: submenu.filter(truep), enabled: !empty(submenu)})
     const stop_auto_and = f => ((...a) => {stop_auto(); f(...a)})
     const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
     const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
@@ -434,7 +445,7 @@ function menu_template(win) {
         item('Help', undefined, help),
     ])
     return [file_menu, edit_menu, view_menu, tool_menu, engine_menu,
-            ...preset_menu_maybe(menu, item, win),
+            ...preset_menu_maybe({menu, item, sep, white_unloader_item, win}),
             ...(app.isPackaged ? [] : [debug_menu]),
             help_menu]
 }
@@ -454,15 +465,34 @@ function toggle_stored(key) {
     const val = !get_stored(key); set_stored(key, val); update_state(); return val
 }
 
-function preset_menu_maybe(menu, item, win) {
+function unload_leelaz_for_white() {
+    AI.unload_leelaz_for_white(); update_ponder(); update_state()
+}
+
+// preset
+
+function preset_menu_maybe(menu_tools) {
     // option.preset = [rule, rule, ...]
     // rule = {label: "mixture", accelerator: "F2", board_type: "raw",
     //         empty_board: true,
     //         engine: ["/foo/leelaz", "-g", "-w", "/foo/227.gz"]}
-    if (!option.preset) {return []}
+    const {menu, sep, white_unloader_item} = menu_tools
+    const items = preset_menu_items(option.preset, menu_tools)
+    if (empty(items)) {return []}
+    const white_menu = preset_menu_for_white(menu_tools)
+    return [menu('Preset', [...items, sep, white_menu, white_unloader_item])]
+}
+function preset_menu_for_white(menu_tools) {
+    const {menu} = menu_tools
+    const items = preset_menu_items(option.white_preset, menu_tools)
+    return menu('Alternative engine for white', items)
+}
+function preset_menu_items(preset, menu_tools, white_p) {
+    const {item, win} = menu_tools
+    if (!preset || empty(preset)) {return []}
     const doit = a => (wink(), apply_option_preset(a, win))
-    const preset_menu_item = a => item(a.label, a.accelerator, () => doit(a), true)
-    return [menu('Preset', option.preset.map(preset_menu_item))]
+    const item_for = a => item(a.label, a.accelerator, () => doit(a), true)
+    return preset.map(item_for)
 }
 
 function apply_option_preset(rule, win) {
@@ -497,10 +527,6 @@ function expand_preset(preset) {
 function merge_option_and_restart(opts) {
     unload_leelaz_for_white(); kill_all_leelaz()
     merge(option, opts); start_leelaz()
-}
-
-function unload_leelaz_for_white() {
-    AI.unload_leelaz_for_white(); update_ponder(); update_state()
 }
 
 /////////////////////////////////////////////////
