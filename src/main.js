@@ -35,8 +35,11 @@ const option = {
 process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
 function parse_option(cur, succ) {
     const merge_json = str => merge_with_shortcut(JSON.parse(str))
-    const merge_with_shortcut = orig =>
-          (merge(option, orig), merge(option, from_shortcut(option)))
+    const merge_with_shortcut = orig => {
+        // accept obsolete key "shortcut" for backward compatibility
+        orig.preset && (orig.shortcut = [...orig.preset, ...(orig.shortcut || [])])
+        merge(option, orig); merge(option, from_shortcut(option))
+    }
     const from_shortcut = orig => {
         const first_shortcut = (orig.shortcut || [{}])[0]
         const keys = ['leelaz_command', 'leelaz_args']
@@ -447,7 +450,7 @@ function shortcut_menu_maybe(menu, item, win) {
     if (!option.shortcut) {return []}
     const doit = a => (wink(), apply_option_shortcut(a, win))
     const shortcut_menu_item = a => item(a.label, a.accelerator, () => doit(a), true)
-    return [menu('Shortcut', option.shortcut.map(shortcut_menu_item))]
+    return [menu('Preset', option.shortcut.map(shortcut_menu_item))]
 }
 
 function apply_option_shortcut(rule, win) {
