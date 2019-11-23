@@ -33,8 +33,7 @@ function create_leelaz () {
 
     // process
     const start = h => {
-        arg = {...h}
-        arg.weight_file && overwrite_weight_file_in_leelaz_args(arg.weight_file)
+        arg = cook_arg(h)
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file,
                komi, minimum_suggested_moves, engine_log_line_length, ready_handler,
@@ -125,16 +124,24 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // weights file
 
-    const get_weight_file = () =>
-          arg && arg.leelaz_args[weight_option_pos_in_leelaz_args()]
-    const overwrite_weight_file_in_leelaz_args = path => {
-        const as = arg.leelaz_args.slice()
-        as[weight_option_pos_in_leelaz_args()] = path
-        arg.leelaz_args = as
+    const cook_arg = h => {
+        if (!h.weight_file) {return h}
+        const leelaz_args = h.leelaz_args.slice()
+        leelaz_args[weight_option_pos_in_leelaz_args(h)] = h.weight_file
+        return {...h, leelaz_args}
     }
-    const weight_option_pos_in_leelaz_args = () => {
+    const start_args_equal = h => {
+        const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+        // const eq = (a, b) => a === b ||
+        //       (typeof a === 'object' && typeof b === 'object' &&
+        //        Object.keys({...a, ...b}).every(k => eq(a[k], b[k])))
+        return eq(arg, cook_arg(h))
+    }
+    const get_weight_file = () =>
+          arg && arg.leelaz_args[weight_option_pos_in_leelaz_args(arg)]
+    const weight_option_pos_in_leelaz_args = h => {
         const weight_options = ['-w', '--weights', '-model']  // -model for KataGo
-        return arg.leelaz_args.findIndex(z => weight_options.includes(z)) + 1
+        return h.leelaz_args.findIndex(z => weight_options.includes(z)) + 1
     }
 
     /////////////////////////////////////////////////
@@ -324,7 +331,7 @@ function create_leelaz () {
 
     return {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
-        start_args, network_size, peek_value, is_katago,
+        start_args, start_args_equal, network_size, peek_value, is_katago,
         // for debug
         send_to_leelaz,
     }

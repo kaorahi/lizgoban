@@ -1,15 +1,21 @@
 // ai.js: abstraction of engines
 
 require('./util.js').use(); require('./coord.js').use()
+const original_create_leelaz = require('./engine.js').create_leelaz
+
+// See "engine cache" section for leelaz objects in this file.
+function create_leelaz() {return create_leelaz_proxy()}
+
+/////////////////////////////////////////////////
+// initialize
 
 // leelaz
-const {create_leelaz} = require('./engine.js')
 let leelaz = create_leelaz(), leelaz_for_black = leelaz
 let leelaz_for_white = null, leelaz_for_endstate = null
 
 // from main.js
-let is_bturn, invalid_weight_for_white
-function initialize(h) {({is_bturn, invalid_weight_for_white} = h)}
+let is_bturn, invalid_weight_for_white, max_cached_engines
+function initialize(h) {({is_bturn, invalid_weight_for_white, max_cached_engines} = h)}
 
 // from powered_goban.js
 let suggest_handler, endstate_handler
@@ -24,6 +30,7 @@ function start_leelaz(leelaz_start_args, endstate_option) {
 }
 function update_leelaz() {leelaz.update()}
 function restart(h, new_weight_p) {
+    if (!h && !new_weight_p) {leelaz.force_restart(); return}
     const cooked = h && with_handlers(h)
     const error_handler =
           (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
@@ -138,6 +145,50 @@ function engine_info() {
     return {engine_komi: get_engine_komi(), leelaz_komi,
             leelaz_for_white_p: leelaz_for_white_p(),
             black: f(leelaz_for_black), white: f(leelaz_for_white)}
+}
+
+/////////////////////////////////////////////////
+// engine cache
+
+// note:
+// We need max_cached_engines = 2 if we want to use Leela Zero and KataGo
+// alternately because leelaz.kill() is called before leelaz.start().
+// kill() pushes KataGo to cache before start() pulls LZ from cache.
+
+function create_leelaz_proxy() {
+    let lz; const proxy = {}
+    const renew_lz = new_lz => {
+        lz && cache_disused_engine(lz)
+        lz = new_lz || original_create_leelaz()
+        merge(proxy, {...lz, start, restart, kill, force_restart, instance_eq})
+    }
+    const start_gen = (h, command) => {
+        const c = pull_cached_engine(h); renew_lz(c); c || lz[command](h)
+    }
+    // override original methods
+    const start = h => start_gen(h, 'start')
+    const restart = h => start_gen({...lz.start_args(), ...(h || {})}, 'restart')
+    const kill = () => renew_lz()
+    // add more methods
+    const force_restart = () => lz.restart()
+    const instance_eq = (z) => (z === lz)
+    renew_lz(); return proxy
+}
+
+let cached_engines = []
+function pull_cached_engine(h) {
+    const k = cached_engines.findIndex(lz => lz.start_args_equal(h))
+    const ret = (k >= 0) && cached_engines.splice(k, 1)[0]
+    return ret
+}
+function cache_disused_engine(lz) {
+    if (!lz.start_args()) {return}
+    pull_cached_engine(lz.start_args())  // avoid duplication
+    lz.set_pondering(false); cached_engines.push(lz); shrink_cache()
+}
+function shrink_cache() {
+    const killed = cached_engines.splice(0, cached_engines.length - max_cached_engines)
+    killed.forEach(lz => lz.kill())
 }
 
 /////////////////////////////////////////////////

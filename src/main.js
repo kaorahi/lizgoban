@@ -32,6 +32,7 @@ const option = {
     weight_dir: undefined,
     sgf_dir: undefined,
     exercise_dir: undefined,
+    max_cached_engines: 1,
     preset: null,
 }
 process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
@@ -115,7 +116,8 @@ AI.initialize({
     invalid_weight_for_white: () => {
         show_error('Invalid weights file (for white)')
         unload_leelaz_for_white()
-    }
+    },
+    max_cached_engines: option.max_cached_engines
 })
 
 function render(given_R, is_board_changed) {
@@ -524,7 +526,7 @@ function apply_option_preset(rule, win) {
     weight_file_for_white ? load_weight_file(weight_file_for_white) :
         unload_leelaz_for_white()
     engine_for_white && AI.set_engine_for_white(engine_for_white)
-    resume()
+    set_board(game); resume()
 }
 
 function expand_preset(preset) {
@@ -1015,7 +1017,7 @@ function load_weight_file(weight_file, white_p) {
     weight_file !== current_weight_file && !white_p &&
         (previous_weight_file = current_weight_file)
     AI.load_weight_file(weight_file, white_p)
-    update_ponder_and_ui()
+    set_board(game); update_ponder_and_ui()
     return weight_file
 }
 function load_leelaz_for_black() {load_weight()}

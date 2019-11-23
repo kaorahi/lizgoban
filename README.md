@@ -117,6 +117,7 @@ Here is a more practical example of config.json:
 * sgf_dir: The default directory for [Open SGF] and [Save SGF] menus.
 * weight_dir: The default directory for [Load network weights] menu.
 * exercise_dir: (Experimental) The directory for your personal exercise book. If you specify this, you can use [Store as exercise] in [Tool] menu to remember the current board. Use [Exercise] in [Tool] menu to show one of the stored boards randomly and hit Tab or Z key to show its analysis.
+* max_cached_engines: (Experimental) The maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.
 * preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
   * empty_board: Set it true for creating new empty board.
@@ -165,6 +166,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 ### from 0.1.0
 
 * Add "preset" to switch engines inside LizGoban.
+* Add "max_cached_engines" for quicker switch of engines / weights.
 * Enable autoplay between different engines.
 * Add "personal exercise book".
 * Some items are moved to [Engine] menu.
