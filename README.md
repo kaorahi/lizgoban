@@ -160,6 +160,21 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 4. Click "Attach Sabaki" in "Tool" menu of LizGoban and wait for Sabaki window.
 5. Put a stone on Sabaki and see it appears on LizGoban.
 
+## Major changes
+
+### from 0.1.0
+
+* Add "preset" to switch engines inside LizGoban.
+* Enable autoplay between different engines.
+* Add "personal exercise book".
+* Some items are moved to [Engine] menu.
+
+### from unreleased versions
+
+* The all-in-one package (*.exe) is offered for Windows.
+* The launcher command is changed from "npx electron src" to "npm start".
+* "Load engine" menu is deleted because it is misleading.
+
 ## Links
 
 [Project Home](https://github.com/kaorahi/lizgoban) /
