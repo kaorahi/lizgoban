@@ -32,7 +32,7 @@ function set_board(given_game, move_count) {
     // use game.move_count if move_count is omitted
     game = given_game
     const hist = game.array_until(truep(move_count) ? move_count : game.move_count)
-    AI.each_leelaz(z => z.set_board(hist), AI.katago_p())
+    AI.set_board(hist)
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null

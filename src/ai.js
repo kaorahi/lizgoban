@@ -32,6 +32,7 @@ function restart(h, new_weight_p) {
           (leelaz === leelaz_for_white) ? error_handler_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
+function set_board(hist) {each_leelaz(z => z.set_board(hist), katago_p())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 function set_pondering(pausing, busy) {
     const pondering = !pausing && !busy
@@ -153,7 +154,7 @@ module.exports = {
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
-    initialize, each_leelaz, engine_info,
+    initialize, set_board, engine_info,
     leelaz_for_endstate: () => leelaz_for_endstate,
     // both
     katago_p, support_endstate_p,
