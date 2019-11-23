@@ -194,15 +194,6 @@ function for_current_and_previous_endstate(move_count, key, delta, f) {
 function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
 
 /////////////////////////////////////////////////
-// komi
-
-const leelaz_komi = 7.5
-let engine_komi = leelaz_komi
-function support_komi_p() {return AI.katago_p()}
-function get_engine_komi() {return support_komi_p() ? engine_komi : leelaz_komi}
-function set_engine_komi(komi) {engine_komi = komi; restart({komi})}
-
-/////////////////////////////////////////////////
 // winrate history
 
 function winrate_from_game(game) {
@@ -245,8 +236,8 @@ function get_previous_suggest() {
     return ret
 }
 function weight_info_text() {
-    const ek = get_engine_komi()
-    const engine_komi = (ek === leelaz_komi) ? '' : `komi=${ek} `
+    const ek = AI.get_engine_komi()
+    const engine_komi = (ek === AI.leelaz_komi()) ? '' : `komi=${ek} `
     const f = lz =>
           `${PATH.basename(AI.leelaz_weight_file(lz) || '')} ${lz.network_size() || ''}`
     const weight_info = AI.leelaz_for_white() ?
@@ -295,8 +286,6 @@ module.exports = {
     // endstate
     append_endstate_tag_maybe,
     get_endstate_diff_interval, add_endstate_diff_interval, set_endstate_diff_from,
-    // komi
-    support_komi_p, get_engine_komi, set_engine_komi,
     // renderer
     set_and_render,
     // util

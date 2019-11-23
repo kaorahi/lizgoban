@@ -407,8 +407,8 @@ function menu_template(win) {
             item('Switch to previous weights', 'Shift+S',
                  switch_to_previous_weight, false, !!previous_weight_file),
         sep,
-        ...insert_if(P.support_komi_p(),
-            item(`Komi (${P.get_engine_komi()})`, undefined, ask_engine_komi)),
+        ...insert_if(AI.support_komi_p(),
+            item(`Komi (${AI.get_engine_komi()})`, undefined, ask_engine_komi)),
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
@@ -665,8 +665,8 @@ function ask_handicap_stones() {
 }
 function ask_engine_komi() {
     const values = [-0.5, 0.5, 4.5, 5.5, 6.5, 7.5, 8.5]
-    const proc = k => {P.set_engine_komi(k)}
-    ask_choice(`Engine Komi (${P.get_engine_komi()})`, values, proc)
+    const proc = k => {AI.set_engine_komi(k)}
+    ask_choice(`Engine Komi (${AI.get_engine_komi()})`, values, proc)
 }
 function ask_choice(message, values, proc) {
     const buttons = [...values.map(to_s), 'cancel']
@@ -976,7 +976,7 @@ function auto_restart() {
 // util
 function leelaz_start_args(weight_file) {
     const leelaz_args = option.leelaz_args.slice()
-    const komi = P.get_engine_komi()
+    const komi = AI.get_engine_komi()
     const h = {leelaz_args, komi, weight_file,
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['leelaz_command', 'analyze_interval_centisec', 'wait_for_startup',

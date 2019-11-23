@@ -111,19 +111,32 @@ function switch_to_another_leelaz(next_leelaz) {
     return next_leelaz && next_leelaz !== leelaz && (leelaz = next_leelaz)
 }
 
+/////////////////////////////////////////////////
+// komi
+
+const leelaz_komi = 7.5
+let engine_komi = leelaz_komi
+function support_komi_p() {return katago_p()}
+function get_engine_komi() {return support_komi_p() ? engine_komi : leelaz_komi}
+function set_engine_komi(komi) {engine_komi = komi; restart({komi})}
+
+/////////////////////////////////////////////////
+// exports
+
 module.exports = {
     // main.js only
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
     each_leelaz, leelaz_for_white_p, swap_leelaz_for_black_and_white,
     switch_to_random_leelaz, load_leelaz_for_black, load_leelaz_for_white,
-    set_engine_for_white,
+    set_engine_for_white, support_komi_p, set_engine_komi,
     // powered_goban.js only
     initialize, switch_leelaz,
     leelaz: () => leelaz,
     leelaz_for_black: () => leelaz_for_black,
     leelaz_for_white: () => leelaz_for_white,
     leelaz_for_endstate: () => leelaz_for_endstate,
+    leelaz_komi: () => leelaz_komi,
     // both
     restart, leelaz_weight_file, katago_p, unload_leelaz_for_white,
-    leelaz_for_endstate_p,
+    leelaz_for_endstate_p, get_engine_komi,
 }
