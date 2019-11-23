@@ -11,8 +11,7 @@ const PATH = require('path')
 const AI = require('./ai.js')
 const {
     start_leelaz, update_leelaz, restart, kill_all_leelaz, set_pondering,
-    all_start_args, leelaz_weight_file, each_leelaz, with_handlers, katago_p,
-    start_endstate,
+    all_start_args, leelaz_weight_file, each_leelaz, katago_p,
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_to_random_leelaz,
     load_leelaz_for_black, load_leelaz_for_white, set_engine_for_white,
     unload_leelaz_for_white, switch_leelaz,

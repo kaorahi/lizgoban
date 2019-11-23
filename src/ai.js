@@ -110,15 +110,17 @@ function switch_to_another_leelaz(next_leelaz) {
 }
 
 module.exports = {
-    initialize,
-    start_leelaz, update_leelaz, restart, kill_all_leelaz, set_pondering,
-    all_start_args, leelaz_weight_file, each_leelaz, with_handlers, katago_p,
-    start_endstate,
-    leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_to_random_leelaz,
-    load_leelaz_for_black, load_leelaz_for_white, set_engine_for_white,
-    unload_leelaz_for_white, switch_leelaz,
+    // main.js only
+    start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
+    each_leelaz, leelaz_for_white_p, swap_leelaz_for_black_and_white,
+    switch_to_random_leelaz, load_leelaz_for_black, load_leelaz_for_white,
+    set_engine_for_white,
+    // powered_goban.js only
+    initialize, switch_leelaz,
     leelaz: () => leelaz,
     leelaz_for_black: () => leelaz_for_black,
     leelaz_for_white: () => leelaz_for_white,
     leelaz_for_endstate: () => leelaz_for_endstate,
+    // both
+    restart, leelaz_weight_file, katago_p, unload_leelaz_for_white,
 }
