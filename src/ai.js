@@ -7,12 +7,16 @@ const {create_leelaz} = require('./engine.js')
 let leelaz = create_leelaz(), leelaz_for_black = leelaz
 let leelaz_for_white = null, leelaz_for_endstate = null
 
-// from powered_goban.js
-let suggest_handler, endstate_handler
+// from main.js
 let clear_endstate, is_bturn, invalid_weight_for_white
 function initialize(h) {  // fixme: ugly
-    [{suggest_handler, endstate_handler,
-      clear_endstate, is_bturn, invalid_weight_for_white}] = [h]
+    [{clear_endstate, is_bturn, invalid_weight_for_white}] = [h]
+}
+
+// from powered_goban.js
+let suggest_handler, endstate_handler
+function set_handlers(h) {  // fixme: ugly
+    [{suggest_handler, endstate_handler}] = [h]
 }
 
 /////////////////////////////////////////////////
@@ -25,11 +29,8 @@ function start_leelaz(leelaz_start_args, endstate_option) {
 function update_leelaz() {leelaz.update()}
 function restart(h, new_weight_p) {
     const cooked = h && with_handlers(h)
-    const error_handler_for_white = () => {
-        invalid_weight_for_white(); unload_leelaz_for_white()
-    }
     const error_handler =
-          (leelaz === leelaz_for_white) ? error_handler_for_white : do_nothing
+          (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
 function set_board(hist) {each_leelaz(z => z.set_board(hist), katago_p())}
@@ -148,6 +149,7 @@ function engine_info() {
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value']
 module.exports = {
     // main.js only
+    initialize,
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_leelaz_for_black, load_leelaz_for_white,
@@ -156,7 +158,7 @@ module.exports = {
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
-    initialize, set_board, engine_info, another_leelaz_for_endstate_p,
+    set_handlers, set_board, engine_info, another_leelaz_for_endstate_p,
     // both
     katago_p, support_endstate_p,
 }

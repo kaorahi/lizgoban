@@ -19,13 +19,7 @@ let R, AI, on_suggest, M
 
 function initialize(...args) {  // fixme: ugly
     [R, AI, {on_suggest}, M] = args
-    const clear_endstate = () => {R.endstate = null}
-    const is_bturn = () => R.bturn
-    const invalid_weight_for_white = () => {
-        M.error_from_powered_goban('Invalid weights file (for white)')
-    }
-    AI.initialize({suggest_handler, endstate_handler,
-                   clear_endstate, is_bturn, invalid_weight_for_white})
+    AI.set_handlers({suggest_handler, endstate_handler})
 }
 
 function set_board(given_game, move_count) {

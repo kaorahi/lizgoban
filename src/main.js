@@ -95,8 +95,16 @@ P.initialize(R, AI, {on_suggest: try_auto}, {
     // functions used in powered_goban.js
     render, update_state, show_suggest_p, is_pass,
     auto_progress, is_auto_bturn, is_busy,
-    error_from_powered_goban,
 })
+AI.initialize({
+    clear_endstate: () => {R.endstate = null},
+    is_bturn: () => R.bturn,
+    invalid_weight_for_white: () => {
+        error_from_powered_goban('Invalid weights file (for white)')
+        unload_leelaz_for_white()
+    }
+})
+
 function render(given_R, is_board_changed) {
     renderer('render', given_R, is_board_changed)
 }
