@@ -93,8 +93,8 @@ function unload_leelaz_for_white() {
     leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
 }
 function switch_leelaz(bturn) {
-    switch_to_another_leelaz((bturn === undefined ? is_bturn() : bturn) ?
-                             leelaz_for_black : leelaz_for_white)
+    return switch_to_another_leelaz((bturn === undefined ? is_bturn() : bturn) ?
+                                    leelaz_for_black : leelaz_for_white)
 }
 
 // internal
@@ -104,8 +104,7 @@ function with_temporary_leelaz(leelaz_for_black_or_white, proc) {
     leelaz = leelaz_for_black; switch_leelaz()
 }
 function switch_to_another_leelaz(next_leelaz) {
-    next_leelaz && next_leelaz !== leelaz &&
-        (leelaz = next_leelaz) && (M.update_ponder(), M.update_state())
+    return next_leelaz && next_leelaz !== leelaz && (leelaz = next_leelaz)
 }
 function invalid_weight_for_white() {
     M.error_from_powered_goban('Invalid weights file (for white)')

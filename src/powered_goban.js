@@ -43,7 +43,7 @@ function set_board(given_game, move_count) {
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
     set_stones(game.current_stones())
-    switch_leelaz()
+    switch_leelaz() && (M.update_ponder(), M.update_state())
     on_change()
     M.is_busy() || M.update_state()
 }

@@ -478,8 +478,7 @@ function merge_option_and_restart(opts) {
 }
 
 function unload_leelaz_for_white() {
-    P.unload_leelaz_for_white()
-    update_state()
+    P.unload_leelaz_for_white(); update_ponder(); update_state()
 }
 
 /////////////////////////////////////////////////
