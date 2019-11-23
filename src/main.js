@@ -291,6 +291,7 @@ function update_all_p() {return option.update_all_p}
 function UPDATE_all(partially) {
     if (!update_all_p()) {return}
     debug_log(`UPDATE_all start`)
+    SET_board()
     partially || UPDATE_state(); UPDATE_ponder(); UPDATE_ui(); UPDATE_menu()
     debug_log(`UPDATE_all done`)
 }
@@ -813,7 +814,9 @@ function UPDATE_ponder() {
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {update_state()}
 
-function set_board(given_game, move_count) {
+function set_board(given_game, move_count) {update_all_p() || SET_board_sub(given_game, move_count)}
+function SET_board() {SET_board_sub(game)}
+function SET_board_sub(given_game, move_count) {
     AI.set_board(P.set_board(given_game, move_count), given_game.get_komi())
     AI.switch_leelaz() && (update_ponder(), update_state())
     update_let_me_think()
