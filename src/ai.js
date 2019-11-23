@@ -89,11 +89,12 @@ function load_leelaz_for_white(load_weight) {
     with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
 }
 function set_engine_for_white(command_args) {
-    unload_leelaz_for_white()
     const [leelaz_command, ...leelaz_args] = command_args
     const start_args = {...leelaz_for_black.start_args(), leelaz_command, leelaz_args}
-    const proc = () => leelaz_for_white.start(start_args)
-    with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
+    unload_leelaz_for_white()
+    leelaz_for_white = create_leelaz()
+    leelaz_for_white.start(start_args)
+    switch_leelaz()
 }
 function unload_leelaz_for_white() {
     switch_to_another_leelaz(leelaz_for_black)
