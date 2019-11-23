@@ -726,7 +726,7 @@ function ask_handicap_stones() {
 }
 function ask_engine_komi() {
     const values = [-0.5, 0.5, 4.5, 5.5, 6.5, 7.5, 8.5]
-    const proc = k => {AI.set_engine_komi(k)}
+    const proc = k => {AI.set_engine_komi(k); set_board(game)}
     ask_choice(`Engine Komi (${AI.get_engine_komi()})`, values, proc)
 }
 function ask_choice(message, values, proc) {
@@ -1064,8 +1064,7 @@ ${info}`
 // util
 function leelaz_start_args(weight_file) {
     const leelaz_args = option.leelaz_args.slice()
-    const komi = AI.get_engine_komi()
-    const h = {leelaz_args, komi, weight_file,
+    const h = {leelaz_args, weight_file,
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['leelaz_command', 'analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length']

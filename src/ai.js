@@ -36,7 +36,7 @@ function restart(h, new_weight_p) {
           (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
-function set_board(hist) {each_leelaz(z => z.set_board(hist), katago_p())}
+function set_board(hist) {each_leelaz(z => z.set_board(hist, engine_komi), katago_p())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 function set_pondering(pausing, busy) {
     const pondering = !pausing && !busy
@@ -127,7 +127,7 @@ const leelaz_komi = 7.5
 let engine_komi = leelaz_komi
 function support_komi_p() {return katago_p()}
 function get_engine_komi() {return support_komi_p() ? engine_komi : leelaz_komi}
-function set_engine_komi(komi) {engine_komi = komi; restart({komi})}
+function set_engine_komi(komi) {engine_komi = komi}
 
 /////////////////////////////////////////////////
 // misc.

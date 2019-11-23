@@ -12,7 +12,7 @@ function create_leelaz () {
     let leelaz_process, arg, is_ready = false
     let command_queue, last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
-    let network_size_text = ''
+    let network_size_text = '', komi = 7.5
 
     // game state
     let move_count = 0, bturn = true
@@ -36,7 +36,7 @@ function create_leelaz () {
         arg = cook_arg(h)
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file,
-               komi, minimum_suggested_moves, engine_log_line_length, ready_handler,
+               minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler}
               = arg
         log('start leela zero:', JSON.stringify([leelaz_command, ...leelaz_args]))
@@ -75,7 +75,6 @@ function create_leelaz () {
 
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
-        leelaz(`komi ${arg.komi}`)
         const checks = [['minmoves', 'lz-analyze interval 1 minmoves 30'],
                         ['endstate', 'endstate_map'],
                         ['kata-analyze', 'kata-analyze interval 1']]
@@ -89,13 +88,15 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
-    const set_board = (history) => {
+    const set_board = (history, new_komi) => {
+        const update_komi_p = (is_katago() && new_komi !== komi)
+        if (update_komi_p) {komi = new_komi; leelaz(`komi ${komi}`)}
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
-        if (back > 0 || !empty(rest)) {update_move_count(history)}
+        if (back > 0 || !empty(rest) || update_komi_p) {update_move_count(history)}
         leelaz_previous_history = history.slice()
     }
     const play1 = ({move, is_black}) => {leelaz('play ' + (is_black ? 'b ' : 'w ') + move)}
@@ -264,7 +265,7 @@ function create_leelaz () {
         h.visits = to_i(h.visits); h.order = to_i(h.order)
         h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
         truep(h.scoreMean) &&
-            (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + arg.komi)
+            (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
         h.scoreStdev = to_f(h.scoreStdev || 0)
         return h
     }
