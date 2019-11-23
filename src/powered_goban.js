@@ -250,7 +250,7 @@ function add_info_to_stones(stones, game) {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
         add_tag(s, h.tag)
         s.stone && (h.move_count <= game.move_count) && (s.move_count = h.move_count)
-        AI.leelaz_for_endstate() && truep(s.move_count) &&
+        AI.support_endstate_p() && truep(s.move_count) &&
             (game.move_count - endstate_diff_interval < s.move_count) &&
             (s.recent = true)
         !s.anytime_stones && (s.anytime_stones = [])
