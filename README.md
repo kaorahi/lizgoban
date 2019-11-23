@@ -41,6 +41,7 @@ And more...
 * Play against weakened Leela Zero in several ways [3]
 * Keyboard shortcuts, e.g. "3" key for the third variation [5]
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move [3]
+* Personal exercise book that can be used like bookmarks in web browsers for random exercise [3]
 
 ## Usage
 
@@ -83,6 +84,8 @@ Here is a more practical example of config.json:
     "analyze_interval_centisec": 10,
     "sgf_dir": "/foo/bar/sgf/",
     "weight_dir": "/foo/bar/lz_weights/",
+    "exercise_dir": "/foo/bar/exercise/",
+    "max_cached_engines": 1,
     "preset": [
         {
             "label": "Leela Zero",
@@ -113,6 +116,7 @@ Here is a more practical example of config.json:
 
 * sgf_dir: The default directory for [Open SGF] and [Save SGF] menus.
 * weight_dir: The default directory for [Load network weights] menu.
+* exercise_dir: (Experimental) The directory for your personal exercise book. If you specify this, you can use [Store as exercise] in [Tool] menu to remember the current board. Use [Exercise] in [Tool] menu to show one of the stored boards randomly and hit Tab or Z key to show its analysis.
 * preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
   * empty_board: Set it true for creating new empty board.

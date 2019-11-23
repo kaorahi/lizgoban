@@ -31,6 +31,7 @@ const option = {
     endstate_leelaz: null,
     weight_dir: undefined,
     sgf_dir: undefined,
+    exercise_dir: undefined,
     preset: null,
 }
 process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
@@ -415,6 +416,15 @@ function menu_template(win) {
         item('...Skip to next', 'CmdOrCtrl+E', skip_auto,
              true, auto_analyzing_or_playing(), true),
         sep,
+        ...insert_if(option.exercise_dir,
+                     item('Store as exercise', '!', store_as_exercise),
+                     item('Exercise', '?', load_random_exercise),
+                     menu('Delete exercise', [
+                         ...insert_if(is_exercise_file(game.sgf_file),
+                                      item('Delete this', 'CmdOrCtrl+!', delete_exercise)),
+                     ]),
+                     item('Open exercise', 'CmdOrCtrl+?', open_exercise_dir),
+                     sep),
         ...insert_if(AI.support_komi_p(),
             item(`Komi (${AI.get_engine_komi()})`, undefined, ask_engine_komi)),
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
@@ -1072,8 +1082,9 @@ function on_ready() {
 function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf()); wink()}
 function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
 
-function open_sgf() {
-    select_files('Select SGF file', option.sgf_dir).forEach(load_sgf)
+function open_sgf() {open_sgf_in(option.sgf_dir)}
+function open_sgf_in(dir) {
+    select_files('Select SGF file', dir).forEach(load_sgf)
 }
 function load_sgf(filename) {
     read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}))
@@ -1085,7 +1096,10 @@ function save_sgf() {
         title: 'Save SGF file',
         defaultPath: option.sgf_dir,
     })
-    f && fs.writeFile(f, game.to_sgf(), err => {if (err) throw err})
+    f && save_sgf_to(f)
+}
+function save_sgf_to(filename) {
+    fs.writeFile(filename, game.to_sgf(), err => {if (err) throw err})
 }
 
 function read_sgf(sgf_str) {
@@ -1093,6 +1107,56 @@ function read_sgf(sgf_str) {
     new_game ? backup_and_replace_game(new_game) :
         dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"')
 }
+
+// personal exercise book
+
+function store_as_exercise() {
+    const path = PATH.join(option.exercise_dir, exercise_filename())
+    save_sgf_to(path); toast('stored as exercise')
+}
+function load_random_exercise() {
+    const random_choice = a => a[Math.floor(Math.random() * a.length)]
+    load_exercise(random_choice)
+}
+function load_exercise(selector) {
+    const dir = option.exercise_dir
+    const files = (fs.readdirSync(dir) || []).filter(is_exercise_filename)
+    if (empty(files)) {wink(); return}
+    const f = PATH.join(dir, selector(files))
+    set_board_type('raw', exercise_window())
+    load_sgf(f); goto_move_count(exercise_move_count(f))
+}
+function open_exercise_dir() {open_sgf_in(option.exercise_dir)}
+function delete_exercise() {
+    const dir = option.exercise_dir, file = game.sgf_file, name = PATH.basename(file)
+    if (!is_exercise_file(file)) {wink(); return}
+    const new_file = PATH.join(dir, `_${name}`)
+    const done = () => {
+        game.sgf_file = new_file; toast('deleted from exercise'); update_menu()
+    }
+    fs.rename(file, new_file, done)
+}
+
+const exercise_format = {pre: 'exercise_', sep: '_', post: '.sgf'}
+function exercise_filename() {
+    const {pre, sep, post} = exercise_format
+    const mc = to_s(game.move_count).padStart(3, '0')
+    return `${pre}${(new Date()).toJSON()}${sep}${mc}${post}`
+}
+function is_exercise_filename(filename) {
+    const {pre, sep, post} = exercise_format
+    return filename.startsWith(pre) && filename.endsWith(post)
+}
+function is_exercise_file(path) {
+    const in_dir_p = (f, d) => d && (PATH.resolve(d, PATH.basename(f)) === f)
+    const name = PATH.basename(path)
+    return in_dir_p(path, option.exercise_dir) && is_exercise_filename(name)
+}
+function exercise_move_count(filename) {
+    const {pre, sep, post} = exercise_format
+    return to_i(last(filename.split(sep)).split(post)[0])
+}
+function exercise_window() {return let_me_think_window()}  // fixme
 
 /////////////////////////////////////////////////
 // Sabaki gameTree
