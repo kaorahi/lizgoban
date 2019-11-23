@@ -233,12 +233,12 @@ function get_previous_suggest() {
     return ret
 }
 function weight_info_text() {
-    const ek = AI.get_engine_komi()
-    const engine_komi = (ek === AI.leelaz_komi()) ? '' : `komi=${ek} `
-    const f = lz =>
-          `${PATH.basename(AI.leelaz_weight_file(lz) || '')} ${lz.network_size() || ''}`
-    const weight_info = AI.leelaz_for_white() ?
-          `${f(AI.leelaz_for_black())} / ${f(AI.leelaz_for_white())}` : f(AI.leelaz())
+    const h = AI.engine_info(), ek = h.engine_komi
+    const engine_komi = (ek === h.leelaz_komi) ? '' : `komi=${ek} `
+    const f = z =>
+          `${PATH.basename(z.weight_file || '')} ${z.network_size || ''}`
+    const weight_info = h.leelaz_for_white_p ?
+          `${f(h.black)} / ${f(h.white)}` : f(h.both)
     return engine_komi + weight_info
 }
 function add_next_mark_to_stones(stones, game, move_count) {
