@@ -356,9 +356,8 @@ function menu_template(win) {
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
         item('Reset', 'CmdOrCtrl+R', restart),
-        lz_white ?
-            item('Load weights for black', 'Shift+L', load_leelaz_for_black) :
-            item('Load network weights', 'Shift+L', load_weight),
+        item(lz_white ? 'Load weights for black' : 'Load network weights',
+             'Shift+L', load_leelaz_for_black),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
@@ -475,8 +474,9 @@ function apply_option_preset(rule, win) {
     empty_board && !game.is_empty() && new_empty_board()
     board_type && set_board_type(board_type, win)
     need_restart && merge_option_and_restart({leelaz_command, leelaz_args})
-    weight_file && load(AI.load_leelaz_for_black, weight_file)
-    weight_file_for_white ? load(AI.load_leelaz_for_white, weight_file_for_white) :
+    // backward compatibility for obsolete "weight_file" and "weight_file_for_white"
+    weight_file && load_weight_file(weight_file)
+    weight_file_for_white ? load_weight_file(weight_file_for_white) :
         unload_leelaz_for_white()
     engine_for_white && AI.set_engine_for_white(engine_for_white)
     resume()
@@ -965,15 +965,19 @@ function availability() {
 
 // load weight file
 let previous_weight_file = null
-function load_weight() {return load_weight_file(select_weight_file())}
-function load_weight_file(weight_file) {
-    const current_weight_file = AI.leelaz_weight_file()
+function load_weight(white_p) {return load_weight_file(select_weight_file(), white_p)}
+function load_weight_file(weight_file, white_p) {
     if (!weight_file) {return false}
-    weight_file !== current_weight_file &&
+    const current_weight_file = AI.leelaz_weight_file(white_p)
+    weight_file !== current_weight_file && !white_p &&
         (previous_weight_file = current_weight_file)
-    AI.restart(leelaz_start_args(weight_file), true)
+    AI.load_weight_file(weight_file, white_p)
+    update_ponder_and_ui()
     return weight_file
 }
+function load_leelaz_for_black() {load_weight()}
+function load_leelaz_for_white() {load_weight(true)}
+
 function select_weight_file() {
     const message = 'Select weight file for leela zero'
     return select_files(message, option.weight_dir)[0]
@@ -1029,12 +1033,6 @@ function on_ready() {
     // This interferes starting-up sequence of another leelaz in engine.js.
     switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
 }
-
-/////////////////////////////////////////////////
-// another leelaz for white
-
-function load_leelaz_for_black() {AI.load_leelaz_for_black(load_weight)}
-function load_leelaz_for_white() {AI.load_leelaz_for_white(load_weight)}
 
 /////////////////////////////////////////////////
 // SGF

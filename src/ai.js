@@ -41,7 +41,10 @@ function all_start_args() {
     const f = lz => lz && lz.start_args()
     return {black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
-function leelaz_weight_file() {return leelaz.get_weight_file()}
+function leelaz_weight_file(white_p) {
+    const lz = white_p ? leelaz_for_white : leelaz_for_black
+    return lz && lz.get_weight_file()
+}
 
 function each_leelaz(f, for_black_and_white_only) {
     [leelaz_for_black, leelaz_for_white,
@@ -79,15 +82,6 @@ function swap_leelaz_for_black_and_white() {
 function switch_to_random_leelaz(percent) {
     switch_leelaz(xor(is_bturn(), Math.random() < percent / 100))
 }
-function load_leelaz_for_black(load_weight) {
-    with_temporary_leelaz(leelaz_for_black, load_weight)
-}
-function load_leelaz_for_white(load_weight) {
-    const proc = () => {
-        load_weight() || (leelaz_for_white.kill(), (leelaz_for_white = null))
-    }
-    with_temporary_leelaz(leelaz_for_white = create_leelaz(), proc)
-}
 function set_engine_for_white(command_args) {
     const [leelaz_command, ...leelaz_args] = command_args
     const start_args = {...leelaz_for_black.start_args(), leelaz_command, leelaz_args}
@@ -104,13 +98,17 @@ function switch_leelaz(bturn) {
     return switch_to_another_leelaz((bturn === undefined ? is_bturn() : bturn) ?
                                     leelaz_for_black : leelaz_for_white)
 }
+function load_weight_file(weight_file, white_p) {
+    set_pondering(false)
+    const lz = white_p ? (leelaz_for_white || (leelaz_for_white = create_leelaz()))
+          : leelaz_for_black
+    const sa = lz.start_args() || leelaz_for_black.start_args()
+    lz.restart({...sa, weight_file})
+    switch_leelaz()
+}
 
 // internal
 
-function with_temporary_leelaz(leelaz_for_black_or_white, proc) {
-    leelaz = leelaz_for_black_or_white; proc()
-    leelaz = leelaz_for_black; switch_leelaz()
-}
 function switch_to_another_leelaz(next_leelaz) {
     return next_leelaz && next_leelaz !== leelaz && (leelaz = next_leelaz)
 }
@@ -151,7 +149,7 @@ module.exports = {
     initialize, set_board,
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
-    switch_to_random_leelaz, load_leelaz_for_black, load_leelaz_for_white,
+    switch_to_random_leelaz, load_weight_file,
     unload_leelaz_for_white, leelaz_weight_file, restart,
     set_engine_for_white, support_komi_p, set_engine_komi, get_engine_komi,
     ...aa2hash(exported_from_leelaz.map(key =>
