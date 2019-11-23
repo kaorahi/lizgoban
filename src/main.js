@@ -1037,7 +1037,7 @@ function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 
 // restart
 function restart() {AI.restart()}
-let last_restart_time = 0, warned_engine_trouble = false
+let last_restart_time = 0, warned_engine_trouble = false, asking_recovery = false
 function auto_restart() {
     const {leelaz_command, weight_file} = AI.engine_info().black
     const [e, w] = [leelaz_command, weight_file].map(s => PATH.basename(s || ''))
@@ -1055,10 +1055,13 @@ ${info}`
           (show_error(warning), (warned_engine_trouble = true))
     const buttons = ["retry", "load weights", "(ignore)"]
     const actions = [restart, load_weight, warn_maybe];
-    (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
-        (restart(), last_restart_time = Date.now()) :
+    const recover = () => {
+        asking_recovery = true  // avoid duplicated dialogs
         dialog.showMessageBox(null, {type: "error", message, buttons,},
-                              response => actions[response]())
+                              response => {actions[response](); asking_recovery = false})
+    };
+    (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
+        (restart(), last_restart_time = Date.now()) : (asking_recovery || recover())
 }
 
 // util
