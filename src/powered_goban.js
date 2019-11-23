@@ -102,6 +102,7 @@ function set_renderer_state(...args) {
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
+    const engine_komi = AI.get_engine_komi()
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)
@@ -109,7 +110,7 @@ function set_renderer_state(...args) {
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
     merge(R, {move_count, busy, winrate_history, endstate_sum, endstate_clusters,
               max_visits, progress,
-              progress_bturn, weight_info, is_katago,
+              progress_bturn, weight_info, is_katago, engine_komi,
               previous_suggest, winrate_trail}, endstate_d_i)
 }
 function set_and_render(...args) {set_and_render_gen(true, ...args)}

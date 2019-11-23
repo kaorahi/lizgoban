@@ -23,6 +23,7 @@ const R = {
     expand_winrate_bar: false, let_me_think: false, score_bar: false,
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',
     progress: 0.0, progress_bturn: true, weight_info: '', is_katago: false,
+    engine_komi: 7.5,
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [], endstate_clusters: [], prev_endstate_clusters: null,
     lizzie_style: false,

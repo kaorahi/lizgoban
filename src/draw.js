@@ -523,17 +523,18 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     const z = R.winrate_history[R.move_count] || {}
     const b_wr0 = fake_winrate_for(z.r, z.score_without_komi, true)
     const b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
+    const komi_wr = score_p && fake_winrate_for(0.5, R.engine_komi, true)
     const prev_score = score_p &&
           (R.winrate_history[R.move_count - 1] || {}).score_without_komi
     winrate_bar_prev = b_wr
     if (R.pausing && !truep(b_wr0)) {
         draw_winrate_bar_unavailable(w, h, g)
-        draw_winrate_bar_tics(0, tics, vline, g)
+        draw_winrate_bar_tics(0, null, tics, w, h, vline, g)
         return
     }
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
     large_bar && draw_winrate_bar_horizontal_lines(w, h, g)
-    draw_winrate_bar_tics(b_wr, tics, vline, g)
+    draw_winrate_bar_tics(b_wr, komi_wr, tics, w, h, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g)
     R.winrate_trail && draw_winrate_trail(canvas)
     draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
@@ -595,14 +596,32 @@ function draw_winrate_bar_horizontal_lines(w, h, g) {
     winrate_bar_ys(vs, w, h).map(y => line([0, y], [w, y], g))
 }
 
-function draw_winrate_bar_tics(b_wr, tics, vline, g) {
+function draw_winrate_bar_tics(b_wr, komi_wr, tics, w, h, vline, g) {
     const thick = [25, 50, 75]
+    const vl = (wr, light, dark) => {
+        g.strokeStyle = (wr < b_wr) ? light : (dark || light); vline(wr)
+    }
     seq(tics, 1).forEach(i => {
         const r = 100 * i / (tics + 1)
-        g.lineWidth = thick.includes(Math.round(r)) ? 3 : 1
-        g.strokeStyle = (r < b_wr) ? WHITE : BLACK; vline(r)
+        g.lineWidth = thick.includes(Math.round(r)) ? 3 : 1; vl(r, WHITE, BLACK)
     })
+    if (!truep(komi_wr)) {return}
+    const [too_black, too_white] = [(komi_wr <= 0), (komi_wr >= 100)]
+    if (!too_black && !too_white) {g.lineWidth = 5; vl(komi_wr, ORANGE); return}
+    const transparent_orange = "rgba(252, 141, 73, 0)", width = w / tics
+    const [x0, x1] = too_black ? [0, width] : [w, w - width]
+    g.fillStyle = side_gradation(x0, x1, ORANGE, transparent_orange, g)
+    fill_rect([x0, 0], [x1, h], g)
 }
+
+
+function draw_winrate_bar_komi(komi, h, xfor, g) {
+    const dummy = 0
+    const [x1, x2] = [-0.5, 0.5].map(d => xfor(fake_winrate_for(dummy, komi + d, true)))
+    g.lineWidth = 1; g.strokeStyle = '#888'
+    line([x1, 0], [x2, h], g)
+}
+
 
 function draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g) {
     const eval = last_move_eval(), b_eval = last_move_b_eval(), dummy = 0

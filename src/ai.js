@@ -208,5 +208,5 @@ module.exports = {
     // powered_goban.js only
     set_handlers, another_leelaz_for_endstate_p,
     // both
-    katago_p, support_endstate_p, engine_info,
+    katago_p, support_endstate_p, engine_info, get_engine_komi,
 }
