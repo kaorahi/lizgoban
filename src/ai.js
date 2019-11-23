@@ -1,16 +1,19 @@
+// ai.js: abstraction of engines
+
 require('./util.js').use(); require('./coord.js').use()
 
+// leelaz
+const {create_leelaz} = require('./engine.js')
+let leelaz = create_leelaz(), leelaz_for_black = leelaz
+let leelaz_for_white = null, leelaz_for_endstate = null
+
+// from powered_goban.js
 let suggest_handler, endstate_handler
 let clear_endstate, is_bturn, invalid_weight_for_white
 function initialize(h) {  // fixme: ugly
     [{suggest_handler, endstate_handler,
       clear_endstate, is_bturn, invalid_weight_for_white}] = [h]
 }
-
-// leelaz
-const {create_leelaz} = require('./engine.js')
-let leelaz = create_leelaz(), leelaz_for_black = leelaz
-let leelaz_for_white = null, leelaz_for_endstate = null
 
 /////////////////////////////////////////////////
 // leelaz
@@ -50,6 +53,9 @@ function with_handlers(h) {return merge({suggest_handler}, h)}
 
 function katago_p() {return leelaz.is_katago()}
 
+/////////////////////////////////////////////////
+// leelaz for endstate
+
 function start_endstate(leelaz_start_args, endstate_option) {
     const [lz_command, x] = endstate_option, x_type = typeof x
     const weight = (x_type === 'string') && x
@@ -60,8 +66,7 @@ function start_endstate(leelaz_start_args, endstate_option) {
     leelaz_for_endstate.start(start_args)
     leelaz_for_endstate.set_pondering(false)
 }
-
-function leelaz_for_endstate_p() {return katago_p() || !!leelaz_for_endstate}
+function support_endstate_p() {return katago_p() || !!leelaz_for_endstate}
 
 /////////////////////////////////////////////////
 // another leelaz for white
@@ -141,5 +146,5 @@ module.exports = {
     leelaz_komi: () => leelaz_komi,
     // both
     restart, leelaz_weight_file, katago_p, unload_leelaz_for_white,
-    leelaz_for_endstate_p, get_engine_komi,
+    support_endstate_p, get_engine_komi,
 }

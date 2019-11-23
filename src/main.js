@@ -383,7 +383,7 @@ function menu_template(win) {
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
         ...insert_if(AI.katago_p(),
                      store_toggler_menu_item('Score bar', 'score_bar', 'Shift+C')),
-        ...insert_if(AI.leelaz_for_endstate_p(),
+        ...insert_if(AI.support_endstate_p(),
             sep,
             store_toggler_menu_item(`Endstate (diff: ${P.get_endstate_diff_interval()} moves)`, 'show_endstate', 'Shift+E'),
             item('...longer diff', '{', endstate_diff_interval_adder(1),

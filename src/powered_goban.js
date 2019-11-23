@@ -44,7 +44,7 @@ function set_stones(stones) {
     R.stones = stones; add_info_to_stones(R.stones, game)
     R.prev_endstate_clusters = null
     // avoid flicker for fast undo/redo
-    AI.leelaz_for_endstate_p() && add_endstate_to_stones(R.stones, R.endstate)
+    AI.support_endstate_p() && add_endstate_to_stones(R.stones, R.endstate)
 }
 
 /////////////////////////////////////////////////
@@ -132,7 +132,7 @@ function set_and_render_gen(is_board_changed, ...args) {
 
 function append_endstate_tag_maybe(h) {
     const h_copy = merge({}, h)
-    AI.leelaz_for_endstate_p() && R.show_endstate &&
+    AI.support_endstate_p() && R.show_endstate &&
         h.move_count === game.move_count - endstate_diff_interval &&
         add_tag(h_copy, endstate_diff_tag_letter)
     return h_copy
