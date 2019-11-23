@@ -1,4 +1,4 @@
-require('./util.js').use(); require('./coord.js').use()
+Object.assign(global, require('./util.js'), require('./coord.js'))
 const {stones_from_history} = require('./rule.js')
 const SGF = require('@sabaki/sgf')
 

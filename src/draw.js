@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////
 // setup
 
-require('./util.js').use(); require('./coord.js').use()
+Object.assign(global, require('./util.js'), require('./coord.js'))
 
 // color constant
 const BLACK = "#000", WHITE = "#fff"

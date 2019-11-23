@@ -2,7 +2,7 @@
 
 // fix me: inefficient...
 
-require('./util.js').use(); require('./coord.js').use()
+Object.assign(global, require('./util.js'), require('./coord.js'))
 
 const minor_ownership = 0.1
 const too_large_cluster_size = 40

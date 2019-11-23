@@ -115,4 +115,4 @@ const common_constants = {
     tag_letters,
 }
 
-require('./globally.js').export_globally(module, E.merge(E, common_constants))
+module.exports = E.merge(E, common_constants)

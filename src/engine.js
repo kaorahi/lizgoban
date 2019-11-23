@@ -1,4 +1,4 @@
-require('./util.js').use(); require('./coord.js').use()
+Object.assign(global, require('./util.js'), require('./coord.js'))
 
 function create_leelaz () {
 
