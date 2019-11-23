@@ -78,7 +78,11 @@ function create_leelaz () {
                         ['kata-analyze', 'kata-analyze interval 1']]
         checks.map(a => check_supported(...a))
         // clear_leelaz_board for restart
-        const after_all_checks = () => {clear_leelaz_board(); arg.ready_handler()}
+        // komi may be changed tentatively in set_board before check of engine type
+        const after_all_checks = () => {
+            clear_leelaz_board(); is_katago() || (komi = leelaz_komi)
+            arg.ready_handler()
+        }
         leelaz('lizgoban_after_all_checks', after_all_checks)
     }
     const on_error = () =>
@@ -87,7 +91,7 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history, new_komi) => {
-        const update_komi_p = (is_katago() && truep(new_komi) && new_komi !== komi)
+        const update_komi_p = (is_katago(true) && truep(new_komi) && new_komi !== komi)
         if (update_komi_p) {komi = new_komi; leelaz(`komi ${komi}`)}
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
@@ -324,7 +328,7 @@ function create_leelaz () {
     const check_supported =
           (feature, cmd) => leelaz(cmd, ok => (supported[feature] = ok), true)
     const is_supported = feature => supported[feature]
-    const is_katago = () => is_supported('kata-analyze')
+    const is_katago = maybe => is_supported('kata-analyze') || (!is_ready && maybe)
 
     /////////////////////////////////////////////////
     // exported methods

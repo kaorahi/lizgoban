@@ -1113,6 +1113,7 @@ function on_ready() {
     // (leelaz_for_black and leelaz_for_white).
     // This interferes starting-up sequence of another leelaz in engine.js.
     switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
+    UPDATE_all()
 }
 
 /////////////////////////////////////////////////
