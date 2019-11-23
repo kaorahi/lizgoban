@@ -1,8 +1,10 @@
 require('./util.js').use(); require('./coord.js').use()
 
-let M, suggest_handler, endstate_handler, clear_endstate, is_bturn
-function initialize(...args) {  // fixme: ugly
-    [M, {suggest_handler, endstate_handler, clear_endstate, is_bturn}] = args
+let suggest_handler, endstate_handler
+let clear_endstate, is_bturn, invalid_weight_for_white
+function initialize(h) {  // fixme: ugly
+    [{suggest_handler, endstate_handler,
+      clear_endstate, is_bturn, invalid_weight_for_white}] = [h]
 }
 
 // leelaz
@@ -105,10 +107,6 @@ function with_temporary_leelaz(leelaz_for_black_or_white, proc) {
 }
 function switch_to_another_leelaz(next_leelaz) {
     return next_leelaz && next_leelaz !== leelaz && (leelaz = next_leelaz)
-}
-function invalid_weight_for_white() {
-    M.error_from_powered_goban('Invalid weights file (for white)')
-    unload_leelaz_for_white()
 }
 
 module.exports = {

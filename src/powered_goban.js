@@ -30,8 +30,14 @@ let R, on_change, on_suggest, M
 
 function initialize(...args) {  // fixme: ugly
     [R, {on_change, on_suggest}, M] = args
+    const clear_endstate = () => {R.endstate = null}
     const is_bturn = () => R.bturn
-    AI.initialize(M, {suggest_handler, endstate_handler, clear_endstate, is_bturn})
+    const invalid_weight_for_white = () => {
+        M.error_from_powered_goban('Invalid weights file (for white)')
+        unload_leelaz_for_white()
+    }
+    AI.initialize({suggest_handler, endstate_handler,
+                   clear_endstate, is_bturn, invalid_weight_for_white})
 }
 
 function set_board(given_game, move_count) {
@@ -134,8 +140,6 @@ function set_and_render_gen(is_board_changed, ...args) {
     const masked_R = merge({}, R, M.show_suggest_p() ? {} : {suggest: [], visits: null})
     M.render(masked_R, is_board_changed)
 }
-
-function clear_endstate() {R.endstate = null}
 
 /////////////////////////////////////////////////
 // endstate
