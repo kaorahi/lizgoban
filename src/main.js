@@ -710,6 +710,7 @@ function set_board_type(type, win, keep_let_me_think) {
 
 // handicap stones & komi
 function add_handicap_stones(k) {
+    game.komi = handicap_komi
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
     // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif

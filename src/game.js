@@ -116,7 +116,8 @@ function convert_to_sabaki_sgf_v131_maybe(parsed) {
 function load_sabaki_gametree_to_game(gametree, index, game) {
     if (!gametree || !gametree.nodes) {return false}
     const parent_nodes = nodes_from_sabaki_gametree(gametree.parent)
-    const new_hist = history_from_sabaki_nodes(parent_nodes.concat(gametree.nodes))
+    const nodes = parent_nodes.concat(gametree.nodes)
+    const new_hist = history_from_sabaki_nodes(nodes)
     game.set_with_reuse(new_hist)
     game.set_last_loaded_element()
     const idx = (!index && index !== 0) ? Infinity : index
@@ -124,7 +125,9 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     game.move_count = history_from_sabaki_nodes(nodes_until_index).length
     const first_node = nodes_until_index[0]
     const player_name = bw => (first_node[bw] || [""])[0]
-    const km = (first_node["KM"] || [false])[0], komi = truep(km) && to_f(km)
+    const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
+    const km = (first_node["KM"] || [false])[0]
+    const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
                  komi, trial: false})
     return true
