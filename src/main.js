@@ -218,7 +218,7 @@ const api = merge({}, simple_api, {
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
     // for debug
-    send_to_leelaz: P.send_to_leelaz,
+    send_to_leelaz: AI.send_to_leelaz,
 })
 
 function api_handler(channel, handler, busy) {
@@ -589,7 +589,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const move = (weaken_method === 'random_candidate' ?
                   weak_move(...weaken_args) : best_move())
     const pass_maybe =
-          () => P.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
+          () => AI.peek_value('pass', value => play(value < 0.9 ? 'pass' : move))
     const play_it = () => {
         decrement_auto_play_count()
         weaken_method === 'pass_maybe' ? pass_maybe() : play(move)

@@ -279,7 +279,6 @@ function pick_properties(orig, keys) {
 /////////////////////////////////////////////////
 // exports
 
-const exported_from_leelaz = ['send_to_leelaz', 'peek_value']
 module.exports = {
     // basic
     initialize, set_board,
@@ -291,7 +290,4 @@ module.exports = {
     // util
     stone_for_history_elem, update_info_in_stones,
     get_initial_b_winrate: () => initial_b_winrate,
-    // leelaz methods
-    ...aa2hash(exported_from_leelaz.map(key =>
-                                        [key, (...args) => leelaz[key](...args)]))
 }
