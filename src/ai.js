@@ -9,15 +9,11 @@ let leelaz_for_white = null, leelaz_for_endstate = null
 
 // from main.js
 let is_bturn, invalid_weight_for_white
-function initialize(h) {  // fixme: ugly
-    [{is_bturn, invalid_weight_for_white}] = [h]
-}
+function initialize(h) {({is_bturn, invalid_weight_for_white} = h)}
 
 // from powered_goban.js
 let suggest_handler, endstate_handler
-function set_handlers(h) {  // fixme: ugly
-    [{suggest_handler, endstate_handler}] = [h]
-}
+function set_handlers(h) {({suggest_handler, endstate_handler} = h)}
 
 /////////////////////////////////////////////////
 // leelaz
