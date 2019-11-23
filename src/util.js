@@ -56,7 +56,8 @@ function do_debug_log(arg, limit_len) {
     const HALF = Math.floor((limit_len || Infinity) / 2)
     const s = E.to_s(arg), over = s.length - HALF * 2
     const snip = str => str.slice(0, HALF) + `{...${over}...}` + str.slice(- HALF)
-    console.log(over <= 0 ? s : snip(s))
+    const sec = `(${(new Date()).toJSON().replace(/(.*:)|(.Z)/g, '')}) `
+    console.log(sec + (over <= 0 ? s : snip(s)))
 }
 
 // [d_f, d_g] = deferred_procs([f, 200], [g, 300])

@@ -19,11 +19,9 @@ function create_leelaz () {
 
     // util
     const log = (header, s, show_queue_p) => {
-        const format = x => (to_s(x).match(/.{0,4}[.].{2}/) || [''])[0]
-        const ti = format(Date.now() / 1000 + 0.0001)
         const t2s = task => (task.protect_p ? '!' : '') +
               (with_response_p(task) ? '*' : '') + task.command
-        debug_log(`${ti} [${(leelaz_process || {}).pid}] ${header} ${s}` +
+        debug_log(`[${(leelaz_process || {}).pid}] ${header} ${s}` +
                   (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
                   arg && arg.engine_log_line_length || 500)
     }
