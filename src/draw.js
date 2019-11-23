@@ -597,15 +597,16 @@ function draw_winrate_bar_horizontal_lines(w, h, g) {
 }
 
 function draw_winrate_bar_tics(b_wr, komi_wr, tics, w, h, vline, g) {
-    const thick = [25, 50, 75]
+    const thick = [25, 50, 75], komi_p = truep(komi_wr)
     const vl = (wr, light, dark) => {
         g.strokeStyle = (wr < b_wr) ? light : (dark || light); vline(wr)
     }
     seq(tics, 1).forEach(i => {
-        const r = 100 * i / (tics + 1)
-        g.lineWidth = thick.includes(Math.round(r)) ? 3 : 1; vl(r, WHITE, BLACK)
+        const r = 100 * i / (tics + 1), center_p = (r === 50) && !komi_p
+        g.lineWidth = center_p ? 5 : thick.includes(Math.round(r)) ? 3 : 1
+        vl(r, ...(center_p ? [ORANGE] : [WHITE, BLACK]))
     })
-    if (!truep(komi_wr)) {return}
+    if (!komi_p) {return}
     const [too_black, too_white] = [(komi_wr <= 0), (komi_wr >= 100)]
     if (!too_black && !too_white) {g.lineWidth = 5; vl(komi_wr, ORANGE); return}
     const transparent_orange = "rgba(252, 141, 73, 0)", width = w / tics
