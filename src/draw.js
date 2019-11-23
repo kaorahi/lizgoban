@@ -876,7 +876,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_hotness(h, sr2coord, g)
     draw_winrate_graph_uncertainty(h, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
-    draw_winrate_graph_score(sr2coord, g)
+    draw_winrate_graph_score(w, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     // mouse events
     handle_mouse_on_winrate_graph(canvas, coord2sr)
@@ -953,18 +953,23 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 
 // additional plots
 
-function draw_winrate_graph_score(sr2coord, g) {
+function draw_winrate_graph_score(w, sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
     const max_score = Math.max(...scores.filter(truep).map(Math.abs))
+    if (max_score === - Infinity) {return}
     const scale = max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
     const to_r = score => 50 + score * scale
+    const draw_komi = () => {
+        const [dummy, ky] = sr2coord(R.move_count, to_r(R.engine_komi))
+        g.strokeStyle = 'rgba(255,128,0,0.4)'; line([0, ky], [w, ky], g)
+    }
     const plotter = (x, y, s, g) => {
         const diff_target_p = R.endstate_diff_interval > 5 &&
               (s === R.move_count - R.endstate_diff_interval)
         const [radius, alpha] = diff_target_p ? [3, 0.7] : [2, 0.3]
         g.fillStyle = `rgba(0,255,255,${alpha})`; fill_circle([x, y], radius, g)
     }
-    draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
+    draw_komi(); draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
 }
 
 function draw_winrate_graph_hotness(h, sr2coord, g) {
