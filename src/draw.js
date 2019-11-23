@@ -607,12 +607,15 @@ function draw_winrate_bar_tics(b_wr, komi_wr, tics, w, h, vline, g) {
         vl(r, ...(center_p ? [ORANGE] : [WHITE, BLACK]))
     })
     if (!komi_p) {return}
-    const [too_black, too_white] = [(komi_wr <= 0), (komi_wr >= 100)]
-    if (!too_black && !too_white) {g.lineWidth = 5; vl(komi_wr, ORANGE); return}
-    const transparent_orange = "rgba(252, 141, 73, 0)", width = w / tics
-    const [x0, x1] = too_black ? [0, width] : [w, w - width]
-    g.fillStyle = side_gradation(x0, x1, ORANGE, transparent_orange, g)
-    fill_rect([x0, 0], [x1, h], g)
+    // indicate komi
+    const [too_black, too_white] = [(komi_wr <= 0), (komi_wr >= 100)], unit = w / tics
+    const komi_line = () => {g.lineWidth = 5; vl(komi_wr, ORANGE)}
+    const fade = (x0, x1) => {
+        const transparent_orange = "rgba(252,141,73,0)"
+        g.fillStyle = side_gradation(x0, x1, ORANGE, transparent_orange, g)
+        fill_rect([x0, 0], [x1, h], g)
+    }
+    too_black ? fade(0, unit) : too_white ? fade(w, w - unit) : komi_line()
 }
 
 
