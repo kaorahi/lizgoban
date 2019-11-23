@@ -862,11 +862,11 @@ function let_me_think_switch_board_type(only_when_stage_is_changed) {
     const stage = progress < 0.5 ? 'first_half' : 'latter_half'
     if (only_when_stage_is_changed && stage === let_me_think_previous_stage) {return}
     let_me_think_set_board_type_for(stage)
+    only_when_stage_is_changed && UPDATE_all()
 }
 function let_me_think_set_board_type_for(stage) {
     set_board_type(let_me_think_board_type[let_me_think_previous_stage = stage],
                    let_me_think_window(), true)
-    UPDATE_all()
 }
 
 function toggle_board_type_in_let_me_think() {
