@@ -12,7 +12,7 @@ function create_leelaz () {
     let leelaz_process, arg, is_ready = false
     let command_queue, last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
-    let network_size_text = '', komi = 7.5
+    let network_size_text = '', komi = leelaz_komi
 
     // game state
     let move_count = 0, bturn = true
@@ -89,7 +89,7 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history, new_komi) => {
-        const update_komi_p = (is_katago() && new_komi !== komi)
+        const update_komi_p = (is_katago() && truep(new_komi) && new_komi !== komi)
         if (update_komi_p) {komi = new_komi; leelaz(`komi ${komi}`)}
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
@@ -113,6 +113,7 @@ function create_leelaz () {
     const clear_leelaz_board = () => {leelaz("clear_board"); leelaz_previous_history = []; update()}
     const start_args = () => arg
     const network_size = () => network_size_text
+    const get_komi = () => komi
     const peek_value = (move, cont) => {
         the_nn_eval_reader =
             value => {the_nn_eval_reader = do_nothing; cont(value); update()}
@@ -332,7 +333,7 @@ function create_leelaz () {
 
     return {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
-        start_args, start_args_equal, network_size, peek_value, is_katago,
+        start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
         // for debug
         send_to_leelaz,
     }

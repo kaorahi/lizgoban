@@ -36,7 +36,7 @@ function restart(h, new_weight_p) {
           (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
-function set_board(hist) {each_leelaz(z => z.set_board(hist, engine_komi), katago_p())}
+function set_board(hist, komi) {each_leelaz(z => z.set_board(hist, komi), katago_p())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 function set_pondering(pausing, busy) {
     const pondering = !pausing && !busy
@@ -121,15 +121,6 @@ function switch_to_another_leelaz(next_leelaz) {
 }
 
 /////////////////////////////////////////////////
-// komi
-
-const leelaz_komi = 7.5
-let engine_komi = leelaz_komi
-function support_komi_p() {return katago_p()}
-function get_engine_komi() {return support_komi_p() ? engine_komi : leelaz_komi}
-function set_engine_komi(komi) {engine_komi = komi}
-
-/////////////////////////////////////////////////
 // misc.
 
 function another_leelaz_for_endstate_p() {return !!leelaz_for_endstate}
@@ -142,7 +133,7 @@ function engine_info() {
         return {leelaz_command, leelaz_args,
                 weight_file: lz.get_weight_file(), network_size: lz.network_size()}
     }
-    return {engine_komi: get_engine_komi(), leelaz_komi,
+    return {engine_komi: leelaz.get_komi(),
             leelaz_for_white_p: leelaz_for_white_p(),
             black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
@@ -194,7 +185,7 @@ function shrink_cache() {
 /////////////////////////////////////////////////
 // exports
 
-const exported_from_leelaz = ['send_to_leelaz', 'peek_value']
+const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi']
 module.exports = {
     // main.js only
     initialize, set_board,
@@ -202,11 +193,11 @@ module.exports = {
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_weight_file,
     unload_leelaz_for_white, leelaz_weight_file, restart,
-    set_engine_for_white, support_komi_p, set_engine_komi, get_engine_komi,
+    set_engine_for_white,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
     set_handlers, another_leelaz_for_endstate_p,
     // both
-    katago_p, support_endstate_p, engine_info, get_engine_komi,
+    katago_p, support_endstate_p, engine_info,
 }

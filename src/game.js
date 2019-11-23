@@ -27,7 +27,7 @@ function new_game_id() {return next_game_id++}
 function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
-        move_count: 0, player_black: "", player_white: "",
+        move_count: 0, player_black: "", player_white: "", komi: 7.5,
         sgf_file: "", sgf_str: "", id: new_game_id(),
         trial: false, last_loaded_element: null
     }
@@ -73,7 +73,8 @@ function create_game(init_history, init_prop) {
 
 function game_to_sgf(game) {
     const f = (t, p) => `${t}[${SGF.escapeString(p || '')}]`
-    return `(;KM[7.5]${f('PW', game.player_white)}${f('PB', game.player_black)}` +
+    const km = truep(game.komi) ? `KM[${game.komi}]` : ''
+    return `(;${km}${f('PW', game.player_white)}${f('PB', game.player_black)}` +
         game.map(({move: move, is_black: is_black}) =>
                  (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
         ')'
@@ -121,9 +122,11 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     game.move_count = history_from_sabaki_nodes(nodes_until_index).length
-    const player_name = bw => (nodes_until_index[0][bw] || [""])[0]
+    const first_node = nodes_until_index[0]
+    const player_name = bw => (first_node[bw] || [""])[0]
+    const km = (first_node["KM"] || [false])[0], komi = truep(km) && to_f(km)
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
-                 trial: false})
+                 komi, trial: false})
     return true
 }
 

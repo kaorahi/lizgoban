@@ -523,7 +523,7 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     const z = R.winrate_history[R.move_count] || {}
     const b_wr0 = fake_winrate_for(z.r, z.score_without_komi, true)
     const b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
-    const komi_wr = score_p && fake_winrate_for(0.5, R.engine_komi, true)
+    const komi_wr = score_p && fake_winrate_for(0.5, R.komi, true)
     const prev_score = score_p &&
           (R.winrate_history[R.move_count - 1] || {}).score_without_komi
     winrate_bar_prev = b_wr
@@ -960,7 +960,7 @@ function draw_winrate_graph_score(w, sr2coord, g) {
     const scale = max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
     const to_r = score => 50 + score * scale
     const draw_komi = () => {
-        const [dummy, ky] = sr2coord(R.move_count, to_r(R.engine_komi))
+        const [dummy, ky] = sr2coord(R.move_count, to_r(R.komi))
         g.strokeStyle = 'rgba(255,128,0,0.4)'; line([0, ky], [w, ky], g)
     }
     const plotter = (x, y, s, g) => {

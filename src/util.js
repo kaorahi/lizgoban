@@ -25,6 +25,7 @@ E.array2hash = a => {
     const h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h
 }
 E.mac_p = () => (process.platform === 'darwin')
+E.leelaz_komi = 7.5
 
 // seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
 E.seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))

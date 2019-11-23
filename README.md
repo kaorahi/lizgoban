@@ -169,6 +169,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * Add "max_cached_engines" for quicker switch of engines / weights.
 * Enable autoplay between different engines.
 * Add "personal exercise book".
+* Improve komi features.
 * Some items are moved to [Engine] menu.
 
 ### from unreleased versions

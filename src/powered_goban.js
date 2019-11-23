@@ -102,7 +102,7 @@ function set_renderer_state(...args) {
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
-    const engine_komi = AI.get_engine_komi()
+    const komi = game.komi
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)
@@ -110,7 +110,7 @@ function set_renderer_state(...args) {
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
     merge(R, {move_count, busy, winrate_history, endstate_sum, endstate_clusters,
               max_visits, progress,
-              progress_bturn, weight_info, is_katago, engine_komi,
+              progress_bturn, weight_info, is_katago, komi,
               previous_suggest, winrate_trail}, endstate_d_i)
 }
 function set_and_render(...args) {set_and_render_gen(true, ...args)}
@@ -228,8 +228,10 @@ function get_previous_suggest() {
     return ret
 }
 function weight_info_text() {
-    const h = AI.engine_info(), ek = h.engine_komi
-    const engine_komi = (ek === h.leelaz_komi) ? '' : `komi=${ek} `
+    const h = AI.engine_info(), ek = h.engine_komi, gk = game.komi
+    const game_komi = truep(gk) && gk != ek && ` (game komi=${gk})`
+    const engine_komi = (game_komi || (ek !== leelaz_komi)) ?
+          `komi=${ek}${game_komi || ''} ` : ''
     const f = z =>
           `${PATH.basename(z.weight_file || '')} ${z.network_size || ''}`
     const weight_info = h.leelaz_for_white_p ?

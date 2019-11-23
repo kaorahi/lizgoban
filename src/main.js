@@ -427,8 +427,7 @@ function menu_template(win) {
                      ]),
                      item('Open exercise', 'CmdOrCtrl+?', open_exercise_dir),
                      sep),
-        ...insert_if(AI.support_komi_p(),
-            item(`Komi (${AI.get_engine_komi()})`, undefined, ask_engine_komi)),
+        item(`Komi (${game.komi})`, undefined, ask_komi),
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
@@ -724,10 +723,10 @@ function ask_handicap_stones() {
     const proc = k => {game.is_empty() || new_empty_board(); add_handicap_stones(k)}
     ask_choice("Handicap stones", seq(8, 2), proc)
 }
-function ask_engine_komi() {
+function ask_komi() {
     const values = [-0.5, 0.5, 4.5, 5.5, 6.5, 7.5, 8.5]
-    const proc = k => {AI.set_engine_komi(k); set_board(game)}
-    ask_choice(`Engine Komi (${AI.get_engine_komi()})`, values, proc)
+    const proc = k => {game.komi = k; set_board(game)}
+    ask_choice(`Komi (${game.komi})`, values, proc)
 }
 function ask_choice(message, values, proc) {
     const buttons = [...values.map(to_s), 'cancel']
@@ -788,7 +787,7 @@ function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {update_state()}
 
 function set_board(given_game, move_count) {
-    AI.set_board(P.set_board(given_game, move_count))
+    AI.set_board(P.set_board(given_game, move_count), given_game.komi)
     AI.switch_leelaz() && (update_ponder(), update_state())
     update_let_me_think()
     is_busy() || update_state()
