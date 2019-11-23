@@ -129,7 +129,7 @@ function engine_info() {
     const f = lz => {
         if (!lz || !lz.start_args()) {return null}
         const {leelaz_command, leelaz_args} = lz.start_args()
-        return {leelaz_command, leelaz_args,
+        return {leelaz_command, leelaz_args, is_ready: lz.is_ready(),
                 weight_file: lz.get_weight_file(), network_size: lz.network_size()}
     }
     return {engine_komi: leelaz.get_komi(),

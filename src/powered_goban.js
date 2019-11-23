@@ -225,10 +225,11 @@ function get_previous_suggest() {
 function weight_info_text() {
     const h = AI.engine_info(), ek = h.engine_komi, gk = game.get_komi()
     const game_komi = truep(gk) && gk != ek && ` (game komi=${gk})`
+    const s = val => truep(val) ? to_s(val) : ''
     const engine_komi = (game_komi || (ek !== leelaz_komi)) ?
-          `komi=${ek}${game_komi || ''} ` : ''
+          `komi=${ek}${s(game_komi)} ` : ''
     const f = z => z ?
-          `${PATH.basename(z.weight_file || '')} ${z.network_size || ''}` : ''
+          `${PATH.basename(s(z.weight_file))} ${s(z.network_size)}${s(!z.is_ready && '(waiting...)')}` : ''
     const weight_info = h.leelaz_for_white_p ?
           `${f(h.black)} / ${f(h.white)}` : f(h.black)
     return engine_komi + weight_info

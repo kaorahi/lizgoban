@@ -336,7 +336,7 @@ function create_leelaz () {
     return {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
-        endstate,
+        endstate, is_ready: () => is_ready,
         // for debug
         send_to_leelaz,
     }
