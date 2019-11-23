@@ -355,10 +355,6 @@ function menu_template(win) {
         item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
-        item('Reset', 'CmdOrCtrl+R', restart),
-        item(lz_white ? 'Load weights for black' : 'Load network weights',
-             'Shift+L', load_leelaz_for_black),
-        sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
     ])
@@ -406,23 +402,29 @@ function menu_template(win) {
         item('...Skip to next', 'CmdOrCtrl+E', skip_auto,
              true, auto_analyzing_or_playing(), true),
         sep,
-        item('Alternative weights for white', 'CmdOrCtrl+Shift+L',
-             load_leelaz_for_white),
-        ...insert_if(lz_white,
-                     item('Unload white engine', 'CmdOrCtrl+Shift+U',
-                          unload_leelaz_for_white)),
-        lz_white ?
-            item('Swap black/white engines', 'Shift+S',
-                 AI.swap_leelaz_for_black_and_white) :
-            item('Switch to previous weights', 'Shift+S',
-                 switch_to_previous_weight, false, !!previous_weight_file),
-        sep,
         ...insert_if(AI.support_komi_p(),
             item(`Komi (${AI.get_engine_komi()})`, undefined, ask_engine_komi)),
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         item('Info', 'CmdOrCtrl+I', info),
+    ])
+    const white_unloader_item =
+          item('Unload white engine', 'CmdOrCtrl+Shift+U',
+               unload_leelaz_for_white, false, lz_white)
+    const engine_menu = menu('Engine', [
+        item(lz_white ? 'Load weights for black' : 'Load network weights',
+             'Shift+L', load_leelaz_for_black),
+        item('Alternative weights for white', 'CmdOrCtrl+Shift+L',
+             load_leelaz_for_white),
+        white_unloader_item,
+        lz_white ?
+            item('Swap black/white engines', 'Shift+S',
+                 AI.swap_leelaz_for_black_and_white) :
+            item('Switch to previous weights', 'Shift+S',
+                 switch_to_previous_weight, false, !!previous_weight_file),
+        sep,
+        item('Reset', 'CmdOrCtrl+R', restart),
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
@@ -431,7 +433,7 @@ function menu_template(win) {
     const help_menu = menu('Help', [
         item('Help', undefined, help),
     ])
-    return [file_menu, edit_menu, view_menu, tool_menu,
+    return [file_menu, edit_menu, view_menu, tool_menu, engine_menu,
             ...preset_menu_maybe(menu, item, win),
             ...(app.isPackaged ? [] : [debug_menu]),
             help_menu]
