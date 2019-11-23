@@ -881,7 +881,7 @@ function create_sequence_maybe(force) {
 
 function next_sequence() {previous_or_next_sequence(1)}
 function previous_sequence() {previous_or_next_sequence(-1)}
-function previous_or_next_sequence(delta, effect) {
+function previous_or_next_sequence(delta) {
     sequence.length > 1 && nth_sequence(sequence_cursor + delta)
 }
 function nth_sequence(n) {
