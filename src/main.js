@@ -1033,7 +1033,9 @@ function select_files(title, dir) {
         defaultPath: dir,
     }) || []
 }
-function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
+function switch_to_previous_weight() {
+    previous_weight_file ? load_weight_file(previous_weight_file) : wink()
+}
 
 // restart
 function restart() {AI.restart()}
@@ -1053,8 +1055,8 @@ ${info}`
 ${info}`
     const warn_maybe = () => warned_engine_trouble ||
           (show_error(warning), (warned_engine_trouble = true))
-    const buttons = ["retry", "load weights", "(ignore)"]
-    const actions = [restart, load_weight, warn_maybe];
+    const buttons = ["RESTORE", "retry", "load weights", "(ignore)"]
+    const actions = [switch_to_previous_weight, restart, load_weight, warn_maybe]
     const recover = () => {
         asking_recovery = true  // avoid duplicated dialogs
         dialog.showMessageBox(null, {type: "error", message, buttons,},
