@@ -44,6 +44,7 @@ function create_game(init_history, init_prop) {
         array_until: mc => history.slice(0, mc),
         delete_future: () => history.splice(self.move_count),
         last_move: () => (last(history) || {}).move,
+        get_komi: () => self.komi || leelaz_komi,
         set_last_loaded_element: () => self.last_loaded_element = last(history),
         shallow_copy: () => create_game(history.slice(), merge({}, self, {
             id: new_game_id(), last_loaded_element: null

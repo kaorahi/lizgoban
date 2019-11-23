@@ -102,7 +102,7 @@ function set_renderer_state(...args) {
     const progress_bturn = M.is_auto_bturn()
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
-    const komi = game.komi
+    const komi = game.get_komi()
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)
@@ -228,7 +228,7 @@ function get_previous_suggest() {
     return ret
 }
 function weight_info_text() {
-    const h = AI.engine_info(), ek = h.engine_komi, gk = game.komi
+    const h = AI.engine_info(), ek = h.engine_komi, gk = game.get_komi()
     const game_komi = truep(gk) && gk != ek && ` (game komi=${gk})`
     const engine_komi = (game_komi || (ek !== leelaz_komi)) ?
           `komi=${ek}${game_komi || ''} ` : ''
