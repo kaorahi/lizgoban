@@ -1172,10 +1172,6 @@ function exercise_window() {return let_me_think_window()}  // fixme
 /////////////////////////////////////////////////
 // Sabaki gameTree
 
-function load_sabaki_gametree_on_new_game(gametree) {
-    backup_game(); load_sabaki_gametree(gametree)
-}
-
 function load_sabaki_gametree(gametree, index) {
     if (!game.load_sabaki_gametree(gametree, index)) {return}
     set_board(game)
