@@ -344,11 +344,13 @@ function menu_for_window(win) {return Menu.buildFromTemplate(menu_template(win))
 function menu_template(win) {
     const menu = (label, submenu) =>
           ({label, submenu: submenu.filter(truep), enabled: !empty(submenu)})
-    const stop_auto_and = f => ((...a) => {stop_auto(); f(...a)})
+    const exec = (...fs) => ((...a) => fs.forEach(f => f && f(...a)))
+    const update = () => update_state(true)
     const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
     const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
           !(standalone_only && attached) && {
-              label, accelerator, click: keep_auto ? click : stop_auto_and(click),
+              label, accelerator,
+              click: exec(!keep_auto && stop_auto, click, update),
               enabled: enabled || (enabled === undefined)
           }
     const sep = {type: 'separator'}
