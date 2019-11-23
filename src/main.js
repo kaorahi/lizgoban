@@ -41,7 +41,9 @@ function parse_option(cur, succ) {
         merge(option, orig); merge(option, from_preset(option))
     }
     const from_preset = orig => {
-        const first_preset = (orig.preset || [{}])[0]
+        const preset = orig.preset; if (!preset) {return {}}
+        expand_preset(preset)
+        const first_preset = preset[0]
         const keys = ['leelaz_command', 'leelaz_args']
         return aa2hash(keys.map(k => [k, first_preset[k] || orig[k]]))
     }
@@ -452,9 +454,8 @@ function toggle_stored(key) {
 function preset_menu_maybe(menu, item, win) {
     // option.preset = [rule, rule, ...]
     // rule = {label: "mixture", accelerator: "F2", board_type: "raw",
-    //         empty_board: true, leelaz_command: "/foo/leelaz",
-    //         leelaz_args: ["-g", "-w", "/foo/227.gz"],
-    //         weight_file: "/foo/035.gz", "weight_file_for_white": "/foo/157.gz"}
+    //         empty_board: true,
+    //         engine: ["/foo/leelaz", "-g", "-w", "/foo/227.gz"]}
     if (!option.preset) {return []}
     const doit = a => (wink(), apply_option_preset(a, win))
     const preset_menu_item = a => item(a.label, a.accelerator, () => doit(a), true)
@@ -462,8 +463,7 @@ function preset_menu_maybe(menu, item, win) {
 }
 
 function apply_option_preset(rule, win) {
-    // merge rule.option for backward compatibility to 1a88dd40
-    const a = merge({}, rule, rule.option || {})
+    const a = rule
     const {empty_board, board_type, weight_file, weight_file_for_white,
            engine_for_white} = a
     const {leelaz_command, leelaz_args} = merge({}, option, a)
@@ -478,6 +478,15 @@ function apply_option_preset(rule, win) {
         unload_leelaz_for_white()
     engine_for_white && AI.set_engine_for_white(engine_for_white)
     resume()
+}
+
+function expand_preset(preset) {
+    preset.forEach(rule => {
+        // merge rule.option for backward compatibility to 1a88dd40
+        merge(rule, rule.option || {})
+        const {engine} = rule
+        engine && merge(rule, {leelaz_command: engine[0], leelaz_args: engine.slice(1)})
+    })
 }
 
 function merge_option_and_restart(opts) {
