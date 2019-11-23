@@ -1097,10 +1097,12 @@ function save_sgf() {
         title: 'Save SGF file',
         defaultPath: option.sgf_dir,
     })
-    f && save_sgf_to(f)
+    const if_success = () => (game.sgf_file = f)
+    f && save_sgf_to(f, if_success)
 }
-function save_sgf_to(filename) {
-    fs.writeFile(filename, game.to_sgf(), err => {if (err) throw err})
+function save_sgf_to(filename, if_success) {
+    const callback = err => {if (err) {throw err} else {if_success && if_success()}}
+    fs.writeFile(filename, game.to_sgf(), callback)
 }
 
 function read_sgf(sgf_str) {
