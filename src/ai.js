@@ -41,9 +41,7 @@ function all_start_args() {
     const f = lz => lz && lz.start_args()
     return {black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
-function leelaz_weight_file(leelaz_for_black_or_white) {
-    return (leelaz_for_black_or_white || leelaz).get_weight_file()
-}
+function leelaz_weight_file() {return leelaz.get_weight_file()}
 
 function each_leelaz(f, for_black_and_white_only) {
     [leelaz_for_black, leelaz_for_white,
