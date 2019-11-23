@@ -817,7 +817,8 @@ function init_from_renderer() {update_state()}
 function set_board(given_game, move_count) {update_all_p() || SET_board_sub(given_game, move_count)}
 function SET_board() {SET_board_sub(game)}
 function SET_board_sub(given_game, move_count) {
-    AI.set_board(P.set_board(given_game, move_count), given_game.get_komi())
+    const hist = P.set_board(given_game, move_count); if (!hist) {return}
+    AI.set_board(hist, given_game.get_komi())
     AI.switch_leelaz() && (update_ponder(), update_state())
     update_let_me_think()
     is_busy() || update_state()
