@@ -409,7 +409,7 @@ function menu_template(win) {
     ])
     const tool_menu = menu('Tool', [
         item('Auto replay', 'Shift+A', ask_sec(true), true),
-        item('Self play', 'Shift+P', ask_sec(false), true),
+        item('AI vs. AI', 'Shift+P', ask_sec(false), true),
         item('...Skip to next', 'CmdOrCtrl+E', skip_auto,
              true, auto_analyzing_or_playing(), true),
         sep,
