@@ -399,7 +399,7 @@ function menu_template(win) {
         {label: 'Alternative weights for white', accelerator: 'CmdOrCtrl+Shift+L',
          type: 'checkbox', checked: lz_white,
          click: stop_auto_and(lz_white ?
-                              P.unload_leelaz_for_white : load_leelaz_for_white)},
+                              unload_leelaz_for_white : load_leelaz_for_white)},
         lz_white ?
             item('Swap black/white weights', 'Shift+S',
                  P.swap_leelaz_for_black_and_white) :
@@ -467,14 +467,19 @@ function apply_option_preset(rule, win) {
     need_restart && merge_option_and_restart({leelaz_command, leelaz_args})
     weight_file && load(P.load_leelaz_for_black, weight_file)
     weight_file_for_white ? load(P.load_leelaz_for_white, weight_file_for_white) :
-        P.unload_leelaz_for_white()
+        unload_leelaz_for_white()
     engine_for_white && P.set_engine_for_white(engine_for_white)
     resume()
 }
 
 function merge_option_and_restart(opts) {
-    P.unload_leelaz_for_white(); kill_all_leelaz()
+    unload_leelaz_for_white(); kill_all_leelaz()
     merge(option, opts); start_leelaz()
+}
+
+function unload_leelaz_for_white() {
+    P.unload_leelaz_for_white()
+    update_state()
 }
 
 /////////////////////////////////////////////////

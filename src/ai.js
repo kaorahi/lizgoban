@@ -91,7 +91,6 @@ function set_engine_for_white(command_args) {
 function unload_leelaz_for_white() {
     switch_to_another_leelaz(leelaz_for_black)
     leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
-    M.update_state()
 }
 function switch_leelaz(bturn) {
     switch_to_another_leelaz((bturn === undefined ? is_bturn() : bturn) ?
