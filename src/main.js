@@ -412,7 +412,6 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
-        item('Load engine', undefined, load_engine),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
@@ -950,34 +949,15 @@ function select_files(title) {
 }
 function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 
-// load engine
-var confirmed_load_engine = false
-function load_engine() {
-    if (!confirmed_load_engine) {confirm_load_engine(); return}
-    const leelaz_command = select_files('Select engine')[0]
-    leelaz_command && merge_option_and_restart({leelaz_command})
-}
-function confirm_load_engine() {
-    const start_args = P.all_start_args().both.leelaz_args.join(' ')
-    const message = `This command is useless for most users. You can only switch the engine from Leela Zero to another version of Leela Zero, for example. You will get an error if you try to load a different engine here because it is called WITH THE CURRENT ARGUMENTS:
-
-${start_args}
-
-Moreover, LizGoban can be down immediately if you select a wrong file. Do you really understand what will happen?`
-    const ok = 'OK'
-    const proc = s => (s === ok) && ((confirmed_load_engine = true), load_engine())
-    ask_choice(message, [ok], proc)
-}
-
 // restart
 function restart() {restart_with_args()}
 function restart_with_args(h, new_weight_p) {P.restart(h, new_weight_p)}
 let last_restart_time = 0
 function auto_restart() {
     const buttons =
-          ["retry", "load weight", "load engine", "save & quit", "quit"]
+          ["retry", "load weight", "save & quit", "quit"]
     const actions =
-          [restart, load_weight, load_engine, () => (save_sgf(), app.quit()), app.quit];
+          [restart, load_weight, () => (save_sgf(), app.quit()), app.quit];
     (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
         (restart(), last_restart_time = Date.now()) :
         dialog.showMessageBox(null, {
