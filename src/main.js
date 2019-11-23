@@ -463,12 +463,13 @@ function preset_menu_maybe(menu, item, win) {
 }
 
 function apply_option_preset(rule, win) {
-    const a = rule
+    const cur = AI.engine_info().black
+    const extended = {...cur, ...rule}
     const {empty_board, board_type, weight_file, weight_file_for_white,
-           engine_for_white} = a
-    const {leelaz_command, leelaz_args} = merge({}, option, a)
-    const need_restart = (a.leelaz_command !== option.leelaz_command) ||
-          (a.leelaz_args !== option.leelaz_args)
+           engine_for_white} = rule
+    const {leelaz_command, leelaz_args} = extended
+    const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
+    const need_restart = cur && (f(cur) !== f(extended))
     const load = (switcher, file) => switcher(() => load_weight_file(file))
     empty_board && !game.is_empty() && new_empty_board()
     board_type && set_board_type(board_type, win)
