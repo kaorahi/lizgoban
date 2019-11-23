@@ -146,7 +146,7 @@ fs.access(option.sabaki_command, null,
 
 app.on('ready', () => {
     start_leelaz(); new_window('double_boards')
-    option.preset && apply_option_preset(option.preset[0], get_windows()[0])
+    option.preset && apply_preset(option.preset[0], get_windows()[0])
 })
 app.on('window-all-closed', app.quit)
 app.on('quit', kill_all_leelaz)
@@ -528,13 +528,13 @@ function preset_menu_items(preset, menu_tools, white_p) {
     const {item, win} = menu_tools
     if (!preset || empty(preset)) {return []}
     const doit = a => {
-        apply_option_preset(a, win); toast(`${a.label}${white_p ? ' (for white)' : ''}`, 1000)
+        apply_preset(a, win); toast(`${a.label}${white_p ? ' (for white)' : ''}`, 1000)
     }
     const item_for = a => item(a.label, a.accelerator, () => doit(a), true)
     return preset.map(item_for)
 }
 
-function apply_option_preset(rule, win) {
+function apply_preset(rule, win) {
     const cur = AI.engine_info().black
     const extended = {...cur, ...rule}
     const {empty_board, board_type, weight_file, weight_file_for_white,
