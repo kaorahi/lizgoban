@@ -521,13 +521,15 @@ function preset_menu_maybe(menu_tools) {
 }
 function preset_menu_for_white(menu_tools) {
     const {menu} = menu_tools
-    const items = preset_menu_items(option.white_preset, menu_tools)
+    const items = preset_menu_items(option.white_preset, menu_tools, true)
     return menu('Alternative engine for white', items)
 }
 function preset_menu_items(preset, menu_tools, white_p) {
     const {item, win} = menu_tools
     if (!preset || empty(preset)) {return []}
-    const doit = a => (wink(), apply_option_preset(a, win))
+    const doit = a => {
+        apply_option_preset(a, win); toast(`${a.label}${white_p ? ' (for white)' : ''}`, 1000)
+    }
     const item_for = a => item(a.label, a.accelerator, () => doit(a), true)
     return preset.map(item_for)
 }
