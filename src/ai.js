@@ -131,8 +131,12 @@ function set_engine_komi(komi) {engine_komi = komi; restart({komi})}
 function another_leelaz_for_endstate_p() {return !!leelaz_for_endstate}
 
 function engine_info() {
-    const f = lz => lz &&
-          {weight_file: lz.get_weight_file(), network_size: lz.network_size()}
+    const f = lz => {
+        if (!lz) {return null}
+        const {leelaz_command, leelaz_args} = lz.start_args()
+        return {leelaz_command, leelaz_args,
+                weight_file: lz.get_weight_file(), network_size: lz.network_size()}
+    }
     return {engine_komi: get_engine_komi(), leelaz_komi,
             leelaz_for_white_p: leelaz_for_white_p(),
             black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
@@ -153,7 +157,7 @@ module.exports = {
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
-    set_handlers, engine_info, another_leelaz_for_endstate_p,
+    set_handlers, another_leelaz_for_endstate_p,
     // both
-    katago_p, support_endstate_p,
+    katago_p, support_endstate_p, engine_info,
 }

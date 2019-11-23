@@ -101,7 +101,7 @@ P.initialize(R, AI, {on_suggest: try_auto}, {
 AI.initialize({
     is_bturn: () => R.bturn,
     invalid_weight_for_white: () => {
-        error_from_powered_goban('Invalid weights file (for white)')
+        show_error('Invalid weights file (for white)')
         unload_leelaz_for_white()
     }
 })
@@ -111,7 +111,7 @@ function render(given_R, is_board_changed) {
 }
 function is_auto_bturn() {return auto_bturn}
 function is_busy() {return busy}
-function error_from_powered_goban(message) {
+function show_error(message) {
     dialog.showMessageBox({type: "error", buttons: ["OK"], message})
 }
 
@@ -985,17 +985,28 @@ function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
 // restart
 function restart() {restart_with_args()}
 function restart_with_args(h, new_weight_p) {AI.restart(h, new_weight_p)}
-let last_restart_time = 0
+let last_restart_time = 0, warned_engine_trouble = false
 function auto_restart() {
-    const buttons =
-          ["retry", "load weight", "save & quit", "quit"]
-    const actions =
-          [restart, load_weight, () => (save_sgf(), app.quit()), app.quit];
+    const {leelaz_command, weight_file} = AI.engine_info().both
+    const [e, w] = [leelaz_command, weight_file].map(s => PATH.basename(s || ''))
+    const info = `\n(engine) ${leelaz_command}\n(weight) ${weight_file}`
+    const message = `Engine is down.
+(maybe mismatch of [${e}] and [${w}])
+What to do?
+${info}`
+    const warning = `LizGoban is in trouble now.
+- Save games before losing them.
+- For recovery, load correct weights for "${e}" or use [Preset] menu if available.
+- Quit LizGoban and restart it if you give up recovery.
+${info}`
+    const warn_maybe = () => warned_engine_trouble ||
+          (show_error(warning), (warned_engine_trouble = true))
+    const buttons = ["retry", "load weights", "(ignore)"]
+    const actions = [restart, load_weight, warn_maybe];
     (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
         (restart(), last_restart_time = Date.now()) :
-        dialog.showMessageBox(null, {
-            type: "error", message: "Engine is down.", buttons: buttons,
-        }, response => actions[response]())
+        dialog.showMessageBox(null, {type: "error", message, buttons,},
+                              response => actions[response]())
 }
 
 // util
