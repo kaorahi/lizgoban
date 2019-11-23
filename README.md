@@ -10,7 +10,8 @@ Instead of having a full-featured board editor by itself,
 it is attachable to [Sabaki](https://sabaki.yichuanshen.de/)
 as subwindows.
 
-![screenshot](screen.gif)
+<img src="screen.gif" width="50%">
+<img src="area_count.png" width="20%">
 
 ## Highlights
 
@@ -33,11 +34,12 @@ Like Lizzie...
 And more...
 
 * Visualization of search progress via plots of (visits, winrate, prior) [4]
-* Detection of inconsistency between analyses before/after a move [4]
+* Real-time display of area counts by KataGo [3]
 * Trial boards that can be used like tabs in web browsers [1]
-* Keyboard shortcuts, e.g. "3" key for the third variation [5]
+* Detection of inconsistency between analyses before/after a move [4]
 * Watch Leela Zero vs. Leela Zero with different network weights (with real-time comparison of their plans) [3]
 * Play against weakened Leela Zero in several ways [3]
+* Keyboard shortcuts, e.g. "3" key for the third variation [5]
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move [3]
 
 ## Usage
@@ -58,41 +60,72 @@ who does not have a Windows machine.)
 #### To try it (stand alone):
 
 1. Install [Node.js](https://nodejs.org/).
-2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install".
+2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install" on a terminal.
 3. Put Leela Zero binary (version 0.17 or later) as "external/leelaz" together with its network weight as "external/network.gz".
 4. Type "npm start". (Windows: Double-click lizgoban_windows.vbs.)
 
-#### To set options for leelaz (experimental):
+#### To configure it:
 
-    npm start -- -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
-
-or
+Start it as
 
     npm start -- -c config.json
 
 with the file config.json:
 
-    {"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}
+    {"weight_dir": "/foo/bar/lz_weights/"}
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
-#### To use KataGo and its score/ownership estimations (experimental):
+Here is a more practical example of config.json:
 
-![katago screenshot](area_count.png)
+~~~~
+{
+    "analyze_interval_centisec": 10,
+    "weight_dir": "/foo/bar/lz_weights/",
+    "preset": [
+        {
+            "label": "Leela Zero",
+            "accelerator": "F1",
+            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/bar/network.gz"]
+        },
+        {
+            "label": "KataGo",
+            "accelerator": "F2",
+            "engine": ["/foo/bar/katago", "gtp",
+                       "-model", "/foo/bar/kata_network.gz",
+                       "-config", "/foo/bar/gtp.cfg"]
+        },
+        {
+            "label": "New game vs. LZ40",
+            "accelerator": "Shift+F3",
+            "board_type": "raw",
+            "empty_board": true,
+            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/bar/network40.gz"]
+        },
+        {"label": "Hide hints", "accelerator": "CmdOrCtrl+F4", "board_type": "raw"},
+        {"label": "Show hints", "accelerator": "Alt+F5", "board_type": "double_boards"}
+    ]
+}
+~~~~
 
-Start LizGoban as `npm start -- -c katago.json` with the file katago.json:
+* weight_dir: The default directory for [Load network weights] menu.
+* preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
+  * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
+  * empty_board: Set it true for creating new empty board.
 
-    {
-        "analyze_interval_centisec": 30,
-        "leelaz_command": "/foo/bar/KataGo/cpp/main",
-        "leelaz_args": ["gtp", "-model", "/foo/bar/model.txt.gz", "-config", "/foo/bar/KataGo/cpp/configs/gtp_example.cfg"]
-    }
+For quick experiments, you can also use
 
-Then you will find "Komi" in "Tool" menu and "Score bar" in "View" menu.
+    npm start -- -j '{"weight_dir": "/foo/bar/baz/"}'
+    npm start -- -c config.json -j '{"weight_dir": "/foo/bar/baz/"}'
+    etc.
 
-You will also find "Endstate" in "View" menu. Push "v" key (keep holding down) to peek the boundary of each cluster, the ownership (10=100%, 9=90%, ...) on each grid, and the past ownerships if available. Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves". The estimated score without komi is plotted by cyan dots in the winrate graph. The start of "recent moves" is shown as the larger cyan dot there. Use "c" key (keep holding down) + mouse hover to view the change of endstates from a specified move. Cyan vertical lines on the top of the graph denote large changes of endstates.
+on Mac or Linux. The latter option overwrites the former one in the second example.
 
-#### To enable endstate estimation (experimental):
+#### To use KataGo and its score/ownership estimations:
+
+Set KataGo like the above config.json and select it in [Preset] menu. See "KataGo" section in [Help] menu for details.
+
+#### To enable endstate estimation (experimental, may be deleted in future):
 
 This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zero/leela-zero/issues/2331).
 
@@ -100,15 +133,16 @@ This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zer
 2. Download [the weight file](https://drive.google.com/open?id=1ZotPAUG0zz-y7K-e934AHyYF8_StWmyN) and rename it to "network_endstate.gz".
 3. Start LizGoban as `npm start -- -c config.json` with the file config.json:
 
-    {"endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]}
+~~~~
+{
+    "endstate_leelaz": ["/foo/bar/leelaz_endstate",
+                        ["-g", "-w", "/foo/bar/network_endstate.gz"]],
+    ...
+}
+~~~~
 
-See the above "KataGo" section for usage.
-You can also combine "leelaz_args" and "endstate_leelaz" in config.json:
-
-    {
-      "leelaz_args": ["-g", "-w", "/foo/bar/network.gz"],
-      "endstate_leelaz": ["/foo/bar/leelaz_endstate", "/foo/bar/network_endstate.gz"]
-    }
+(Sorry for the ugly second brackets `[]` for backward compatibility.)
+It is ignored when you are using KataGo, that gives more reliable estimations.
 
 #### To attach it to Sabaki:
 
