@@ -113,11 +113,12 @@ const AI = require('./ai.js').pay({
     },
     max_cached_engines: option.max_cached_engines
 })
-const P = require('./powered_goban.js')
-P.initialize(R, AI, {on_suggest: try_auto}, {
-    // functions used in powered_goban.js
-    render, update_state, show_suggest_p, is_pass,
-    auto_progress, is_auto_bturn, is_busy,
+const P = require('./powered_goban.js').pay({
+    R, AI, on_suggest: try_auto, M: {
+        // functions used in powered_goban.js
+        render, update_state, show_suggest_p, is_pass,
+        auto_progress, is_auto_bturn, is_busy,
+    }
 })
 
 function render(given_R, is_board_changed) {

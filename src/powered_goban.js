@@ -12,15 +12,9 @@ const PATH = require('path')
 let endstate_diff_interval = 12, endstate_diff_from = null, initial_b_winrate = NaN
 let game = create_game()  // dummy empty game until first set_board()
 const winrate_trail = true
-let R, AI, on_suggest, M
 
 /////////////////////////////////////////////////
 // basic
-
-function initialize(...args) {  // fixme: ugly
-    [R, AI, {on_suggest}, M] = args
-    AI.set_handlers({suggest_handler, endstate_handler})
-}
 
 function set_board(given_game, move_count) {
     // use game.move_count if move_count is omitted
@@ -273,9 +267,9 @@ function pick_properties(orig, keys) {
 /////////////////////////////////////////////////
 // exports
 
-module.exports = {
+require('./give_and_take.js').offer(module, {
     // basic
-    initialize, set_board,
+    set_board,
     // endstate
     append_endstate_tag_maybe,
     get_endstate_diff_interval, add_endstate_diff_interval, set_endstate_diff_from,
@@ -284,4 +278,4 @@ module.exports = {
     // util
     stone_for_history_elem, update_info_in_stones,
     get_initial_b_winrate: () => initial_b_winrate,
-}
+}, global, () => AI.set_handlers({suggest_handler, endstate_handler}))
