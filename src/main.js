@@ -30,6 +30,7 @@ const option = {
     wait_for_startup: true,
     endstate_leelaz: null,
     weight_dir: undefined,
+    sgf_dir: undefined,
     preset: null,
 }
 process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
@@ -964,9 +965,7 @@ function availability() {
 
 // load weight file
 let previous_weight_file = null
-function load_weight() {
-    return load_weight_file(select_files('Select weight file for leela zero')[0])
-}
+function load_weight() {return load_weight_file(select_weight_file())}
 function load_weight_file(weight_file) {
     const current_weight_file = AI.leelaz_weight_file()
     if (!weight_file) {return false}
@@ -975,10 +974,14 @@ function load_weight_file(weight_file) {
     AI.restart(leelaz_start_args(weight_file), true)
     return weight_file
 }
-function select_files(title) {
+function select_weight_file() {
+    const message = 'Select weight file for leela zero'
+    return select_files(message, option.weight_dir)[0]
+}
+function select_files(title, dir) {
     return dialog.showOpenDialog(null, {
         properties: ['openFile'], title: title,
-        defaultPath: option.weight_dir,
+        defaultPath: dir,
     }) || []
 }
 function switch_to_previous_weight() {load_weight_file(previous_weight_file)}
@@ -1039,7 +1042,9 @@ function load_leelaz_for_white() {AI.load_leelaz_for_white(load_weight)}
 function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf()); wink()}
 function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
 
-function open_sgf() {select_files('Select SGF file').forEach(load_sgf)}
+function open_sgf() {
+    select_files('Select SGF file', option.sgf_dir).forEach(load_sgf)
+}
 function load_sgf(filename) {
     read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}))
     game.sgf_file = filename
@@ -1048,7 +1053,7 @@ function load_sgf(filename) {
 function save_sgf() {
     const f = dialog.showSaveDialog(null, {
         title: 'Save SGF file',
-        // defaultPath: '.',
+        defaultPath: option.sgf_dir,
     })
     f && fs.writeFile(f, game.to_sgf(), err => {if (err) throw err})
 }

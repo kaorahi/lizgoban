@@ -72,7 +72,7 @@ Start it as
 
 with the file config.json:
 
-    {"weight_dir": "/foo/bar/lz_weights/"}
+    {"sgf_dir": "/foo/bar/sgf/"}
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
@@ -81,6 +81,7 @@ Here is a more practical example of config.json:
 ~~~~
 {
     "analyze_interval_centisec": 10,
+    "sgf_dir": "/foo/bar/sgf/",
     "weight_dir": "/foo/bar/lz_weights/",
     "preset": [
         {
@@ -108,6 +109,7 @@ Here is a more practical example of config.json:
 }
 ~~~~
 
+* sgf_dir: The default directory for [Open SGF] and [Save SGF] menus.
 * weight_dir: The default directory for [Load network weights] menu.
 * preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
@@ -115,8 +117,8 @@ Here is a more practical example of config.json:
 
 For quick experiments, you can also use
 
-    npm start -- -j '{"weight_dir": "/foo/bar/baz/"}'
-    npm start -- -c config.json -j '{"weight_dir": "/foo/bar/baz/"}'
+    npm start -- -j '{"sgf_dir": "/foo/bar/baz/"}'
+    npm start -- -c config.json -j '{"sgf_dir": "/foo/bar/baz/"}'
     etc.
 
 on Mac or Linux. The latter option overwrites the former one in the second example.
