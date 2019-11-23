@@ -232,7 +232,8 @@ function weight_info_text() {
           `${PATH.basename(s(z.weight_file))} ${s(z.network_size)}${s(!z.is_ready && '(waiting...)')}` : ''
     const weight_info = h.leelaz_for_white_p ?
           `${f(h.black)} / ${f(h.white)}` : f(h.black)
-    return engine_komi + weight_info
+    const tuning = M.tuning_message()
+    return engine_komi + weight_info + (tuning ? ` | ${tuning}` : '')
 }
 function add_next_mark_to_stones(stones, game, move_count) {
     const h = game.ref(move_count + 1), s = stone_for_history_elem(h, stones)

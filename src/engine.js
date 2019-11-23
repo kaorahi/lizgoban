@@ -35,7 +35,8 @@ function create_leelaz () {
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
-               endstate_handler, suggest_handler, restart_handler, error_handler}
+               endstate_handler, suggest_handler, restart_handler, error_handler,
+               tuning_handler}
               = arg || {}
         log('start leela zero:', JSON.stringify(arg && [leelaz_command, ...leelaz_args]))
         is_ready = false; network_size_text = ''
@@ -284,6 +285,7 @@ function create_leelaz () {
 
     const main_reader = (s) => {
         let m, c;
+        (arg.tuning_handler || do_nothing)(s);
         (m = s.match(/Detecting residual layers.*?([0-9]+) channels.*?([0-9]+) blocks/)) &&
             (network_size_text = `${m[1]}x${m[2]}`);
         // "GTP ready" for KataGo

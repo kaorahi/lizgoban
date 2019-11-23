@@ -119,6 +119,7 @@ const P = require('./powered_goban.js').pay({
         // functions used in powered_goban.js
         render, update_state, show_suggest_p, is_pass,
         auto_progress, is_auto_bturn, is_busy, is_pausing,
+        tuning_message: () => tuning_message,
     }
 })
 
@@ -834,7 +835,7 @@ function wink_if_pass(proc, ...args) {
     pass && wink()
 }
 function wink() {renderer('wink')}
-function toast(message) {renderer('toast', message)}
+function toast(message, millisec) {renderer('toast', message, millisec)}
 
 function fold_text(str, n, max_lines) {
     const fold_line =
@@ -1101,19 +1102,30 @@ ${info}`
 // util
 function leelaz_start_args(weight_file) {
     const leelaz_args = option.leelaz_args.slice()
-    const h = {leelaz_args, weight_file,
+    const h = {leelaz_args, weight_file, tuning_handler: make_tuning_handler(),
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['leelaz_command', 'analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])
     return h
 }
+let tuning_message
 function on_ready() {
     // fixme: on_ready is called by *every* leelaz
     // (leelaz_for_black and leelaz_for_white).
     // This interferes starting-up sequence of another leelaz in engine.js.
+    tuning_message = null
     switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
     UPDATE_all()
+}
+function make_tuning_handler() {
+    let n = 0
+    return line => {
+        const m = line.match(/Tuning (.*)/); if (!m) {return}
+        n === 0 && toast('Initial tuning may take a long time. (See the title bar.)', 20 * 1000)
+        tuning_message = `Tuning KataGo (step ${++n}) [${m[1].slice(0, 20)}]`
+        UPDATE_all()
+    }
 }
 
 /////////////////////////////////////////////////

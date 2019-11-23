@@ -115,7 +115,7 @@ ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog'))
 
 ipc.on('slide_in', (e, direction) => slide_in(direction))
 ipc.on('wink', (e) => wink())
-ipc.on('toast', (e, message) => toast(message))
+ipc.on('toast', (e, ...a) => toast(...a))
 
 let last_title = ''
 function update_title() {
@@ -738,9 +738,9 @@ function slide_in(direction) {
 function wink() {effect_gen({opacity: 1}, {opacity: 0.7}, {opacity: 1})}
 function effect_gen(...transforms) {Q('#goban').animate(transforms, 200)}
 
-function toast(message) {
+function toast(message, millisec) {
     setq('#toast_message', message)
-    Q('#toast').animate([{opacity: 1}, {opacity: 0.8}, {opacity: 0}], 3000)
+    Q('#toast').animate([{opacity: 1}, {opacity: 0.8}, {opacity: 0}], millisec || 3000)
 }
 
 /////////////////////////////////////////////////
