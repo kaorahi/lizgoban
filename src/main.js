@@ -862,7 +862,7 @@ function let_me_think_next(board_type) {
 }
 
 /////////////////////////////////////////////////
-// sequence (list of histories)
+// sequence (list of games)
 
 function new_empty_board() {insert_sequence(create_game(), true)}
 
