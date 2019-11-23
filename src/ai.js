@@ -137,7 +137,7 @@ function another_leelaz_for_endstate_p() {return !!leelaz_for_endstate}
 function engine_info() {
     // fixme: duplication with all_start_args()
     const f = lz => {
-        if (!lz) {return null}
+        if (!lz || !lz.start_args()) {return null}
         const {leelaz_command, leelaz_args} = lz.start_args()
         return {leelaz_command, leelaz_args,
                 weight_file: lz.get_weight_file(), network_size: lz.network_size()}
