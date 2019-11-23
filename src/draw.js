@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////
 // setup
 
-Object.assign(global, require('./util.js'), require('./coord.js'))
+require('./common.js').to(global)
 
 // color constant
 const BLACK = "#000", WHITE = "#fff"

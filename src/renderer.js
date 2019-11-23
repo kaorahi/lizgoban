@@ -6,7 +6,7 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
-Object.assign(global, require('./util.js'), require('./coord.js'))
+require('./common.js').to(global)
 const current_window = electron.remote.getCurrentWindow()
 
 // canvas

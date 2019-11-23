@@ -3,7 +3,7 @@
 // set_board() indirectly updates displayed board,
 // starts analysis of given game state, and updates displayed suggestions.
 
-Object.assign(global, require('./util.js'), require('./coord.js'))
+require('./common.js').to(global)
 const {create_game} = require('./game.js')
 const {endstate_clusters_for} = require('./area.js')
 const PATH = require('path')

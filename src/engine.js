@@ -1,4 +1,4 @@
-Object.assign(global, require('./util.js'), require('./coord.js'))
+require('./common.js').to(global)
 
 function create_leelaz () {
 

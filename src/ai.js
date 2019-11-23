@@ -1,6 +1,6 @@
 // ai.js: abstraction of engines
 
-Object.assign(global, require('./util.js'), require('./coord.js'))
+require('./common.js').to(global)
 const original_create_leelaz = require('./engine.js').create_leelaz
 
 // See "engine cache" section for leelaz objects in this file.

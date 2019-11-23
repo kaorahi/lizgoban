@@ -10,7 +10,7 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 // npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 // npx electron src -j /foo/bar/config.json
 
-Object.assign(global, require('./util.js'), require('./coord.js'))
+require('./common.js').to(global)
 const PATH = require('path'), fs = require('fs')
 const default_path_for = name =>
       // suppose three cases:

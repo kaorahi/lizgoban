@@ -1,4 +1,4 @@
-Object.assign(global, require('./util.js'), require('./coord.js'))
+require('./common.js').to(global)
 const {stones_from_history} = require('./rule.js')
 const SGF = require('@sabaki/sgf')
 
