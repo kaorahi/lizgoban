@@ -28,6 +28,7 @@ const option = {
     sabaki_command: default_path_for('sabaki'),
     minimum_auto_restart_millisec: 5000,
     wait_for_startup: true,
+    update_all_p: true,
     endstate_leelaz: null,
     weight_dir: undefined,
     sgf_dir: undefined,
@@ -246,19 +247,26 @@ const api = merge({}, simple_api, {
     send_to_leelaz: AI.send_to_leelaz,
 })
 
+// let last_channel
 function api_handler(channel, handler, busy) {
     return (e, ...args) => {
         channel === 'toggle_auto_analyze' || stop_auto_analyze()
         channel === 'play_best' || stop_auto_play()
         set_or_unset_busy(busy)
-        handler(...args)
+        apply_api(channel, handler, args)
     }
+}
+function apply_api(channel, handler, args) {
+    const partial_update = ['toggle_pause', 'unset_busy']
+    debug_log(`API ${channel} ${JSON.stringify(args)}`)
+    handler(...args)
+    UPDATE_all(partial_update.indexOf(channel) >= 0)
 }
 
 each_key_value(api, (channel, handler) => {
     const simple = Object.keys(simple_api).indexOf(channel) >= 0
-    ipc.on(channel,
-           simple ? (e, ...a) => handler(...a) : api_handler(channel, handler))
+    const simple_api_handler = (e, ...a) => apply_api(channel, handler, a)
+    ipc.on(channel, simple ? simple_api_handler : api_handler(channel, handler))
 })
 
 // special commands
@@ -270,11 +278,22 @@ const busy_handler_for =
       cached(subchannel => api_handler(subchannel, api[subchannel], true))
 ipc.on('busy', (e, subchannel, ...args) => busy_handler_for(subchannel)(e, ...args))
 
-ipc.on('close_window_or_cut_sequence', e => {
+ipc.on('close_window_or_cut_sequence',
+       e => apply_api('close_window_or_cut_sequence', () => {
            stop_auto()
            get_windows().forEach(win => (win.webContents === e.sender) &&
                                  close_window_or_cut_sequence(win))
-       })
+       }, []))
+
+// update after every command
+
+function update_all_p() {return option.update_all_p}
+function UPDATE_all(partially) {
+    if (!update_all_p()) {return}
+    debug_log(`UPDATE_all start`)
+    partially || UPDATE_state(); UPDATE_ponder(); UPDATE_ui(); UPDATE_menu()
+    debug_log(`UPDATE_all done`)
+}
 
 /////////////////////////////////////////////////
 // main flow (2) change game state and send it to powered_goban
@@ -336,7 +355,8 @@ function update_state_to_move_count_tentatively(count) {
 /////////////////////////////////////////////////
 // another source of change: menu
 
-function update_menu() {mac_p() ? update_app_menu() : update_window_menu()}
+function update_menu() {update_all_p() || UPDATE_menu()}
+function UPDATE_menu() {mac_p() ? update_app_menu() : update_window_menu()}
 function update_app_menu() {
     const win = electron.BrowserWindow.getFocusedWindow() || get_windows()[0]
     win && electron.Menu.setApplicationMenu(menu_for_window(win))
@@ -350,7 +370,7 @@ function menu_template(win) {
     const menu = (label, submenu) =>
           ({label, submenu: submenu.filter(truep), enabled: !empty(submenu)})
     const exec = (...fs) => ((...a) => fs.forEach(f => f && f(...a)))
-    const update = () => update_state(true)
+    const update = () => update_all_p() ? UPDATE_all() : update_state(true)
     const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
     const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
           !(standalone_only && attached) && {
@@ -387,7 +407,7 @@ function menu_template(win) {
         item('Duplicate until current move', 'CmdOrCtrl+K', dup(true), true),
         sep,
         {label: 'Trial board', type: 'checkbox', checked: game.trial,
-         click: toggle_trial},
+         click: exec(toggle_trial, update)},
     ])
     const view_menu = menu('View', [
         board_type_menu_item('Two boards A (main+PV)', 'double_boards', win),
@@ -467,13 +487,13 @@ function menu_template(win) {
 
 function board_type_menu_item(label, type, win) {
     return {label, type: 'radio', checked: window_prop(win).board_type === type,
-            click: (this_item, win) => set_board_type(type, win)}
+            click: (this_item, win) => (set_board_type(type, win), UPDATE_all())}
 }
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
     const toggle_it = () => toggle_stored(key)
     return {label, accelerator, type: 'checkbox', checked: store.get(key),
-            click: on_click || toggle_it}
+            click: (...a) => {(on_click || toggle_it)(...a); UPDATE_all()}}
 }
 
 function toggle_stored(key) {
@@ -561,8 +581,8 @@ function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing()}
 // auto-analyze (redo after given visits)
 function try_auto_analyze(force_next) {
     const done = force_next || (auto_analysis_progress() >= 1)
-    const next = (pred, proc) => pred() ?
-          proc() : (pause(), stop_auto_analyze(), update_ui())
+    const finish = () => (pause(), stop_auto_analyze(), update_ui())
+    const next = (pred, proc) => {pred() ? proc() : finish(); UPDATE_all()}
     auto_bturn = xor(R.bturn, done)
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
@@ -609,6 +629,7 @@ function auto_play_ready() {
 }
 function do_as_auto_play(playable, proc) {
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
+    UPDATE_all()
 }
 function update_auto_play_time() {last_auto_play_time = Date.now(); auto_bturn = R.bturn}
 function auto_play_progress() {
@@ -733,7 +754,9 @@ function ask_komi() {
 }
 function ask_choice(message, values, proc) {
     const buttons = [...values.map(to_s), 'cancel']
-    const action = response => {const v = values[response]; truep(v) && proc(v)}
+    const action = response => {
+        const v = values[response]; truep(v) && proc(v); UPDATE_all()
+    }
     dialog.showMessageBox(null, {type: "question", message, buttons}, action)
 }
 
@@ -783,7 +806,8 @@ function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
 function set_or_unset_busy(bool) {busy = bool; update_ponder()}
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false); update_state(true)}
-function update_ponder() {
+function update_ponder() {update_all_p() || UPDATE_ponder()}
+function UPDATE_ponder() {
     AI.set_pondering(pausing, busy); pausing && (R.endstate = null)
 }
 function update_ponder_and_ui() {update_ponder(); update_ui()}
@@ -839,6 +863,7 @@ function let_me_think_switch_board_type(only_when_stage_is_changed) {
 function let_me_think_set_board_type_for(stage) {
     set_board_type(let_me_think_board_type[let_me_think_previous_stage = stage],
                    let_me_think_window(), true)
+    UPDATE_all()
 }
 
 function toggle_board_type_in_let_me_think() {
@@ -956,7 +981,8 @@ function exist_deleted_sequence() {return !empty(deleted_sequences)}
 /////////////////////////////////////////////////
 // utils for updating renderer state
 
-function update_state(keep_suggest_p) {
+function update_state(keep_suggest_p) {update_all_p() || UPDATE_state(keep_suggest_p)}
+function UPDATE_state(keep_suggest_p) {
     const history_length = game.len(), sequence_length = sequence.length
     const sequence_ids = sequence.map(h => h.id)
     const pick_tagged = h => {
@@ -972,7 +998,8 @@ function update_state(keep_suggest_p) {
     update_ui(true)
 }
 
-function update_ui(ui_only) {
+function update_ui(ui_only) {update_all_p() || UPDATE_ui(ui_only)}
+function UPDATE_ui(ui_only) {
     update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
 }
 
@@ -1206,7 +1233,8 @@ function stop_sabaki() {
 function sabaki_reader(line) {
     debug_log(`sabaki> ${line}`)
     const m = line.match(/^sabaki_dump_state:\s*(.*)/)
-    m && load_sabaki_gametree(...(JSON.parse(m[1]).treePosition || []))
+    m && (load_sabaki_gametree(...(JSON.parse(m[1]).treePosition || [])),
+          UPDATE_all())
 }
 
 function attach_to_sabaki() {
