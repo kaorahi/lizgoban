@@ -712,7 +712,7 @@ function info() {
     const sa = AI.all_start_args()
     const lz = AI.leelaz_for_white_p() ?
           (f("leelaz (black)", sa.black) + f("leelaz (white)", sa.white)) :
-          f("leelaz", sa.both)
+          f("leelaz", sa.black)
     const message = lz +
           f("sgf file", game.sgf_file) +
           f("sgf", game.sgf_str)
@@ -988,7 +988,7 @@ function restart() {restart_with_args()}
 function restart_with_args(h, new_weight_p) {AI.restart(h, new_weight_p)}
 let last_restart_time = 0, warned_engine_trouble = false
 function auto_restart() {
-    const {leelaz_command, weight_file} = AI.engine_info().both
+    const {leelaz_command, weight_file} = AI.engine_info().black
     const [e, w] = [leelaz_command, weight_file].map(s => PATH.basename(s || ''))
     const info = `\n(engine) ${leelaz_command}\n(weight) ${weight_file}`
     const message = `Engine is down.

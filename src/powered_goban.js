@@ -232,7 +232,7 @@ function weight_info_text() {
     const f = z =>
           `${PATH.basename(z.weight_file || '')} ${z.network_size || ''}`
     const weight_info = h.leelaz_for_white_p ?
-          `${f(h.black)} / ${f(h.white)}` : f(h.both)
+          `${f(h.black)} / ${f(h.white)}` : f(h.black)
     return engine_komi + weight_info
 }
 function add_next_mark_to_stones(stones, game, move_count) {

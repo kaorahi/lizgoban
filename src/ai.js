@@ -39,7 +39,7 @@ function set_pondering(pausing, busy) {
 }
 function all_start_args() {
     const f = lz => lz && lz.start_args()
-    return {black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
+    return {black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
 function leelaz_weight_file(leelaz_for_black_or_white) {
     return (leelaz_for_black_or_white || leelaz).get_weight_file()
@@ -131,6 +131,7 @@ function set_engine_komi(komi) {engine_komi = komi; restart({komi})}
 function another_leelaz_for_endstate_p() {return !!leelaz_for_endstate}
 
 function engine_info() {
+    // fixme: duplication with all_start_args()
     const f = lz => {
         if (!lz) {return null}
         const {leelaz_command, leelaz_args} = lz.start_args()
@@ -139,7 +140,7 @@ function engine_info() {
     }
     return {engine_komi: get_engine_komi(), leelaz_komi,
             leelaz_for_white_p: leelaz_for_white_p(),
-            black: f(leelaz_for_black), white: f(leelaz_for_white), both: f(leelaz)}
+            black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
 
 /////////////////////////////////////////////////
