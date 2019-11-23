@@ -30,20 +30,20 @@ const option = {
     wait_for_startup: true,
     endstate_leelaz: null,
     weight_dir: undefined,
-    shortcut: null,
+    preset: null,
 }
 process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
 function parse_option(cur, succ) {
-    const merge_json = str => merge_with_shortcut(JSON.parse(str))
-    const merge_with_shortcut = orig => {
+    const merge_json = str => merge_with_preset(JSON.parse(str))
+    const merge_with_preset = orig => {
         // accept obsolete key "shortcut" for backward compatibility
-        orig.preset && (orig.shortcut = [...orig.preset, ...(orig.shortcut || [])])
-        merge(option, orig); merge(option, from_shortcut(option))
+        orig.shortcut && (orig.preset = [...(orig.preset || []), ...orig.shortcut])
+        merge(option, orig); merge(option, from_preset(option))
     }
-    const from_shortcut = orig => {
-        const first_shortcut = (orig.shortcut || [{}])[0]
+    const from_preset = orig => {
+        const first_preset = (orig.preset || [{}])[0]
         const keys = ['leelaz_command', 'leelaz_args']
-        return aa2hash(keys.map(k => [k, first_shortcut[k] || orig[k]]))
+        return aa2hash(keys.map(k => [k, first_preset[k] || orig[k]]))
     }
     switch (cur) {
     case '-j': merge_json(succ); break
@@ -118,7 +118,7 @@ fs.access(option.sabaki_command, null,
 
 app.on('ready', () => {
     start_leelaz(); new_window('double_boards')
-    option.shortcut && apply_option_shortcut(option.shortcut[0], get_windows()[0])
+    option.preset && apply_option_preset(option.preset[0], get_windows()[0])
 })
 app.on('window-all-closed', app.quit)
 app.on('quit', kill_all_leelaz)
@@ -421,7 +421,7 @@ function menu_template(win) {
         item('Help', undefined, help),
     ])
     return [file_menu, edit_menu, view_menu, tool_menu,
-            ...shortcut_menu_maybe(menu, item, win),
+            ...preset_menu_maybe(menu, item, win),
             ...(app.isPackaged ? [] : [debug_menu]),
             help_menu]
 }
@@ -441,19 +441,19 @@ function toggle_stored(key) {
     const val = !get_stored(key); set_stored(key, val); update_state(); return val
 }
 
-function shortcut_menu_maybe(menu, item, win) {
-    // option.shortcut = [rule, rule, ...]
+function preset_menu_maybe(menu, item, win) {
+    // option.preset = [rule, rule, ...]
     // rule = {label: "mixture", accelerator: "F2", board_type: "raw",
     //         empty_board: true, leelaz_command: "/foo/leelaz",
     //         leelaz_args: ["-g", "-w", "/foo/227.gz"],
     //         weight_file: "/foo/035.gz", "weight_file_for_white": "/foo/157.gz"}
-    if (!option.shortcut) {return []}
-    const doit = a => (wink(), apply_option_shortcut(a, win))
-    const shortcut_menu_item = a => item(a.label, a.accelerator, () => doit(a), true)
-    return [menu('Preset', option.shortcut.map(shortcut_menu_item))]
+    if (!option.preset) {return []}
+    const doit = a => (wink(), apply_option_preset(a, win))
+    const preset_menu_item = a => item(a.label, a.accelerator, () => doit(a), true)
+    return [menu('Preset', option.preset.map(preset_menu_item))]
 }
 
-function apply_option_shortcut(rule, win) {
+function apply_option_preset(rule, win) {
     // merge rule.option for backward compatibility to 1a88dd40
     const a = merge({}, rule, rule.option || {})
     const {empty_board, board_type, weight_file, weight_file_for_white,
