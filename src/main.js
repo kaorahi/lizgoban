@@ -793,6 +793,7 @@ function wink_if_pass(proc, ...args) {
     pass && wink()
 }
 function wink() {renderer('wink')}
+function toast(message) {renderer('toast', message)}
 
 function fold_text(str, n, max_lines) {
     const fold_line =
