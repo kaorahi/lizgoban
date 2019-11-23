@@ -69,7 +69,7 @@ function endstate_handler(h) {
         add_endstate_to_stones(R.stones, R.endstate, update_p)
     }
     set_renderer_state(h)
-    AI.leelaz_for_endstate() && endstate_setter(!!h.endstate)
+    AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
     M.update_state()
 }
 
@@ -109,7 +109,7 @@ function set_renderer_state(...args) {
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
-          AI.leelaz_for_endstate() ? average_endstate_sum() : null
+          AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)
     const endstate_clusters = endstate_clusters_for(endstate)
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
@@ -140,7 +140,8 @@ function get_endstate_diff_interval() {return endstate_diff_interval}
 function add_endstate_diff_interval(k) {
     // only allow an even number as the interval in leelaz_for_endstate
     // since its estimation tends to oscillate with black / white turns
-    const [unit, minimum] = (AI.leelaz_for_endstate() && !AI.katago_p()) ? [10, 2] : [1, 1]
+    const [unit, minimum] =
+          (AI.another_leelaz_for_endstate_p() && !AI.katago_p()) ? [10, 2] : [1, 1]
     change_endstate_diff_target(() => {
         endstate_diff_interval = clip(endstate_diff_interval + k * unit, minimum)
         update_info_in_stones()  // update "recent stone" marks
