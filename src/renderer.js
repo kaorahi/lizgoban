@@ -644,8 +644,7 @@ function showing_something_p() {return showing_movenum_p() || showing_endstate_v
 function showing_movenum_p() {return the_showing_movenum_p}
 function showing_endstate_value_p() {return the_showing_endstate_value_p}
 function set_showing_something_p(val) {
-    val && (checker_for_showing_until.reset(), update_hover_maybe())
-    update_goban()
+    val && checker_for_showing_until.reset(); update_hover_maybe(); update_goban()
 }
 function set_showing_movenum_p(val) {
     the_showing_movenum_p = val; set_showing_something_p(val)
