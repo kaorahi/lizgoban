@@ -259,9 +259,10 @@ function api_handler(channel, handler, busy) {
 }
 function apply_api(channel, handler, args) {
     const partial_update = ['toggle_pause', 'unset_busy']
+    const keep_board = [...partial_update, 'set_endstate_diff_from']
+    const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
-    handler(...args)
-    UPDATE_all(partial_update.indexOf(channel) >= 0)
+    handler(...args); UPDATE_all(whether(partial_update), whether(keep_board))
 }
 
 each_key_value(api, (channel, handler) => {
@@ -289,11 +290,11 @@ ipc.on('close_window_or_cut_sequence',
 // update after every command
 
 function update_all_p() {return option.update_all_p}
-function UPDATE_all(partially) {
+function UPDATE_all(partially, keep_board) {
     if (!update_all_p()) {return}
     debug_log(`UPDATE_all start`)
-    SET_board()
-    partially || UPDATE_state(); UPDATE_ponder(); UPDATE_ui(); UPDATE_menu()
+    keep_board || SET_board()
+    UPDATE_state(); UPDATE_ponder(); UPDATE_ui(); UPDATE_menu()
     debug_log(`UPDATE_all done`)
 }
 
