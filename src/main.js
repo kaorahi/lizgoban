@@ -1116,18 +1116,24 @@ function on_ready() {
     // fixme: on_ready is called by *every* leelaz
     // (leelaz_for_black and leelaz_for_white).
     // This interferes starting-up sequence of another leelaz in engine.js.
-    tuning_message = null
+    tuning_message && tuning_is_done()
     switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
     UPDATE_all()
 }
 function make_tuning_handler() {
-    let n = 0
+    let n = 0, toast_sec = 20
+    const warning = 'Initial tuning may take a long time. (See the title bar.)'
     return line => {
         const m = line.match(/Tuning (.*)/); if (!m) {return}
-        n === 0 && toast('Initial tuning may take a long time. (See the title bar.)', 20 * 1000)
+        n === 0 && (pause(), toast(warning, toast_sec * 1000))
         tuning_message = `Tuning KataGo (step ${++n}) [${m[1].slice(0, 20)}]`
         UPDATE_all()
     }
+}
+function tuning_is_done() {
+    const message = 'Finished initial tuning.'
+    dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
+    tuning_message = null; resume(); UPDATE_all()
 }
 
 /////////////////////////////////////////////////
