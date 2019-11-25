@@ -141,11 +141,11 @@ function draw_endstate_goban(canvas, options) {
     const past_p = past_endstate_p(options.draw_endstate_value_p)
     const scores = winrate_history_values_of('score_without_komi')
     const {show_until} = options, mc = R.move_count
-    const past_mc = (truep(show_until) && show_until < mc) ?
+    const past_mc = (truep(show_until) && show_until !== mc) ?
           show_until : R.move_count - R.endstate_diff_interval
     const past_score = scores[past_mc]
     const past_text = (d_i, es) =>
-          `  at ${past_mc} (${d_i} move${d_i > 1 ? 's' : ''} before)` +
+          `  at ${past_mc} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
           (truep(es) ? `  endstate = ${f2s(es)}` : '')
     const common = {read_only: true, draw_endstate_p: R.show_endstate,
                     draw_endstate_diff_p: R.show_endstate}
@@ -187,7 +187,7 @@ function draw_goban(canvas, stones, opts) {
         draw_last_p, draw_next_p, draw_expected_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
         draw_recent_p: draw_last_p && draw_endstate_p && !show_until,
-        tag_clickable_p, hovered_move,
+        tag_clickable_p, hovered_move, show_until,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     draw_endstate_p && draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
@@ -242,7 +242,7 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_recent_p, draw_next_p, draw_expected_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
-           large_font_p, tag_clickable_p, hovered_move}
+           large_font_p, tag_clickable_p, hovered_move, show_until}
           = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
@@ -251,7 +251,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
           proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx), idx))
     if (draw_endstate_value_p && draw_endstate_p) {
         const past_p = past_endstate_p(draw_endstate_value_p)
-        draw_endstate_stones(each_coord, past_p, stone_radius, g); return
+        draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g); return
     }
     each_coord((h, xy, idx) => {
         draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
@@ -268,14 +268,17 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                                   && draw_winrate_mapping_line(h, xy, unit, g))
 }
 
-function draw_endstate_stones(each_coord, past_p, stone_radius, g) {
+function draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g) {
     if (past_p && !R.prev_endstate_clusters) {return}
+    const mc = R.move_count
+    const d = (!truep(show_until) || show_until === R.move_count) ? R.endstate_diff_interval : (R.move_count - show_until)
+    const sign = Math.sign(d)
     each_coord((h, xy, idx) => {
         const stone_p = h.stone
         past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
         stone_p && draw_stone(h, xy, stone_radius, true, false, g)
         past_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
-        draw_endstate_value(h, past_p, xy, stone_radius, g)
+        draw_endstate_value(h, past_p, sign, xy, stone_radius, g)
     })
 }
 
@@ -443,11 +446,11 @@ function draw_endstate(endstate, xy, radius, g) {
     fill_square_around(xy, radius, g)
 }
 
-function draw_endstate_value(h, past_p, xy, radius, g) {
+function draw_endstate_value(h, past_p, sign, xy, radius, g) {
     const quantized = false, ten = '10', max_width = radius * 1.5
     const {endstate, endstate_diff} = h
     if (!truep(endstate) || (past_p && !truep(endstate_diff))) {return}
-    const e = endstate - (past_p ? endstate_diff : 0)
+    const e = endstate - (past_p ? endstate_diff * sign : 0)
     const a = Math.abs(e), v = Math.round(a * 10)
     const c = quantized ? ((v > 6) ? 2 : (v > 3) ? 1 : 0.5) : Math.sqrt(a) * 2
     g.save()

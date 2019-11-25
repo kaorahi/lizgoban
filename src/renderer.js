@@ -655,11 +655,9 @@ function set_showing_endstate_value_p(val) {
 }
 function showing_until(canvas) {
     const hovered_mc = (hovered_move_count || R.move_count || Infinity)
-    const hovered_valid = showing_movenum_p() ||
-          (showing_endstate_value_p() && hovered_mc < R.move_count)
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||
-          (by_hover && hovered_valid && hovered_mc)
+          (by_hover && showing_something_p() && hovered_mc)
     const accept_any = !canvas, hover_on_me = if_hover_on(canvas, true)
     const hover_on_any_board = !!hovered_board_canvas
     const i_am_first_board = is_first_board_canvas(canvas)
