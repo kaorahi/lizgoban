@@ -661,7 +661,7 @@ function showing_until(canvas) {
 }
 function update_showing_until() {
     const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)
-    if (!showing_movenum_p() || !R.show_endstate || !changed) {return}
+    if (!R.show_endstate || !changed) {return}
     main('set_endstate_diff_from', cur)
 }
 
