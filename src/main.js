@@ -444,7 +444,7 @@ function menu_template(win) {
         sep,
         ...insert_if(option.exercise_dir,
                      item('Store as exercise', '!', store_as_exercise),
-                     item('Exercise', '?', load_random_exercise),
+                     item('Exercise', '?', () => load_random_exercise(win)),
                      menu('Delete exercise', [
                          ...insert_if(is_exercise_file(game.sgf_file),
                                       item('Delete this', 'CmdOrCtrl+!', delete_exercise)),
@@ -1170,19 +1170,18 @@ function store_as_exercise() {
     const path = PATH.join(option.exercise_dir, exercise_filename())
     save_sgf_to(path); toast('stored as exercise')
 }
-function load_random_exercise() {
+function load_random_exercise(win) {
     const random_choice = a => a[Math.floor(Math.random() * a.length)]
-    load_exercise(random_choice)
+    load_exercise(random_choice, win)
 }
-function load_exercise(selector) {
+function load_exercise(selector, win) {
     const dir = option.exercise_dir, basename = z => PATH.basename(z)
     const seen = sequence.map(h => h.sgf_file).filter(truep).map(basename)
     const valid = f => is_exercise_filename(f) && seen.indexOf(f) < 0
     const files = (fs.readdirSync(dir) || []).filter(valid)
     if (empty(files)) {wink(); return}
     const f = PATH.join(dir, selector(files))
-    set_board_type('raw', exercise_window())
-    load_sgf(f); goto_move_count(exercise_move_count(f))
+    set_board_type('raw', win); load_sgf(f); goto_move_count(exercise_move_count(f))
 }
 function open_exercise_dir() {open_sgf_in(option.exercise_dir)}
 function delete_exercise() {
@@ -1214,7 +1213,6 @@ function exercise_move_count(filename) {
     const {pre, sep, post} = exercise_format
     return to_i(last(filename.split(sep)).split(post)[0])
 }
-function exercise_window() {return let_me_think_window()}  // fixme
 
 /////////////////////////////////////////////////
 // Sabaki gameTree
