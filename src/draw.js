@@ -51,13 +51,23 @@ function draw_main_goban(canvas, options) {
 }
 
 function draw_goban_until(canvas, show_until, opts) {
-    const recent_moves = 3, thick_moves = 7
-    const displayed_stones = copy_stones_for_display()
     const all_p = [R.move_count, Infinity].includes(show_until)
-    const unnumbered = all_p ? 0 : clip(show_until - recent_moves, 0)
-    const highlighted_after =
+    const displayed_stones = stones_until(show_until, all_p)
+    draw_goban(canvas, displayed_stones,
+               {draw_last_p: true, draw_next_p: true,
+                draw_endstate_diff_p: R.show_endstate, ...opts})
+}
+
+function stones_until(show_until, all_p, for_endstate) {
+    // fixme: need cleaning (for_endstate)
+    const recent_moves = 3, thick_moves = 7
+    const unnumbered = for_endstate ? Infinity :
+          all_p ? 0 : clip(show_until - recent_moves, 0)
+    const highlighted_after = for_endstate ? Infinity :
           all_p ? clip(show_until, 0, R.history_length) - recent_moves : show_until - 1
-    const thin_before = all_p ? highlighted_after - thick_moves + 1 : 0
+    const thin_before =  for_endstate ? 0 :
+          all_p ? highlighted_after - thick_moves + 1 : 0
+    const displayed_stones = copy_stones_for_display()
     each_stone(displayed_stones, (h, idx) => {
         const ss = h.anytime_stones, target = latest_move(ss, show_until)
         if (target) {
@@ -72,6 +82,7 @@ function draw_goban_until(canvas, show_until, opts) {
             m > 0 && merge(h, {movenums: [to_s(m)], variation_last,
                                thin_movenums, tag: null})
         } else {
+            for_endstate && (h.stone = false)
             h.stone && ((h.displayed_colors = [PALER_BLACK, PALER_WHITE]),
                         (h.last = false))
         }
@@ -79,9 +90,7 @@ function draw_goban_until(canvas, show_until, opts) {
         const next_stone = ss && ss.find(z => (z.move_count === show_until + 1))
         h.next_move = !!next_stone; h.next_is_black = (next_stone || {}).is_black
     })
-    draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, draw_next_p: true,
-                draw_endstate_diff_p: R.show_endstate, ...opts})
+    return displayed_stones
 }
 
 function draw_goban_with_suggest(canvas, opts) {
@@ -131,16 +140,20 @@ function draw_goban_with_principal_variation(canvas, options) {
 function draw_endstate_goban(canvas, options) {
     const past_p = past_endstate_p(options.draw_endstate_value_p)
     const scores = winrate_history_values_of('score_without_komi')
-    const past_score = scores[R.move_count - R.endstate_diff_interval]
+    const {show_until} = options, mc = R.move_count
+    const past_mc = (truep(show_until) && show_until < mc) ?
+          show_until : R.move_count - R.endstate_diff_interval
+    const past_score = scores[past_mc]
     const past_text = (d_i, es) =>
-          `  (${d_i} move${d_i > 1 ? 's' : ''} before)` +
+          `  at ${past_mc} (${d_i} move${d_i > 1 ? 's' : ''} before)` +
           (truep(es) ? `  endstate = ${f2s(es)}` : '')
     const common = {read_only: true, draw_endstate_p: R.show_endstate,
                     draw_endstate_diff_p: R.show_endstate}
-    const current = {draw_visits_p: true}
-    const past = {draw_visits_p: past_text(R.endstate_diff_interval, past_score)}
+    const current = {draw_visits_p: true, draw_next_p: true}
+    const past = {draw_visits_p: past_text(R.move_count - past_mc, past_score)}
     const opts = {...common, ...(past_p ? past : current), ...(options || {})}
-    draw_goban(canvas, null, opts)
+    const displayed_stones = past_p ? stones_until(past_mc, false, true) : R.stones
+    draw_goban(canvas, displayed_stones, opts)
 }
 
 /////////////////////////////////////////////////
@@ -258,9 +271,10 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
 function draw_endstate_stones(each_coord, past_p, stone_radius, g) {
     if (past_p && !R.prev_endstate_clusters) {return}
     each_coord((h, xy, idx) => {
-        const stone_p = h.stone && !(past_p && h.recent)
+        const stone_p = h.stone
         past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
-        stone_p && draw_stone(h, xy, stone_radius, false, false, g)
+        stone_p && draw_stone(h, xy, stone_radius, true, false, g)
+        past_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_endstate_value(h, past_p, xy, stone_radius, g)
     })
 }

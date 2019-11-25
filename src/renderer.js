@@ -150,7 +150,7 @@ function with_opts(d, opts) {
         show_until: showing_until(c),
         hovered_move: if_hover_on(c, hovered_move),
         handle_mouse_on_goban,
-        ...(opts || {})
+        ...((typeof opts === 'function') ? opts() : opts || {}),
     }))
 }
 
@@ -164,7 +164,9 @@ const draw_raw_pure = draw_raw_gen({})
 const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
 const draw_es_gen = options => with_opts(D.draw_endstate_goban, options)
 const draw_current_endstate_value = draw_es_gen({draw_endstate_value_p: true})
-const draw_past_endstate_value = draw_es_gen({draw_endstate_value_p: 'past'})
+const draw_past_endstate_value =
+      draw_es_gen(() => ({draw_endstate_value_p: 'past',
+                          show_until: showing_until(main_canvas)}))
 
 function draw_wr_graph(canvas) {
     const endstate_at = showing_endstate_value_p() && R.prev_endstate_clusters &&
@@ -637,22 +639,27 @@ function set_keyboard_tag_maybe(key) {
         ((keyboard_tag_move_count = data.move_count), update_goban())
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
-function showing_movenum_p() {return the_showing_movenum_p}
 const checker_for_showing_until = change_detector()
-function set_showing_movenum_p(val) {
-    the_showing_movenum_p = val
+function showing_something_p() {return showing_movenum_p() || showing_endstate_value_p()}
+function showing_movenum_p() {return the_showing_movenum_p}
+function showing_endstate_value_p() {return the_showing_endstate_value_p}
+function set_showing_something_p(val) {
     val && (checker_for_showing_until.reset(), update_hover_maybe())
     update_goban()
 }
-function showing_endstate_value_p() {return the_showing_endstate_value_p}
+function set_showing_movenum_p(val) {
+    the_showing_movenum_p = val; set_showing_something_p(val)
+}
 function set_showing_endstate_value_p(val) {
-    the_showing_endstate_value_p = val; update_goban()
+    the_showing_endstate_value_p = val; set_showing_something_p(val)
 }
 function showing_until(canvas) {
+    const hovered_mc = (hovered_move_count || R.move_count || Infinity)
+    const hovered_valid = showing_movenum_p() ||
+          (showing_endstate_value_p() && hovered_mc < R.move_count)
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||
-          (by_hover && showing_movenum_p() &&
-           (hovered_move_count || R.move_count || Infinity))
+          (by_hover && hovered_valid && hovered_mc)
     const accept_any = !canvas, hover_on_me = if_hover_on(canvas, true)
     const hover_on_any_board = !!hovered_board_canvas
     const i_am_first_board = is_first_board_canvas(canvas)
