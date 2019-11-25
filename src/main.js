@@ -1174,13 +1174,14 @@ function load_random_exercise(win) {
     const random_choice = a => a[Math.floor(Math.random() * a.length)]
     load_exercise(random_choice, win)
 }
+let seen_exercises = []
 function load_exercise(selector, win) {
     const dir = option.exercise_dir, basename = z => PATH.basename(z)
-    const seen = sequence.map(h => h.sgf_file).filter(truep).map(basename)
-    const valid = f => is_exercise_filename(f) && seen.indexOf(f) < 0
+    const valid = name => is_exercise_filename(name) && seen_exercises.indexOf(name) < 0
     const files = (fs.readdirSync(dir) || []).filter(valid)
-    if (empty(files)) {wink(); return}
-    const f = PATH.join(dir, selector(files))
+    const retry = () => {seen_exercises = []; load_exercise(selector, win)}
+    if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
+    const fn = selector(files), f = PATH.join(dir, fn); seen_exercises.push(fn)
     set_board_type('raw', win); load_sgf(f); goto_move_count(exercise_move_count(f))
 }
 function open_exercise_dir() {open_sgf_in(option.exercise_dir)}
