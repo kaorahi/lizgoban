@@ -20,8 +20,8 @@ const default_path_for = name =>
       PATH.join(app.isPackaged ? app.getAppPath() : __dirname, '..', 'external', name)
 
 const option = {
-    leelaz_command: default_path_for('leelaz'),
-    leelaz_args: ["-g", "-w", default_path_for('network.gz')],
+    leelaz_command: 'leelaz',
+    leelaz_args: ["-g", "-w", "network.gz"],
     analyze_interval_centisec: 10,
     minimum_suggested_moves: 30,
     engine_log_line_length: 500,
@@ -1104,10 +1104,13 @@ ${info}`
 
 // util
 function leelaz_start_args(weight_file) {
+    const working_dir = default_path_for('.')
+    const leelaz_command = PATH.resolve(working_dir, option.leelaz_command)
     const leelaz_args = option.leelaz_args.slice()
-    const h = {leelaz_args, weight_file, tuning_handler: make_tuning_handler(),
+    const h = {leelaz_command, leelaz_args, weight_file, working_dir,
+               tuning_handler: make_tuning_handler(),
                restart_handler: auto_restart, ready_handler: on_ready}
-    const opts = ['leelaz_command', 'analyze_interval_centisec', 'wait_for_startup',
+    const opts = ['analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])
     return h

@@ -33,14 +33,15 @@ function create_leelaz () {
     const start = h => {
         arg = cook_arg(h)
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
-               weight_file,
+               weight_file, working_dir,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler,
                tuning_handler}
               = arg || {}
+        const opt = {cwd: working_dir}
         log('start leela zero:', JSON.stringify(arg && [leelaz_command, ...leelaz_args]))
         is_ready = false; network_size_text = ''
-        leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args)
+        leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args, opt)
         leelaz_process.stdout.on('data', each_line(stdout_reader))
         leelaz_process.stderr.on('data', each_line(reader))
         set_error_handler(leelaz_process, restart_handler)

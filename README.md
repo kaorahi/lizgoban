@@ -122,6 +122,7 @@ Here is a more practical example of config.json:
   * accelerator: Shortcut key like "Shift+F3", "CmdOrCtrl+F4", "Alt+F5", etc. It can be omitted as the above "LZ vs. KATA".
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
   * empty_board: Set it true for creating new empty board.
+  * engine: Engine command. You can use relative paths from `external/`, e.g., `["leelaz", "-g", "-w", "network.gz"]` for `external/leelaz` and `external/network.gz`.
 
 For quick experiments, you can also use
 
