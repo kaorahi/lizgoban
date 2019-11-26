@@ -26,7 +26,7 @@
       {
         "from": "tmp_extra",
         "to": "resources/external",
-        "filter": ["network.gz"]
+        "filter": ["config.json", "lznetwork.gz", "katanetwork.gz", "katago_gtp.cfg"]
       }
     ],
     "linux": {
@@ -35,7 +35,8 @@
       "extraFiles": [
         {
           "from": "tmp_extra/linux",
-          "to": "resources/external"
+          "to": "resources/external",
+          "filter": ["leelaz", "katago"]
         }
       ]
     },
@@ -45,7 +46,7 @@
         {
           "from": "tmp_extra/win",
           "to": "resources/external",
-          "filter": ["leelaz.exe", "*.dll"]
+          "filter": ["leelaz/{leelaz.exe,*.dll}", "katago/{katago.exe,*.dll}"]
         }
       ]
     }
