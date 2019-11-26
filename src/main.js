@@ -35,9 +35,11 @@ const option = {
     exercise_dir: undefined,
     max_cached_engines: 1,
     preset: null,
-}
-process.argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
+};
+['-c', default_path_for('config.json'), ...process.argv]
+    .forEach((x, i, a) => parse_option(x, a[i + 1]))
 function parse_option(cur, succ) {
+    const read_file = path => {try {return fs.readFileSync(path)} catch(e) {return '{}'}}
     const merge_json = str => merge_with_preset(JSON.parse(str))
     const merge_with_preset = orig => {
         // accept obsolete key "shortcut" for backward compatibility
@@ -63,7 +65,7 @@ function parse_option(cur, succ) {
     }
     switch (cur) {
     case '-j': merge_json(succ); break
-    case '-c': merge_json(fs.readFileSync(succ)); break
+    case '-c': merge_json(read_file(succ)); break
     }
 }
 

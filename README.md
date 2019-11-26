@@ -132,6 +132,9 @@ For quick experiments, you can also use
 
 on Mac or Linux. The latter option overwrites the former one in the second example.
 
+(In addition, LizGoban reads external/config.json if it exists.
+But this is experimental and may be changed in future.)
+
 #### To use KataGo and its score/ownership estimations:
 
 Set KataGo like the above config.json and select it in [Preset] menu. See "KataGo" section in [Help] menu for details.
