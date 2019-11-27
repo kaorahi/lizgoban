@@ -558,11 +558,14 @@ function apply_preset(rule, win) {
 }
 
 function expand_preset(preset) {
+    const expand_ary = ([a, b]) => a === 'external' ? default_path_for(b) : b
+    const expand = z => (typeof z === 'string') ? z : expand_ary(z)
     preset.forEach(rule => {
         // merge rule.option for backward compatibility to 1a88dd40
         merge(rule, rule.option || {})
-        const {engine} = rule
-        engine && merge(rule, {leelaz_command: engine[0], leelaz_args: engine.slice(1)})
+        const {engine} = rule; if (!engine) {return}
+        const [leelaz_command, ...leelaz_args] = engine.map(expand)
+        merge(rule, {leelaz_command, leelaz_args})
     })
 }
 
@@ -1106,7 +1109,7 @@ ${info}`
 
 // util
 function leelaz_start_args(weight_file) {
-    const working_dir = default_path_for('.')
+    const working_dir = process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.')
     const leelaz_command = PATH.resolve(working_dir, option.leelaz_command)
     const leelaz_args = option.leelaz_args.slice()
     const h = {leelaz_command, leelaz_args, weight_file, working_dir,

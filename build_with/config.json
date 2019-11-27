@@ -4,14 +4,15 @@
         {
             "label": "Leela Zero",
             "accelerator": "F1",
-            "engine": ["leelaz/leelaz", "-g", "-w", "lznetwork.gz"]
+            "engine": [["external", "leelaz/leelaz"], "-g",
+                       "-w", ["external", "lznetwork.gz"]]
         },
         {
             "label": "KataGo",
             "accelerator": "F2",
-            "engine": ["katago/katago", "gtp",
-                       "-model", "katanetwork.gz",
-                       "-config", "katago_gtp.cfg"]
+            "engine": [["external", "katago/katago"], "gtp",
+                       "-model", ["external", "katanetwork.gz"],
+                       "-config", ["external", "katago_gtp.cfg"]]
         }
     ]
 }
