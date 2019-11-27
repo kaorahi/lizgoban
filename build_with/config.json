@@ -1,0 +1,17 @@
+{
+    "max_cached_engines": 2,
+    "preset": [
+        {
+            "label": "Leela Zero",
+            "accelerator": "F1",
+            "engine": ["leelaz/leelaz", "-g", "-w", "lznetwork.gz"]
+        },
+        {
+            "label": "KataGo",
+            "accelerator": "F2",
+            "engine": ["katago/katago", "gtp",
+                       "-model", "katanetwork.gz",
+                       "-config", "katago_gtp.cfg"]
+        }
+    ]
+}

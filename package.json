@@ -24,9 +24,14 @@
     ],
     "extraFiles": [
       {
-        "from": "tmp_extra",
+        "from": "build_with",
         "to": "resources/external",
-        "filter": ["config.json", "lznetwork.gz", "katanetwork.gz", "katago_gtp.cfg"]
+        "filter": ["config.json", "katago_gtp.cfg"]
+      },
+      {
+        "from": "build_with/bin/common",
+        "to": "resources/external",
+        "filter": ["lznetwork.gz", "katanetwork.gz"]
       }
     ],
     "linux": {
@@ -34,7 +39,7 @@
       "category": "Game",
       "extraFiles": [
         {
-          "from": "tmp_extra/linux",
+          "from": "build_with/bin/linux",
           "to": "resources/external",
           "filter": ["leelaz", "katago"]
         }
@@ -44,7 +49,7 @@
       "target": "portable",
       "extraFiles": [
         {
-          "from": "tmp_extra/win",
+          "from": "build_with/bin/win",
           "to": "resources/external",
           "filter": ["leelaz/{leelaz.exe,*.dll}", "katago/{katago.exe,*.dll}"]
         }

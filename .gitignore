@@ -1,6 +1,6 @@
 /dist/
 /external/
-/tmp_extra/
+/build_with/bin/
 
 node_modules/
 package-lock.json
