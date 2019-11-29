@@ -553,7 +553,7 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     large_bar && draw_winrate_bar_horizontal_lines(w, h, g)
     draw_winrate_bar_tics(b_wr, komi_wr, tics, w, h, vline, g)
     draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g)
-    R.winrate_trail && draw_winrate_trail(canvas)
+    R.winrate_trail && !empty(R.suggest) && draw_winrate_trail(canvas)
     draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
     draw_winrate_bar_text(prev_score, w, h, pale_text_p, g)
 }
