@@ -296,7 +296,7 @@ function UPDATE_all(partially, keep_board) {
     if (!update_all_p()) {return}
     debug_log(`UPDATE_all start`)
     keep_board || SET_board()
-    UPDATE_state(); UPDATE_ponder(); UPDATE_ui(); UPDATE_menu()
+    UPDATE_state(keep_board); UPDATE_ponder(); UPDATE_ui(); UPDATE_menu()
     debug_log(`UPDATE_all done`)
 }
 
