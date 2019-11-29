@@ -294,8 +294,9 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
     const past_p = past_endstate_p(boundary_p)
     const cs = (past_p ? R.prev_endstate_clusters : R.endstate_clusters) || []
     cs.forEach(cluster => {
-        const {color, type, ownership_sum, center_idx} = cluster
-        const area_count = Math.round(Math.abs(ownership_sum))
+        const {color, type, ownership_sum, selfstone_sum, center_idx} = cluster
+        const area_count = Math.round(Math.sign(ownership_sum) *
+                                      (ownership_sum - selfstone_sum))
         if (area_count < 1) {return}
         boundary_p && draw_endstate_boundary(cluster, unit, idx2coord, g)
         const text = to_s(area_count), xy = idx2coord(...center_idx)
@@ -305,6 +306,14 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
         g.fillText(text, ...xy)
         g.restore()
     })
+    const selfstone_sum = Math.round(sum(cs.map(cluster => cluster.selfstone_sum)))
+    const ss_text = selfstone_sum === 0 ? '' : `+${to_s(Math.abs(selfstone_sum))}`
+    g.save()
+    g.textAlign = 'right'; g.textBaseline = 'top'
+    set_font(size['minor'] * unit, g)
+    g.fillStyle = style[selfstone_sum > 0 ? 'black' : 'white']
+    g.fillText(ss_text, ...idx2coord(-1.3, 19))
+    g.restore()
 }
 
 function draw_endstate_boundary(cluster, unit, idx2coord, g) {

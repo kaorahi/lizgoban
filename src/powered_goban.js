@@ -101,7 +101,7 @@ function set_renderer_state(...args) {
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)
-    const endstate_clusters = endstate_clusters_for(endstate)
+    const endstate_clusters = get_endstate_clusters(endstate)
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
     merge(R, {move_count, busy, winrate_history, endstate_sum, endstate_clusters,
               max_visits, progress,
@@ -157,7 +157,7 @@ function update_endstate_diff() {
     const ok = prev_endstate && game.ref_current().endstate
     aa_each(R.stones, (s, i, j) =>
             (s.endstate_diff = ok ? sign * (s.endstate - prev_endstate[i][j]) : 0))
-    R.prev_endstate_clusters = ok && endstate_clusters_for(prev_endstate)
+    R.prev_endstate_clusters = ok && get_endstate_clusters(prev_endstate, prev)
 }
 function endstate_diff_move_count() {
     return endstate_diff_from || (game.move_count - endstate_diff_interval)
@@ -179,6 +179,12 @@ function for_current_and_previous_endstate(move_count, key, delta, f) {
     return truep(cur) && truep(prev) && f(cur, prev)
 }
 function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
+
+function get_endstate_clusters(endstate, move_count) {
+    const stones = M.is_bogoterritory() &&
+          (move_count ? game.stones_at(move_count) : R.stones)
+    return endstate_clusters_for(endstate, stones)
+}
 
 /////////////////////////////////////////////////
 // winrate history

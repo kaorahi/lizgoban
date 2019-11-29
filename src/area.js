@@ -20,20 +20,21 @@ const category_spec = [
 //////////////////////////////////////
 // main
 
-function endstate_clusters_for(endstate) {
+function endstate_clusters_for(endstate, stones) {
     initialize()
     const grid_for = z => ({ownership: z, id: null})
     const grid = aa_map(endstate, grid_for)
-    return flatten(category_spec.map((_, cat) => clusters_in_category(cat, grid)))
+    const get_clusters = (_, cat) => clusters_in_category(cat, grid, stones)
+    return flatten(category_spec.map(get_clusters))
 }
 
-function clusters_in_category(category, grid) {
+function clusters_in_category(category, grid, stones) {
     const {type} = category_spec[category]
     const region = region_for_category(category, grid)
     const clusters = clusters_in_region(region, grid, category)
     const divide_maybe = c => divide_large_cluster(c, grid, category)
     const ret = (type === 'minor') ? clusters : flatten(clusters.map(divide_maybe))
-    return ret.map(c => finalize_cluster(c, grid))
+    return ret.map(c => finalize_cluster(c, grid, stones))
 }
 
 function region_for_category(category, grid) {
@@ -99,18 +100,25 @@ function make_cluster(id, color, type, ijs) {
     return {id, color, type, ijs}
 }
 
-function finalize_cluster(cluster, grid) {
-    const {id, ijs} = cluster, c = {...cluster}; delete c.ijs // for efficiency
-    return {...c, ...cluster_characteristics(id, ijs, grid)}
+function finalize_cluster(cluster, grid, stones) {
+    const {id, ijs, color} = cluster, c = {...cluster}; delete c.ijs // for efficiency
+    return {...c, ...cluster_characteristics(id, ijs, grid, color, stones)}
 }
 
-function cluster_characteristics(id, ijs, grid) {
-    const sum = (v, w) => v.map((_, k) => v[k] + w[k]), zero = [0, 0, 0]
-    const f = ([i, j]) => {const ow = grid[i][j].ownership; return [ow, i * ow, j * ow]}
-    const [ownership_sum, i_sum, j_sum] = ijs.map(f).reduce(sum, zero)
+function cluster_characteristics(id, ijs, grid, color, stones) {
+    const sum = (v, w) => v.map((_, k) => v[k] + w[k]), zero = [0, 0, 0, 0]
+    const stone_sign = (i, j) => {
+        const s = stones[i][j]; return !s.stone ? 0 : s.black ? 1 : -1
+    }
+    const f = ([i, j]) => {
+        const ow = grid[i][j].ownership, sign = color === 'black' ? 1 : -1
+        const ss = stones ? sign * clip(ow * stone_sign(i, j), 0) : 0
+        return [ow, ss, i * ow, j * ow]
+    }
+    const [ownership_sum, selfstone_sum, i_sum, j_sum] = ijs.map(f).reduce(sum, zero)
     const center_idx = [i_sum, j_sum].map(z => z / ownership_sum)
     const boundary = boundary_of(id, ijs, grid)
-    return {ownership_sum, center_idx, boundary}
+    return {ownership_sum, selfstone_sum, center_idx, boundary}
 }
 
 function boundary_of(id, ijs, grid) {
