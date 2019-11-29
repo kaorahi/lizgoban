@@ -1,6 +1,6 @@
 LizGoban 0.2.0-pre2
 
-In debugging. DO NOT USE THIS VERSION.
+(Bugfix) KataGo tuner ran every time in pre1. It is fixed in this pre2.
 
 ### Links
 
