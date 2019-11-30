@@ -82,6 +82,8 @@ function parse_option(cur, succ) {
     }
 }
 
+function option_path(key) {return option[key]}
+
 /////////////////////////////////////////////////
 // setup
 
@@ -1082,7 +1084,7 @@ function load_leelaz_for_white() {load_weight(true)}
 
 function select_weight_file() {
     const message = 'Select weight file for leela zero'
-    return select_files(message, option.weight_dir)[0]
+    return select_files(message, option_path('weight_dir'))[0]
 }
 function select_files(title, dir) {
     return dialog.showOpenDialog(null, {
@@ -1167,7 +1169,7 @@ function tuning_is_done() {
 function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf()); wink()}
 function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
 
-function open_sgf() {open_sgf_in(option.sgf_dir)}
+function open_sgf() {open_sgf_in(option_path('sgf_dir'))}
 function open_sgf_in(dir) {
     select_files('Select SGF file', dir).forEach(load_sgf)
 }
@@ -1179,7 +1181,7 @@ function load_sgf(filename) {
 function save_sgf() {
     const f = dialog.showSaveDialog(null, {
         title: 'Save SGF file',
-        defaultPath: option.sgf_dir,
+        defaultPath: option_path('sgf_dir'),
     })
     const if_success = () => (game.sgf_file = f)
     f && save_sgf_to(f, if_success)
@@ -1198,7 +1200,7 @@ function read_sgf(sgf_str) {
 // personal exercise book
 
 function store_as_exercise() {
-    const path = PATH.join(option.exercise_dir, exercise_filename())
+    const path = PATH.join(exercise_dir(), exercise_filename())
     save_sgf_to(path); toast('stored as exercise')
 }
 function load_random_exercise(win) {
@@ -1207,7 +1209,7 @@ function load_random_exercise(win) {
 }
 let seen_exercises = []
 function load_exercise(selector, win) {
-    const dir = option.exercise_dir, basename = z => PATH.basename(z)
+    const dir = exercise_dir(), basename = z => PATH.basename(z)
     const valid = name => is_exercise_filename(name) && seen_exercises.indexOf(name) < 0
     const files = (fs.readdirSync(dir) || []).filter(valid)
     const retry = () => {seen_exercises = []; load_exercise(selector, win)}
@@ -1215,9 +1217,9 @@ function load_exercise(selector, win) {
     const fn = selector(files), f = PATH.join(dir, fn); seen_exercises.push(fn)
     set_board_type('raw', win); load_sgf(f); goto_move_count(exercise_move_count(f))
 }
-function open_exercise_dir() {open_sgf_in(option.exercise_dir)}
+function open_exercise_dir() {open_sgf_in(exercise_dir())}
 function delete_exercise() {
-    const dir = option.exercise_dir, file = game.sgf_file, name = PATH.basename(file)
+    const dir = exercise_dir(), file = game.sgf_file, name = PATH.basename(file)
     if (!is_exercise_file(file)) {wink(); return}
     const new_file = PATH.join(dir, `_${name}`)
     const done = () => {
@@ -1225,6 +1227,7 @@ function delete_exercise() {
     }
     fs.rename(file, new_file, done)
 }
+function exercise_dir() {return option_path('exercise_dir')}
 
 const exercise_format = {pre: 'exercise_', sep: '_', post: '.sgf'}
 function exercise_filename() {
@@ -1239,7 +1242,7 @@ function is_exercise_filename(filename) {
 function is_exercise_file(path) {
     const in_dir_p = (f, d) => d && (PATH.resolve(d, PATH.basename(f)) === f)
     const name = PATH.basename(path)
-    return in_dir_p(path, option.exercise_dir) && is_exercise_filename(name)
+    return in_dir_p(path, exercise_dir()) && is_exercise_filename(name)
 }
 function exercise_move_count(filename) {
     const {pre, sep, post} = exercise_format
