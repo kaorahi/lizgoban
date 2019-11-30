@@ -10,7 +10,7 @@ Instead of having a full-featured board editor by itself,
 it is attachable to [Sabaki](https://sabaki.yichuanshen.de/)
 as subwindows.
 
-<img src="screen.gif" width="50%"><img src="area_count.png" width="20%">
+<img src="screen.gif" width="50%">
 
 ## Highlights
 
