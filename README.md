@@ -44,20 +44,22 @@ And more...
 
 ## Usage
 
-### Case I: CPU-only Leela Zero on 64bit Windows
+### Case I: 64bit Windows without GPU
 
-Just download the [all-in-one package (*.exe)](https://github.com/kaorahi/lizgoban/releases) and double-click it. You do not need installation, configuration, additional downloads, etc.
+Just download the [all-in-one package](https://github.com/kaorahi/lizgoban/releases). You can use it immediately without installation, configuration, additional downloads, etc.
 
-### Case II: Leela Zero and KataGo on 64bit Windows with GPU
+See the release note to replace the built-in engines (CPU-only Leela Zero + OpenCL KataGo).
+
+### Case II: 64bit Windows with GPU
 
 [BadukMegapack by wonsiks](https://github.com/wonsiks/BadukMegapack)
 may be the easiest way to install LizGoban together with many other tools.
 (Though it is not tested by the author of LizGoban,
 who does not have a Windows machine.)
 
-### Case III: Otherwise...
+### Case III: Other platforms (Mac, Linux, ...), or Windows with more flexible configuration
 
-#### To try it (stand alone):
+#### To use it:
 
 1. Install [Node.js](https://nodejs.org/).
 2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install" on a terminal.
@@ -177,6 +179,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * Enable autoplay between different engines.
 * Add "personal exercise book".
 * Improve komi features.
+* The format of config.json is modified. (The obsolete format also works at present.)
 * Some items are moved to [Engine] menu.
 
 ### from unreleased versions
