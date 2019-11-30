@@ -48,8 +48,6 @@ And more...
 
 Just download the [all-in-one package](https://github.com/kaorahi/lizgoban/releases). You can use it immediately without installation, configuration, additional downloads, etc.
 
-See the release note to replace the built-in engines (CPU-only Leela Zero + OpenCL KataGo).
-
 ### Case II: 64bit Windows with GPU
 
 [BadukMegapack by wonsiks](https://github.com/wonsiks/BadukMegapack)
@@ -57,7 +55,9 @@ may be the easiest way to install LizGoban together with many other tools.
 (Though it is not tested by the author of LizGoban,
 who does not have a Windows machine.)
 
-### Case III: Other platforms (Mac, Linux, ...), or Windows with more flexible configuration
+Otherwise, see the release note to replace the built-in engines with GPU versions in Case I or follow the steps in Case III.
+
+### Case III: Other platforms (Mac, Linux, ...) or Windows with more flexible configuration
 
 #### To use it:
 

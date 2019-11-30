@@ -1,6 +1,7 @@
 /dist/
 /external/
 /build_with/bin/
+/build_with/extra/
 
 node_modules/
 package-lock.json
