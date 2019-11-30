@@ -160,7 +160,8 @@ function update_endstate_diff() {
     R.prev_endstate_clusters = ok && get_endstate_clusters(prev_endstate, prev)
 }
 function endstate_diff_move_count() {
-    return endstate_diff_from || (game.move_count - endstate_diff_interval)
+    const edf = endstate_diff_from, mc = game.move_count
+    return (truep(edf) && edf !== mc) ? edf : (mc - endstate_diff_interval)
 }
 function average_endstate_sum(move_count) {
     return for_current_and_previous_endstate(move_count, 'endstate_sum', 1,
