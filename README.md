@@ -135,8 +135,7 @@ For quick experiments, you can also use
 
 on Mac or Linux. The latter option overwrites the former one in the second example.
 
-(In addition, LizGoban reads external/config.json if it exists.
-But this is experimental and may be changed in future.)
+In addition, LizGoban reads external/config.json (and config.json in the "working directory" in the above (*1)) beforehand if they exist.
 
 #### To use KataGo and its score/ownership estimations:
 

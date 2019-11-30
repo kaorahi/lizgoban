@@ -39,8 +39,7 @@ const option = {
 }
 
 const default_config_paths = [
-    default_path_for('.'),
-    // process.env.PORTABLE_EXECUTABLE_DIR,
+    default_path_for('.'), process.env.PORTABLE_EXECUTABLE_DIR,
 ]
 parse_argv()
 
