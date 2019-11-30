@@ -33,7 +33,7 @@ const option = {
     working_dir: process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.'),
     weight_dir: undefined,
     sgf_dir: undefined,
-    exercise_dir: undefined,
+    exercise_dir: 'exercise',
     max_cached_engines: 1,
     preset: null,
 }
