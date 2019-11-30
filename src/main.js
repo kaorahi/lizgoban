@@ -84,7 +84,10 @@ function parse_option(cur, succ) {
 }
 
 function option_path(key) {
-    const path = option[key]; return path && PATH.resolve(option.working_dir, path)
+    const path = option[key]; if (!path) {return path}
+    const ret = PATH.resolve(option.working_dir, path)
+    try {key.endsWith('_dir') && fs.mkdirSync(ret)} catch(e) {}
+    return ret
 }
 
 /////////////////////////////////////////////////
