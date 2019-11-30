@@ -35,9 +35,22 @@ const option = {
     exercise_dir: undefined,
     max_cached_engines: 1,
     preset: null,
-};
-['-c', default_path_for('config.json'), ...process.argv]
-    .forEach((x, i, a) => parse_option(x, a[i + 1]))
+}
+
+const default_config_paths = [
+    default_path_for('.'),
+    // process.env.PORTABLE_EXECUTABLE_DIR,
+]
+parse_argv()
+
+function parse_argv() {
+    const prepended_args = dir => ['-c', PATH.resolve(dir, 'config.json')]
+    const argv = [
+        ...flatten(default_config_paths.filter(truep).map(prepended_args)),
+        ...process.argv,
+    ]
+    argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
+}
 function parse_option(cur, succ) {
     const read_file = path => {try {return fs.readFileSync(path)} catch(e) {return '{}'}}
     const merge_json = str => merge_with_preset(JSON.parse(str))
