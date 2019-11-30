@@ -30,6 +30,7 @@ const option = {
     wait_for_startup: true,
     update_all_p: true,
     endstate_leelaz: null,
+    working_dir: process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.'),
     weight_dir: undefined,
     sgf_dir: undefined,
     exercise_dir: undefined,
@@ -82,7 +83,9 @@ function parse_option(cur, succ) {
     }
 }
 
-function option_path(key) {return option[key]}
+function option_path(key) {
+    const path = option[key]; return path && PATH.resolve(option.working_dir, path)
+}
 
 /////////////////////////////////////////////////
 // setup
@@ -1127,8 +1130,8 @@ ${info}`
 
 // util
 function leelaz_start_args(weight_file) {
-    const working_dir = process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.')
-    const leelaz_command = PATH.resolve(working_dir, option.leelaz_command)
+    const {working_dir} = option
+    const leelaz_command = option_path('leelaz_command')
     const leelaz_args = option.leelaz_args.slice()
     const h = {leelaz_command, leelaz_args, weight_file, working_dir,
                tuning_handler: make_tuning_handler(),

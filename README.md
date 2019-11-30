@@ -113,17 +113,19 @@ Here is a more practical example of config.json:
 ~~~~
 
 * analyze_interval_centisec: Update interval of analysis display (1 = 0.01sec).
-* sgf_dir: Default directory for [Open SGF] and [Save SGF] menus.
-* weight_dir: Default directory for [Load network weights] menu.
-* exercise_dir: (Experimental) Directory for your personal exercise book. If you specify this, you can use [Store as exercise] in [Tool] menu to remember the current board. Use [Exercise] in [Tool] menu to show one of the stored boards randomly and hit Tab or Z key to show its analysis.
+* sgf_dir: Default directory for [Open SGF] and [Save SGF] menus. (*1)
+* weight_dir: Default directory for [Load network weights] menu. (*1)
+* exercise_dir: (Experimental) Directory for your personal exercise book. If you specify this, you can use [Store as exercise] in [Tool] menu to remember the current board. Use [Exercise] in [Tool] menu to show one of the stored boards randomly and hit Tab or Z key to show its analysis. (*1)
 * max_cached_engines: (Experimental) Maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.
 * preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
   * label: Item name shown in [Preset] menu.
   * accelerator: Shortcut key like "Shift+F3", "CmdOrCtrl+F4", "Alt+F5", etc. It can be omitted as the above "LZ vs. KATA".
-  * engine: Engine command. You can use relative paths from `external/`, e.g., `["leelaz", "-g", "-w", "network.gz"]` for `external/leelaz` and `external/network.gz`.
-  * engine_for_white: Alternative engine is used for white if this is set.
+  * engine: Engine command. (*1)
+  * engine_for_white: Alternative engine is used for white if this is set. (*1)
   * empty_board: Set it true for creating new empty board.
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
+
+(*1) In these items, you can use relative paths from the "working directory", that is the folder of `LizGoban*.exe` itself in the all-in-one package or `external/` otherwise. For example, you can simply write "leelaz" for `external/leelaz`.
 
 For quick experiments, you can also use
 
