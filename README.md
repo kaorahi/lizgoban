@@ -20,27 +20,25 @@ as subwindows.
 4. Leela Zero's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose. We can notice the case when we should wait for a little more analysis, and will never miss a new rising candidate like the one in the above screenshot.
 5. Additionally, various small ideas are implemented, e.g. translucent stones for too long variations, different colors for good/bad/unexpected moves in the win-rate graph, etc.
 
-See below for corresponding features.
-
 ## Features
 
 Like Lizzie...
 
-* Colored suggestions / Variation by mouse hover [2]
-* Subboard that always shows the principal variation [2]
-* Clickable & draggable win-rate graph with autoanalysis [2]
+* Colored suggestions / Variation by mouse hover
+* Subboard that always shows the principal variation
+* Clickable & draggable win-rate graph with autoanalysis
 
 And more...
 
-* Visualization of search progress via plots of (visits, winrate, prior) [4]
-* Real-time display of area counts by KataGo [3]
-* Trial boards that can be used like tabs in web browsers [1]
-* Detection of inconsistency between analyses before/after a move [4]
-* Watch Leela Zero vs. KataGo etc. with real-time comparison of their plans [3]
-* Play against weakened Leela Zero in several ways [3]
-* Keyboard shortcuts, e.g. "3" key for the third variation [5]
-* Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move [3]
-* Personal exercise book that can be used like bookmarks in web browsers for random exercise [3]
+* Visualization of search progress via plots of (visits, winrate, prior)
+* Real-time display of area counts by KataGo
+* Trial boards that can be used like tabs in web browsers
+* Detection of inconsistency between analyses before/after a move
+* Watch Leela Zero vs. KataGo etc. with real-time comparison of their plans
+* Play against weakened Leela Zero in several ways
+* Keyboard shortcuts, e.g. "3" key for the third variation
+* Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
+* Personal exercise book that can be used like bookmarks in web browsers for random exercise
 
 ## Usage
 
