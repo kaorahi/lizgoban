@@ -27,16 +27,18 @@ Like Lizzie...
 * Colored suggestions / Variation by mouse hover
 * Subboard that always shows the principal variation
 * Clickable & draggable win-rate graph with autoanalysis
+* Multiple engines that can be switched quickly
 
 And more...
 
-* Visualization of search progress via plots of (visits, winrate, prior)
+* Visualization of search progress via plots of visits, winrate, score, prior, ...
 * Real-time display of area counts by KataGo
 * Trial boards that can be used like tabs in web browsers
 * Detection of inconsistency between analyses before/after a move
 * Watch Leela Zero vs. KataGo etc. with real-time comparison of their plans
-* Play against weakened Leela Zero in several ways
+* Play against weakened engines in several ways
 * Keyboard shortcuts, e.g. "3" key for the third variation
+* Analysis of gains and losses in recent moves by KataGo that reveals overlooked side effects
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
 * Personal exercise book that can be used like bookmarks in web browsers for random exercise
 
