@@ -6,9 +6,6 @@ and [KataGo](https://github.com/lightvector/KataGo).
 It is an implementation of
 [Lizzie](https://github.com/featurecat/lizzie)-style real-time UI
 on [Electron](https://electronjs.org/).
-Instead of having a full-featured board editor by itself,
-it is attachable to [Sabaki](https://sabaki.yichuanshen.de/)
-as subwindows.
 
 <img src="screen.gif" width="50%">
 
@@ -162,7 +159,7 @@ This is based on [endstate_head branch by ihavnoid](https://github.com/leela-zer
 (Sorry for the ugly second brackets `[]` for backward compatibility.)
 It is ignored when you are using KataGo, that gives more reliable estimations.
 
-#### To attach it to Sabaki:
+#### To attach LizGoban to [Sabaki](https://sabaki.yichuanshen.de/) as subwindows (obsolete, may be deleted in future):
 
 1. Build a [customized Sabaki](https://github.com/kaorahi/Sabaki/tree/dump_state2) in "dump_state2" branch.
 2. Put Sabaki binary as "external/sabaki".
