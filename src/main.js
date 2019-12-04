@@ -1121,10 +1121,11 @@ ${info}`
           (show_error(warning), (warned_engine_trouble = true))
     const buttons = ["RESTORE", "retry", "load weights", "(ignore)"]
     const actions = [switch_to_previous_weight, restart, load_weight, warn_maybe]
+    const do_action =
+          response => {actions[response](); asking_recovery = false; UPDATE_all()}
     const recover = () => {
         asking_recovery = true  // avoid duplicated dialogs
-        dialog.showMessageBox(null, {type: "error", message, buttons,},
-                              response => {actions[response](); asking_recovery = false})
+        dialog.showMessageBox(null, {type: "error", message, buttons,}, do_action)
     };
     (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
         (restart(), last_restart_time = Date.now()) : (asking_recovery || recover())
