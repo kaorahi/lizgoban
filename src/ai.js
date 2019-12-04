@@ -172,7 +172,7 @@ function pull_cached_engine(h) {
     return ret
 }
 function cache_disused_engine(lz) {
-    if (!lz.start_args()) {return}
+    if (!lz.start_args() || !lz.is_ready()) {return}
     pull_cached_engine(lz.start_args())  // avoid duplication
     lz.set_pondering(false); cached_engines.push(lz); shrink_cache()
 }
