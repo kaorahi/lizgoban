@@ -26,12 +26,18 @@
       {
         "from": "build_with",
         "to": "resources/external",
-        "filter": ["config.json", "katago_gtp.cfg"]
+        "filter": [
+          "config.json",
+          "katago_gtp.cfg"
+        ]
       },
       {
         "from": "build_with/bin/common",
         "to": "resources/external",
-        "filter": ["lznetwork.gz", "katanetwork.gz"]
+        "filter": [
+          "lznetwork.gz",
+          "katanetwork.gz"
+        ]
       }
     ],
     "linux": {
@@ -41,7 +47,10 @@
         {
           "from": "build_with/bin/linux",
           "to": "resources/external",
-          "filter": ["leelaz", "katago"]
+          "filter": [
+            "leelaz",
+            "katago"
+          ]
         }
       ]
     },
@@ -51,7 +60,10 @@
         {
           "from": "build_with/bin/win",
           "to": "resources/external",
-          "filter": ["leelaz/{leelaz.exe,*.dll}", "katago/{katago.exe,*.dll}"]
+          "filter": [
+            "leelaz/{leelaz.exe,*.dll}",
+            "katago/{katago.exe,*.dll}"
+          ]
         }
       ]
     }
