@@ -1,6 +1,4 @@
-LizGoban 0.2.0-pre3
-
-Test version for skilled users.
+LizGoban 0.2.0
 
 ### To use it on 64bit Windows immediately
 
@@ -23,17 +21,13 @@ Note that the built-in KataGo is the official binary. You may need to get anothe
 
 Download the source code and see `README.md`.
 
-### Changes from 0.2.0-pre1
-
-* Enable configuration of the all-in-one package.
-* Enable "personal exercise book" features in [Tool] menu by default. See "Tips" section of [Help] menu for usage.
-* Fix: KataGo tuner ran every time in the all-in-one package in pre1. It was fixed in pre2.
-
 ### Major changes from 0.1.0
 
+* Add KataGo into the all-in-one package.
 * Enable quick switching of engines and weights by a new format of config.json.
 * Add "personal exercise book".
 * Improve komi and autoplay features.
+* Enable configuration of the all-in-one package.
 
 ### Links
 
