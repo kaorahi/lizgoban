@@ -25,6 +25,7 @@ Like Lizzie...
 * Subboard that always shows the principal variation
 * Clickable & draggable win-rate graph with autoanalysis
 * Multiple engines that can be switched quickly
+* Open URL (by drag & drop or clipboard)
 
 And more...
 
@@ -171,6 +172,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 
 ### from 0.2.0
 
+* Open URL by drag & drop or clipboard.
 * Count stones separately in area counts. (See "KataGo" section in "Help" menu.)
 
 ### from 0.1.0

@@ -11,7 +11,7 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 // npx electron src -j /foo/bar/config.json
 
 require('./common.js').to(global)
-const PATH = require('path'), fs = require('fs')
+const PATH = require('path'), fs = require('fs'), https = require('https')
 const default_path_for = name =>
       // suppose three cases:
       // 1. npx electron src (obsolete)
@@ -264,8 +264,8 @@ const api = merge({}, simple_api, {
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     let_me_think_next,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
-    paste_sgf_from_clipboard, open_sgf, save_sgf,
-    read_sgf,
+    paste_sgf_or_url_from_clipboard, open_sgf, save_sgf,
+    read_sgf, open_url,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     help,
     // for debug
@@ -425,7 +425,7 @@ function menu_template(win) {
     ])
     const edit_menu = menu('Edit', [
         item('Copy SGF', 'CmdOrCtrl+C', copy_sgf_to_clipboard, true),
-        item('Paste SGF', 'CmdOrCtrl+V', paste_sgf_from_clipboard, true),
+        item('Paste SGF or URL', 'CmdOrCtrl+V', paste_sgf_or_url_from_clipboard, true),
         sep,
         item('Delete board', 'CmdOrCtrl+X', cut_sequence, true),
         item('Undelete board', 'CmdOrCtrl+Z', uncut_sequence, true,
@@ -1172,7 +1172,9 @@ function tuning_is_done() {
 // SGF
 
 function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf()); wink()}
-function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
+function paste_sgf_or_url_from_clipboard() {
+    const s = clipboard.readText(); s.startsWith('http') ? open_url(s) : read_sgf(s)
+}
 
 function open_sgf() {open_sgf_in(option_path('sgf_dir'))}
 function open_sgf_in(dir, proc) {
@@ -1200,6 +1202,19 @@ function read_sgf(sgf_str) {
     const new_game = create_game_from_sgf(sgf_str)
     new_game ? backup_and_replace_game(new_game) :
         dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"')
+}
+
+function open_url(url) {
+    const on_get = res => {
+        if (res.statusCode !== 200) {
+            show_error(`Failed to get ${url}`); res.resume(); return
+        }
+        let str = ''
+        res.setEncoding('utf8')
+        res.on('data', chunk => {str += chunk})
+        res.on('end', () => {read_sgf(str); UPDATE_all()})
+    }
+    ask_choice(`Open ${url}`, ['OK'], _ => https.get(url, on_get))
 }
 
 // personal exercise book

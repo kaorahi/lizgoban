@@ -591,7 +591,7 @@ document.onkeydown = e => {
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     switch (!R.attached && key) {
-    case "C-v": m('paste_sgf_from_clipboard'); break;
+    case "C-v": m('paste_sgf_or_url_from_clipboard'); break;
     case "C-x": m('cut_sequence'); break;
     case "C-w": m('close_window_or_cut_sequence'); break;
     case "[": m('previous_sequence'); break;
@@ -682,8 +682,13 @@ function drag_and_drop_handler(func) {
     return e => {const dt = e.dataTransfer; e.preventDefault(); dt.files && func(dt)}
 }
 
+function when_dropped(dt) {
+    const text = dt.getData('text/plain')
+    text ? main('open_url', text) : each_value(dt.files, read_sgf_file)
+}
+
 window.ondragover = drag_and_drop_handler(dt => {dt.dropEffect = "copy"})
-window.ondrop = drag_and_drop_handler(dt => each_value(dt.files, read_sgf_file))
+window.ondrop = drag_and_drop_handler(when_dropped)
 
 /////////////////////////////////////////////////
 // controller
