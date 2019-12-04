@@ -169,6 +169,10 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 
 ## Major changes
 
+### from 0.2.0
+
+* Count stones separately in area counts. (See "KataGo" section in "Help" menu.)
+
 ### from 0.1.0
 
 * Add "preset" to switch engines inside LizGoban.

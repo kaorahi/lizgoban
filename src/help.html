@@ -299,7 +299,31 @@ When you are using KataGo, you will find "Komi" in "Tool" menu and "Score bar" i
 </p>
 
 <p>
-You will also find "Endstate" in "View" menu. Push "v" key (keep holding down) to peek the boundary of each cluster and the ownership (10=100%, 9=90%, ...) on each grid. Use "v" + mouse hover to compare them with the past ones at a specified move if available. Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves".
+You will also find "Endstate" in "View" menu.
+Estimated ownership of each grid is shown as translucent black / white backgrounds
+if this menu is turned on.
+</p>
+
+<p>
+In addition, bogus territory counts (= sums of ownerships)
+of black / white clusters are shown as
+translucent green / pink numbers on the board.
+They are calculated as follows:
+<ul>
+ <li>Only the ownerships on empty grids (and dead stones) are summed up for each cluster.</li>
+ <li>Ownerships of living stones are summed up separately and their total difference of black and white is shown as "+n" at the right top corner on the board.</li>
+</ul>
+So they are not the correct "territories" because (1) future stones are
+not considered and (2) neutral points (dame) are also counted.
+Smaller fonts are used for the sums of very low ownerships on broad areas.
+</p>
+
+<p>
+Small green squares and pink Xs on the board denote increase of black and white possibilities by recent moves. Push "/" key (keep holding down) to peek the board before these "recent moves".
+</p>
+
+<p>
+Push "v" key (keep holding down) to peek the boundary of each cluster and the ownership (10=100%, 9=90%, ...) on each grid. Use "v" + mouse hover (on the board or on the winrate graph) to compare them with the past ones at a specified move if available.
 </p>
 
 <p>

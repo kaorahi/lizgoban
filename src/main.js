@@ -29,6 +29,7 @@ const option = {
     minimum_auto_restart_millisec: 5000,
     wait_for_startup: true,
     update_all_p: true,
+    use_bogoterritory: true,
     endstate_leelaz: null,
     working_dir: process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.'),
     weight_dir: undefined,
@@ -123,7 +124,7 @@ let pausing = false, busy = false
 // (cf.) "the_endstate_handler" and "the_suggest_handler" in engine.js
 const default_for_stored_key = {
     lizzie_style: true, expand_winrate_bar: false, score_bar: true,
-    let_me_think: false, show_endstate: true, bogoterritory: false,
+    let_me_think: false, show_endstate: true,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
@@ -151,7 +152,7 @@ function render(given_R, is_board_changed) {
 function is_auto_bturn() {return auto_bturn}
 function is_busy() {return busy}
 function is_pausing() {return pausing}
-function is_bogoterritory() {return get_stored('bogoterritory')}
+function is_bogoterritory() {return option.use_bogoterritory}
 function show_error(message) {
     dialog.showMessageBox({type: "error", buttons: ["OK"], message})
 }
@@ -500,8 +501,6 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
-        ...insert_if(AI.support_endstate_p(),
-                     store_toggler_menu_item('Bogoterritory', 'bogoterritory')),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
