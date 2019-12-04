@@ -15,7 +15,7 @@ You can switch them by [Preset] menu in LizGoban. The first run of KataGo may ta
 
 1. Prepare engines (Leela Zero and/or KataGo) by yourself, if necessary.
 2. Download and extract the same all-in-one package as above.
-3. Copy sample/config.json to the same folder as `LizGoban *.exe` and edit it. See [README.html](README.html) for its format.
+3. Copy sample/config.json to the same folder as `LizGoban *.exe` and edit it. See README.html for its format.
 
 Note that the built-in KataGo is the official binary. You may need to get another unofficial binary (from [Lizzie](https://github.com/featurecat/lizzie/releases) etc.) to use Japanese rule.
 
