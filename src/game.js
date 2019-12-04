@@ -83,10 +83,16 @@ function game_to_sgf(game) {
 }
 
 function create_game_from_sgf(sgf_str) {
-    try {return create_game_from_sgf_unsafe(sgf_str)} catch (e) {return false}
+    // For robust parsing...
+    // (1) drop junk before SGF by searching "(;" (ad hoc!)
+    // (2) drop tails repeatedly until we get a valid SGF (brute force!)
+    const clipped = clip_sgf(sgf_str); if (!clipped) {return false}
+    try {return create_game_from_sgf_unsafe(clipped)} catch (e) {
+        return create_game_from_sgf(clipped.slice(0, -1))
+    }
 }
-function create_game_from_sgf_unsafe(sgf_str) {
-    const clipped_sgf = clip_sgf(sgf_str), gametree = parse_sgf(clipped_sgf)[0]
+function create_game_from_sgf_unsafe(clipped_sgf) {
+    const gametree = parse_sgf(clipped_sgf)[0]
     const game = create_game()
     game.load_sabaki_gametree(gametree); game.sgf_str = clipped_sgf
     return game
@@ -97,7 +103,9 @@ function parse_sgf(sgf_str) {
 }
 
 // pick "(; ... ... ])...)"
-function clip_sgf(sgf_str) {return sgf_str.match(/\(\s*;[^]*\][\s\)]*\)/)[0]}
+function clip_sgf(sgf_str) {
+    const m = sgf_str.match(/\(\s*;[^]*\][\s\)]*\)/); return m && m[0]
+}
 
 function convert_to_sabaki_sgf_v131_maybe(parsed) {
     // convert v3.0.0-style to v1.3.1-style for the result of parse() of @sabaki/sgf
