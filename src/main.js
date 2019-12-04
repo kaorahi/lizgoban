@@ -1175,8 +1175,8 @@ function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf()); wink()}
 function paste_sgf_from_clipboard() {read_sgf(clipboard.readText())}
 
 function open_sgf() {open_sgf_in(option_path('sgf_dir'))}
-function open_sgf_in(dir) {
-    select_files('Select SGF file', dir).forEach(load_sgf)
+function open_sgf_in(dir, proc) {
+    select_files('Select SGF file', dir).forEach(proc || load_sgf)
 }
 function load_sgf(filename) {
     read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}))
@@ -1220,9 +1220,12 @@ function load_exercise(selector, win) {
     const retry = () => {seen_exercises = []; load_exercise(selector, win)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files), f = PATH.join(dir, fn); seen_exercises.push(fn)
-    set_board_type('raw', win); load_sgf(f); goto_move_count(exercise_move_count(f))
+    set_board_type('raw', win); load_as_exercise(f)
 }
-function open_exercise_dir() {open_sgf_in(exercise_dir())}
+function load_as_exercise(file) {
+    load_sgf(file); goto_move_count(exercise_move_count(file))
+}
+function open_exercise_dir() {open_sgf_in(exercise_dir(), load_as_exercise)}
 function delete_exercise() {
     const dir = exercise_dir(), file = game.sgf_file, name = PATH.basename(file)
     if (!is_exercise_file(file)) {wink(); return}
