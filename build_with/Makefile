@@ -6,19 +6,22 @@ REL_NOTE = $(DOC)/release.html
 SCR_IMG = $(DOC)/screen.gif
 LG_CONF = $(SAMPLE)/config.json
 KATA_CONF = $(SAMPLE)/katago_gtp.cfg
+PD_HEADER = pandoc_header
 
 TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(LG_CONF) $(KATA_CONF)
+
+PANDOC = pandoc -H $(PD_HEADER)
 
 all: $(TARGETS)
 
 clean:
 	rm -f $(TARGETS)
 
-$(REL_NOTE): release.md
-	pandoc release.md > $(REL_NOTE)
+$(REL_NOTE): release.md $(PD_HEADER)
+	$(PANDOC) -M pagetitle='Release Note' release.md > $(REL_NOTE)
 
-$(README): ../README.md
-	pandoc ../README.md > $(README)
+$(README): ../README.md $(PD_HEADER)
+	 $(PANDOC) -M pagetitle='README' ../README.md > $(README)
 
 $(LG_CONF): config.json
 	cp -f config.json $(LG_CONF)
