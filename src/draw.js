@@ -1038,7 +1038,7 @@ function update_winrate_trail() {
     const total_visits_increase = R.visits - winrate_trail_visits;
     // check visits for detecting restart of leelaz
     (winrate_trail_move_count !== R.move_count ||
-     winrate_trail_visits > R.visits) && (winrate_trail = {});
+     (R.visits && winrate_trail_visits > R.visits)) && (winrate_trail = {});
     [winrate_trail_move_count, winrate_trail_visits] = [R.move_count, R.visits]
     R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
         const move = s.move, wt = winrate_trail
