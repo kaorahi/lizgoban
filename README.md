@@ -174,6 +174,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 
 * Open URL by drag & drop or clipboard.
 * Count stones separately in area counts. (See "KataGo" section in "Help" menu.)
+* Flip & rotate the board randomly in exercise.
 
 ### from 0.1.0
 

@@ -1234,7 +1234,7 @@ function load_exercise(selector, win) {
     const retry = () => {seen_exercises = []; load_exercise(selector, win)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files), f = PATH.join(dir, fn); seen_exercises.push(fn)
-    set_board_type('raw', win); load_as_exercise(f)
+    set_board_type('raw', win); load_as_exercise(f); game.random_flip_rotate()
 }
 function load_as_exercise(file) {
     load_sgf(file); goto_move_count(exercise_move_count(file))

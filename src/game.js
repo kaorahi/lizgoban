@@ -1,5 +1,6 @@
 require('./common.js').to(global)
 const {stones_from_history} = require('./rule.js')
+const {random_flip_rotation} = require('./random_flip.js')
 const SGF = require('@sabaki/sgf')
 
 /////////////////////////////////////////////////
@@ -54,6 +55,9 @@ function create_game(init_history, init_prop) {
             const com = common_header_length(history, new_history)
             // keep old history for keeping winrate
             history.splice(com, Infinity, ...new_history.slice(com))
+        },
+        random_flip_rotate: () => {
+            history.splice(0, Infinity, ...random_flip_rotation(history))
         },
         to_sgf: () => game_to_sgf(self),
         load_sabaki_gametree: (gametree, index) =>
