@@ -648,7 +648,8 @@ function auto_play(sec, explicitly_playing_best) {
     explicitly_playing_best ? (auto_replaying = false) : (auto_play_count = Infinity)
     auto_replaying && rewind_maybe()
     auto_play_sec = sec || -1; stop_auto_analyze()
-    update_auto_play_time(); update_let_me_think(); resume(); update_ui()
+    update_auto_play_time(); auto_bturn = R.bturn
+    update_let_me_think(); resume(); update_ui()
 }
 function try_auto_play(force_next) {
     force_next && (last_auto_play_time = - Infinity)
@@ -661,9 +662,9 @@ function auto_play_ready() {
 }
 function do_as_auto_play(playable, proc) {
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
-    UPDATE_all()
+    UPDATE_all(); auto_bturn = R.bturn
 }
-function update_auto_play_time() {last_auto_play_time = Date.now(); auto_bturn = R.bturn}
+function update_auto_play_time() {last_auto_play_time = Date.now()}
 function auto_play_progress() {
     return auto_playing(true) ?
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000) : -1
