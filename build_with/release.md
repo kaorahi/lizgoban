@@ -1,9 +1,9 @@
-LizGoban 0.3.0-pre1
+LizGoban 0.3.0-pre2
 
-### Changes from 0.2.0
+### Changes from 0.3.0-pre1
 
-* Open URL by drag & drop or clipboard.
-* Count stones separately in area counts. (See "KataGo" section in "Help" menu.)
+* Fix bugs in 0.2.0 and 0.3.0-pre1.
+* Flip & rotate the board randomly in exercise.
 
 ### Links
 
