@@ -116,7 +116,7 @@ let game = create_game()
 let sequence = [game], sequence_cursor = 0
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 const simple_ui = false
-let auto_play_sec = 0, auto_replaying = false, auto_bturn = true
+let auto_play_sec = 0, auto_replaying = false
 let pausing = false, busy = false
 
 // renderer state
@@ -141,7 +141,7 @@ const P = require('./powered_goban.js').pay({
     R, AI, on_suggest: try_auto, M: {
         // functions used in powered_goban.js
         render, update_state, show_suggest_p, is_pass,
-        auto_progress, is_auto_bturn, is_busy, is_pausing, is_bogoterritory,
+        auto_progress, is_busy, is_pausing, is_bogoterritory,
         tuning_message: () => tuning_message,
     }
 })
@@ -149,7 +149,6 @@ const P = require('./powered_goban.js').pay({
 function render(given_R, is_board_changed) {
     renderer('render', given_R, is_board_changed)
 }
-function is_auto_bturn() {return auto_bturn}
 function is_busy() {return busy}
 function is_pausing() {return pausing}
 function is_bogoterritory() {return option.use_bogoterritory}
@@ -615,7 +614,6 @@ function try_auto_analyze(force_next) {
     const done = force_next || (auto_analysis_progress() >= 1)
     const finish = () => (pause(), stop_auto_analyze(), update_ui())
     const next = (pred, proc) => {pred() ? proc() : finish(); UPDATE_all()}
-    auto_bturn = xor(R.bturn, done)
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
@@ -648,7 +646,7 @@ function auto_play(sec, explicitly_playing_best) {
     explicitly_playing_best ? (auto_replaying = false) : (auto_play_count = Infinity)
     auto_replaying && rewind_maybe()
     auto_play_sec = sec || -1; stop_auto_analyze()
-    update_auto_play_time(); auto_bturn = R.bturn
+    update_auto_play_time()
     update_let_me_think(); resume(); update_ui()
 }
 function try_auto_play(force_next) {
@@ -662,7 +660,7 @@ function auto_play_ready() {
 }
 function do_as_auto_play(playable, proc) {
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
-    UPDATE_all(); auto_bturn = R.bturn
+    UPDATE_all()
 }
 function update_auto_play_time() {last_auto_play_time = Date.now()}
 function auto_play_progress() {
