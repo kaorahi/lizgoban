@@ -227,7 +227,7 @@ function draw_visits_text(text, margin, canvas, g) {
 
 function draw_progress(highlightp, margin, canvas, g) {
     if (R.progress < 0) {return}
-    g.fillStyle = highlightp ? GREEN : R.progress_bturn ? BLACK : WHITE
+    g.fillStyle = highlightp ? GREEN : R.bturn ? BLACK : WHITE
     fill_rect([0, canvas.height - margin / 10],
               [canvas.width * R.progress, canvas.height], g)
 }
