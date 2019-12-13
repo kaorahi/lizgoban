@@ -582,6 +582,11 @@ document.onkeydown = e => {
     case "Tab": f(toggle_board_type); return
     case "0": challenging ? m('play_best', null, 'pass_maybe') :
             f(set_keyboard_moves_for_next_move); return
+    // (for safe_menu)
+    case "B": m('toggle_stored', 'expand_winrate_bar'); return
+    case "E": m('toggle_stored', 'show_endstate'); return
+    case "C": m('toggle_stored', 'score_bar'); return
+    case "M": m('toggle_let_me_think'); return
     }
     // GROUP 4: stand-alone only
     const until = showing_until()
