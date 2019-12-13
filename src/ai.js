@@ -90,7 +90,8 @@ function switch_to_random_leelaz(percent) {
 }
 function set_engine_for_white(command_args) {
     const [leelaz_command, ...leelaz_args] = command_args
-    const start_args = {...leelaz_for_black.start_args(), leelaz_command, leelaz_args}
+    const start_args = {...leelaz_for_black.start_args(), weight_file: null,
+                        leelaz_command, leelaz_args}
     unload_leelaz_for_white()
     leelaz_for_white = create_leelaz()
     leelaz_for_white.start(start_args)
