@@ -254,19 +254,18 @@ function renderer_gen(channel, win_prop_p, ...args) {
 
 const {set_endstate_diff_from} = P
 const simple_api = {
-    unset_busy, update_menu, toggle_board_type, toggle_let_me_think,
+    unset_busy, update_menu, toggle_board_type,
     copy_sgf_to_clipboard, set_endstate_diff_from,
 }
 const api = merge({}, simple_api, {
-    restart, new_window, init_from_renderer, toggle_sabaki,
+    new_window, init_from_renderer,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     let_me_think_next,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
-    paste_sgf_or_url_from_clipboard, open_sgf, save_sgf,
+    paste_sgf_or_url_from_clipboard,
     read_sgf, open_url,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
-    help,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
 })
