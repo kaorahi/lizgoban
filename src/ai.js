@@ -134,7 +134,7 @@ function engine_info() {
                 weight_file: lz.get_weight_file(), network_size: lz.network_size()}
     }
     return {engine_komi: leelaz.get_komi(),
-            leelaz_for_white_p: leelaz_for_white_p(),
+            leelaz_for_white_p: leelaz_for_white_p(), current: f(leelaz),
             black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
 

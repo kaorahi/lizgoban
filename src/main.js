@@ -389,7 +389,24 @@ function update_app_menu() {
 function update_window_menu() {
     get_windows().forEach(win => win.setMenu(menu_for_window(win)))
 }
-function menu_for_window(win) {return Menu.buildFromTemplate(menu_template(win))}
+function menu_for_window(win) {
+    return Menu.buildFromTemplate(safe_menu_maybe() || menu_template(win))
+}
+
+function safe_menu_maybe() {
+    // Application crashed sometimes by menu operations in auto-play.
+    // Updating menu may be dangerous when submenu is open.
+    // So, avoid submenu in doubtful cases.
+    const f = (label, accelerator, click) => ({label, accelerator, click})
+    const auto = auto_analyzing_or_playing() && [
+        f('Stop(Esc)', 'Esc', () => {stop_auto(); UPDATE_all()}),
+        f('Skip(Ctrl+E)', 'Ctrl+E', skip_auto),
+    ]
+    const wait = !AI.engine_info().current.is_ready && [
+        {label: 'Initializing...', enabled: false}
+    ]
+    return auto || wait
+}
 
 function menu_template(win) {
     const menu = (label, submenu) =>
@@ -462,8 +479,6 @@ function menu_template(win) {
     const tool_menu = menu('Tool', [
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('AI vs. AI', 'Shift+P', ask_sec(false), true),
-        item('...Skip to next', 'CmdOrCtrl+E', skip_auto,
-             true, auto_analyzing_or_playing(), true),
         sep,
         ...insert_if(option.exercise_dir,
                      item('Store as exercise', '!', store_as_exercise),
