@@ -76,6 +76,7 @@ function create_leelaz () {
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
         const checks = [['minmoves', 'lz-analyze interval 1 minmoves 30'],
+                        ['lz-setoption', 'lz-setoption name visits value 0'],
                         ['endstate', 'endstate_map'],
                         ['kata-analyze', 'kata-analyze interval 1']]
         checks.map(a => check_supported(...a))
@@ -119,12 +120,14 @@ function create_leelaz () {
     const network_size = () => network_size_text
     const get_komi = () => komi
     const peek_value = (move, cont) => {
+        if (!is_supported('lz-setoption')) {return false}
         the_nn_eval_reader =
             value => {the_nn_eval_reader = do_nothing; cont(value); update()}
         leelaz(join_commands('lz-setoption name visits value 1',
                              `play ${bturn ? 'b' : 'w'} ${move}`,
                              'lz-analyze interval 0',
                              'lz-setoption name visits value 0', 'undo'))
+        return true
     }
 
     /////////////////////////////////////////////////
