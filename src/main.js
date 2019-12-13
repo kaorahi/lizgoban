@@ -1190,9 +1190,10 @@ function save_sgf() {
     const f = dialog.showSaveDialog(null, {
         title: 'Save SGF file',
         defaultPath: option_path('sgf_dir'),
-    })
-    const if_success = () => (game.sgf_file = f)
-    f && save_sgf_to(f, if_success)
+    }); if (!f) {return}
+    const ext = '.sgf', filename = f + (f.endsWith(ext) ? '' : ext)
+    const if_success = () => (game.sgf_file = filename)
+    save_sgf_to(filename, if_success)
 }
 function save_sgf_to(filename, if_success) {
     const callback = err => {if (err) {throw err} else {if_success && if_success()}}
