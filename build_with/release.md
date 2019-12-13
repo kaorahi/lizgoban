@@ -1,9 +1,9 @@
-LizGoban 0.3.0-pre2
+LizGoban 0.3.0-pre3
 
-### Changes from 0.3.0-pre1
+### Changes from 0.3.0-pre2
 
-* Fix bugs in 0.2.0 and 0.3.0-pre1.
-* Flip & rotate the board randomly in exercise.
+* Fix bugs further.
+* Replace KataGo network with a [stronger 10 blocks network](https://github.com/lightvector/KataGo/issues/88) on 2019-12-05.
 
 ### Links
 
