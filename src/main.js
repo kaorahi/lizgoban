@@ -1088,7 +1088,7 @@ function load_leelaz_for_black() {load_weight()}
 function load_leelaz_for_white() {load_weight(true)}
 
 function select_weight_file() {
-    const message = 'Select weight file for leela zero'
+    const message = 'Select weight file for engine'
     return select_files(message, option_path('weight_dir'))[0]
 }
 function select_files(title, dir) {
