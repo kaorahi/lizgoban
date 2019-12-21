@@ -65,7 +65,7 @@ Mouse operations:
 <p>
 When the best suggested move is different from the previously expected one,
 they are marked as red and blue squares respectively
-so that you can notice the change of Leela Zero's opinion.
+so that you can notice the change of engine's opinion.
 Black/white corner of the square indicates the plan of black/white.
 They also appear in displayed variations.
 This is especially useful when you are watching AI vs. AI, e.g.
@@ -102,7 +102,7 @@ and horizontal orange lines indicate LCB (criterion for suggestion order).
 <ul>
  <li>green segment: good move (increase winrate)</li>
  <li>red segment: bad move (decrease winrate)</li>
- <li>yellow segment: unexpected good move that was missed by leela zero</li>
+ <li>yellow segment: unexpected good move that was missed by engine</li>
  <li>yellow vertical line: evaluation error (difference between evaluations of the move before/after it was played)</li>
  <li>brown vertical line at bottom: uncertainty of the best move</li>
 </ul>
@@ -151,13 +151,13 @@ Note that komi is still fixed to 7.5 in Leela Zero.
 For free placement,
 right-click puts the same color stone as the previous move conveniently.
 
-<h3>Play against (weakened) leela zero</h3>
+<h3>Play against (weakened) engine</h3>
 
 <p>
 <ol>
  <li>Select "Raw board" in "View" menu.</li>
  <li>Click any point in your turn.</li>
- <li>Hit Enter key in leela zero's turn.<br>
+ <li>Hit Enter key in engine's turn.<br>
       Or, hit "1", "2", ..., "9" key
       (1 = slightly weak move, 9 = very weak move).<br>
       Or, hit "0" key (play pass when there is enough margin of winrate, Leela Zero only).</li>
@@ -167,7 +167,7 @@ Push "z" key (keep holding down) to peek suggestions.
 
 <p>
 As another handicap,
-you can also play against leela zero with a random mixture of different network weights.
+you can also play against a random mixture of different engines.
 <ol>
  <li>Select "Raw board" in "View" menu.</li>
  <li>Select a weights file (ex. LZ38) from "Load network weights" in "File" menu.</li>
@@ -243,7 +243,7 @@ to get possibly better evaluations when some moves are in "blind spots" of Leela
  <li>Enter: play the best move (Shift = 5 moves)</li>
  <li>` (backquote): play the best move in another board</li>
  <li>, (comma): play the principal variation</li>
- <li>Ctrl+r: reset leela zero</li>
+ <li>Ctrl+r: reset engine</li>
 </ul>
 
 <h3>View</h3>
