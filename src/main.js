@@ -398,12 +398,15 @@ function safe_menu_maybe() {
     // Updating menu may be dangerous when submenu is open.
     // So, avoid submenu in doubtful cases.
     const f = (label, accelerator, click) => ({label, accelerator, click})
+    const help_menu = f('Help', undefined, help)
     const auto = auto_analyzing_or_playing() && [
         f('Stop(Esc)', 'Esc', () => {stop_auto(); UPDATE_all()}),
         f('Skip(Ctrl+E)', 'Ctrl+E', skip_auto),
+        help_menu,
     ]
     const wait = !AI.engine_info().current.is_ready && [
-        {label: 'Initializing...', enabled: false}
+        {label: 'Initializing...', enabled: false},
+        help_menu,
     ]
     return auto || wait
 }
@@ -1130,6 +1133,7 @@ ${info}`
 - Save games before losing them.
 - For recovery, load correct weights for "${e}" or use [Preset] menu if available.
 - Quit LizGoban and restart it if you give up recovery.
+See [Help] menu to check shortcut keys if necessary.
 ${info}`
     const warn_maybe = () => warned_engine_trouble ||
           (show_error(warning), (warned_engine_trouble = true))
