@@ -590,7 +590,7 @@ function apply_preset(rule, win) {
     need_restart && merge_option_and_restart({leelaz_command, leelaz_args})
     // backward compatibility for obsolete "weight_file" and "weight_file_for_white"
     weight_file && load_weight_file(weight_file)
-    weight_file_for_white ? load_weight_file(weight_file_for_white) :
+    weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
         unload_leelaz_for_white()
     engine_for_white && AI.set_engine_for_white(engine_for_white)
     set_board(game); resume()
