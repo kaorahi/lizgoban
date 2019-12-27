@@ -11,7 +11,8 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 // npx electron src -j /foo/bar/config.json
 
 require('./common.js').to(global)
-const PATH = require('path'), fs = require('fs'), https = require('https')
+const PATH = require('path'), fs = require('fs')
+const http = require('http'), https = require('https')
 const default_path_for = name =>
       // suppose three cases:
       // 1. npx electron src (obsolete)
@@ -1234,7 +1235,8 @@ function open_url(url) {
         res.on('data', chunk => {str += chunk})
         res.on('end', () => {read_sgf(str); UPDATE_all()})
     }
-    ask_choice(`Open ${url}`, ['OK'], _ => https.get(url, on_get))
+    const protocol = url.startsWith('https') ? https : http
+    ask_choice(`Open ${url}`, ['OK'], _ => protocol.get(url, on_get))
 }
 
 // personal exercise book
