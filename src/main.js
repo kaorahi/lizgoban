@@ -1276,7 +1276,8 @@ const exercise_format = {pre: 'exercise_', sep: '_', post: '.sgf'}
 function exercise_filename() {
     const {pre, sep, post} = exercise_format
     const mc = to_s(game.move_count).padStart(3, '0')
-    return `${pre}${(new Date()).toJSON()}${sep}${mc}${post}`
+    const ti = (new Date()).toJSON().replace(/:/g, '') // cannot use ":" in Windows
+    return `${pre}${ti}${sep}${mc}${post}`
 }
 function is_exercise_filename(filename) {
     const {pre, sep, post} = exercise_format
