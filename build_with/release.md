@@ -1,4 +1,6 @@
-LizGoban 0.3.0
+LizGoban 0.3.1
+
+Fix bugs in 0.3.0. (store_as_exercise in Windows, open_url for HTTP, etc.)
 
 ### To use it on 64bit Windows immediately
 
