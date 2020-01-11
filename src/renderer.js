@@ -472,6 +472,7 @@ function update_thumbnail_contents(ids, div, preview) {
         const unset_current = () => box.classList.remove('current')
         box.classList.add('thumbbox')
         img.src = thumb ? thumb.url : 'no_thumbnail.png'
+        img.draggable = false
         id === current_sequence_id() ? (set_current(), set_action()) :
             (unset_current(), set_action(true, true))
         box.dataset.name = (thumb && thumb.name) || ''
