@@ -1251,7 +1251,9 @@ function load_random_exercise(win) {
 let seen_exercises = []
 function load_exercise(selector, win) {
     const dir = exercise_dir(), basename = z => PATH.basename(z)
-    const valid = name => is_exercise_filename(name) && seen_exercises.indexOf(name) < 0
+    const valid = name =>
+          is_exercise_filename(name) && seen_exercises.indexOf(name) < 0 &&
+          exercise_board_size(name) === board_size()
     const files = (fs.readdirSync(dir) || []).filter(valid)
     const retry = () => {seen_exercises = []; load_exercise(selector, win)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
@@ -1273,12 +1275,12 @@ function delete_exercise() {
 }
 function exercise_dir() {return option_path('exercise_dir')}
 
-const exercise_format = {pre: 'exercise_', sep: '_', post: '.sgf'}
+const exercise_format = {pre: 'exercise', sep: '_', post: '.sgf'}
 function exercise_filename() {
     const {pre, sep, post} = exercise_format
     const mc = to_s(game.move_count).padStart(3, '0')
     const ti = (new Date()).toJSON().replace(/:/g, '') // cannot use ":" in Windows
-    return `${pre}${ti}${sep}${mc}${post}`
+    return `${pre}${board_size()}${sep}${ti}${sep}${mc}${post}`
 }
 function is_exercise_filename(filename) {
     const {pre, sep, post} = exercise_format
@@ -1292,6 +1294,10 @@ function is_exercise_file(path) {
 function exercise_move_count(filename) {
     const {pre, sep, post} = exercise_format
     return to_i(last(filename.split(sep)).split(post)[0])
+}
+function exercise_board_size(filename) {
+    const {pre, sep, post} = exercise_format
+    return to_i(filename.split(sep)[0].split(pre)[1] || 19)
 }
 
 /////////////////////////////////////////////////
