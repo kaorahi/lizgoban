@@ -66,6 +66,8 @@ Otherwise, see the release note to replace the built-in engines with GPU version
 
 Use "npm start `-- --no-sandbox` if you get an error like "The SUID sandbox helper binary was found, but is not configured correctly" and you do not want to fix it.
 
+Try "LANG=C LANGUAGE=C LC_ALL=C npm start" if you get a bad font.
+
 #### To configure it:
 
 Start it as
