@@ -312,7 +312,7 @@ ipc.on('close_window_or_cut_sequence',
 
 function update_all(keep_board) {
     debug_log(`update_all start`)
-    keep_board || SET_board()
+    keep_board || set_board()
     update_state(keep_board); update_ponder(); update_ui(); update_menu()
     debug_log(`update_all done`)
 }
@@ -852,9 +852,8 @@ function update_ponder() {
 }
 function init_from_renderer() {}
 
-function SET_board() {SET_board_sub(game)}
-function SET_board_sub(given_game, move_count) {
-    AI.set_board(P.set_board(given_game, move_count), given_game.get_komi())
+function set_board() {
+    AI.set_board(P.set_board(game), game.get_komi())
     AI.switch_leelaz(); update_let_me_think()
 }
 
