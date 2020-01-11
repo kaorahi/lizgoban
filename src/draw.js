@@ -1213,7 +1213,7 @@ function fill_text_with_modifier(g, font_modifier, fontsize, text, x, y, max_wid
     set_font((font_modifier || '') + fontsize, g)
     g.fillText(text, x, y + fontsize * sink, max_width)
 }
-function set_font(fontsize, g) {g.font = '' + fontsize + 'px sans-serif'}
+function set_font(fontsize, g) {g.font = '' + fontsize + 'px Arial'}
 
 function side_gradation(x0, x1, color0, color1, g) {
     const grad = g.createLinearGradient(x0, 0, x1, 0)
