@@ -950,12 +950,12 @@ function let_me_think_next(board_type) {
 function new_empty_board(given_board_size) {
     const new_game = create_game()
     new_game.board_size = given_board_size || board_size()
-    insert_sequence(new_game, true)
+    insert_sequence(new_game)
 }
 
 function backup_game() {backup_and_replace_game(game.shallow_copy())}
 function backup_and_replace_game(new_game) {
-    game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game, true)
+    game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game)
 }
 
 function create_sequence_maybe(force) {
@@ -987,8 +987,7 @@ function cut_sequence() {
 }
 function uncut_sequence() {
     insert_before = (cut_first_p && sequence_cursor === 0)
-    exist_deleted_sequence() &&
-        insert_sequence(pop_deleted_sequence(), true, insert_before)
+    exist_deleted_sequence() && insert_sequence(pop_deleted_sequence(), insert_before)
 }
 
 function duplicate_sequence(until_current_move_p, explicit) {
@@ -1009,7 +1008,7 @@ function delete_sequence() {
 }
 function delete_sequence_internal() {sequence.splice(sequence_cursor, 1)}
 
-function insert_sequence(new_game, _, before) {
+function insert_sequence(new_game, before) {
     if (!new_game) {return}
     const n = sequence_cursor + (before ? 0 : 1)
     sequence.splice(n, 0, new_game); switch_to_nth_sequence(n); next_sequence_effect()
