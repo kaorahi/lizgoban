@@ -1,4 +1,5 @@
 require('./common.js').to(global)
+const CRYPTO = require('crypto')
 
 function create_leelaz () {
 
@@ -31,7 +32,7 @@ function create_leelaz () {
 
     // process
     const start = h => {
-        arg = cook_arg(h); engine_id = JSON.stringify(arg)
+        arg = cook_arg(h); engine_id = hash(JSON.stringify(arg))
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file, working_dir,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
@@ -355,6 +356,10 @@ function create_leelaz () {
     }
 
 }  // end create_leelaz
+
+function hash(str) {
+    return CRYPTO.createHash('sha256').update(str).digest('hex').slice(0, 8)
+}
 
 /////////////////////////////////////////////////
 // exports
