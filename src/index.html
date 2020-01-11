@@ -26,6 +26,7 @@
   border: solid 0vw green; position: absolute; left: 0%; z-index: 8;
  }
  #preview.show {width: 40vw; border-width: 3vw;}
+ #comment:hover {color: green;}
  .dialog {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background-color: rgba(255, 255, 255, 0.5); visibility: hidden;
@@ -168,8 +169,10 @@
 </span>
 </div>
 
-<pre id="comment" style='clear: both'></pre>
+<div class="controller_row">
+<pre id="comment" style='clear: both' onclick="alert(Q('#comment').textContent)"></pre>
 <pre id="debug" style='clear: both'></pre>
+</div>
 
 <canvas id="visits_trail_canvas"></canvas>
 
