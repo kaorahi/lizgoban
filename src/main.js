@@ -969,9 +969,12 @@ function create_sequence_maybe(force) {
 function next_sequence() {previous_or_next_sequence(1)}
 function previous_sequence() {previous_or_next_sequence(-1)}
 function previous_or_next_sequence(delta) {
-    if (sequence.length <= 1) {return}
+    const bsize = board_size(), same_board_size_p = gm => gm.board_size === bsize
+    if (sequence.filter(same_board_size_p).length <= 1) {wink(); return}
     const n = sequence_cursor + delta, len = sequence.length
     nth_sequence((n + len) % len)
+    // skip different sizes because engine takes long time to change board size
+    !same_board_size_p(game) && previous_or_next_sequence(delta)
 }
 function nth_sequence(n) {
     const old = sequence_cursor
