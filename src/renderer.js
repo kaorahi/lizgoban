@@ -13,6 +13,7 @@ const current_window = electron.remote.getCurrentWindow()
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
 const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate_graph')
 const graph_overlay_canvas = Q('#graph_overlay')
+let canvas_scale = 1
 
 // renderer state
 const R = {
@@ -404,7 +405,8 @@ function latest_move_count_for_idx(idx, tagged_stone_only) {
 
 function mouse2coord(e) {
     const bbox = e.target.getBoundingClientRect()
-    return [e.clientX - bbox.left, e.clientY - bbox.top]
+    return [(e.clientX - bbox.left) * canvas_scale,
+            (e.clientY - bbox.top) * canvas_scale]
 }
 function mouse2idx(e, coord2idx) {
     const [i, j] = coord2idx(...mouse2coord(e))
@@ -542,8 +544,12 @@ function set_all_canvas_size() {
 function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, size)}
 
 function set_canvas_size(canvas, width, height) {
-    if (to_i(width) === canvas.width && to_i(height) === canvas.height) {return}
-    canvas.setAttribute('width', width); canvas.setAttribute('height', height)
+    canvas_scale = window.devicePixelRatio
+    const [w0, h0] = [width, height].map(to_i)
+    const [w, h] = [w0, h0].map(z => to_i(z * canvas_scale))
+    if (w === canvas.width && h === canvas.height) {return}
+    canvas.style.width = `${w0}px`; canvas.style.height = `${h0}px`
+    canvas.width = w; canvas.height = h
 }
 
 function set_overlay(canvas, orig) {
@@ -551,8 +557,9 @@ function set_overlay(canvas, orig) {
     const rect = orig.getBoundingClientRect()
     // "canvas.style.position === 'absolute'" does not work
     const absolute_p = portrait_p()  // fixme: is there a better way?
+    const sqr_scale = canvas_scale ** 2  // I don't understand...
     const set_without_margin = ([xy, wh, scroll]) =>
-          (canvas.style[xy] = (rect[xy] + (rect[wh] - canvas[wh]) / 2)
+          (canvas.style[xy] = (rect[xy] + (rect[wh] - canvas[wh] / sqr_scale) / 2)
            + (absolute_p ? window[scroll] : 0) + 'px')
     const args = [['left', 'width', 'scrollX'], ['top', 'height', 'scrollY']]
     args.forEach(set_without_margin)
