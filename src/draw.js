@@ -909,8 +909,8 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_hotness(h, sr2coord, g)
     draw_winrate_graph_uncertainty(h, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
-    draw_winrate_graph_score(w, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
+    draw_winrate_graph_score(w, sr2coord, g)
     // mouse events
     handle_mouse_on_winrate_graph(canvas, coord2sr)
 }
