@@ -63,14 +63,16 @@ function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     const mc = game.move_count, cur = game.ref(mc) || {}
     h.suggest = h.suggest.filter(considerable)
-    R.show_endstate && h.ownership &&
+    h.ownership &&
         ((cur.endstate = h.endstate = endstate_from_ownership(h.ownership)),
          (cur.hotness = sum_of_endstate_change(game.move_count)),
-         (cur.score_without_komi = h.score_without_komi),
-         add_endstate_to_stones(R.stones, h.endstate, true))
+         (cur.score_without_komi = h.score_without_komi))
     cur.suggest = h.suggest; cur.visits = h.visits;
     mc > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
-    set_and_render_maybe(h); on_suggest()
+    // if current engine is Leela Zero, recall ownerships by KataGo
+    const {endstate, score_without_komi} = cur
+    R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, true)
+    set_and_render_maybe({...h, score_without_komi}); on_suggest()
 }
 
 function endstate_from_ownership(ownership) {
