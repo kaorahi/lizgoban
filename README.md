@@ -172,6 +172,10 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 
 ## Major changes
 
+### from 0.3.0
+
+* Upgrade libraries (Electron 7, etc.). So you may need to do "npm install" again.
+
 ### from 0.2.0
 
 * Open URL by drag & drop or clipboard.

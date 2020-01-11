@@ -10,12 +10,12 @@
     "url": "https://github.com/kaorahi/lizgoban"
   },
   "dependencies": {
-    "@sabaki/sgf": "^3.2.1",
-    "electron-store": "^3.0.0",
-    "tmp": "^0.0.33"
+    "@sabaki/sgf": "^3.4.2",
+    "electron-store": "^5.1.0",
+    "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^4.1.0",
+    "electron": "^7.1.3",
     "electron-builder": "^21.2.0"
   },
   "build": {

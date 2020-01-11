@@ -805,10 +805,10 @@ function ask_komi() {
 }
 function ask_choice(message, values, proc) {
     const buttons = [...values.map(to_s), 'cancel']
-    const action = response => {
-        const v = values[response]; truep(v) && proc(v); UPDATE_all()
+    const action = z => {
+        const v = values[z.response]; truep(v) && proc(v); UPDATE_all()
     }
-    dialog.showMessageBox(null, {type: "question", message, buttons}, action)
+    dialog.showMessageBox(null, {type: "question", message, buttons}).then(action)
 }
 
 // misc.
@@ -824,7 +824,8 @@ function help() {
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]}
     ]
-    get_new_window('help.html').setMenu(Menu.buildFromTemplate(menu))
+    const opt = {webPreferences: {nodeIntegration: true}}
+    get_new_window('help.html', opt).setMenu(Menu.buildFromTemplate(menu))
 }
 function info() {
     const f = (label, s) => s ?
@@ -1110,7 +1111,7 @@ function select_weight_file() {
     return select_files(message, option_path('weight_dir'))[0]
 }
 function select_files(title, dir) {
-    return dialog.showOpenDialog(null, {
+    return dialog.showOpenDialogSync(null, {
         properties: ['openFile'], title: title,
         defaultPath: dir,
     }) || []
@@ -1141,10 +1142,10 @@ ${info}`
     const buttons = ["RESTORE", "retry", "load weights", "(ignore)"]
     const actions = [switch_to_previous_weight, restart, load_weight, warn_maybe]
     const do_action =
-          response => {actions[response](); asking_recovery = false; UPDATE_all()}
+          z => {actions[z.response](); asking_recovery = false; UPDATE_all()}
     const recover = () => {
         asking_recovery = true  // avoid duplicated dialogs
-        dialog.showMessageBox(null, {type: "error", message, buttons,}, do_action)
+        dialog.showMessageBox(null, {type: "error", message, buttons,}).then(do_action)
     };
     (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
         (restart(), last_restart_time = Date.now()) : (asking_recovery || recover())
@@ -1206,7 +1207,7 @@ function load_sgf(filename) {
 }
 
 function save_sgf() {
-    const f = dialog.showSaveDialog(null, {
+    const f = dialog.showSaveDialogSync(null, {
         title: 'Save SGF file',
         defaultPath: option_path('sgf_dir'),
     }); if (!f) {return}
