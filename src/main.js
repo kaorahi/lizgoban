@@ -1009,19 +1009,17 @@ function delete_sequence() {
 }
 function delete_sequence_internal() {sequence.splice(sequence_cursor, 1)}
 
-function insert_sequence(new_game, switch_to, before) {
+function insert_sequence(new_game, _, before) {
     if (!new_game) {return}
-    const f = switch_to ? switch_to_nth_sequence : goto_nth_sequence
     const n = sequence_cursor + (before ? 0 : 1)
-    sequence.splice(n, 0, new_game); f(n); next_sequence_effect()
+    sequence.splice(n, 0, new_game); switch_to_nth_sequence(n); next_sequence_effect()
 }
 function replace_sequence(new_game) {
     sequence.splice(sequence_cursor, 1, new_game)
     switch_to_nth_sequence(sequence_cursor)
 }
 
-function switch_to_nth_sequence(n) {goto_nth_sequence(n)}
-function goto_nth_sequence(n) {game = sequence[sequence_cursor = n]}
+function switch_to_nth_sequence(n) {game = sequence[sequence_cursor = n]}
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
 
