@@ -84,20 +84,19 @@ Here is a more practical example of config.json:
 {
     "analyze_interval_centisec": 10,
     "sgf_dir": "/foo/bar/sgf/",
-    "weight_dir": "/foo/bar/lz_weights/",
     "exercise_dir": "/foo/bar/exercise/",
     "max_cached_engines": 1,
     "preset": [
         {
             "label": "Leela Zero",
             "accelerator": "F1",
-            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/bar/network.gz"]
+            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/lz_net/254.gz"]
         },
         {
             "label": "KataGo",
             "accelerator": "F2",
             "engine": ["/foo/bar/katago", "gtp",
-                       "-model", "/foo/bar/kata_network.gz",
+                       "-model", "/foo/kata_net/g104-b20c256.gz",
                        "-config", "/foo/bar/gtp.cfg"]
         },
         {
@@ -116,7 +115,6 @@ Here is a more practical example of config.json:
 
 * analyze_interval_centisec: Update interval of analysis display (1 = 0.01sec).
 * sgf_dir: Default directory for [Open SGF] and [Save SGF] menus. (*1)
-* weight_dir: Default directory for [Load network weights] menu. (*1)
 * exercise_dir: Directory for your personal exercise book. (*1)
 * max_cached_engines: (Experimental) Maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.
 * preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
@@ -128,6 +126,9 @@ Here is a more practical example of config.json:
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
 
 (*1) In these items, you can use relative paths from the "working directory", that is the folder of `LizGoban*.exe` itself in the all-in-one package or `external/` otherwise. For example, you can simply write "leelaz" for `external/leelaz`.
+
+It is recommended to put all Leela Zero weights into one directory and all KataGo weights into another directory for using [Load network weights] menu conveniently.
+Delete obsolete "weight_dir" in your config.json if you wrote it.
 
 For quick experiments, you can also use
 
@@ -175,6 +176,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 ### from 0.3.0
 
 * Upgrade libraries (Electron 7, etc.). So you may need to do "npm install" again.
+* "weight_dir" in config.json is obsolete now. (See above.)
 
 ### from 0.2.0
 

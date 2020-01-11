@@ -1071,7 +1071,10 @@ function availability() {
 
 // load weight file
 let previous_weight_file = null
-function load_weight(white_p) {return load_weight_file(select_weight_file(), white_p)}
+function load_weight(white_p) {
+    const dir = option_path('weight_dir') || PATH.dirname(AI.leelaz_weight_file(white_p))
+    return load_weight_file(select_weight_file(dir), white_p)
+}
 function load_weight_file(weight_file, white_p) {
     if (!weight_file) {return false}
     const current_weight_file = AI.leelaz_weight_file(white_p)
@@ -1083,9 +1086,8 @@ function load_weight_file(weight_file, white_p) {
 function load_leelaz_for_black() {load_weight()}
 function load_leelaz_for_white() {load_weight(true)}
 
-function select_weight_file() {
-    const message = 'Select weight file for engine'
-    return select_files(message, option_path('weight_dir'))[0]
+function select_weight_file(dir) {
+    return select_files('Select weight file for engine', dir)[0]
 }
 function select_files(title, dir) {
     return dialog.showOpenDialogSync(null, {
