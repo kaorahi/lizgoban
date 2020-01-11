@@ -541,7 +541,7 @@ function toggle_stored(key) {
 }
 
 function unload_leelaz_for_white() {
-    AI.unload_leelaz_for_white(); update_ponder(); update_state()
+    AI.unload_leelaz_for_white(); update_state()
 }
 
 // preset
@@ -848,24 +848,22 @@ function tag_or_untag() {
 
 function undoable() {return game.move_count > 0}
 function redoable() {return game.len() > game.move_count}
-function pause() {pausing = true; update_ponder_and_ui()}
-function resume() {pausing = false; update_ponder_and_ui()}
-function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
-function set_or_unset_busy(bool) {busy = bool; update_ponder()}
+function pause() {pausing = true}
+function resume() {pausing = false}
+function toggle_pause() {pausing = !pausing}
+function set_or_unset_busy(bool) {busy = bool}
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false); update_state(true)}
-function update_ponder() {}
 function UPDATE_ponder() {
     AI.set_pondering(pausing, busy); pausing && (R.endstate = null)
 }
-function update_ponder_and_ui() {update_ponder()}
 function init_from_renderer() {update_state()}
 
 function set_board(given_game, move_count) {}
 function SET_board() {SET_board_sub(game)}
 function SET_board_sub(given_game, move_count) {
     AI.set_board(P.set_board(given_game, move_count), given_game.get_komi())
-    AI.switch_leelaz() && (update_ponder(), update_state())
+    AI.switch_leelaz() && update_state()
     update_let_me_think()
     is_busy() || update_state()
 }
@@ -1094,7 +1092,7 @@ function load_weight_file(weight_file, white_p) {
     weight_file !== current_weight_file && !white_p &&
         (previous_weight_file = current_weight_file)
     AI.load_weight_file(weight_file, white_p)
-    set_board(game); update_ponder_and_ui()
+    set_board(game)
     return weight_file
 }
 function load_leelaz_for_black() {load_weight()}
