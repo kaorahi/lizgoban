@@ -1,13 +1,18 @@
 require('./common.js').to(global)
 
+// frontend
+
 function random_flip_rotation(history) {
     return transform(history, coin_toss(), coin_toss(), coin_toss())
 }
 
-// function horizontal_flip(history) {return transform(history, false, true, false)}
-// function vertical_flip(history) {return transform(history, true, false, false)}
-// function clockwise_rotation(history) {return transform(history, true, false, true)}
-// function counterclockwise_rotation(history) {return transform(history, false, true, true)}
+function horizontal_flip(history) {return transform(history, false, true, false)}
+function vertical_flip(history) {return transform(history, true, false, false)}
+function clockwise_rotation(history) {return transform(history, true, false, true)}
+function counterclockwise_rotation(history) {return transform(history, false, true, true)}
+function half_turn(history) {return transform(history, true, true, false)}
+
+// backend
 
 function transform(history, ...spec) {return convert(trans1(...spec), history)}
 
@@ -27,4 +32,10 @@ function convert(f, history) {
 
 function coin_toss() {return Math.random() < 0.5}
 
-module.exports = {random_flip_rotation}
+module.exports = {
+    random_flip_rotation, horizontal_flip, vertical_flip,
+    clockwise_rotation, counterclockwise_rotation, half_turn
+}
+
+
+

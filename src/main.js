@@ -452,6 +452,12 @@ function menu_template(win) {
         {label: 'Trial board', type: 'checkbox', checked: game.trial,
          click: exec(toggle_trial, update)},
         sep,
+        menu('Flip / rotate',
+             ['half_turn', false, 'horizontal_flip', 'vertical_flip', false,
+              'clockwise_rotation', 'counterclockwise_rotation']
+             .map(key => key ? item(key.replace(/_/g, ' '), undefined,
+                                    () => game.transform(key)) : sep)
+            ),
         item(`Komi (${game.get_komi()})`, undefined, ask_komi),
         item('Game info', undefined, () => ask_game_info(win)),
     ])
