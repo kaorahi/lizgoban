@@ -97,7 +97,8 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 // from main
 
 ipc.on('render', (e, h, is_board_changed) => {
-    if (showing_until() && !is_board_changed) {return}  // for smooth reaction
+    // for smooth reaction or readable variation display
+    if ((showing_until() || any_selected_suggest_p()) && !is_board_changed) {return}
     merge(R, h)
     set_board_size(R.bsize)
     setq('#move_count', R.move_count)
@@ -261,6 +262,10 @@ function update_goban() {
         !showing_until() && D.draw_visits_trail(c)
 }
 
+function any_selected_suggest_p() {
+    const is_empty = h => empty(Object.keys(h))
+    return [main_canvas, sub_canvas].find(c => !is_empty(selected_suggest(c)))
+}
 function selected_suggest(canvas) {
     const m = keyboard_moves[0] || if_hover_on(canvas, hovered_move)
     return R.suggest.find(h => h.move === m) || {}
