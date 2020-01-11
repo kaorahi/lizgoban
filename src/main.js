@@ -167,10 +167,7 @@ fs.access(option.sabaki_command, null,
 
 // app
 
-app.on('ready', () => {
-    start_leelaz(); new_window('double_boards')
-    option.preset && apply_preset(option.preset[0], get_windows()[0])
-})
+app.on('ready', () => {start_leelaz(); new_window('double_boards')})
 app.on('window-all-closed', app.quit)
 app.on('quit', kill_all_leelaz)
 
