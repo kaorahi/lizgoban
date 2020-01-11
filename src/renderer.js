@@ -122,11 +122,12 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
 })
 
 ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog', true))
-ipc.on('ask_game_info', (e) => {
+ipc.on('ask_game_info', (e, info_text) => {
     Q('#player_black').value = R.player_black
     Q('#player_white').value = R.player_white
     Q('#komi').value = R.komi
     Q('#comment_form').value = R.comment
+    Q('#info_form').value = info_text
     show_dialog('#game_info_dialog')
 })
 

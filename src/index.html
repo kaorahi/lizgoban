@@ -37,6 +37,7 @@
  }
  .dialog td:not(:first-child) {padding-left: 1em;}
  .dialog td {padding-bottom: 1em;}
+ .dialog textarea {width: 50vw;}
  #toast {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   display: flex; justify-content: center; align-items: center;
@@ -200,7 +201,9 @@
    <tr><td>Komi:</td><td><input id='komi'></td></tr>
   </table>
   Move comment:<br>
-  <textarea id='comment_form' style='width: 100%; height: 6em;'></textarea>
+  <textarea id='comment_form' rows="5"></textarea><br>
+  Info:<br>
+  <textarea id='info_form' style="height: 20vh;" readonly></textarea>
   <div style='text-align: center; padding: 1em 0em 0em 0em;'>
    <input type='button' onclick="set_game_info()" value=" ok ">
   </div>

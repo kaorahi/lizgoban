@@ -459,7 +459,7 @@ function menu_template(win) {
                                     () => game.transform(key)) : sep)
             ),
         item(`Komi (${game.get_komi()})`, undefined, ask_komi),
-        item('Game info', undefined, () => ask_game_info(win)),
+        item('Info', 'CmdOrCtrl+I', () => ask_game_info(win)),
     ])
     const view_menu = menu('View', [
         board_type_menu_item('Two boards A (main+PV)', 'double_boards', win),
@@ -502,7 +502,6 @@ function menu_template(win) {
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
-        item('Info', 'CmdOrCtrl+I', info),
     ])
     const white_unloader_item =
           item('Unload white engine', 'CmdOrCtrl+Shift+U',
@@ -703,7 +702,7 @@ function auto_play_progress() {
 function ask_auto_play_sec(win, replaying) {
     auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
 }
-function ask_game_info(win) {win.webContents.send('ask_game_info')}
+function ask_game_info(win) {win.webContents.send('ask_game_info', info_text())}
 function increment_auto_play_count(n) {
     auto_playing(true) && stop_auto_play()
     auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
@@ -848,9 +847,9 @@ function help() {
     const opt = {webPreferences: {nodeIntegration: true}}
     get_new_window('help.html', opt).setMenu(Menu.buildFromTemplate(menu))
 }
-function info() {
+function info_text() {
     const f = (label, s) => s ?
-          `<${label}>\n` + fold_text(JSON.stringify(s), 60, 5) + '\n\n' : ''
+          `<${label}>\n` + JSON.stringify(s) + '\n\n' : ''
     const sa = AI.all_start_args()
     const lz = AI.leelaz_for_white_p() ?
           (f("leelaz (black)", sa.black) + f("leelaz (white)", sa.white)) :
@@ -858,7 +857,7 @@ function info() {
     const message = lz +
           f("sgf file", game.sgf_file) +
           f("sgf", game.sgf_str)
-    dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
+    return message
 }
 function set_game_info(player_black, player_white, komi, comment) {
     merge(game, {player_black, player_white, komi})
@@ -905,13 +904,6 @@ function wink_if_pass(proc, ...args) {
 }
 function wink() {renderer('wink')}
 function toast(message, millisec) {renderer('toast', message, millisec)}
-
-function fold_text(str, n, max_lines) {
-    const fold_line =
-          s => s.split('').map((c, i) => i % n === n - 1 ? c + '\n' : c).join('')
-    const cut = s => s.split('\n').slice(0, max_lines).join('\n')
-    return cut(str.split('\n').map(fold_line).join('\n'))
-}
 
 /////////////////////////////////////////////////
 // let-me-think-first mode
