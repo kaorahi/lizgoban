@@ -57,7 +57,6 @@ function endstate_handler(h) {
     }
     set_renderer_state(h)
     AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
-    M.update_state()
 }
 
 const too_small_prior = 1e-3
@@ -140,7 +139,7 @@ function set_endstate_diff_from(k) {
 function change_endstate_diff_target(proc) {
     const old = endstate_diff_move_count()
     proc()
-    endstate_diff_move_count() !== old && (update_endstate_diff(), M.update_state(true))
+    endstate_diff_move_count() !== old && update_endstate_diff()
 }
 
 function add_endstate_to_stones(stones, endstate, update_diff_p) {

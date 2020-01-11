@@ -140,7 +140,7 @@ const AI = require('./ai.js').pay({
 const P = require('./powered_goban.js').pay({
     R, AI, on_suggest: try_auto, M: {
         // functions used in powered_goban.js
-        render, update_state, show_suggest_p, is_pass,
+        render, show_suggest_p, is_pass,
         auto_progress, is_busy, is_pausing, is_bogoterritory,
         tuning_message: () => tuning_message,
     }
@@ -326,7 +326,7 @@ function play(move, force_create, default_tag) {
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
-    update_state(); do_play(move, R.bturn, tag || default_tag || undefined)
+    do_play(move, R.bturn, tag || default_tag || undefined)
     pass && wink()
 }
 function do_play(move, is_black, tag) {
@@ -341,7 +341,7 @@ function do_play(move, is_black, tag) {
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (game.pop(), set_board(game), update_state())
+    const delete_last = () => (game.pop(), set_board(game))
     game.move_count < game.len() ? undo() : wink_if_pass(delete_last)
 }
 const pass_command = 'pass'
@@ -372,7 +372,6 @@ function update_state_to_move_count_tentatively(count) {
     const next_h = game.ref(game.move_count + 1)
     const next_s = P.stone_for_history_elem(next_h, R.stones) || {}
     next_s.next_move = false; game.move_count = count; R.bturn = (count % 2 === 0)
-    update_state()
 }
 
 /////////////////////////////////////////////////
@@ -537,12 +536,10 @@ function store_toggler_menu_item(label, key, accelerator, on_click) {
 }
 
 function toggle_stored(key) {
-    const val = !get_stored(key); set_stored(key, val); update_state(); return val
+    const val = !get_stored(key); set_stored(key, val); return val
 }
 
-function unload_leelaz_for_white() {
-    AI.unload_leelaz_for_white(); update_state()
-}
+function unload_leelaz_for_white() {AI.unload_leelaz_for_white()}
 
 // preset
 
@@ -808,7 +805,7 @@ function ask_choice(message, values, proc) {
 }
 
 // misc.
-function toggle_trial() {game.trial = !game.trial; update_state()}
+function toggle_trial() {game.trial = !game.trial}
 function close_window_or_cut_sequence(win) {
     get_windows().length > 1 ? win.close() :
         attached ? null :
@@ -840,7 +837,7 @@ function endstate_diff_interval_adder(k) {
 }
 function tag_or_untag() {
     if (game.move_count === 0) {wink(); return}
-    game.add_or_remove_tag(); P.update_info_in_stones(); update_state()
+    game.add_or_remove_tag(); P.update_info_in_stones()
 }
 
 /////////////////////////////////////////////////
@@ -853,19 +850,17 @@ function resume() {pausing = false}
 function toggle_pause() {pausing = !pausing}
 function set_or_unset_busy(bool) {busy = bool}
 function set_busy() {set_or_unset_busy(true)}
-function unset_busy() {set_or_unset_busy(false); update_state(true)}
+function unset_busy() {set_or_unset_busy(false)}
 function UPDATE_ponder() {
     AI.set_pondering(pausing, busy); pausing && (R.endstate = null)
 }
-function init_from_renderer() {update_state()}
+function init_from_renderer() {}
 
 function set_board(given_game, move_count) {}
 function SET_board() {SET_board_sub(game)}
 function SET_board_sub(given_game, move_count) {
     AI.set_board(P.set_board(given_game, move_count), given_game.get_komi())
-    AI.switch_leelaz() && update_state()
-    update_let_me_think()
-    is_busy() || update_state()
+    AI.switch_leelaz(); update_let_me_think()
 }
 
 function wink_if_pass(proc, ...args) {
@@ -926,7 +921,7 @@ function let_me_think_exit_autoplay() {let_me_think_set_board_type_for('latter_h
 function toggle_let_me_think() {set_let_me_think(!let_me_think_p())}
 function stop_let_me_think() {set_let_me_think(false)}
 function set_let_me_think(val) {
-    set_stored('let_me_think', val); update_let_me_think(); update_state()
+    set_stored('let_me_think', val); update_let_me_think()
 }
 function let_me_think_p() {return store.get('let_me_think')}
 
@@ -984,8 +979,7 @@ function duplicate_sequence(until_current_move_p, explicit) {
     }
     game.is_empty() ? new_empty_board() :
         (backup_game(), game.set_last_loaded_element(), (game.trial = !explicit),
-         (until_current_move_p && del_future()),
-         update_state())
+         (until_current_move_p && del_future()))
 }
 
 function delete_sequence() {
@@ -1010,7 +1004,7 @@ function replace_sequence(new_game) {
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    goto_nth_sequence(wrapped_n); set_board(game); update_state()
+    goto_nth_sequence(wrapped_n); set_board(game)
 }
 
 function goto_nth_sequence(n) {game = sequence[sequence_cursor = n]}
@@ -1029,7 +1023,6 @@ function exist_deleted_sequence() {return !empty(deleted_sequences)}
 /////////////////////////////////////////////////
 // utils for updating renderer state
 
-function update_state(keep_suggest_p) {}
 function UPDATE_state(keep_suggest_p) {
     const history_length = game.len(), sequence_length = sequence.length
     const sequence_ids = sequence.map(h => h.id)
@@ -1162,7 +1155,7 @@ function on_ready() {
     // (leelaz_for_black and leelaz_for_white).
     // This interferes starting-up sequence of another leelaz in engine.js.
     tuning_message && tuning_is_done()
-    switch_to_nth_sequence(sequence_cursor); stop_auto(); update_state()
+    switch_to_nth_sequence(sequence_cursor); stop_auto()
     UPDATE_all()
 }
 function make_tuning_handler() {
@@ -1294,8 +1287,6 @@ function exercise_move_count(filename) {
 function load_sabaki_gametree(gametree, index) {
     if (!game.load_sabaki_gametree(gametree, index)) {return}
     set_board(game)
-    // force update of board color when C-c and C-v are typed successively
-    update_state()
 }
 
 /////////////////////////////////////////////////
@@ -1335,12 +1326,12 @@ function attach_to_sabaki() {
     debug_log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
     backup_game()
     start_sabaki(sgf_file.name + '#' + game.move_count)
-    attached = true; AI.update_leelaz(); update_state()
+    attached = true; AI.update_leelaz()
 }
 
 function detach_from_sabaki() {
     if (!attached || !has_sabaki) {return}
-    stop_sabaki(); attached = false; AI.update_leelaz(); update_state()
+    stop_sabaki(); attached = false; AI.update_leelaz()
 }
 
 function toggle_sabaki() {
