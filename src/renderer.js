@@ -71,8 +71,10 @@ function start_auto_play() {
     main('auto_play', to_f(Q('#auto_play_sec').value)); hide_dialog()
 }
 function set_game_info() {
-    const vals = ['#player_black', '#player_white'].map(key => Q(key).value)
-    main('set_game_info', ...vals); hide_dialog()
+    const keys = ['#player_black', '#player_white', '#komi']
+    const [pb, pw, komi_text] = keys.map(key => Q(key).value)
+    const komi = Math.round(to_f(komi_text) * 2) / 2  // int or half-int
+    main('set_game_info', pb, pw, komi); hide_dialog()
 }
 
 function show_dialog(name) {
@@ -123,6 +125,7 @@ ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog', true))
 ipc.on('ask_game_info', (e) => {
     Q('#player_black').value = R.player_black
     Q('#player_white').value = R.player_white
+    Q('#komi').value = R.komi
     show_dialog('#game_info_dialog')
 })
 
