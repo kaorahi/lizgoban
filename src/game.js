@@ -29,7 +29,7 @@ function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
-        sgf_file: "", sgf_str: "", id: new_game_id(),
+        sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
         trial: false, last_loaded_element: null
     }
     const update_move_count_after = f => (...args) => {
@@ -39,7 +39,7 @@ function create_game(init_history, init_prop) {
         // mc = move_count (0: empty board, 1: first move, ...)
         len: () => history.length,
         is_empty: () => empty(history),
-        ref: mc => history[mc - 1] || {},
+        ref: mc => history[mc - 1] || self.move0,
         ref_current: () => self.ref(self.move_count),
         current_stones: () => self.stones_at(self.move_count),
         stones_at: mc => stones_from_history(self.array_until(mc)),
@@ -81,9 +81,10 @@ function game_to_sgf(game) {
     const f = (t, p) => p ? `${t}[${SGF.escapeString(p)}]` : ''
     // header
     const km = truep(game.komi) ? `KM[${game.komi}]` : ''
+    const com0 = f('C', game.move0.comment)
     const sz = `SZ[${game.board_size}]`
     const header =
-          `;${sz}${km}${f('PW', game.player_white)}${f('PB', game.player_black)}`
+          `;${sz}${km}${f('PW', game.player_white)}${f('PB', game.player_black)}${com0}`
     // body
     const move2sgf = ({move, is_black, comment}) =>
           `;${is_black ? 'B' : 'W'}[${move2sgfpos(move)}]${f('C', comment)}`
@@ -151,6 +152,8 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
                  komi, board_size: board_size(), trial: false})
+    const comment = (first_node["C"] || [])[0]
+    merge(game.ref(0), comment ? {comment} : {})
     return true
 }
 
