@@ -1009,7 +1009,8 @@ function draw_winrate_graph_score(w, sr2coord, g) {
     const plotter = (x, y, s, g) => {
         const diff_target_p = R.endstate_diff_interval > 5 &&
               (s === R.move_count - R.endstate_diff_interval)
-        const [radius, alpha] = diff_target_p ? [3, 0.7] : [2, 0.3]
+        const big_p = (s === R.move_count) || diff_target_p
+        const [radius, alpha] = big_p ? [3, 0.7] : [2, 0.3]
         g.fillStyle = `rgba(0,255,255,${alpha})`; fill_circle([x, y], radius, g)
     }
     draw_komi(); draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
