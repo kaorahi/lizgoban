@@ -80,7 +80,8 @@ function create_game(init_history, init_prop) {
 function game_to_sgf(game) {
     const f = (t, p) => `${t}[${SGF.escapeString(p || '')}]`
     const km = truep(game.komi) ? `KM[${game.komi}]` : ''
-    return `(;${km}${f('PW', game.player_white)}${f('PB', game.player_black)}` +
+    const sz = `SZ[${game.board_size}]`
+    return `(;${sz}${km}${f('PW', game.player_white)}${f('PB', game.player_black)}` +
         game.map(({move: move, is_black: is_black}) =>
                  (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
         ')'
@@ -131,19 +132,20 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     if (!gametree || !gametree.nodes) {return false}
     const parent_nodes = nodes_from_sabaki_gametree(gametree.parent)
     const nodes = parent_nodes.concat(gametree.nodes)
+    const idx = (!index && index !== 0) ? Infinity : index
+    const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
+    const first_node = nodes_until_index[0]
+    set_board_size(to_i((first_node["SZ"] || [19])[0])) // before generating history
     const new_hist = history_from_sabaki_nodes(nodes)
     game.set_with_reuse(new_hist)
     game.set_last_loaded_element()
-    const idx = (!index && index !== 0) ? Infinity : index
-    const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     game.move_count = history_from_sabaki_nodes(nodes_until_index).length
-    const first_node = nodes_until_index[0]
     const player_name = bw => (first_node[bw] || [""])[0]
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
     const km = (first_node["KM"] || [false])[0]
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
-                 komi, trial: false})
+                 komi, board_size: board_size(), trial: false})
     return true
 }
 

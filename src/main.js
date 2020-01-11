@@ -424,7 +424,8 @@ function menu_template(win) {
     const dup = until_current_move_p =>
           () => duplicate_sequence(until_current_move_p, true)
     const file_menu = menu('File', [
-        item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
+        item('New 19x19 board', 'CmdOrCtrl+N', () => new_empty_board(19), true),
+        item('New 9x9 board', undefined, () => new_empty_board(9), true),
         item('New handicap game', undefined, ask_handicap_stones,
              true, board_size() === 19),
         item('New window', 'CmdOrCtrl+Shift+N',
@@ -944,7 +945,11 @@ function let_me_think_next(board_type) {
 /////////////////////////////////////////////////
 // sequence (list of games)
 
-function new_empty_board() {insert_sequence(create_game(), true)}
+function new_empty_board(given_board_size) {
+    const new_game = create_game()
+    new_game.board_size = given_board_size || board_size()
+    insert_sequence(new_game, true)
+}
 
 function backup_game() {backup_and_replace_game(game.shallow_copy())}
 function backup_and_replace_game(new_game) {
