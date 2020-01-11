@@ -323,21 +323,21 @@ function update_all(keep_board) {
 /////////////////////////////////////////////////
 // main flow (2) change game state and send it to powered_goban
 
-function play(move, force_create, default_tag) {
+function play(move, force_create, default_tag, comment) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
-    do_play(move, R.bturn, tag || default_tag || undefined)
+    do_play(move, R.bturn, tag || default_tag || undefined, comment)
     pass && wink()
 }
-function do_play(move, is_black, tag) {
+function do_play(move, is_black, tag, comment) {
     // We drop "double pass" to avoid halt of analysis by Leelaz.
     // B:D16, W:Q4, B:pass ==> ok
     // B:D16, W:Q4, B:pass, W:D4 ==> ok
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
     is_last_move_pass() && is_pass(move) ? game.pop() :
-        game.push({move, is_black, tag, move_count: game.len() + 1})
+        game.push({move, is_black, tag, move_count: game.len() + 1, comment})
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
@@ -726,15 +726,20 @@ function try_play_best(weaken_method, ...weaken_args) {
     // try_play_best('random_leelaz', 30)
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     if (empty(R.suggest)) {return}
+    // comment
+    const e = AI.engine_info().current, info = key => PATH.basename(e[key])
+    const comment = `by ${info('leelaz_command')} (${info('weight_file')})`
+    const play_com = m => play(m, false, null, comment)
+    // move
     const move = (weaken_method === 'random_candidate' ?
                   weak_move(...weaken_args) : best_move())
     const pass_maybe =
           () => AI.peek_value('pass', value => {
-              play(value < 0.9 ? 'pass' : move); update_all()
+              play_com(value < 0.9 ? 'pass' : move); update_all()
           }) || toast('Not supported (Leela Zero only)')
     const play_it = () => {
         decrement_auto_play_count()
-        weaken_method === 'pass_maybe' ? pass_maybe() : play(move)
+        weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move)
     }
     do_as_auto_play(move !== 'pass', play_it)
 }

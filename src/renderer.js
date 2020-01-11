@@ -79,8 +79,10 @@ function hide_dialog() {
 }
 
 function play_moves(moves) {
-    moves && moves.forEach((move, k) => main('play', move, false,
-                                             (k === 0) && start_moves_tag_letter))
+    const tag = k => (k === 0) && start_moves_tag_letter
+    const com = k => `by suggestion (${k + 1})`
+    const play1 = (move, k) => main('play', move, false, tag(k), com(k))
+    moves && moves.forEach(play1)
 }
 
 function main(channel, ...args) {ipc.send(channel, ...args)}

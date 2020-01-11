@@ -285,6 +285,6 @@ require('./give_and_take.js').offer(module, {
     // renderer
     set_and_render,
     // util
-    stone_for_history_elem, update_info_in_stones,
+    stone_for_history_elem, update_info_in_stones, weight_info_text,
     get_initial_b_winrate: () => initial_b_winrate,
 }, global, () => AI.set_handlers({suggest_handler, endstate_handler}))
