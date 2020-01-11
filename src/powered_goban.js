@@ -30,8 +30,6 @@ function set_board(given_game, move_count) {
 function set_stones(stones) {
     R.stones = stones; add_info_to_stones(R.stones, game)
     R.prev_endstate_clusters = null
-    // avoid flicker for fast undo/redo
-    AI.support_endstate_p() && add_endstate_to_stones(R.stones, R.endstate)
 }
 
 /////////////////////////////////////////////////
