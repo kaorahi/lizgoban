@@ -255,7 +255,7 @@ function renderer_gen(channel, win_prop_p, ...args) {
 const {set_endstate_diff_from} = P
 const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
-    copy_sgf_to_clipboard, set_endstate_diff_from, UPDATE_menu,
+    copy_sgf_to_clipboard, set_endstate_diff_from, update_menu,
 }
 const api = merge({}, simple_api, {
     new_window, init_from_renderer,
@@ -283,7 +283,7 @@ function apply_api(channel, handler, args) {
     const keep_board = ['toggle_pause', 'unset_busy', 'set_endstate_diff_from']
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
-    handler(...args); UPDATE_all(whether(keep_board))
+    handler(...args); update_all(whether(keep_board))
 }
 
 each_key_value(api, (channel, handler) => {
@@ -310,11 +310,11 @@ ipc.on('close_window_or_cut_sequence',
 
 // update after every command
 
-function UPDATE_all(keep_board) {
-    debug_log(`UPDATE_all start`)
+function update_all(keep_board) {
+    debug_log(`update_all start`)
     keep_board || SET_board()
-    UPDATE_state(keep_board); UPDATE_ponder(); UPDATE_ui(); UPDATE_menu()
-    debug_log(`UPDATE_all done`)
+    update_state(keep_board); update_ponder(); update_ui(); update_menu()
+    debug_log(`update_all done`)
 }
 
 /////////////////////////////////////////////////
@@ -373,7 +373,7 @@ function update_state_to_move_count_tentatively(count) {
 /////////////////////////////////////////////////
 // another source of change: menu
 
-function UPDATE_menu() {mac_p() ? update_app_menu() : update_window_menu()}
+function update_menu() {mac_p() ? update_app_menu() : update_window_menu()}
 function update_app_menu() {
     const win = electron.BrowserWindow.getFocusedWindow() || get_windows()[0]
     win && electron.Menu.setApplicationMenu(menu_for_window(win))
@@ -392,7 +392,7 @@ function safe_menu_maybe() {
     const f = (label, accelerator, click) => ({label, accelerator, click})
     const help_menu = f('Help', undefined, help)
     const auto = auto_analyzing_or_playing() && [
-        f('Stop(Esc)', 'Esc', () => {stop_auto(); UPDATE_all()}),
+        f('Stop(Esc)', 'Esc', () => {stop_auto(); update_all()}),
         f('Skip(Ctrl+E)', 'Ctrl+E', skip_auto),
         help_menu,
     ]
@@ -407,7 +407,7 @@ function menu_template(win) {
     const menu = (label, submenu) =>
           ({label, submenu: submenu.filter(truep), enabled: !empty(submenu)})
     const exec = (...fs) => ((...a) => fs.forEach(f => f && f(...a)))
-    const update = () => UPDATE_all()
+    const update = () => update_all()
     const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
     const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
           !(standalone_only && attached) && {
@@ -522,13 +522,13 @@ function menu_template(win) {
 
 function board_type_menu_item(label, type, win) {
     return {label, type: 'radio', checked: window_prop(win).board_type === type,
-            click: (this_item, win) => (set_board_type(type, win), UPDATE_all())}
+            click: (this_item, win) => (set_board_type(type, win), update_all())}
 }
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
     const toggle_it = () => toggle_stored(key)
     return {label, accelerator, type: 'checkbox', checked: store.get(key),
-            click: (...a) => {(on_click || toggle_it)(...a); UPDATE_all()}}
+            click: (...a) => {(on_click || toggle_it)(...a); update_all()}}
 }
 
 function toggle_stored(key) {
@@ -620,7 +620,7 @@ function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing()}
 function try_auto_analyze(force_next) {
     const done = force_next || (auto_analysis_progress() >= 1)
     const finish = () => (pause(), stop_auto_analyze())
-    const next = (pred, proc) => {pred() ? proc() : finish(); UPDATE_all()}
+    const next = (pred, proc) => {pred() ? proc() : finish(); update_all()}
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
@@ -667,7 +667,7 @@ function auto_play_ready() {
 }
 function do_as_auto_play(playable, proc) {
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
-    UPDATE_all()
+    update_all()
 }
 function update_auto_play_time() {last_auto_play_time = Date.now()}
 function auto_play_progress() {
@@ -711,7 +711,7 @@ function try_play_best(weaken_method, ...weaken_args) {
                   weak_move(...weaken_args) : best_move())
     const pass_maybe =
           () => AI.peek_value('pass', value => {
-              play(value < 0.9 ? 'pass' : move); UPDATE_all()
+              play(value < 0.9 ? 'pass' : move); update_all()
           }) || toast('Not supported (Leela Zero only)')
     const play_it = () => {
         decrement_auto_play_count()
@@ -795,7 +795,7 @@ function ask_komi() {
 function ask_choice(message, values, proc) {
     const buttons = [...values.map(to_s), 'cancel']
     const action = z => {
-        const v = values[z.response]; truep(v) && proc(v); UPDATE_all()
+        const v = values[z.response]; truep(v) && proc(v); update_all()
     }
     dialog.showMessageBox(null, {type: "question", message, buttons}).then(action)
 }
@@ -847,7 +847,7 @@ function toggle_pause() {pausing = !pausing}
 function set_or_unset_busy(bool) {busy = bool}
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
-function UPDATE_ponder() {
+function update_ponder() {
     AI.set_pondering(pausing, busy); pausing && (R.endstate = null)
 }
 function init_from_renderer() {}
@@ -897,7 +897,7 @@ function let_me_think_switch_board_type(only_when_stage_is_changed) {
     const stage = progress < 0.5 ? 'first_half' : 'latter_half'
     if (only_when_stage_is_changed && stage === let_me_think_previous_stage) {return}
     let_me_think_set_board_type_for(stage)
-    only_when_stage_is_changed && UPDATE_all()
+    only_when_stage_is_changed && update_all()
 }
 function let_me_think_set_board_type_for(stage) {
     set_board_type(let_me_think_board_type[let_me_think_previous_stage = stage],
@@ -1017,7 +1017,7 @@ function exist_deleted_sequence() {return !empty(deleted_sequences)}
 /////////////////////////////////////////////////
 // utils for updating renderer state
 
-function UPDATE_state(keep_suggest_p) {
+function update_state(keep_suggest_p) {
     const history_length = game.len(), sequence_length = sequence.length
     const sequence_ids = sequence.map(h => h.id)
     const pick_tagged = h => {
@@ -1032,7 +1032,7 @@ function UPDATE_state(keep_suggest_p) {
     }, keep_suggest_p ? {} : {suggest: []})
 }
 
-function UPDATE_ui(ui_only) {
+function update_ui(ui_only) {
     renderer_with_window_prop('update_ui', availability(), ui_only)
 }
 
@@ -1120,7 +1120,7 @@ ${info}`
     const buttons = ["RESTORE", "retry", "load weights", "(ignore)"]
     const actions = [switch_to_previous_weight, restart, load_weight, warn_maybe]
     const do_action =
-          z => {actions[z.response](); asking_recovery = false; UPDATE_all()}
+          z => {actions[z.response](); asking_recovery = false; update_all()}
     const recover = () => {
         asking_recovery = true  // avoid duplicated dialogs
         dialog.showMessageBox(null, {type: "error", message, buttons,}).then(do_action)
@@ -1149,7 +1149,7 @@ function on_ready() {
     // This interferes starting-up sequence of another leelaz in engine.js.
     tuning_message && tuning_is_done()
     switch_to_nth_sequence(sequence_cursor); stop_auto()
-    UPDATE_all()
+    update_all()
 }
 function make_tuning_handler() {
     let n = 0, toast_sec = 20
@@ -1158,13 +1158,13 @@ function make_tuning_handler() {
         const m = line.match(/Tuning (.*)/); if (!m) {return}
         n === 0 && (pause(), toast(warning, toast_sec * 1000))
         tuning_message = `Tuning KataGo (step ${++n}) [${m[1].slice(0, 20)}]`
-        UPDATE_all()
+        update_all()
     }
 }
 function tuning_is_done() {
     const message = 'Finished initial tuning.'
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
-    tuning_message = null; resume(); UPDATE_all()
+    tuning_message = null; resume(); update_all()
 }
 
 /////////////////////////////////////////////////
@@ -1212,7 +1212,7 @@ function open_url(url) {
         let str = ''
         res.setEncoding('utf8')
         res.on('data', chunk => {str += chunk})
-        res.on('end', () => {read_sgf(str); UPDATE_all()})
+        res.on('end', () => {read_sgf(str); update_all()})
     }
     const protocol = url.startsWith('https') ? https : http
     ask_choice(`Open ${url}`, ['OK'], _ => protocol.get(url, on_get))
@@ -1300,7 +1300,7 @@ function sabaki_reader(line) {
     debug_log(`sabaki> ${line}`)
     const m = line.match(/^sabaki_dump_state:\s*(.*)/)
     m && (game.load_sabaki_gametree(...(JSON.parse(m[1]).treePosition || [])),
-          UPDATE_all())
+          update_all())
 }
 
 function attach_to_sabaki() {
