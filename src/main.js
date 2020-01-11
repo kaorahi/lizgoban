@@ -561,14 +561,14 @@ function preset_menu_items(preset, menu_tools, white_p) {
     const doit = a => {
         apply_preset(a, win); toast(`${a.label}${white_p ? ' (for white)' : ''}`, 1000)
     }
-    const item_for = a => item(a.label, a.accelerator, () => doit(a), true)
+    const item_for = a => item(a.label, a.accelerator, () => doit(a))
     return preset.map(item_for)
 }
 function preset_menu_for_recent(menu_tools) {
     const {menu, item} = menu_tools, bn = PATH.basename
     const label = ({black, white}) =>
           `${bn(black.weight_file)}${white ? " / " + bn(white.weight_file) : ""}`
-    const item_for = (info, k) => item(label(info), null, () => AI.restore(k), true)
+    const item_for = (info, k) => item(label(info), null, () => AI.restore(k))
     return menu('Recent', AI.info_for_restore().map(item_for))
 }
 
