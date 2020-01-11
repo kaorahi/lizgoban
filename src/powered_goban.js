@@ -145,7 +145,7 @@ function change_endstate_diff_target(proc) {
 
 function add_endstate_to_stones(stones, endstate, update_diff_p) {
     if (!endstate || !M.show_suggest_p()) {return}
-    aa_each(stones, (s, i, j) => (s.endstate = endstate[i][j]))
+    aa_each(stones, (s, i, j) => (s.endstate = aa_ref(endstate, i, j)))
     update_diff_p && update_endstate_diff()
 }
 function update_endstate_diff() {
@@ -153,7 +153,8 @@ function update_endstate_diff() {
     const prev_endstate = game.ref(prev).endstate
     const ok = prev_endstate && game.ref_current().endstate
     aa_each(R.stones, (s, i, j) =>
-            (s.endstate_diff = ok ? sign * (s.endstate - prev_endstate[i][j]) : 0))
+            (s.endstate_diff = ok ?
+             sign * (s.endstate - aa_ref(prev_endstate, i, j)) : 0))
     R.prev_endstate_clusters = ok && get_endstate_clusters(prev_endstate, prev)
 }
 function endstate_diff_move_count() {
@@ -168,7 +169,7 @@ function sum_of_endstate_change(move_count) {
     // delta = 2 for leelaz_for_endstate since it tends to oscillate
     let sum = 0, delta = AI.katago_p() ? 1 : 2
     const f = (cur, prev) =>
-          (aa_each(cur, (c, i, j) => (sum += Math.abs(c - prev[i][j]))), true)
+          (aa_each(cur, (c, i, j) => (sum += Math.abs(c - aa_ref(prev, i, j)))), true)
     return for_current_and_previous_endstate(move_count, 'endstate', delta, f) && sum
 }
 function for_current_and_previous_endstate(move_count, key, delta, f) {

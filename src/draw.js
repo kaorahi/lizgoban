@@ -1242,15 +1242,16 @@ function each_stone(stones, proc) {
 function merge_stone_at(move, stone_array, stone) {
     const get_movenums = s => s.movenums || []
     const ary_or_undef = a => empty(a) ? undefined : a
-    const merge_stone = (stone0, stone1) =>
+    const merge_stone = (stone0, stone1) => stone0 &&
         merge(stone0, stone1,
               {movenums: ary_or_undef(flatten([stone0, stone1].map(get_movenums)))})
     // do nothing if move is pass
-    const [i, j] = move2idx(move); (i >= 0) && merge_stone(stone_array[i][j], stone)
+    const [i, j] = move2idx(move)
+    i >= 0 && merge_stone(aa_ref(stone_array, i, j), stone)
 }
 
 function is_next_move(move) {
-    [i, j] = move2idx(move); return (i >= 0) && R.stones[i][j].next_move
+    [i, j] = move2idx(move); return (i >= 0) && (aa_ref(R.stones, i, j) || {}).next_move
 }
 
 function latest_move(moves, show_until) {
