@@ -497,10 +497,9 @@ function menu_template(win) {
         item('Alternative weights for white', 'CmdOrCtrl+Shift+L',
              load_leelaz_for_white),
         white_unloader_item,
-        lz_white ?
-            item('Swap black/white engines', 'Shift+S',
-                 AI.swap_leelaz_for_black_and_white) :
-            item('Switch to previous engine', 'Shift+S', () => AI.restore(1)),
+        item('Swap black/white engines', 'Shift+S',
+             AI.swap_leelaz_for_black_and_white, false, !!lz_white),
+        // item('Switch to previous engine', 'Shift+T', () => AI.restore(1)),
         sep,
         item('Reset', 'CmdOrCtrl+R', restart),
     ])
@@ -565,11 +564,14 @@ function preset_menu_items(preset, menu_tools, white_p) {
     return preset.map(item_for)
 }
 function preset_menu_for_recent(menu_tools) {
-    const {menu, item} = menu_tools, bn = PATH.basename
-    const label = ({black, white}) =>
-          `${bn(black.weight_file)}${white ? " / " + bn(white.weight_file) : ""}`
-    const item_for = (info, k) => item(label(info), null, () => AI.restore(k))
-    return menu('Recent', AI.info_for_restore().map(item_for))
+    const {menu, item, sep} = menu_tools, bn = PATH.basename
+    const label = ({black, white}, k) =>
+          `${bn(black.weight_file)}${white ? " / " + bn(white.weight_file) : ""}` +
+          ([' (current)', ' (prev)'][k] || '')
+    const accel = k => (k === 1 && 'Shift+T')
+    const item_for = (info, k) => item(label(info, k), accel(k), () => AI.restore(k))
+    const is = AI.info_for_restore().map(item_for)
+    return menu('Recent', [is[1], sep, ...is.slice(2), sep, is[0]])
 }
 
 function apply_preset(rule, win) {
