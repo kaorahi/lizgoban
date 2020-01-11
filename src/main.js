@@ -336,13 +336,11 @@ function do_play(move, is_black, tag) {
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
     is_last_move_pass() && is_pass(move) ? game.pop() :
         game.push({move, is_black, tag, move_count: game.len() + 1})
-    set_board(game)
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last = () => (game.pop(), set_board(game))
-    game.move_count < game.len() ? undo() : wink_if_pass(delete_last)
+    game.move_count < game.len() ? undo() : wink_if_pass(game.pop)
 }
 const pass_command = 'pass'
 function pass() {play(pass_command)}
@@ -358,7 +356,6 @@ function goto_move_count(count) {
     const c = clip(count, 0, game.len())
     if (c === game.move_count) {return}
     update_state_to_move_count_tentatively(c)
-    set_board(game, c)
 }
 function update_state_to_move_count_tentatively(count) {
     const forward = (count > game.move_count)
@@ -586,7 +583,7 @@ function apply_preset(rule, win) {
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
         unload_leelaz_for_white()
     engine_for_white && AI.set_engine_for_white(engine_for_white)
-    set_board(game); resume()
+    resume()
 }
 
 function expand_preset(preset) {
@@ -793,7 +790,7 @@ function ask_handicap_stones() {
 }
 function ask_komi() {
     const values = [-0.5, 0.5, 4.5, 5.5, 6.5, 7.5, 8.5]
-    const proc = k => {game.komi = k; set_board(game)}
+    const proc = k => {game.komi = k}
     ask_choice(`Komi (${game.get_komi()})`, values, proc)
 }
 function ask_choice(message, values, proc) {
@@ -856,7 +853,6 @@ function UPDATE_ponder() {
 }
 function init_from_renderer() {}
 
-function set_board(given_game, move_count) {}
 function SET_board() {SET_board_sub(game)}
 function SET_board_sub(given_game, move_count) {
     AI.set_board(P.set_board(given_game, move_count), given_game.get_komi())
@@ -974,8 +970,7 @@ function uncut_sequence() {
 
 function duplicate_sequence(until_current_move_p, explicit) {
     const del_future = () => {
-        game.delete_future(); set_board(game)
-        P.update_info_in_stones()  // remove next_move mark
+        game.delete_future(); P.update_info_in_stones()  // remove next_move mark
     }
     game.is_empty() ? new_empty_board() :
         (backup_game(), game.set_last_loaded_element(), (game.trial = !explicit),
@@ -1004,7 +999,7 @@ function replace_sequence(new_game) {
 
 function switch_to_nth_sequence(n) {
     const len = sequence.length, wrapped_n = (n + len) % len
-    goto_nth_sequence(wrapped_n); set_board(game)
+    goto_nth_sequence(wrapped_n)
 }
 
 function goto_nth_sequence(n) {game = sequence[sequence_cursor = n]}
@@ -1085,7 +1080,6 @@ function load_weight_file(weight_file, white_p) {
     weight_file !== current_weight_file && !white_p &&
         (previous_weight_file = current_weight_file)
     AI.load_weight_file(weight_file, white_p)
-    set_board(game)
     return weight_file
 }
 function load_leelaz_for_black() {load_weight()}
@@ -1282,14 +1276,6 @@ function exercise_move_count(filename) {
 }
 
 /////////////////////////////////////////////////
-// Sabaki gameTree
-
-function load_sabaki_gametree(gametree, index) {
-    if (!game.load_sabaki_gametree(gametree, index)) {return}
-    set_board(game)
-}
-
-/////////////////////////////////////////////////
 // Sabaki
 
 let sabaki_process
@@ -1314,7 +1300,7 @@ function stop_sabaki() {
 function sabaki_reader(line) {
     debug_log(`sabaki> ${line}`)
     const m = line.match(/^sabaki_dump_state:\s*(.*)/)
-    m && (load_sabaki_gametree(...(JSON.parse(m[1]).treePosition || [])),
+    m && (game.load_sabaki_gametree(...(JSON.parse(m[1]).treePosition || [])),
           UPDATE_all())
 }
 
