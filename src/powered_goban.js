@@ -109,8 +109,8 @@ function set_and_render(...args) {set_and_render_gen(true, ...args)}
 function set_and_render_maybe(...args) {set_and_render_gen(false, ...args)}
 function set_and_render_gen(is_board_changed, ...args) {
     set_renderer_state(...args)
-    const masked_R = merge({}, R, M.show_suggest_p() ? {} : {suggest: [], visits: null})
-    M.render(masked_R, is_board_changed)
+    const mask = M.show_suggest_p() ? {} : {suggest: [], visits: null}
+    M.render({...R, ...mask}, is_board_changed)
 }
 
 /////////////////////////////////////////////////
