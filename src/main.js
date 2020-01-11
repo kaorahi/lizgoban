@@ -449,9 +449,10 @@ function menu_template(win) {
              exist_deleted_sequence()),
         item('Duplicate board', 'CmdOrCtrl+D', dup(false), true),
         item('Duplicate until current move', 'CmdOrCtrl+K', dup(true), true),
-        sep,
         {label: 'Trial board', type: 'checkbox', checked: game.trial,
          click: exec(toggle_trial, update)},
+        sep,
+        item(`Komi (${game.get_komi()})`, undefined, ask_komi),
         item('Game info', undefined, () => ask_game_info(win)),
     ])
     const view_menu = menu('View', [
@@ -492,7 +493,6 @@ function menu_template(win) {
                      ]),
                      item('Open exercise', 'CmdOrCtrl+?', open_exercise_dir, true),
                      sep),
-        item(`Komi (${game.get_komi()})`, undefined, ask_komi),
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},

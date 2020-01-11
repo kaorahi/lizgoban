@@ -178,6 +178,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * Support 9x9 and 13x13 in "File" menu.
 * Upgrade libraries (Electron 7, etc.). So you may need to do "npm install" again.
 * "weight_dir" in config.json is obsolete now. (See above.)
+* "Komi" is moved from [Tool] to [Edit] menu.
 
 ### from 0.2.0
 
