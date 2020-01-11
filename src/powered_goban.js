@@ -67,7 +67,9 @@ function suggest_handler(h) {
         ((cur.endstate = h.endstate = endstate_from_ownership(h.ownership)),
          (cur.hotness = sum_of_endstate_change(game.move_count)),
          (cur.score_without_komi = h.score_without_komi))
-    const keys = ['suggest', 'visits', 'b_winrate']; keys.forEach(k => cur[k] = h[k])
+    !cur.by && (cur.by = {}); !cur.by[h.engine_id] && (cur.by[h.engine_id] = {})
+    const keys = ['suggest', 'visits', 'b_winrate']
+    keys.forEach(k => cur.by[h.engine_id][k] = cur[k] = h[k])
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = cur
     R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, true)
@@ -87,7 +89,9 @@ function set_renderer_state(...args) {
     merge(R, ...args)  // use updated R in below lines
     const move_count = game.move_count
     const busy = M.is_busy()
-    const winrate_history = busy ? [] : winrate_from_game(game)
+    const winrate_history = busy ? [] : winrate_from_game()
+    const winrate_history_set = busy ? [[]] :
+          AI.engine_ids().map(eid => winrate_from_game(eid))
     const previous_suggest = get_previous_suggest()
     const max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
     const progress = M.auto_progress()
@@ -100,8 +104,8 @@ function set_renderer_state(...args) {
     const endstate = aa_map(R.stones, h => h.endstate || 0)
     const endstate_clusters = get_endstate_clusters(endstate)
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
-    merge(R, {move_count, busy, winrate_history, endstate_sum, endstate_clusters,
-              max_visits, progress,
+    merge(R, {move_count, busy, winrate_history, winrate_history_set,
+              endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment,
               previous_suggest, winrate_trail}, endstate_d_i)
 }
@@ -188,15 +192,16 @@ function get_endstate_clusters(endstate, move_count) {
 /////////////////////////////////////////////////
 // winrate history
 
-function winrate_from_game(game) {
-    const winrates = game.map(m => m.b_winrate)
-    return [get_initial_b_winrate(), ...winrates].map((r, s, a) => {
+function winrate_from_game(engine_id) {
+    // +1 for move_count (see game.js)
+    const winrates = seq(game.len() + 1).map(mc => get_b_winrate(mc, engine_id))
+    return winrates.map((r, s, a) => {
         const cur = game.ref(s)
         const h = append_endstate_tag_maybe(cur), tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * (cur.is_black ? 1 : -1)
-        const predict = winrate_suggested(s)
+        const predict = winrate_suggested(s, engine_id)
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const pass = implicit_pass || M.is_pass(h.move)
         const score_without_komi = truep(cur.score_without_komi) ?
@@ -210,13 +215,19 @@ function winrate_from_game(game) {
     })
 }
 
-function get_initial_b_winrate() {
-    const ret = game.ref(0).b_winrate; return truep(ret) ? ret : NaN
+function get_initial_b_winrate(engine_id) {return get_b_winrate(0, engine_id)}
+function get_b_winrate(move_count, engine_id) {
+    const ret = get_estimation(move_count, engine_id).b_winrate
+    return truep(ret) ? ret : NaN
+}
+function get_estimation(move_count, engine_id) {
+    const m = game.ref(move_count)
+    return truep(engine_id) ? ((m.by || {})[engine_id] || {}) : m
 }
 
-function winrate_suggested(move_count) {
+function winrate_suggested(move_count, engine_id) {
     const {move, is_black} = game.ref(move_count)
-    const {suggest} = game.ref(move_count - 1)
+    const {suggest} = get_estimation(move_count - 1, engine_id)
     const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
     return truep(sw) && (is_black ? sw : 100 - sw)
 }

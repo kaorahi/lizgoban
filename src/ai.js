@@ -224,6 +224,11 @@ function info_for_restore() {return recorded_start_args.map(h => h.info)}
 /////////////////////////////////////////////////
 // exports
 
+function engine_ids() {
+    const engines = [leelaz_for_black, leelaz_for_white]
+    return engines.map(lz => lz && lz.engine_id()).filter(truep)
+}
+
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi']
 
 require('./give_and_take.js').offer(module, {
@@ -237,7 +242,7 @@ require('./give_and_take.js').offer(module, {
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
-    set_handlers, another_leelaz_for_endstate_p,
+    set_handlers, another_leelaz_for_endstate_p, engine_ids,
     // both
     katago_p, support_endstate_p, engine_info,
 }, global)

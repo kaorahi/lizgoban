@@ -9,7 +9,7 @@ function create_leelaz () {
     const speedo_interval_sec = 3, speedo_premature_sec = 0.5
     const speedometer = make_speedometer(speedo_interval_sec, speedo_premature_sec)
 
-    let leelaz_process, arg, is_ready = false
+    let leelaz_process, arg, engine_id, is_ready = false
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi
@@ -31,7 +31,7 @@ function create_leelaz () {
 
     // process
     const start = h => {
-        arg = cook_arg(h)
+        arg = cook_arg(h); engine_id = JSON.stringify(arg)
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file, working_dir,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
@@ -260,7 +260,7 @@ function create_leelaz () {
         // winrate is NaN if suggest = []
         add_order('visits', 'visits_order')
         add_order('winrate', 'winrate_order')
-        arg.suggest_handler({suggest, visits, b_winrate, visits_per_sec,
+        arg.suggest_handler({engine_id, suggest, visits, b_winrate, visits_per_sec,
                              score_without_komi, ownership})
     }
 
@@ -349,7 +349,7 @@ function create_leelaz () {
     return {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
-        endstate, is_ready: () => is_ready,
+        endstate, is_ready: () => is_ready, engine_id: () => engine_id,
         // for debug
         send_to_leelaz,
     }

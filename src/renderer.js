@@ -18,7 +18,7 @@ const graph_overlay_canvas = Q('#graph_overlay')
 const R = {
     stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
     visits_per_sec: 0,
-    winrate_history: [], previous_suggest: null,
+    winrate_history: [], winrate_history_set: [[]], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
     expand_winrate_bar: false, let_me_think: false, score_bar: false,
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',

@@ -176,6 +176,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 ### from 0.3.0
 
 * Support 9x9 and 13x13 in "File" menu.
+* Separate estimations by different engines in winrate graph.
 * Upgrade libraries (Electron 7, etc.). So you may need to do "npm install" again.
 * "weight_dir" in config.json is obsolete now. (See above.)
 * "Komi" and "Info" are moved from [Tool] to [Edit] menu.
