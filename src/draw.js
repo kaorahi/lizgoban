@@ -262,6 +262,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                             draw_exp(h.unexpected_move, false, h, xy))
         const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
+        if (empty(R.suggest)) {return}
         draw_endstate_diff_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
     !R.lizzie_style && each_coord((h, xy) => h.suggest && (h.data.visits > 0)
@@ -559,8 +560,9 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
     large_bar && draw_winrate_bar_horizontal_lines(w, h, g)
     draw_winrate_bar_tics(b_wr, komi_wr, tics, w, h, vline, g)
+    if (empty(R.suggest)) {return}
     draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g)
-    R.winrate_trail && !empty(R.suggest) && draw_winrate_trail(canvas)
+    R.winrate_trail && draw_winrate_trail(canvas)
     draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
     draw_winrate_bar_text(prev_score, w, h, pale_text_p, g)
 }
