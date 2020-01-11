@@ -175,11 +175,13 @@ function pull_cached_engine(h) {
 function cache_disused_engine(lz) {
     if (!lz.start_args() || !lz.is_ready()) {lz.kill(); return}
     pull_cached_engine(lz.start_args())  // avoid duplication
-    lz.set_pondering(false); cached_engines.unshift(lz); shrink_cache()
+    lz.set_pondering(false)
+    remember(lz, cached_engines, max_cached_engines, lz => lz.kill())
 }
-function shrink_cache() {
-    const killed = cached_engines.splice(max_cached_engines, Infinity)
-    killed.forEach(lz => lz.kill())
+
+function remember(element, array, max_length, destroy) {
+    array.unshift(element)
+    array.splice(max_length, Infinity).forEach(destroy || do_nothing)
 }
 
 /////////////////////////////////////////////////
