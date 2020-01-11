@@ -21,7 +21,7 @@ const WINRATE_TRAIL_COLOR = 'rgba(160,160,160,0.8)'
 const WINRATE_BAR_ORDER_COLOR = '#d00', WINRATE_BAR_FIRST_ORDER_COLOR = '#0a0'
 const EXPECTED_COLOR = 'rgba(0,0,255,0.3)', UNEXPECTED_COLOR = 'rgba(255,0,0,0.8)'
 // p: pausing, t: trial
-const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#f7e3cd", pt: "#a09588"}
+const GOBAN_BG_COLOR = {"": "#f9ca91", p: "#a38360", t: "#a38360", pt: "#a09588"}
 
 // state
 let R = {}, target_move = null
