@@ -860,8 +860,9 @@ function info() {
           f("sgf", game.sgf_str)
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
 }
-function set_game_info(player_black, player_white, komi) {
+function set_game_info(player_black, player_white, komi, comment) {
     merge(game, {player_black, player_white, komi})
+    merge(game.ref_current(), {comment})
 }
 function endstate_diff_interval_adder(k) {
     return () => P.add_endstate_diff_interval(k)

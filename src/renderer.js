@@ -71,10 +71,10 @@ function start_auto_play() {
     main('auto_play', to_f(Q('#auto_play_sec').value)); hide_dialog()
 }
 function set_game_info() {
-    const keys = ['#player_black', '#player_white', '#komi']
-    const [pb, pw, komi_text] = keys.map(key => Q(key).value)
+    const keys = ['#player_black', '#player_white', '#komi', '#comment_form']
+    const [pb, pw, komi_text, comment] = keys.map(key => Q(key).value)
     const komi = Math.round(to_f(komi_text) * 2) / 2  // int or half-int
-    main('set_game_info', pb, pw, komi); hide_dialog()
+    main('set_game_info', pb, pw, komi, comment); hide_dialog()
 }
 
 function show_dialog(name) {
@@ -126,6 +126,7 @@ ipc.on('ask_game_info', (e) => {
     Q('#player_black').value = R.player_black
     Q('#player_white').value = R.player_white
     Q('#komi').value = R.komi
+    Q('#comment_form').value = R.comment
     show_dialog('#game_info_dialog')
 })
 
@@ -570,7 +571,8 @@ document.onkeydown = e => {
     case "auto_play_sec": start_auto_play(); return
     case "player_black": case "player_white": case "komi": set_game_info(); return
     }
-    if (e.target.tagName === "INPUT" && e.target.type !== "button") {
+    if ((e.target.tagName === "INPUT" && e.target.type !== "button") ||
+        e.target.tagName === "TEXTAREA") {
         escape && e.target.blur(); return
     }
     // GROUP 2: allow auto-repeat
