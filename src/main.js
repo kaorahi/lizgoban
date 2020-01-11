@@ -176,7 +176,7 @@ app.on('quit', kill_all_leelaz)
 
 function start_leelaz() {
     debug_log("option: " + JSON.stringify(option))
-    AI.start_leelaz(leelaz_start_args, option.endstate_leelaz); update_menu()
+    AI.start_leelaz(leelaz_start_args, option.endstate_leelaz)
 }
 function kill_all_leelaz() {AI.kill_all_leelaz()}
 
@@ -254,8 +254,8 @@ function renderer_gen(channel, win_prop_p, ...args) {
 
 const {set_endstate_diff_from} = P
 const simple_api = {
-    unset_busy, update_menu, toggle_board_type, toggle_let_me_think, toggle_stored,
-    copy_sgf_to_clipboard, set_endstate_diff_from,
+    unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
+    copy_sgf_to_clipboard, set_endstate_diff_from, UPDATE_menu,
 }
 const api = merge({}, simple_api, {
     new_window, init_from_renderer,
@@ -378,7 +378,6 @@ function update_state_to_move_count_tentatively(count) {
 /////////////////////////////////////////////////
 // another source of change: menu
 
-function update_menu() {}
 function UPDATE_menu() {mac_p() ? update_app_menu() : update_window_menu()}
 function update_app_menu() {
     const win = electron.BrowserWindow.getFocusedWindow() || get_windows()[0]
@@ -1051,7 +1050,7 @@ function UPDATE_state(keep_suggest_p) {
 
 function update_ui(ui_only) {}
 function UPDATE_ui(ui_only) {
-    update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
+    renderer_with_window_prop('update_ui', availability(), ui_only)
 }
 
 function set_stored(key, val) {
@@ -1266,7 +1265,7 @@ function delete_exercise() {
     if (!is_exercise_file(file)) {wink(); return}
     const new_file = PATH.join(dir, `_${name}`)
     const done = () => {
-        game.sgf_file = new_file; toast('deleted from exercise'); update_menu()
+        game.sgf_file = new_file; toast('deleted from exercise')
     }
     fs.rename(file, new_file, done)
 }

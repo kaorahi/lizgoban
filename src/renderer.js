@@ -42,7 +42,7 @@ const D = require('./draw.js'); D.set_state(R)
 window.onload = window.onresize = update
 window.onfocus = update_for_mac
 function update()  {set_all_canvas_size(); update_goban(); update_for_mac()}
-function update_for_mac() {mac_p() && main('update_menu')}  // for board_type_menu_item
+function update_for_mac() {mac_p() && main('UPDATE_menu')}  // for board_type_menu_item
 
 /////////////////////////////////////////////////
 // util
