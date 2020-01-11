@@ -70,6 +70,10 @@ function auto_analysis_visits_setting () {
 function start_auto_play() {
     main('auto_play', to_f(Q('#auto_play_sec').value)); hide_dialog()
 }
+function set_game_info() {
+    const vals = ['#player_black', '#player_white'].map(key => Q(key).value)
+    main('set_game_info', ...vals); hide_dialog()
+}
 
 function show_dialog(name) {
     Q(name).style.visibility = "visible"; Q(`${name} input`).select()
@@ -115,7 +119,12 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     try_thumbnail()
 })
 
-ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog'))
+ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog', true))
+ipc.on('ask_game_info', (e) => {
+    Q('#player_black').value = R.player_black
+    Q('#player_white').value = R.player_white
+    show_dialog('#game_info_dialog')
+})
 
 ipc.on('slide_in', (e, direction) => slide_in(direction))
 ipc.on('wink', (e) => wink())
@@ -556,6 +565,7 @@ document.onkeydown = e => {
     switch (key === "Enter" && e.target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "auto_play_sec": start_auto_play(); return
+    case "player_black": case "player_white": case "komi": set_game_info(); return
     }
     if (e.target.tagName === "INPUT" && e.target.type !== "button") {
         escape && e.target.blur(); return

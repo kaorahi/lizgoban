@@ -32,9 +32,10 @@
   background-color: rgba(255, 255, 255, 0.5); visibility: hidden;
   display: flex; justify-content: center; align-items: center;
  }
- .dialog p {
+ .dialog p, .dialog div {
   color: white; background-color: #444; padding: 3em; z-index: 9; position: relative;
  }
+ .dialog td {padding: 1em;}
  #toast {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   display: flex; justify-content: center; align-items: center;
@@ -188,6 +189,19 @@
   <input type='button' onclick="start_auto_play()" value=" ok ">
   <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
  </p>
+</div>
+
+<div class='dialog' id='game_info_dialog'>
+ <div>
+  <table>
+   <tr><td>Player Black:</td><td><input id='player_black'></td></tr>
+   <tr><td>Player White:</td><td><input id='player_white'></td></tr>
+  </table>
+  <div style='text-align: center; padding: 1em 0em 0em 0em;'>
+   <input type='button' onclick="set_game_info()" value=" ok ">
+  </div>
+  <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
+ </div>
 </div>
 
 <div id='toast'><p id='toast_message'></p></div>

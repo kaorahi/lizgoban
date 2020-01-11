@@ -267,7 +267,7 @@ const api = merge({}, simple_api, {
     let_me_think_next,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
     paste_sgf_or_url_from_clipboard,
-    read_sgf, open_url,
+    read_sgf, open_url, set_game_info,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
@@ -452,6 +452,7 @@ function menu_template(win) {
         sep,
         {label: 'Trial board', type: 'checkbox', checked: game.trial,
          click: exec(toggle_trial, update)},
+        item('Game info', undefined, () => ask_game_info(win)),
     ])
     const view_menu = menu('View', [
         board_type_menu_item('Two boards A (main+PV)', 'double_boards', win),
@@ -696,6 +697,7 @@ function auto_play_progress() {
 function ask_auto_play_sec(win, replaying) {
     auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
 }
+function ask_game_info(win) {win.webContents.send('ask_game_info')}
 function increment_auto_play_count(n) {
     auto_playing(true) && stop_auto_play()
     auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
@@ -851,6 +853,9 @@ function info() {
           f("sgf file", game.sgf_file) +
           f("sgf", game.sgf_str)
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
+}
+function set_game_info(player_black, player_white) {
+    merge(game, {player_black, player_white})
 }
 function endstate_diff_interval_adder(k) {
     return () => P.add_endstate_diff_interval(k)
