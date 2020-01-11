@@ -16,10 +16,9 @@ const winrate_trail = true
 /////////////////////////////////////////////////
 // basic
 
-function set_board(given_game, move_count) {
-    // use game.move_count if move_count is omitted
+function set_board(given_game) {
     game = given_game
-    const hist = game.array_until(truep(move_count) ? move_count : game.move_count)
+    const hist = game.array_until(game.move_count)
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
