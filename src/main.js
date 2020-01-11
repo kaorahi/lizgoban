@@ -489,7 +489,8 @@ function menu_template(win) {
     ])
     const white_unloader_item =
           item('Unload white engine', 'CmdOrCtrl+Shift+U',
-               unload_leelaz_for_white, false, lz_white)
+               () => {unload_leelaz_for_white(); AI.backup()},
+               false, lz_white)
     const engine_menu = menu('Engine', [
         item(lz_white ? 'Load weights for black' : 'Load network weights',
              'Shift+L', load_leelaz_for_black),
@@ -545,12 +546,15 @@ function preset_menu_maybe(menu_tools) {
     const items = preset_menu_items(option.preset, menu_tools)
     if (empty(items)) {return []}
     const white_menu = preset_menu_for_white(menu_tools)
-    return [menu('Preset', [...items, sep, white_menu, white_unloader_item])]
+    const recent_menu = preset_menu_for_recent(menu_tools)
+    return [menu('Preset', [
+        recent_menu, sep, ...items, sep, white_menu, white_unloader_item
+    ])]
 }
 function preset_menu_for_white(menu_tools) {
     const {menu} = menu_tools
     const items = preset_menu_items(option.white_preset, menu_tools, true)
-    return menu('Alternative engine for white', items)
+    return menu('Engine for white', items)
 }
 function preset_menu_items(preset, menu_tools, white_p) {
     const {item, win} = menu_tools
@@ -560,6 +564,13 @@ function preset_menu_items(preset, menu_tools, white_p) {
     }
     const item_for = a => item(a.label, a.accelerator, () => doit(a), true)
     return preset.map(item_for)
+}
+function preset_menu_for_recent(menu_tools) {
+    const {menu, item} = menu_tools, bn = PATH.basename
+    const label = ({black, white}) =>
+          `${bn(black.weight_file)}${white ? " / " + bn(white.weight_file) : ""}`
+    const item_for = (info, k) => item(label(info), null, () => AI.restore(k), true)
+    return menu('Recent', AI.info_for_restore().map(item_for))
 }
 
 function apply_preset(rule, win) {
@@ -579,7 +590,7 @@ function apply_preset(rule, win) {
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
         unload_leelaz_for_white()
     engine_for_white && AI.set_engine_for_white(engine_for_white)
-    resume()
+    AI.backup(); resume()
 }
 
 function expand_preset(preset) {
@@ -1070,7 +1081,8 @@ function availability() {
 let previous_weight_file = null
 function load_weight(white_p) {
     const dir = option_path('weight_dir') || PATH.dirname(AI.leelaz_weight_file(white_p))
-    return load_weight_file(select_weight_file(dir), white_p)
+    const ret = load_weight_file(select_weight_file(dir), white_p)
+    AI.backup(); return ret
 }
 function load_weight_file(weight_file, white_p) {
     if (!weight_file) {return false}

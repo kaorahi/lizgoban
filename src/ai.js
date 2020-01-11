@@ -47,6 +47,10 @@ function all_start_args() {
     const f = lz => lz && lz.start_args()
     return {black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
+function restore_all_start_args({black, white}) {
+    unload_leelaz_for_white()
+    leelaz.start(black); white && start_engine_for_white(white)
+}
 function leelaz_weight_file(white_p) {
     const lz = (white_p && leelaz_for_white) || leelaz_for_black
     return lz && lz.get_weight_file()
@@ -56,7 +60,10 @@ function each_leelaz(f, for_black_and_white_only) {
     [leelaz_for_black, leelaz_for_white,
      !for_black_and_white_only && leelaz_for_endstate].forEach(z => z && f(z))
 }
-function with_handlers(h) {return merge({suggest_handler}, h)}
+function with_handlers(h) {
+    const ready_handler = () => {backup(); h.ready_handler()}
+    return merge({suggest_handler}, h, {ready_handler})
+}
 
 function katago_p() {return leelaz.is_katago()}
 
@@ -81,9 +88,8 @@ function support_endstate_p() {return katago_p() || !!leelaz_for_endstate}
 function leelaz_for_white_p() {return !!leelaz_for_white}
 function swap_leelaz_for_black_and_white() {
     if (!leelaz_for_white) {return}
-    const old_black = leelaz_for_black
-    leelaz_for_black = leelaz_for_white; leelaz_for_white = old_black
-    switch_leelaz()
+    [leelaz_for_black, leelaz_for_white] = [leelaz_for_white, leelaz_for_black]
+    backup(); switch_leelaz()
 }
 function switch_to_random_leelaz(percent) {
     switch_leelaz(xor(is_bturn(), Math.random() < percent / 100))
@@ -92,6 +98,9 @@ function set_engine_for_white(command_args) {
     const [leelaz_command, ...leelaz_args] = command_args
     const start_args = {...leelaz_for_black.start_args(), weight_file: null,
                         leelaz_command, leelaz_args}
+    start_engine_for_white(start_args)
+}
+function start_engine_for_white(start_args) {
     unload_leelaz_for_white()
     leelaz_for_white = create_leelaz()
     leelaz_for_white.start(start_args)
@@ -185,6 +194,34 @@ function remember(element, array, max_length, destroy) {
 }
 
 /////////////////////////////////////////////////
+// restore
+
+const max_recorded_start_args = 12
+let recorded_start_args = [], initial_start_args
+function all_ready_p() {
+    return leelaz_for_black.is_ready() &&
+        (!leelaz_for_white || leelaz_for_white.is_ready())
+}
+function backup() {
+    if (!all_ready_p()) {return}
+    const args = all_start_args(), info = engine_info()
+    const spec = z => z && [z.leelaz_command, z.leelaz_args]
+    const s = a => JSON.stringify([spec(a.black), spec(a.white)])
+    const s_args = s(args), different = h => s(h.args) !== s_args
+    initial_start_args || (initial_start_args = args)
+    recorded_start_args = recorded_start_args.filter(different)
+    remember({args, info}, recorded_start_args, max_recorded_start_args)
+}
+function restore_initial_start_args() {restore_all_start_args(initial_start_args)}
+function restore(nth) {
+    const rsa = recorded_start_args
+    const n = nth || 0, h = rsa[n], a = h ? h.args : initial_start_args
+    h && (rsa.splice(n, 1), rsa.unshift(h))
+    a && restore_all_start_args(a)
+}
+function info_for_restore() {return recorded_start_args.map(h => h.info)}
+
+/////////////////////////////////////////////////
 // exports
 
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi']
@@ -196,7 +233,7 @@ require('./give_and_take.js').offer(module, {
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_weight_file,
     unload_leelaz_for_white, leelaz_weight_file, restart,
-    set_engine_for_white,
+    set_engine_for_white, restore, info_for_restore, backup,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
