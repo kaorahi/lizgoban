@@ -9,7 +9,7 @@ const {endstate_clusters_for} = require('./area.js')
 const PATH = require('path')
 
 // state
-let endstate_diff_interval = 12, endstate_diff_from = null, initial_b_winrate = NaN
+let endstate_diff_interval = 12, endstate_diff_from = null
 let game = create_game()  // dummy empty game until first set_board()
 const winrate_trail = true
 
@@ -67,8 +67,7 @@ function suggest_handler(h) {
         ((cur.endstate = h.endstate = endstate_from_ownership(h.ownership)),
          (cur.hotness = sum_of_endstate_change(game.move_count)),
          (cur.score_without_komi = h.score_without_komi))
-    cur.suggest = h.suggest; cur.visits = h.visits;
-    mc > 0 ? (cur.b_winrate = h.b_winrate) : (initial_b_winrate = h.b_winrate)
+    const keys = ['suggest', 'visits', 'b_winrate']; keys.forEach(k => cur[k] = h[k])
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = cur
     R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, true)
@@ -191,7 +190,7 @@ function get_endstate_clusters(endstate, move_count) {
 
 function winrate_from_game(game) {
     const winrates = game.map(m => m.b_winrate)
-    return [initial_b_winrate, ...winrates].map((r, s, a) => {
+    return [get_initial_b_winrate(), ...winrates].map((r, s, a) => {
         const cur = game.ref(s)
         const h = append_endstate_tag_maybe(cur), tag = h.tag
         if (!truep(r)) {return {tag}}
@@ -209,6 +208,10 @@ function winrate_from_game(game) {
         return merge({r, move_b_eval, move_eval, tag, score_without_komi, hotness,
                       uncertainty}, pass ? {pass} : {predict})
     })
+}
+
+function get_initial_b_winrate() {
+    const ret = game.ref(0).b_winrate; return truep(ret) ? ret : NaN
 }
 
 function winrate_suggested(move_count) {
@@ -286,5 +289,5 @@ require('./give_and_take.js').offer(module, {
     set_and_render,
     // util
     stone_for_history_elem, update_info_in_stones, weight_info_text,
-    get_initial_b_winrate: () => initial_b_winrate,
+    get_initial_b_winrate,
 }, global, () => AI.set_handlers({suggest_handler, endstate_handler}))
