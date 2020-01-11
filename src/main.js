@@ -225,7 +225,7 @@ function new_window(default_board_type) {
     }))
     windows.push(win)
     maximized && win.maximize()
-    win.once('ready-to-show', () => {update_ui(); win.show()})
+    win.once('ready-to-show', () => win.show())
 }
 
 // renderer
@@ -620,24 +620,24 @@ function skip_auto() {try_auto(true)}
 function auto_progress() {
     return Math.max(auto_analysis_progress(), auto_play_progress())
 }
-function stop_auto() {stop_auto_analyze(); stop_auto_play(); update_ui()}
+function stop_auto() {stop_auto_analyze(); stop_auto_play()}
 function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing()}
 
 // auto-analyze (redo after given visits)
 function try_auto_analyze(force_next) {
     const done = force_next || (auto_analysis_progress() >= 1)
-    const finish = () => (pause(), stop_auto_analyze(), update_ui())
+    const finish = () => (pause(), stop_auto_analyze())
     const next = (pred, proc) => {pred() ? proc() : finish(); UPDATE_all()}
     done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
 }
 function toggle_auto_analyze(visits) {
     if (game.is_empty()) {wink(); return}
     (auto_analysis_signed_visits === visits) ?
-        (stop_auto_analyze(), update_ui()) :
+        stop_auto_analyze() :
         start_auto_analyze(visits)
 }
 function start_auto_analyze(visits) {
-    auto_analysis_signed_visits = visits; rewind_maybe(); resume(); update_ui()
+    auto_analysis_signed_visits = visits; rewind_maybe(); resume()
 }
 function stop_auto_analyze() {auto_analysis_signed_visits = Infinity}
 function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
@@ -661,7 +661,7 @@ function auto_play(sec, explicitly_playing_best) {
     auto_replaying && rewind_maybe()
     auto_play_sec = sec || -1; stop_auto_analyze()
     update_auto_play_time()
-    update_let_me_think(); resume(); update_ui()
+    update_let_me_think(); resume()
 }
 function try_auto_play(force_next) {
     force_next && (last_auto_play_time = - Infinity)
@@ -775,7 +775,7 @@ function set_board_type(type, win, keep_let_me_think) {
     const prop = window_prop(win), {board_type, previous_board_type} = prop
     if (!type || type === board_type) {return}
     keep_let_me_think || stop_let_me_think()
-    merge(prop, {board_type: type, previous_board_type: board_type}); update_ui()
+    merge(prop, {board_type: type, previous_board_type: board_type})
 }
 
 // handicap stones & komi
@@ -858,7 +858,7 @@ function update_ponder() {}
 function UPDATE_ponder() {
     AI.set_pondering(pausing, busy); pausing && (R.endstate = null)
 }
-function update_ponder_and_ui() {update_ponder(); update_ui()}
+function update_ponder_and_ui() {update_ponder()}
 function init_from_renderer() {update_state()}
 
 function set_board(given_game, move_count) {}
@@ -1045,10 +1045,8 @@ function UPDATE_state(keep_suggest_p) {
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, history_tags
     }, keep_suggest_p ? {} : {suggest: []})
-    update_ui(true)
 }
 
-function update_ui(ui_only) {}
 function UPDATE_ui(ui_only) {
     renderer_with_window_prop('update_ui', availability(), ui_only)
 }
