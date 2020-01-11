@@ -550,8 +550,7 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     const b_wr0 = fake_winrate_for(z.r, z.score_without_komi, true)
     const b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
     const komi_wr = score_p && fake_winrate_for(0.5, R.komi, true)
-    const prev_score = score_p &&
-          (R.winrate_history[R.move_count - 1] || {}).score_without_komi
+    const prev_score = score_p && origin_score()
     winrate_bar_prev = b_wr
     if (R.pausing && !truep(b_wr0)) {
         draw_winrate_bar_unavailable(w, h, g)
@@ -569,10 +568,10 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
 }
 
 function draw_winrate_bar_text(prev_score, w, h, pale_text_p, g) {
-    const b_wr = b_winrate(); if (!truep(b_wr)) {return}
-    const scorep = score_bar_p()
-    const eval = scorep ? - (R.score_without_komi - prev_score) * (R.bturn ? 1 : -1)
-          : last_move_eval()
+    const b_wr = b_winrate(0); if (!truep(b_wr)) {return}
+    const scorep = score_bar_p(), b_sign = R.bturn ? 1 : -1
+    const eval = scorep ? - (R.score_without_komi - prev_score) * b_sign
+          : - (b_wr - origin_b_winrate()) * b_sign
     const visits = R.max_visits && kilo_str(R.max_visits)
     const fontsize = Math.min(h * 0.5, w * 0.04)
     const [wr_color, vis_color] = pale_text_p ?
@@ -656,10 +655,10 @@ function draw_winrate_bar_komi(komi, h, xfor, g) {
 
 
 function draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g) {
-    const eval = last_move_eval(), b_eval = last_move_b_eval(), dummy = 0
-    if (!truep(eval)) {return}
+    const obw = origin_b_winrate(), dummy = 0
     const prev_b_wr = score_bar_p() ?
-          fake_winrate_for(dummy, prev_score, true) : (b_wr - b_eval)
+          fake_winrate_for(dummy, prev_score, true) : obw
+    if (!truep(obw) || (b_wr === prev_b_wr)) {return}
     const [x1, x2] = [b_wr, prev_b_wr].map(xfor).sort()
     const last_gain = - (b_wr - prev_b_wr) * (R.bturn ? 1 : -1)
     if (!truep(last_gain)) {return}
@@ -784,11 +783,10 @@ function winrate_color_hue(winrate, score) {
     const unit_delta_hue = green_hue - yellow_hue
     const unit_delta_winrate = 5, unit_delta_score = 5
     // winrate gain
-    const wr0 = flip_maybe(b_winrate(1) || b_winrate())
+    const wr0 = flip_maybe(origin_b_winrate())
     const delta_by_winrate = (winrate - wr0) / unit_delta_winrate
     // score gain
-    const prev_score = nth_prev => winrate_history_ref('score_without_komi', nth_prev)
-    const s0 = [1, 0].map(prev_score).find(truep)
+    const s0 = origin_score()
     const delta_by_score_maybe = truep(score) && truep(s0) &&
           (score - s0) * (R.bturn ? 1 : -1) / unit_delta_score
     const delta_by_score = delta_by_score_maybe || delta_by_winrate
@@ -796,6 +794,13 @@ function winrate_color_hue(winrate, score) {
     const delta_hue = (delta_by_winrate + delta_by_score) / 2 * unit_delta_hue
     return to_i(clip(yellow_hue + delta_hue, red_hue, cyan_hue))
 }
+
+function origin_b_winrate() {return origin_gen(b_winrate)}
+function origin_score() {
+    const prev_score = nth_prev => winrate_history_ref('score_without_komi', nth_prev)
+    return origin_gen(prev_score)
+}
+function origin_gen(get_prev) {return [1, 2, 0].map(get_prev).find(truep)}
 
 function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
 
@@ -1285,10 +1290,11 @@ function suggest_texts(suggest) {
 }
 
 function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
-function last_move_b_eval() {return winrate_history_ref('move_b_eval')}
-function last_move_eval() {return winrate_history_ref('move_eval')}
 function winrate_history_ref(key, nth_prev) {
-    return (R.winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
+    const [whs, rest] = R.winrate_history_set
+    const winrate_history = !truep(nth_prev) ? R.winrate_history :
+          (whs.length > 1 && !R.bturn) ? whs[1] : whs[0]
+    return (winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
 }
 
 function flip_maybe(x, bturn) {
