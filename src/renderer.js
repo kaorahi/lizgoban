@@ -94,6 +94,7 @@ ipc.on('render', (e, h, is_board_changed) => {
     set_board_size(R.bsize)
     setq('#move_count', R.move_count)
     setq('#history_length', ' (' + R.history_length + ')')
+    setq('#comment', R.comment)
     D.update_winrate_trail()
     update_goban()
 })

@@ -9,7 +9,7 @@ const SGF = require('@sabaki/sgf')
 // example of history:
 // [{move: "D16", is_black: true, move_count: 1, b_winrate: 42.19, ...},
 //  {move: "Q4", is_black: false, move_count: 2, tag: "b", ...},
-//  {move: "Q16", is_black: false, move_count: 3, ...},
+//  {move: "Q16", is_black: false, move_count: 3, comment: "chance!" , ...},
 //  {move: "pass", is_black: true, move_count: 4, ...}]
 // 
 // Black played pass for the third move and the last move in this example.
@@ -78,13 +78,18 @@ function create_game(init_history, init_prop) {
 // SGF
 
 function game_to_sgf(game) {
-    const f = (t, p) => `${t}[${SGF.escapeString(p || '')}]`
+    const f = (t, p) => p ? `${t}[${SGF.escapeString(p)}]` : ''
+    // header
     const km = truep(game.komi) ? `KM[${game.komi}]` : ''
     const sz = `SZ[${game.board_size}]`
-    return `(;${sz}${km}${f('PW', game.player_white)}${f('PB', game.player_black)}` +
-        game.map(({move: move, is_black: is_black}) =>
-                 (is_black ? ';B[' : ';W[') + move2sgfpos(move) + ']').join('') +
-        ')'
+    const header =
+          `;${sz}${km}${f('PW', game.player_white)}${f('PB', game.player_black)}`
+    // body
+    const move2sgf = ({move, is_black, comment}) =>
+          `;${is_black ? 'B' : 'W'}[${move2sgfpos(move)}]${f('C', comment)}`
+    const body = game.map(move2sgf).join('')
+    // all
+    return `(${header}${body})`
 }
 
 function create_game_from_sgf(sgf_str) {
@@ -151,13 +156,14 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
 
 function history_from_sabaki_nodes(nodes) {
     const new_history = []; let move_count = 0
-    const f = (positions, is_black) => {
-        (positions || []).forEach(pos => {
-            const move = sgfpos2move(pos)
-            move && ++move_count && new_history.push({move, is_black, move_count})
+    const f = (h, key, is_black) => {
+        (h[key] || []).forEach((pos, k) => {
+            const move = sgfpos2move(pos), comment = k === 0 && (h.C || [])[0]
+            move && ++move_count &&
+                new_history.push({move, is_black, move_count, comment})
         })
     }
-    nodes.forEach(h => {f(h.AB, true); f(h.B, true); f(h.W, false)})
+    nodes.forEach(h => {f(h, 'AB', true); f(h, 'B', true); f(h, 'W', false)})
     return new_history
 }
 
