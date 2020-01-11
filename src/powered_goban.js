@@ -61,15 +61,16 @@ function endstate_handler(h) {
 const too_small_prior = 1e-3
 function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
-    const mc = game.move_count, cur = game.ref(mc) || {}
+    const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
     h.ownership &&
         ((cur.endstate = h.endstate = endstate_from_ownership(h.ownership)),
          (cur.hotness = sum_of_endstate_change(game.move_count)),
          (cur.score_without_komi = h.score_without_komi))
-    !cur.by && (cur.by = {}); !cur.by[h.engine_id] && (cur.by[h.engine_id] = {})
+    !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
     const keys = ['suggest', 'visits', 'b_winrate']
-    keys.forEach(k => cur.by[h.engine_id][k] = cur[k] = h[k])
+    keys.forEach(k => cur.by[engine_id][k] = cur[k] = h[k])
+    game.engines[engine_id] = true
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = cur
     R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, true)
@@ -85,13 +86,19 @@ function endstate_from_ownership(ownership) {
 /////////////////////////////////////////////////
 // change renderer state and send it to renderer
 
+function winrate_history_set_from_game() {
+    const current = AI.engine_ids()
+    const rest = Object.keys(game.engines).filter(eid => current.indexOf(eid) < 0)
+    const f = a => a.map(winrate_from_game)
+    return [f(current), f(rest)]
+}
+
 function set_renderer_state(...args) {
     merge(R, ...args)  // use updated R in below lines
     const move_count = game.move_count
     const busy = M.is_busy()
     const winrate_history = busy ? [] : winrate_from_game()
-    const winrate_history_set = busy ? [[]] :
-          AI.engine_ids().map(eid => winrate_from_game(eid))
+    const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
     const previous_suggest = get_previous_suggest()
     const max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
     const progress = M.auto_progress()

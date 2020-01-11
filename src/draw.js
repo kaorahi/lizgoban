@@ -952,9 +952,10 @@ function draw_winrate_graph_future(w, h, sr2coord, g) {
 }
 
 function draw_winrate_graph_curve(sr2coord, g) {
-    const whs = R.winrate_history_set
+    const [whs, rest] = R.winrate_history_set
     const style_for = k => whs.length <= 1 ? null : k === 0 ? GREEN : '#f0f'
     const draw1 = (a, style) => draw_winrate_graph_curve_for(a, style, sr2coord, g)
+    rest.forEach(a => draw1(a, 'rest'))
     whs.forEach((a, which_engine) => draw1(a, style_for(which_engine)))
 }
 
@@ -965,11 +966,12 @@ function draw_winrate_graph_curve_for(winrate_history, style, sr2coord, g) {
     }
     winrate_history.forEach((h, s) => {
         if (!truep(h.r)) {return}
-        truep(h.predict) && draw_predict(h.r, s, h.predict)
-        g.strokeStyle = style ||
-            (isNaN(h.move_eval) ? GRAY : h.pass ? PALE_BLUE :
-             (h.move_eval < 0) ? RED : (s > 1 && !truep(h.predict)) ? YELLOW : GREEN)
-        g.lineWidth = (s <= R.move_count ? 3 : 1)
+        const thin = (style === 'rest')
+        truep(h.predict) && !thin && draw_predict(h.r, s, h.predict)
+        g.strokeStyle = thin ? PALE_BLUE : style ? style :
+            isNaN(h.move_eval) ? GRAY : h.pass ? PALE_BLUE :
+            (h.move_eval < 0) ? RED : (s > 1 && !truep(h.predict)) ? YELLOW : GREEN
+        g.lineWidth = (thin ? 1 : s <= R.move_count ? 3 : 1)
         cur = sr2coord(s, h.r); prev && line(prev, cur, g); prev = cur
     })
 }

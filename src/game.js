@@ -30,7 +30,7 @@ function create_game(init_history, init_prop) {
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
-        trial: false, last_loaded_element: null
+        trial: false, last_loaded_element: null, engines: {},
     }
     const update_move_count_after = f => (...args) => {
         const ret = f(...args); self.move_count = self.len(); return ret
