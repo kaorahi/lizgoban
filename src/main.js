@@ -424,11 +424,12 @@ function menu_template(win) {
     const dup = until_current_move_p =>
           () => duplicate_sequence(until_current_move_p, true)
     const file_menu = menu('File', [
-        item('New 19x19 board', 'CmdOrCtrl+N', () => new_empty_board(19), true),
-        item('New 13x13 board', undefined, () => new_empty_board(13), true),
-        item('New 9x9 board', undefined, () => new_empty_board(9), true),
+        item('New empty board', 'CmdOrCtrl+N', () => new_empty_board(), true),
         item('New handicap game', undefined, ask_handicap_stones,
              true, board_size() === 19),
+        ...[19, 13, 9].map(n => item(`New ${n}x${n} board`, undefined,
+                                     () => new_empty_board(n), true,
+                                     n === 19 || AI.katago_p())),
         item('New window', 'CmdOrCtrl+Shift+N',
              (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
                                             'variation' : 'suggest')),
