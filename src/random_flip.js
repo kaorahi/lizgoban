@@ -12,7 +12,7 @@ function random_flip_rotation(history) {
 function transform(history, ...spec) {return convert(trans1(...spec), history)}
 
 function trans1(flip_i, flip_j, swap_ij) {
-    const fl = (k, bool) => bool ? (board_size - 1 - k) : k
+    const fl = (k, bool) => bool ? (board_size() - 1 - k) : k
     const sw = (i, j, bool) => bool ? [j, i] : [i, j]
     return ([i, j]) => sw(fl(i, flip_i), fl(j, flip_j), swap_ij)
 }

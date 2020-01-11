@@ -91,6 +91,7 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 ipc.on('render', (e, h, is_board_changed) => {
     if (showing_until() && !is_board_changed) {return}  // for smooth reaction
     merge(R, h)
+    set_board_size(R.bsize)
     setq('#move_count', R.move_count)
     setq('#history_length', ' (' + R.history_length + ')')
     D.update_winrate_trail()
@@ -385,7 +386,7 @@ function mouse2coord(e) {
 }
 function mouse2idx(e, coord2idx) {
     const [i, j] = coord2idx(...mouse2coord(e))
-    return (0 <= i && i < board_size && 0 <= j && j < board_size) && [i, j]
+    return (0 <= i && i < board_size() && 0 <= j && j < board_size()) && [i, j]
 }
 function mouse2move(e, coord2idx) {
     const idx = mouse2idx(e, coord2idx); return idx && idx2move(...idx)

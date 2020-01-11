@@ -3,7 +3,7 @@ require('./common.js').to(global)
 // illegal moves are not checked (ko, suicide, occupied place, ...)
 
 function stones_from_history(history) {
-    const stones = aa_new(board_size, board_size, () => ({}))
+    const stones = aa_new(board_size(), board_size(), () => ({}))
     history.forEach((h, k) => put(h, stones, k === history.length - 1))
     return stones
 }

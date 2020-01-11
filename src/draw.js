@@ -166,7 +166,7 @@ function draw_goban(canvas, stones, opts) {
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
           = opts || {}
     const large_font_p = !main_canvas_p
-    const margin = canvas.height / (board_size + 1), hm = margin / 2
+    const margin = canvas.height / (board_size() + 1), hm = margin / 2
     const font_unit = Math.min(margin, canvas.height / 20)
     const g = canvas.getContext("2d")
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
@@ -198,11 +198,11 @@ function draw_goban(canvas, stones, opts) {
 
 function draw_grid(unit, idx2coord, g) {
     g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
-    seq(board_size).forEach(i => {
-        line(idx2coord(i, 0), idx2coord(i, board_size - 1), g)
-        line(idx2coord(0, i), idx2coord(board_size - 1, i), g)
+    seq(board_size()).forEach(i => {
+        line(idx2coord(i, 0), idx2coord(i, board_size() - 1), g)
+        line(idx2coord(0, i), idx2coord(board_size() - 1, i), g)
     })
-    const star_radius = unit * 0.1, ijs = stars[board_size] || []
+    const star_radius = unit * 0.1, ijs = stars[board_size()] || []
     ijs.forEach(ij => fill_circle(idx2coord(...ij), star_radius, g))
 }
 
@@ -312,7 +312,7 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
     g.save()
     g.textAlign = 'right'; g.textBaseline = 'top'
     g.fillStyle = style[selfstone_sum > 0 ? 'black' : 'white']
-    fill_text(g, size['minor'] * unit, ss_text, ...idx2coord(-1.3, board_size))
+    fill_text(g, size['minor'] * unit, ss_text, ...idx2coord(-1.3, board_size()))
     g.restore()
 }
 

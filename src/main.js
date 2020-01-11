@@ -420,7 +420,7 @@ function menu_template(win) {
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', new_empty_board, true),
         item('New handicap game', undefined, ask_handicap_stones,
-             true, board_size === 19),
+             true, board_size() === 19),
         item('New window', 'CmdOrCtrl+Shift+N',
              (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
                                             'variation' : 'suggest')),

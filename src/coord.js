@@ -8,10 +8,18 @@
 Object.assign(global, require('./util.js'))
 
 /////////////////////////////////////////////////
+// board_size
+
+// Caution: need to call set_board_size in *each* process
+
+let the_board_size = 19
+function board_size() {return the_board_size}
+function set_board_size(n) {the_board_size = n}
+
+/////////////////////////////////////////////////
 // idx <=> move
 
 const col_name = 'ABCDEFGHJKLMNOPQRST'
-const board_size = col_name.length
 const idx_pass = [-1, -1]
 const stars = {
     19: [[3, 3], [3, 9], [3, 15], [9, 3], [9, 9], [9, 15], [15, 3], [15, 9], [15, 15]],
@@ -19,13 +27,13 @@ const stars = {
 }
 
 function idx2move(i, j) {
-    return (0 <= i) && (i < board_size) && (0 <= j) && (j < board_size) &&
-        col_name[j] + (board_size - i)
+    return (0 <= i) && (i < board_size()) && (0 <= j) && (j < board_size()) &&
+        col_name[j] + (board_size() - i)
 }
 
 function move2idx(move) {
     const m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
-    return m ? [board_size - to_i(row), col_name.indexOf(col)] : idx_pass
+    return m ? [board_size() - to_i(row), col_name.indexOf(col)] : idx_pass
 }
 
 /////////////////////////////////////////////////
@@ -41,7 +49,7 @@ function translator_pair([from1, from2], [to1, to2]) {
 function idx2coord_translator_pair(canvas, xmargin, ymargin, is_square) {
     // u = j, v = i
     const [uv2xy, xy2uv] =
-          uv2coord_translator_pair(canvas, [0, board_size - 1], [0, board_size - 1],
+          uv2coord_translator_pair(canvas, [0, board_size() - 1], [0, board_size() - 1],
                                    xmargin, ymargin, is_square)
     return [((i, j) => uv2xy(j, i)), ((x, y) => xy2uv(x, y).reverse())]
 }
@@ -86,5 +94,5 @@ function sgfpos2move(pos) {
 
 module.exports = {
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
-    board_size, sgfpos2move, move2sgfpos, stars,
+    board_size, set_board_size, sgfpos2move, move2sgfpos, stars,
 }
