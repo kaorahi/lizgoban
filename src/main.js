@@ -394,7 +394,7 @@ function safe_menu_maybe() {
         help_menu,
     ]
     const wait = !AI.engine_info().current.is_ready && [
-        {label: 'Initializing...', enabled: false},
+        f('Cancel(Esc)', 'Esc', () => {AI.restore(); update_all()}),
         help_menu,
     ]
     return auto || wait
@@ -500,8 +500,7 @@ function menu_template(win) {
         lz_white ?
             item('Swap black/white engines', 'Shift+S',
                  AI.swap_leelaz_for_black_and_white) :
-            item('Switch to previous weights', 'Shift+S',
-                 switch_to_previous_weight, false, !!previous_weight_file),
+            item('Switch to previous engine', 'Shift+S', () => AI.restore(1)),
         sep,
         item('Reset', 'CmdOrCtrl+R', restart),
     ])
@@ -1104,9 +1103,6 @@ function select_files(title, dir) {
         defaultPath: dir,
     }) || []
 }
-function switch_to_previous_weight() {
-    previous_weight_file ? load_weight_file(previous_weight_file) : wink()
-}
 
 // restart
 function restart() {AI.restart()}
@@ -1128,7 +1124,7 @@ ${info}`
     const warn_maybe = () => warned_engine_trouble ||
           (show_error(warning), (warned_engine_trouble = true))
     const buttons = ["RESTORE", "retry", "load weights", "(ignore)"]
-    const actions = [switch_to_previous_weight, restart, load_weight, warn_maybe]
+    const actions = [AI.restore, restart, load_weight, warn_maybe]
     const do_action =
           z => {actions[z.response](); asking_recovery = false; update_all()}
     const recover = () => {
