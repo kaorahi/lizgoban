@@ -166,7 +166,7 @@ function draw_goban(canvas, stones, opts) {
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
           = opts || {}
     const large_font_p = !main_canvas_p
-    const margin = canvas.height * 0.05, hm = margin / 2
+    const margin = canvas.height / (board_size + 1), hm = margin / 2
     const g = canvas.getContext("2d")
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
@@ -311,7 +311,7 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
     g.save()
     g.textAlign = 'right'; g.textBaseline = 'top'
     g.fillStyle = style[selfstone_sum > 0 ? 'black' : 'white']
-    fill_text(g, size['minor'] * unit, ss_text, ...idx2coord(-1.3, 19))
+    fill_text(g, size['minor'] * unit, ss_text, ...idx2coord(-1.3, board_size))
     g.restore()
 }
 
