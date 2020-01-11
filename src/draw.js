@@ -167,6 +167,7 @@ function draw_goban(canvas, stones, opts) {
           = opts || {}
     const large_font_p = !main_canvas_p
     const margin = canvas.height / (board_size + 1), hm = margin / 2
+    const font_unit = Math.min(margin, canvas.height / 20)
     const g = canvas.getContext("2d")
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
@@ -178,10 +179,10 @@ function draw_goban(canvas, stones, opts) {
     // draw
     draw_grid(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
-    draw_visits_p && draw_visits(draw_visits_p, margin, canvas, g)
+    draw_visits_p && draw_visits(draw_visits_p, font_unit, canvas, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
     mapping_to_winrate_bar && !(draw_endstate_value_p && draw_endstate_p) &&
-        draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g)
+        draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p,
