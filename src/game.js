@@ -28,7 +28,7 @@ function new_game_id() {return next_game_id++}
 function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
-        move_count: 0, player_black: "", player_white: "", komi: 7.5,
+        move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
         sgf_file: "", sgf_str: "", id: new_game_id(),
         trial: false, last_loaded_element: null
     }
