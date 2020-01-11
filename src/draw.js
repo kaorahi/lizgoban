@@ -219,9 +219,9 @@ function draw_visits(text_maybe, margin, canvas, g) {
 
 function draw_visits_text(text, margin, canvas, g) {
     g.save()
-    g.fillStyle = MAYBE_BLACK; set_font(margin / 2, g)
+    g.fillStyle = MAYBE_BLACK
     g.textAlign = 'left'; g.textBaseline = 'middle'
-    g.fillText(text, 0, margin / 4)
+    fill_text(g, margin / 2, text, 0, margin / 4)
     g.restore()
 }
 
@@ -302,17 +302,15 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
         const text = to_s(area_count), xy = idx2coord(...center_idx)
         g.save()
         g.textAlign = 'center'; g.textBaseline = 'middle'
-        set_font(size[type] * unit, g); g.fillStyle = style[color]
-        g.fillText(text, ...xy)
+        g.fillStyle = style[color]; fill_text(g, size[type] * unit, text, ...xy)
         g.restore()
     })
     const selfstone_sum = Math.round(sum(cs.map(cluster => cluster.selfstone_sum)))
     const ss_text = selfstone_sum === 0 ? '' : `+${to_s(Math.abs(selfstone_sum))}`
     g.save()
     g.textAlign = 'right'; g.textBaseline = 'top'
-    set_font(size['minor'] * unit, g)
     g.fillStyle = style[selfstone_sum > 0 ? 'black' : 'white']
-    g.fillText(ss_text, ...idx2coord(-1.3, 19))
+    fill_text(g, size['minor'] * unit, ss_text, ...idx2coord(-1.3, 19))
     g.restore()
 }
 
@@ -369,8 +367,8 @@ function draw_text_on_stone(text, color, xy, radius, g) {
     const l = text.length, [x, y] = xy, max_width = radius * 1.5
     const fontsize = to_i(radius * (l < 3 ? 1.8 : l < 6 ? 1.2 : 0.9))
     g.save()
-    set_font(fontsize, g); g.textAlign = 'center'; g.textBaseline = 'middle'
-    g.fillStyle = color; g.fillText(text, x, y, max_width)
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = color; fill_text(g, fontsize, text, x, y, max_width)
     g.restore()
 }
 
@@ -397,14 +395,15 @@ function draw_suggest(h, xy, radius, large_font_p, g) {
     edged_fill_circle(xy, radius, g)
     if (R.lizzie_style) {
         const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
-        const fontsize = to_i(radius * 0.8), next_y = y + fontsize
+        const fontsize = to_i(radius * 0.8), half = fontsize / 2
+        const y_upper = y - half, y_lower = y + half
         const [winrate_text, visits_text] = suggest_texts(suggest)
         const score_text = score_bar_p() && f2s(suggest.score_without_komi)
-        g.save(); set_font(fontsize, g); g.textAlign = 'center'
+        g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'
         g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
-        g.fillText(score_text || winrate_text, x, y, max_width)
+        fill_text(g, fontsize, score_text || winrate_text, x, y_upper, max_width)
         g.fillStyle = suggest.order === 0 ? champ_color : lizzie_text_color
-        g.fillText(visits_text, x, next_y , max_width)
+        fill_text(g, fontsize, visits_text, x, y_lower, max_width)
         g.restore()
     }
     draw_suggestion_order(h, xy, radius, g.strokeStyle, large_font_p, g)
@@ -423,18 +422,17 @@ function draw_suggestion_order(h, [x, y], radius, color, large_font_p, g) {
     const both_champ = (h.data.order + h.data.winrate_order === 0)
     const either_champ = (h.data.order * h.data.winrate_order === 0)
     const huge = [2, -1], large = [1.5, -0.5], normal = [1, -0.1], small = [0.8, 0.3]
-    const font_modifier = large_font_p && both_champ ? 'bold ' : ''
+    const font_modifier = large_font_p && both_champ && 'bold '
     const either = (champ, other) => both_champ ? champ : other
     const [fontsize, d] = (lizzie ? small : large_font_p ? huge : either(large, normal))
           .map(c => c * radius)
-    const w = fontsize
+    const w = fontsize, x0 = x + d + w / 2, y0 = y - d - w / 2
     g.save()
     g.fillStyle = BLUE
     lizzie && fill_rect([x + d, y - d - w], [x + d + w, y - d], g)
     g.fillStyle = lizzie ? WHITE : either_champ ? RED : color
-    set_font(font_modifier + fontsize, g)
     g.textAlign = 'center'; g.textBaseline = 'middle'
-    g.fillText(h.data.order + 1, x + d + w / 2, y - d - w / 2, w)
+    fill_text_with_modifier(g, font_modifier, fontsize, h.data.order + 1, x0, y0, w)
     g.restore()
 }
 
@@ -464,8 +462,8 @@ function draw_endstate_value(h, past_p, sign, xy, radius, g) {
     const c = quantized ? ((v > 6) ? 2 : (v > 3) ? 1 : 0.5) : Math.sqrt(a) * 2
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'middle'
-    set_font(radius * c, g); g.fillStyle = (e >= 0) ? '#080' : '#f0f'
-    g.fillText(v === 10 ? ten : to_s(v), ...xy, max_width)
+    g.fillStyle = (e >= 0) ? '#080' : '#f0f'
+    fill_text(g, radius * c, v === 10 ? ten : to_s(v), ...xy, max_width)
     g.restore()
 }
 
@@ -490,15 +488,15 @@ function draw_winrate_mapping_line(h, xy, unit, g) {
 
 function draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g) {
     const {text, subtext, at} = mapping_to_winrate_bar
-    const y = canvas.height - margin / 6
-    g.fillStyle = RED; set_font(margin / 2, g)
+    const y = canvas.height - margin / 6, fontsize = margin / 2
     // main text
+    g.fillStyle = RED
     g.textAlign = at < 10 ? 'left' : at < 90 ? 'center' : 'right'
-    g.fillText(text, canvas.width * at / 100, y)
+    fill_text(g, fontsize, text, canvas.width * at / 100, y)
     // subtext
     const [sub_at, sub_align] = at > 50 ? [0, 'left'] : [100, 'right']
     g.fillStyle = 'rgba(255,0,0,0.5)'; g.textAlign = sub_align
-    g.fillText(subtext, canvas.width * sub_at / 100, y)
+    fill_text(g, fontsize, subtext, canvas.width * sub_at / 100, y)
 }
 
 function draw_mapping_tics(unit, canvas, g) {
@@ -578,8 +576,9 @@ function draw_winrate_bar_text(prev_score, w, h, pale_text_p, g) {
           ['rgba(0,192,0,0.3)', 'rgba(160,160,160,0.3)'] :
           [GREEN, WINRATE_TRAIL_COLOR]
     g.save()
-    set_font(fontsize, g); g.textBaseline = 'middle'
-    const write = (text, x, y_rel) => g.fillText(text, x, fontsize * (y_rel || 0.5))
+    g.textBaseline = 'middle'
+    const write = (text, x, y_rel) =>
+          fill_text(g, fontsize, text, x, fontsize * (y_rel || 0.5))
     const score_str = wr => (wr % 10 === 0) ? wr : ''
     const f = (wr_text, x, align, myturn) => {
         const cond = (pred, s) => (pred ? ` ${s} ` : '')
@@ -731,10 +730,10 @@ function draw_with_aura(proc,
 
 function draw_winrate_bar_order(s, w, h, g) {
     const fontsize = w * 0.03, [x, y] = winrate_bar_xy(s, w, h)
+    const modified_fontsize = winrate_bar_order_set_style(s, fontsize, g)
     g.save()
-    winrate_bar_order_set_style(s, fontsize, g)
     g.textAlign = R.bturn ? 'left' : 'right'; g.textBaseline = 'middle'
-    g.fillText(` ${s.order + 1} `, x, y)
+    fill_text(g, modified_fontsize, ` ${s.order + 1} `, x, y)
     g.restore()
 }
 
@@ -799,8 +798,8 @@ function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
 
 function winrate_bar_order_set_style(s, fontsize, g) {
     const firstp = (s.order === 0)
-    set_font(fontsize * (firstp ? 1.5 : 1), g)
     g.fillStyle = firstp ? WINRATE_BAR_FIRST_ORDER_COLOR : WINRATE_BAR_ORDER_COLOR
+    return fontsize * (firstp ? 1.5 : 1)
 }
 
 // calc
@@ -932,8 +931,8 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
     const left_limit = (delta < 0 ? w - margin : margin)
     g.save()
     g.textAlign = x < left_limit ? 'left' : 'right'; g.textBaseline = 'bottom'
-    set_font(fontsize, g); g.fillStyle = 'rgba(128,128,0,0.7)'
-    g.fillText(' ' + show_until + ' ', x, y)
+    g.fillStyle = 'rgba(128,128,0,0.7)'
+    fill_text(g, fontsize, ' ' + show_until + ' ', x, y)
     g.restore()
 }
 
@@ -970,9 +969,9 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
         const [x, ymax] = sr2coord(s, 0)
         const [yt, yl] = (h.r < 50 ? [0.05, 0.1] : [0.95, 0.9]).map(c => ymax * c)
         g.save()
-        set_font(fontsize, g); g.textAlign = 'center'; g.textBaseline = 'middle'
+        g.textAlign = 'center'; g.textBaseline = 'middle'
         g.strokeStyle = BLUE; g.lineWidth = 1; line([x, yl], [x, ymax / 2], g)
-        g.fillStyle = BLUE; g.fillText(h.tag, x, yt)
+        g.fillStyle = BLUE; fill_text(g, fontsize, h.tag, x, yt)
         g.restore()
     })
 }
@@ -1109,9 +1108,9 @@ function draw_visits_trail(canvas) {
 }
 
 function draw_visits_trail_grid(fontsize, w, h, v2x, v2y, g) {
-    const kilo = (v, x, y) => g.fillText(' ' + kilo_str(v).replace('.0', ''), x, y)
+    const kilo = (v, x, y) => fill_text(g, fontsize, ' ' + kilo_str(v).replace('.0', ''), x, y)
     g.save()
-    g.lineWidth = 1; set_font(fontsize, g)
+    g.lineWidth = 1
     g.strokeStyle = g.fillStyle = WINRATE_TRAIL_COLOR; g.textAlign = 'left'
     g.textBaseline = 'top'
     tics_until(R.visits).forEach(v => {
@@ -1144,8 +1143,8 @@ function draw_visits_trail_order(s, a, forcep, fontsize, h, xy_for, g) {
     if (low && !forcep) {return}
     g.save()
     g.textAlign = 'right'; g.textBaseline = low ? 'bottom' : 'top'
-    winrate_bar_order_set_style(s, fontsize, g)
-    g.fillText(ord === 1 ? '1' : `${ord} `, x, y)
+    const modified_fontsize = winrate_bar_order_set_style(s, fontsize, g)
+    fill_text(g, modified_fontsize, ord === 1 ? '1' : `${ord} `, x, y)
     g.restore()
 }
 
@@ -1199,6 +1198,19 @@ function x_shape_around([x, y], radius, g) {
     line([x - radius, y + radius], [x + radius, y - radius], g)
 }
 
+// ref.
+// https://github.com/kaorahi/lizgoban/issues/30
+// https://stackoverflow.com/questions/53958949/createjs-canvas-text-position-changed-after-chrome-version-upgrade-from-70-to-71
+// https://bugs.chromium.org/p/chromium/issues/detail?id=607053
+const fix_baseline_p = process.versions.electron.match(/^[0-4]\./)
+function fill_text(g, fontsize, text, x, y, max_width) {
+    fill_text_with_modifier(g, null, fontsize, text, x, y, max_width)
+}
+function fill_text_with_modifier(g, font_modifier, fontsize, text, x, y, max_width) {
+    const sink = fix_baseline_p ? 0 : 0.07
+    set_font((font_modifier || '') + fontsize, g)
+    g.fillText(text, x, y + fontsize * sink, max_width)
+}
 function set_font(fontsize, g) {g.font = '' + fontsize + 'px sans-serif'}
 
 function side_gradation(x0, x1, color0, color1, g) {
