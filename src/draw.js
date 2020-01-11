@@ -1044,13 +1044,16 @@ function winrate_history_values_of(key) {return R.winrate_history.map(h => h[key
 const winrate_trail_max_length = 50
 const winrate_trail_max_suggestions = 10
 const winrate_trail_limit_relative_visits = 0.3
+const winrate_trail_engine_checker = change_detector()
 let winrate_trail = {}, winrate_trail_move_count = 0, winrate_trail_visits = 0
 
 function update_winrate_trail() {
     const total_visits_increase = R.visits - winrate_trail_visits;
     // check visits for detecting restart of leelaz
     (winrate_trail_move_count !== R.move_count ||
-     (R.visits && winrate_trail_visits > R.visits)) && (winrate_trail = {});
+     (R.visits && winrate_trail_visits > R.visits) ||
+     (R.engine_id && winrate_trail_engine_checker.is_changed(R.engine_id))) &&
+        (winrate_trail = {});
     [winrate_trail_move_count, winrate_trail_visits] = [R.move_count, R.visits]
     R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
         const move = s.move, wt = winrate_trail
