@@ -969,7 +969,9 @@ function create_sequence_maybe(force) {
 function next_sequence() {previous_or_next_sequence(1)}
 function previous_sequence() {previous_or_next_sequence(-1)}
 function previous_or_next_sequence(delta) {
-    sequence.length > 1 && nth_sequence(sequence_cursor + delta)
+    if (sequence.length <= 1) {return}
+    const n = sequence_cursor + delta, len = sequence.length
+    nth_sequence((n + len) % len)
 }
 function nth_sequence(n) {
     const old = sequence_cursor
@@ -1018,11 +1020,7 @@ function replace_sequence(new_game) {
     switch_to_nth_sequence(sequence_cursor)
 }
 
-function switch_to_nth_sequence(n) {
-    const len = sequence.length, wrapped_n = (n + len) % len
-    goto_nth_sequence(wrapped_n)
-}
-
+function switch_to_nth_sequence(n) {goto_nth_sequence(n)}
 function goto_nth_sequence(n) {game = sequence[sequence_cursor = n]}
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
