@@ -13,6 +13,10 @@ Object.assign(global, require('./util.js'))
 const col_name = 'ABCDEFGHJKLMNOPQRST'
 const board_size = col_name.length
 const idx_pass = [-1, -1]
+const stars = {
+    19: [[3, 3], [3, 9], [3, 15], [9, 3], [9, 9], [9, 15], [15, 3], [15, 9], [15, 15]],
+    9: [[4,4]],
+}
 
 function idx2move(i, j) {
     return (0 <= i) && (i < board_size) && (0 <= j) && (j < board_size) &&
@@ -82,5 +86,5 @@ function sgfpos2move(pos) {
 
 module.exports = {
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
-    board_size, sgfpos2move, move2sgfpos,
+    board_size, sgfpos2move, move2sgfpos, stars,
 }

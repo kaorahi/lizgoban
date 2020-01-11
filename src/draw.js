@@ -202,8 +202,8 @@ function draw_grid(unit, idx2coord, g) {
         line(idx2coord(i, 0), idx2coord(i, board_size - 1), g)
         line(idx2coord(0, i), idx2coord(board_size - 1, i), g)
     })
-    const star_radius = unit * 0.1, stars = [3, 9, 15]
-    stars.forEach(i => stars.forEach(j => fill_circle(idx2coord(i, j), star_radius, g)))
+    const star_radius = unit * 0.1, ijs = stars[board_size] || []
+    ijs.forEach(ij => fill_circle(idx2coord(...ij), star_radius, g))
 }
 
 function draw_visits(text_maybe, margin, canvas, g) {
