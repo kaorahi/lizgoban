@@ -29,7 +29,6 @@ const option = {
     sabaki_command: default_path_for('sabaki'),
     minimum_auto_restart_millisec: 5000,
     wait_for_startup: true,
-    update_all_p: true,
     use_bogoterritory: true,
     endstate_leelaz: null,
     working_dir: process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.'),
@@ -312,9 +311,7 @@ ipc.on('close_window_or_cut_sequence',
 
 // update after every command
 
-function update_all_p() {return option.update_all_p}
 function UPDATE_all(partially, keep_board) {
-    if (!update_all_p()) {return}
     debug_log(`UPDATE_all start`)
     keep_board || SET_board()
     UPDATE_state(keep_board); UPDATE_ponder(); UPDATE_ui(); UPDATE_menu()
@@ -381,7 +378,7 @@ function update_state_to_move_count_tentatively(count) {
 /////////////////////////////////////////////////
 // another source of change: menu
 
-function update_menu() {update_all_p() || UPDATE_menu()}
+function update_menu() {}
 function UPDATE_menu() {mac_p() ? update_app_menu() : update_window_menu()}
 function update_app_menu() {
     const win = electron.BrowserWindow.getFocusedWindow() || get_windows()[0]
@@ -416,7 +413,7 @@ function menu_template(win) {
     const menu = (label, submenu) =>
           ({label, submenu: submenu.filter(truep), enabled: !empty(submenu)})
     const exec = (...fs) => ((...a) => fs.forEach(f => f && f(...a)))
-    const update = () => update_all_p() ? UPDATE_all() : update_state(true)
+    const update = () => UPDATE_all()
     const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
     const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
           !(standalone_only && attached) && {
@@ -858,14 +855,14 @@ function toggle_pause() {pausing = !pausing; update_ponder_and_ui()}
 function set_or_unset_busy(bool) {busy = bool; update_ponder()}
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false); update_state(true)}
-function update_ponder() {update_all_p() || UPDATE_ponder()}
+function update_ponder() {}
 function UPDATE_ponder() {
     AI.set_pondering(pausing, busy); pausing && (R.endstate = null)
 }
 function update_ponder_and_ui() {update_ponder(); update_ui()}
 function init_from_renderer() {update_state()}
 
-function set_board(given_game, move_count) {update_all_p() || SET_board_sub(given_game, move_count)}
+function set_board(given_game, move_count) {}
 function SET_board() {SET_board_sub(game)}
 function SET_board_sub(given_game, move_count) {
     AI.set_board(P.set_board(given_game, move_count), given_game.get_komi())
@@ -1035,7 +1032,7 @@ function exist_deleted_sequence() {return !empty(deleted_sequences)}
 /////////////////////////////////////////////////
 // utils for updating renderer state
 
-function update_state(keep_suggest_p) {update_all_p() || UPDATE_state(keep_suggest_p)}
+function update_state(keep_suggest_p) {}
 function UPDATE_state(keep_suggest_p) {
     const history_length = game.len(), sequence_length = sequence.length
     const sequence_ids = sequence.map(h => h.id)
@@ -1052,7 +1049,7 @@ function UPDATE_state(keep_suggest_p) {
     update_ui(true)
 }
 
-function update_ui(ui_only) {update_all_p() || UPDATE_ui(ui_only)}
+function update_ui(ui_only) {}
 function UPDATE_ui(ui_only) {
     update_menu(); renderer_with_window_prop('update_ui', availability(), ui_only)
 }
