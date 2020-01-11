@@ -144,7 +144,7 @@ function change_endstate_diff_target(proc) {
 }
 
 function add_endstate_to_stones(stones, endstate, update_diff_p) {
-    if (!endstate) {return}
+    if (!endstate || !M.show_suggest_p()) {return}
     aa_each(stones, (s, i, j) => (s.endstate = endstate[i][j]))
     update_diff_p && update_endstate_diff()
 }
