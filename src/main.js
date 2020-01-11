@@ -135,8 +135,14 @@ const AI = require('./ai.js').pay({
         show_error('Invalid weights file (for white)')
         unload_leelaz_for_white()
     },
-    max_cached_engines: option.max_cached_engines
+    max_cached_engines: option.max_cached_engines,
+    unsupported_size_handler,
 })
+function unsupported_size_handler() {
+    if (is_pausing()) {return}
+    toast('Unsupported board size by this engine.', 2 * 1000)
+    pause(); stop_auto(); update_all()
+}
 const P = require('./powered_goban.js').pay({
     R, AI, on_suggest: try_auto, M: {
         // functions used in powered_goban.js

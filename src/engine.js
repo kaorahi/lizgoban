@@ -36,7 +36,7 @@ function create_leelaz () {
                weight_file, working_dir,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler,
-               tuning_handler}
+               tuning_handler, unsupported_size_handler}
               = arg || {}
         const opt = {cwd: working_dir}
         log('start engine:', JSON.stringify(arg && [leelaz_command, ...leelaz_args]))
@@ -94,6 +94,7 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history, new_komi) => {
+        change_board_size(board_size())
         const update_komi_p = (is_katago(true) && truep(new_komi) && new_komi !== komi)
         if (update_komi_p) {komi = new_komi; leelaz(`komi ${komi}`)}
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
@@ -106,6 +107,12 @@ function create_leelaz () {
     }
     const play1 = ({move, is_black}) => {leelaz('play ' + (is_black ? 'b ' : 'w ') + move)}
     const undo1 = () => {leelaz('undo')}
+    let old_board_size
+    const change_board_size = (new_size, on_response) => {
+        const bsize = board_size(); if (bsize === old_board_size) {return}
+        const ng = () => {arg.unsupported_size_handler(); old_board_size = null}
+        leelaz(`boardsize ${bsize}`, ok => !ok && ng()); old_board_size = bsize
+    }
 
     // util
     const leelaz = (command, on_response, protect_p) => {
