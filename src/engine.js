@@ -13,7 +13,7 @@ function create_leelaz () {
     let leelaz_process, arg, engine_id, is_ready = false
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
-    let network_size_text = '', komi = leelaz_komi
+    let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
 
     // game state
     let move_count = 0, bturn = true
@@ -79,7 +79,8 @@ function create_leelaz () {
         const checks = [['minmoves', 'lz-analyze interval 1 minmoves 30'],
                         ['lz-setoption', 'lz-setoption name visits value 0'],
                         ['endstate', 'endstate_map'],
-                        ['kata-analyze', 'kata-analyze interval 1']]
+                        ['kata-analyze', 'kata-analyze interval 1'],
+                        ['kata-set-rules', `kata-set-rules ${gorule}`]]
         checks.map(a => check_supported(...a))
         // clear_leelaz_board for restart
         // komi may be changed tentatively in set_board before check of engine type
@@ -94,16 +95,22 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
-    const set_board = (history, new_komi) => {
+    const set_board = (history, new_komi, new_gorule) => {
         change_board_size(board_size())
-        const update_komi_p = (is_katago(true) && truep(new_komi) && new_komi !== komi)
-        if (update_komi_p) {komi = new_komi; leelaz(`komi ${komi}`)}
+        let update_kata_p = false
+        const update_kata = (val, new_val, command) => {
+            const update_p = is_katago(true) && truep(new_val) && new_val !== val
+            if (!update_p) {return val}
+            leelaz(`${command} ${new_val}`); update_kata_p = true; return new_val
+        }
+        komi = update_kata(komi, new_komi, 'komi')
+        gorule = update_kata(gorule, new_gorule, 'kata-set-rules')
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
-        if (back > 0 || !empty(rest) || update_komi_p) {update_move_count(history)}
+        if (back > 0 || !empty(rest) || update_kata_p) {update_move_count(history)}
         leelaz_previous_history = history.slice()
     }
     const play1 = ({move, is_black}) => {leelaz('play ' + (is_black ? 'b ' : 'w ') + move)}
@@ -350,6 +357,7 @@ function create_leelaz () {
     return {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
+        is_supported,
         endstate, is_ready: () => is_ready, engine_id: () => engine_id,
         // for debug
         send_to_leelaz,

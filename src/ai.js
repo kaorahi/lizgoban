@@ -32,7 +32,9 @@ function restart(h, new_weight_p) {
           (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
-function set_board(hist, komi) {each_leelaz(z => z.set_board(hist, komi), katago_p())}
+function set_board(hist, komi, gorule) {
+    each_leelaz(z => z.set_board(hist, komi, gorule), katago_p())
+}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 let prev_pondering
 function set_pondering(pausing, busy) {
@@ -229,7 +231,7 @@ function engine_ids() {
     return engines.map(lz => lz && lz.engine_id()).filter(truep)
 }
 
-const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi']
+const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi', 'is_supported']
 
 require('./give_and_take.js').offer(module, {
     // main.js only

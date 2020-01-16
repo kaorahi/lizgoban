@@ -124,7 +124,7 @@ let pausing = false, busy = false
 // (cf.) "the_endstate_handler" and "the_suggest_handler" in engine.js
 const default_for_stored_key = {
     lizzie_style: true, expand_winrate_bar: false, score_bar: true,
-    let_me_think: false, show_endstate: true,
+    let_me_think: false, show_endstate: true, gorule: default_gorule,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
@@ -459,6 +459,7 @@ function menu_template(win) {
                                     () => game.transform(key)) : sep)
             ),
         item(`Komi (${game.get_komi()})`, undefined, ask_komi),
+        menu(`Rule (${get_gorule()})`, is_gorule_supported() ? gorule_submenu() : []),
         item('Info', 'CmdOrCtrl+I', () => ask_game_info(win)),
     ])
     const view_menu = menu('View', [
@@ -536,6 +537,21 @@ function board_type_menu_item(label, type, win) {
     return {label, type: 'radio', checked: window_prop(win).board_type === type,
             click: (this_item, win) => (set_board_type(type, win), update_all())}
 }
+
+function gorule_submenu() {
+    // https://github.com/lightvector/KataGo/blob/master/docs/GTP_Extensions.md
+    const gorule_names = [
+        'tromp-taylor', 'chinese', 'japanese', 'korean', 'stone-scoring',
+        'aga', 'bga', 'new-zealand', 'aga-button',
+    ]
+    return gorule_names.map(label => ({
+        label, type: 'radio', checked: get_gorule() === label,
+        click: () => {set_gorule(label); update_all()},
+    }))
+}
+function get_gorule() {return get_stored('gorule')}
+function set_gorule(new_gorule) {set_stored('gorule', new_gorule)}
+function is_gorule_supported() {return AI.is_supported('kata-set-rules')}
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
     const toggle_it = () => toggle_stored(key)
@@ -888,7 +904,7 @@ function update_ponder() {
 function init_from_renderer() {}
 
 function set_board() {
-    AI.set_board(P.set_board(game), game.get_komi())
+    AI.set_board(P.set_board(game), game.get_komi(), get_gorule())
     AI.switch_leelaz(); update_let_me_think()
 }
 

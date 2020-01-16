@@ -27,6 +27,7 @@ E.array2hash = a => {
 E.mac_p = () => (process.platform === 'darwin')
 E.leelaz_komi = 7.5
 E.handicap_komi = -0.5
+E.default_gorule = 'chinese'
 
 // seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
 E.seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
