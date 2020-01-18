@@ -99,7 +99,8 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 
 ipc.on('render', (e, h, is_board_changed) => {
     // for smooth reaction or readable variation display
-    if ((showing_until() || any_selected_suggest_p()) && !is_board_changed) {return}
+    if (showing_until() && !is_board_changed) {return}
+    keep_selected_variation_maybe(h.suggest)
     merge(R, h)
     set_board_size(R.bsize)
     setq('#move_count', R.move_count)
@@ -157,6 +158,12 @@ function update_body_color() {
     [Q('#body').style.color, Q('#body').style.backgroundColor] =
         R.attached ? ['white', '#111'] :
         R.let_me_think ? ['white', '#223'] : ['white', '#444']
+}
+
+function keep_selected_variation_maybe(suggest) {
+    const sticky = any_selected_suggest(); if (!sticky) {return}
+    const {move, pv} = sticky, s = suggest.find(z => z.move === move)
+    s ? (s.pv = pv) : merge(suggest, sticky)  // can't happen?
 }
 
 /////////////////////////////////////////////////
@@ -263,9 +270,9 @@ function update_goban() {
         !showing_until() && D.draw_visits_trail(c)
 }
 
-function any_selected_suggest_p() {
-    const is_empty = h => empty(Object.keys(h))
-    return [main_canvas, sub_canvas].find(c => !is_empty(selected_suggest(c)))
+function any_selected_suggest() {
+    const is_nonempty = h => !empty(Object.keys(h))
+    return [main_canvas, sub_canvas].map(selected_suggest).find(is_nonempty)
 }
 function selected_suggest(canvas) {
     const m = keyboard_moves[0] || if_hover_on(canvas, hovered_move)
