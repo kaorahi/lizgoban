@@ -15,8 +15,8 @@
     "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^7.1.3",
-    "electron-builder": "^21.2.0"
+    "electron": "^7.1.9",
+    "electron-builder": "^22.2.0"
   },
   "build": {
     "files": [
@@ -35,8 +35,8 @@
         "from": "build_with/bin/common",
         "to": "resources/external",
         "filter": [
-          "lznetwork.gz",
-          "katanetwork.gz"
+          "*.gz",
+          "*.txt"
         ]
       }
     ],
@@ -61,8 +61,8 @@
           "from": "build_with/bin/win",
           "to": "resources/external",
           "filter": [
-            "leelaz/{leelaz.exe,*.dll}",
-            "katago/{katago.exe,*.dll}"
+            "leelaz/{*.exe,*.dll}",
+            "katago/{*.exe,*.dll}"
           ]
         }
       ]
