@@ -9,11 +9,13 @@ function create_leelaz () {
     const endstate_delay_millisec = 20
     const speedo_interval_sec = 3, speedo_premature_sec = 0.5
     const speedometer = make_speedometer(speedo_interval_sec, speedo_premature_sec)
+    const queue_log_header = 'queue>'
 
     let leelaz_process, arg, engine_id, is_ready = false
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
+    let startup_log = []
 
     // game state
     let move_count = 0, bturn = true
@@ -22,7 +24,9 @@ function create_leelaz () {
     const log = (header, s, show_queue_p) => {
         const t2s = task => (task.protect_p ? '!' : '') +
               (with_response_p(task) ? '*' : '') + task.command
-        debug_log(`[${(leelaz_process || {}).pid}] ${header} ${s}` +
+        const message = `[${(leelaz_process || {}).pid}] ${header} ${s}`
+        !is_ready && (header !== queue_log_header) && startup_log.push(message)
+        debug_log(message +
                   (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
                   arg && arg.engine_log_line_length || 500)
     }
@@ -40,12 +44,12 @@ function create_leelaz () {
                tuning_handler, unsupported_size_handler}
               = arg || {}
         const opt = {cwd: working_dir}
+        is_ready = false; startup_log = []; network_size_text = ''
         log('start engine:', JSON.stringify(arg && [leelaz_command, ...leelaz_args]))
-        is_ready = false; network_size_text = ''
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args, opt)
         leelaz_process.stdout.on('data', each_line(stdout_reader))
         leelaz_process.stderr.on('data', each_line(reader))
-        set_error_handler(leelaz_process, restart_handler)
+        set_error_handler(leelaz_process, () => restart_handler(startup_log))
         command_queue = []; last_command_id = last_response_id = -1
         wait_for_startup || on_ready()
     }
@@ -91,7 +95,7 @@ function create_leelaz () {
         leelaz('lizgoban_after_all_checks', after_all_checks)
     }
     const on_error = () =>
-          (arg.error_handler || arg.restart_handler)()
+          (arg.error_handler || arg.restart_handler)(startup_log)
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
@@ -124,7 +128,7 @@ function create_leelaz () {
 
     // util
     const leelaz = (command, on_response, protect_p) => {
-        log('queue>', command, true); send_to_queue({command, on_response, protect_p})
+        log(queue_log_header, command, true); send_to_queue({command, on_response, protect_p})
     }
     const update_now = () => arg && (endstate(), start_analysis())
     const [update_later] = deferred_procs([update_now, endstate_delay_millisec])

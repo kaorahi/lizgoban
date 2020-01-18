@@ -178,6 +178,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * Support 9x9 and 13x13 in "File" menu.
 * Add "Rule" into "Edit" menu for KataGo v1.3.
 * Separate estimations by different engines in winrate graph.
+* Show start-up log when engine is down.
 * Fix blur in HiDPI display.
 * Upgrade libraries (Electron 7, etc.). So you may need to do "npm install" again.
 * "weight_dir" in config.json is obsolete now. (See above.)
