@@ -20,7 +20,7 @@
   },
   "build": {
     "files": [
-      "src/{*.js,*.html,*.png}"
+      "src/{*.js, *.html, *.png}"
     ],
     "extraFiles": [
       {
@@ -61,8 +61,8 @@
           "from": "build_with/bin/win",
           "to": "resources/external",
           "filter": [
-            "leelaz/{*.exe,*.dll}",
-            "katago/{*.exe,*.dll}"
+            "leelaz/{*.exe, *.dll}",
+            "katago/{*.exe, *.dll}"
           ]
         }
       ]
