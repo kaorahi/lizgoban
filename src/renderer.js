@@ -26,6 +26,7 @@ const R = {
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',
     progress: 0.0, weight_info: '', is_katago: false, engine_id: null,
     komi: 7.5, player_black: '', player_white: '',
+    move_history: [],
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
     history_tags: [], endstate_clusters: [], prev_endstate_clusters: null,
     lizzie_style: false,

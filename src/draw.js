@@ -891,10 +891,12 @@ function fake_winrate_for(winrate, score_without_komi, bturn) {
 /////////////////////////////////////////////////
 // winrate graph
 
+const zone_indicator_height_percent = 3
+
 function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
-    const smax = Math.max(R.history_length, 1), rmin = 0
+    const smax = Math.max(R.history_length, 1), rmin = - zone_indicator_height_percent
     // s = move_count, r = winrate
     const [sr2coord, coord2sr] =
           uv2coord_translator_pair(canvas, [0, smax], [100, rmin], xmargin, 0)
@@ -906,6 +908,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     if (R.busy || show_until) {return}
     clear_canvas(canvas, BLACK, g)
     draw_winrate_graph_frame(w, h, sr2coord, tics, g)
+    draw_winrate_graph_zone(sr2coord, g)
     draw_winrate_graph_hotness(sr2coord, g)
     draw_winrate_graph_uncertainty(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
@@ -928,6 +931,8 @@ function draw_winrate_graph_frame(w, h, sr2coord, tics, g) {
     // 50% line
     g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
     const y50 = r2y(50); line([0, y50], [w, y50], g)
+    // bottom space for zone indicator
+    g.fillStyle = DARK_GRAY; fill_rect([0, h], [w, r2y(0)], g)
 }
 
 function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) {
@@ -1017,6 +1022,15 @@ function draw_winrate_graph_score(w, sr2coord, g) {
         g.fillStyle = `rgba(0,255,255,${alpha})`; fill_circle([x, y], radius, g)
     }
     draw_komi(); draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
+}
+
+function draw_winrate_graph_zone(sr2coord, g) {
+    const half = 0.6  // > 0.5 for avoiding gaps in spectrum bar
+    const rmin = - zone_indicator_height_percent
+    R.move_history.forEach((z, s) => {
+        g.fillStyle = zone_color_for_move(z.move)
+        fill_rect(sr2coord(s - half, 0), sr2coord(s + half, rmin), g)
+    })
 }
 
 function draw_winrate_graph_hotness(sr2coord, g) {
@@ -1173,6 +1187,19 @@ function draw_visits_trail_order(s, a, forcep, fontsize, h, xy_for, g) {
     fill_text(g, modified_fontsize, ord === 1 ? '1' : `${ord} `, x, y)
     g.restore()
 }
+
+/////////////////////////////////////////////////
+// zone color
+
+function zone_color(i, j, alpha) {
+    if (i < 0 || j < 0) {return TRANSPARENT}
+    const mid = (board_size() - 1) / 2
+    const direction = (Math.atan2(i - mid, j - mid) / Math.PI + 1) * 180
+    const height = 1 - Math.max(...[i, j].map(k => Math.abs(k - mid))) / mid
+    return hsla((direction + 270) % 360, 70, height * 50 + 50, alpha)
+}
+
+function zone_color_for_move(move, alpha) {return zone_color(...move2idx(move || ''), alpha)}
 
 /////////////////////////////////////////////////
 // graphics
