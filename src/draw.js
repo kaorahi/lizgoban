@@ -165,12 +165,9 @@ function draw_goban(canvas, stones, opts) {
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
           = opts || {}
+    const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
     const large_font_p = !main_canvas_p
-    const margin = canvas.height / (board_size() + 1), hm = margin / 2
     const font_unit = Math.min(margin, canvas.height / 20)
-    const g = canvas.getContext("2d")
-    const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
-    const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0]
     // clear
     g.strokeStyle = BLACK; g.fillStyle = goban_bg(true); g.lineWidth = 1
     edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
@@ -194,6 +191,14 @@ function draw_goban(canvas, stones, opts) {
     draw_endstate_p && draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     // mouse events
     handle_mouse_on_goban(canvas, coord2idx, read_only, tag_clickable_p)
+}
+
+function goban_params(canvas) {
+    const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
+    const margin = Math.min(w, h) / (board_size() + 1), hm = margin / 2
+    const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
+    const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0], half_unit = unit / 2
+    return {w, h, g, margin, hm, idx2coord, coord2idx, unit, half_unit}
 }
 
 function draw_grid(unit, idx2coord, g) {
@@ -1191,6 +1196,15 @@ function draw_visits_trail_order(s, a, forcep, fontsize, h, xy_for, g) {
 /////////////////////////////////////////////////
 // zone color
 
+function draw_zone_color_chart(canvas) {
+    const {g, idx2coord, half_unit} = goban_params(canvas)
+    clear_canvas(canvas, TRANSPARENT, g)
+    seq(board_size()).forEach(i => seq(board_size()).forEach(j => {
+        const xy = idx2coord(i, j)
+        g.fillStyle = zone_color(i, j); fill_square_around(xy, half_unit, g)
+    }))
+}
+
 function zone_color(i, j, alpha) {
     if (i < 0 || j < 0) {return TRANSPARENT}
     const mid = (board_size() - 1) / 2
@@ -1372,7 +1386,7 @@ module.exports = {
     set_state,
     draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
     draw_endstate_goban,
-    draw_winrate_graph, draw_winrate_bar, draw_visits_trail,
+    draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
     update_winrate_trail, clear_canvas, is_next_move, latest_move,
     target_move: () => target_move,
 }

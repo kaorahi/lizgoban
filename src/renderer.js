@@ -268,7 +268,7 @@ function update_goban() {
         }
     }
     const c = visits_trail_canvas
-    btype === "winrate_only" ? D.clear_canvas(c) :
+    btype === "winrate_only" ? D.draw_zone_color_chart(c) :
         !showing_until() && D.draw_visits_trail(c)
 }
 
