@@ -14,6 +14,7 @@ const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
 const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate_graph')
 const graph_overlay_canvas = Q('#graph_overlay')
 const visits_trail_canvas = Q('#visits_trail_canvas')
+const zone_chart_canvas = Q('#zone_chart_canvas')
 let canvas_scale = 1
 
 // renderer state
@@ -267,9 +268,9 @@ function update_goban() {
         case "suggest": default: f(draw_main); break;
         }
     }
-    const c = visits_trail_canvas
-    btype === "winrate_only" ? D.draw_zone_color_chart(c) :
-        !showing_until() && D.draw_visits_trail(c)
+    const c = visits_trail_canvas, wro = btype === "winrate_only"
+    wro ? D.draw_zone_color_chart(c) : (!showing_until() && D.draw_visits_trail(c))
+    zone_chart_canvas.style.visibility = wro ? 'hidden' : 'visible'
 }
 
 function any_selected_suggest() {
@@ -549,6 +550,9 @@ function set_all_canvas_size() {
     set_overlay(graph_overlay_canvas, wr_only ? main_canvas: winrate_graph_canvas)
     set_canvas_size(visits_trail_canvas, rest_size * 0.25, main_board_max_size * 0.13)
     update_all_thumbnails()
+    set_canvas_square_size(zone_chart_canvas, rest_size * 0.05) &&
+        R.is_sticky_zone_chart &&
+        D.draw_zone_color_chart(zone_chart_canvas)  // call this here for efficiency
 }
 
 function set_canvas_square_size(canvas, size) {

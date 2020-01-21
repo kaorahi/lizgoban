@@ -107,6 +107,7 @@ function set_renderer_state(...args) {
     const komi = game.get_komi(), bsize = board_size()
     const comment = game.ref(game.move_count).comment || ''
     const move_history = [{}, ...game.map(z => ({move: z.move}))]
+    const is_sticky_zone_chart = M.is_sticky_zone_chart()
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)
@@ -115,6 +116,7 @@ function set_renderer_state(...args) {
     merge(R, {move_count, busy, winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, move_history,
+              is_sticky_zone_chart,
               previous_suggest, winrate_trail}, endstate_d_i)
 }
 function set_and_render(...args) {set_and_render_gen(true, ...args)}
