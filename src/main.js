@@ -1145,7 +1145,7 @@ function select_files(title, dir) {
 
 // restart
 function restart() {AI.restart()}
-let last_restart_time = 0, warned_engine_trouble = false, asking_recovery = false
+let last_restart_time = 0, asking_recovery = false
 function auto_restart(startup_log) {
     const {leelaz_command, weight_file} = AI.engine_info().black || {}
     const [e, w] = [leelaz_command, weight_file].map(s => PATH.basename(s || ''))
@@ -1159,18 +1159,8 @@ ${info_for('weight', weight_file)}
     const message = `Engine is down. What to do?
 ${info}
 ${log}`
-    const warning = `LizGoban is in trouble now.
-- Save games before losing them.
-- For recovery, load correct weights for "${e}" or use [Preset] menu if available.
-- Quit LizGoban and restart it if you give up recovery.
-See [Help] menu to check shortcut keys if necessary.
-${info}
-(log)
-${log}`
-    const warn_maybe = () => warned_engine_trouble ||
-          (show_error(warning), (warned_engine_trouble = true))
     const buttons = ["RESTORE", "retry", "load weights", "(ignore)"]
-    const actions = [AI.restore, restart, load_weight, warn_maybe]
+    const actions = [AI.restore, restart, load_weight, do_nothing]
     const do_action =
           z => {actions[z.response](); asking_recovery = false; update_all()}
     const recover = () => {
