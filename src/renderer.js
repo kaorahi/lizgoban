@@ -13,6 +13,7 @@ const current_window = electron.remote.getCurrentWindow()
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
 const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate_graph')
 const graph_overlay_canvas = Q('#graph_overlay')
+const visits_trail_canvas = Q('#visits_trail_canvas')
 let canvas_scale = 1
 
 // renderer state
@@ -265,7 +266,7 @@ function update_goban() {
         case "suggest": default: f(draw_main); break;
         }
     }
-    const c = Q("#visits_trail_canvas")
+    const c = visits_trail_canvas
     btype === "winrate_only" ? D.clear_canvas(c) :
         !showing_until() && D.draw_visits_trail(c)
 }
@@ -545,6 +546,7 @@ function set_all_canvas_size() {
     set_canvas_square_size(sub_canvas, sub_board_size)
     set_canvas_size(winrate_graph_canvas, winrate_graph_width, winrate_graph_height)
     set_overlay(graph_overlay_canvas, wr_only ? main_canvas: winrate_graph_canvas)
+    set_canvas_size(visits_trail_canvas, rest_size * 0.25, main_board_max_size * 0.13)
     update_all_thumbnails()
 }
 
