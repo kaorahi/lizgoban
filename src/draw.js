@@ -894,20 +894,20 @@ function fake_winrate_for(winrate, score_without_komi, bturn) {
 function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
-    const smax = Math.max(R.history_length, 1)
+    const smax = Math.max(R.history_length, 1), rmin = 0
     // s = move_count, r = winrate
     const [sr2coord, coord2sr] =
-          uv2coord_translator_pair(canvas, [0, smax], [100, 0], xmargin, 0)
+          uv2coord_translator_pair(canvas, [0, smax], [100, rmin], xmargin, 0)
     const overlay = graph_overlay_canvas.getContext("2d")
     clear_canvas(graph_overlay_canvas)
     show_until && draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord,
                                                 overlay)
-    !show_until && draw_winrate_graph_future(w, h, sr2coord, overlay)
+    !show_until && draw_winrate_graph_future(w, sr2coord, overlay)
     if (R.busy || show_until) {return}
     clear_canvas(canvas, BLACK, g)
-    draw_winrate_graph_frame(w, h, tics, g)
-    draw_winrate_graph_hotness(h, sr2coord, g)
-    draw_winrate_graph_uncertainty(h, sr2coord, g)
+    draw_winrate_graph_frame(w, h, sr2coord, tics, g)
+    draw_winrate_graph_hotness(sr2coord, g)
+    draw_winrate_graph_uncertainty(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     draw_winrate_graph_score(w, sr2coord, g)
@@ -915,16 +915,19 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     handle_mouse_on_winrate_graph(canvas, coord2sr)
 }
 
-function draw_winrate_graph_frame(w, h, tics, g) {
+function draw_winrate_graph_frame(w, h, sr2coord, tics, g) {
+    const r2y = r => sr2coord(0, r)[1]
     // horizontal lines (tics)
     g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
-    seq(tics, 1).forEach(i => {const y = h * i / (tics + 1); line([0, y], [w, y], g)})
+    seq(tics, 1).forEach(i => {
+        const y = r2y(100 * i / (tics + 1)); line([0, y], [w, y], g)
+    })
     // // frame
     // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
     // rect([0, 0], [w, h], g)
     // 50% line
     g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
-    line([0, h / 2], [w, h / 2], g)
+    const y50 = r2y(50); line([0, y50], [w, y50], g)
 }
 
 function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) {
@@ -944,8 +947,8 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
     g.restore()
 }
 
-function draw_winrate_graph_future(w, h, sr2coord, g) {
-    const [x, y] = sr2coord(R.move_count, 50)
+function draw_winrate_graph_future(w, sr2coord, g) {
+    const [x, y] = sr2coord(R.move_count, 50), [_, y_base] = sr2coord(0, 0)
     const paint = (partial, l_alpha, r_alpha, y0, y1) => {
         const c = a => `rgba(255,255,255,${a})`
         const grad = side_gradation(x, (1 - partial) * x + partial * w,
@@ -953,7 +956,7 @@ function draw_winrate_graph_future(w, h, sr2coord, g) {
         g.fillStyle = grad; fill_rect([x, y0], [w, y1], g)
     }
     const alpha = 0.2
-    paint(0.5, alpha, 0, 0, y); paint(1, alpha, alpha, y, h)
+    paint(0.5, alpha, 0, 0, y); paint(1, alpha, alpha, y, y_base)
 }
 
 function draw_winrate_graph_curve(sr2coord, g) {
@@ -1016,12 +1019,12 @@ function draw_winrate_graph_score(w, sr2coord, g) {
     draw_komi(); draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
 }
 
-function draw_winrate_graph_hotness(h, sr2coord, g) {
-    draw_winrate_graph_barchart('hotness', 0.33, '0,255,255', true, h, sr2coord, g)
+function draw_winrate_graph_hotness(sr2coord, g) {
+    draw_winrate_graph_barchart('hotness', 0.33, '0,255,255', true, sr2coord, g)
 }
 
-function draw_winrate_graph_uncertainty(h, sr2coord, g) {
-    draw_winrate_graph_barchart('uncertainty', 10, '255,128,0', false, h, sr2coord, g)
+function draw_winrate_graph_uncertainty(sr2coord, g) {
+    draw_winrate_graph_barchart('uncertainty', 10, '255,128,0', false, sr2coord, g)
 }
 
 function draw_winrate_graph_history(ary, to_r, plotter, sr2coord, g) {
@@ -1029,15 +1032,16 @@ function draw_winrate_graph_history(ary, to_r, plotter, sr2coord, g) {
     ary.forEach(f)
 }
 
-function draw_winrate_graph_barchart(key, mag, rgb, upside_down, h, sr2coord, g) {
+function draw_winrate_graph_barchart(key, mag, rgb, upside_down, sr2coord, g) {
     const values = winrate_history_values_of(key)
     const conv = upside_down ? (val => 100 - val) : identity
     const to_r = val => conv(clip(val * mag, 0, 100))
     const threshold = num_sort(values.filter(truep)).slice(-10)[0]
+    const [_, base_y] = sr2coord(0, upside_down ? 100 : 0)
     const plotter = (x, y, s, g) => {
         const [line_width, alpha] = values[s] >= threshold ? [2, 0.5] : [1, 0.3]
         g.strokeStyle = `rgba(${rgb},${alpha})`; g.lineWidth = line_width
-        line([x, y], [x, upside_down ? 0 : h], g)
+        line([x, y], [x, base_y], g)
     }
     draw_winrate_graph_history(values, to_r, plotter, sr2coord, g)
 }
