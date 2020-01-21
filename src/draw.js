@@ -900,7 +900,7 @@ const zone_indicator_height_percent = 3
 
 function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    const tics = 9, xmargin = w * 0.02, fontsize = to_i(w * 0.04)
+    const xmargin = w * 0.02, fontsize = to_i(w * 0.04)
     const smax = Math.max(R.history_length, 1), rmin = - zone_indicator_height_percent
     // s = move_count, r = winrate
     const [sr2coord, coord2sr] =
@@ -912,7 +912,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     !show_until && draw_winrate_graph_future(w, sr2coord, overlay)
     if (R.busy || show_until) {return}
     clear_canvas(canvas, BLACK, g)
-    draw_winrate_graph_frame(w, h, sr2coord, tics, g)
+    draw_winrate_graph_frame(w, h, sr2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_zone(sr2coord, g)
     draw_winrate_graph_hotness(sr2coord, g)
@@ -924,12 +924,16 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     handle_mouse_on_winrate_graph(canvas, coord2sr)
 }
 
-function draw_winrate_graph_frame(w, h, sr2coord, tics, g) {
-    const r2y = r => sr2coord(0, r)[1]
-    // horizontal lines (tics)
+function draw_winrate_graph_frame(w, h, sr2coord, g) {
+    const tics = 9, xtics = 10, xtics_delta = 50
+    const s2x = s => sr2coord(s, 0)[0], r2y = r => sr2coord(0, r)[1]
+    // horizontal / vertical lines (tics)
     g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
     seq(tics, 1).forEach(i => {
         const y = r2y(100 * i / (tics + 1)); line([0, y], [w, y], g)
+    })
+    seq(xtics, 1).forEach(k => {
+        const x = s2x(k * xtics_delta); line([x, 0], [x, h], g)
     })
     // // frame
     // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
