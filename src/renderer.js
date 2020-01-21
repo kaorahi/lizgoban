@@ -550,15 +550,18 @@ function set_all_canvas_size() {
     update_all_thumbnails()
 }
 
-function set_canvas_square_size(canvas, size) {set_canvas_size(canvas, size, size)}
+function set_canvas_square_size(canvas, size) {
+    return set_canvas_size(canvas, size, size)
+}
 
 function set_canvas_size(canvas, width, height) {
     canvas_scale = window.devicePixelRatio
     const [w0, h0] = [width, height].map(to_i)
     const [w, h] = [w0, h0].map(z => to_i(z * canvas_scale))
-    if (w === canvas.width && h === canvas.height) {return}
+    if (w === canvas.width && h === canvas.height) {return false}
     canvas.style.width = `${w0}px`; canvas.style.height = `${h0}px`
     canvas.width = w; canvas.height = h
+    return true
 }
 
 function set_overlay(canvas, orig) {
