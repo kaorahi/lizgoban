@@ -915,7 +915,6 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_frame(w, h, sr2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_zone(sr2coord, g)
-    draw_winrate_graph_hotness(sr2coord, g)
     draw_winrate_graph_uncertainty(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
@@ -1051,10 +1050,6 @@ function draw_winrate_graph_zone(sr2coord, g) {
         g.fillStyle = zone_color_for_move(z.move)
         fill_rect(sr2coord(s - half, 0), sr2coord(s + half, rmin), g)
     })
-}
-
-function draw_winrate_graph_hotness(sr2coord, g) {
-    draw_winrate_graph_barchart('hotness', 0.33, '0,255,255', true, sr2coord, g)
 }
 
 function draw_winrate_graph_uncertainty(sr2coord, g) {

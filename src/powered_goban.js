@@ -47,7 +47,6 @@ function endstate_handler(h) {
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; if (!update_p) {return}
             z.endstate_sum = sum(R.endstate)
-            z.hotness = sum_of_endstate_change(leelaz_move_count)
         }
         // need add_endstate_to_history before add_endstate_to_stones
         // because update_endstate_diff depends on game.ref_current().endstate
@@ -65,7 +64,6 @@ function suggest_handler(h) {
     h.suggest = h.suggest.filter(considerable)
     h.ownership &&
         ((cur.endstate = h.endstate = endstate_from_ownership(h.ownership)),
-         (cur.hotness = sum_of_endstate_change(game.move_count)),
          (cur.score_without_komi = h.score_without_komi))
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
     const keys = ['suggest', 'visits', 'b_winrate']
@@ -181,13 +179,6 @@ function average_endstate_sum(move_count) {
     return for_current_and_previous_endstate(move_count, 'endstate_sum', 1,
                                              (cur, prev) => (cur + prev) / 2)
 }
-function sum_of_endstate_change(move_count) {
-    // delta = 2 for leelaz_for_endstate since it tends to oscillate
-    let sum = 0, delta = AI.katago_p() ? 1 : 2
-    const f = (cur, prev) =>
-          (aa_each(cur, (c, i, j) => (sum += Math.abs(c - aa_ref(prev, i, j)))), true)
-    return for_current_and_previous_endstate(move_count, 'endstate', delta, f) && sum
-}
 function for_current_and_previous_endstate(move_count, key, delta, f) {
     const mc = truep(move_count) || game.move_count
     const [cur, prev] = [0, delta].map(k => game.ref(mc - k)[key])
@@ -218,11 +209,10 @@ function winrate_from_game(engine_id) {
         const pass = implicit_pass || M.is_pass(h.move)
         const score_without_komi = truep(cur.score_without_komi) ?
               cur.score_without_komi : average_endstate_sum(s)
-        const hotness = h.hotness
         const best = (h.suggest || [])[0]
         const uncertainty = best && (1 - best.visits / h.visits)
         // drop "pass" to save data size for IPC
-        return merge({r, move_b_eval, move_eval, tag, score_without_komi, hotness,
+        return merge({r, move_b_eval, move_eval, tag, score_without_komi,
                       uncertainty}, pass ? {pass} : {predict})
     })
 }
