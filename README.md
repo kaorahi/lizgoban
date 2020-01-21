@@ -102,9 +102,9 @@ Here is a more practical example of config.json:
         {
             "label": "LZ vs. KATA",
             "empty_board": true,
-            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/bar/network.gz"],
+            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/lz_net/254.gz"],
             "engine_for_white": ["/foo/bar/katago", "gtp",
-                       "-model", "/foo/bar/kata_network.gz",
+                       "-model", "/foo/kata_net/g104-b20c256.gz",
                        "-config", "/foo/bar/gtp.cfg"]
         },
         {"label": "Hide hints", "accelerator": "F3", "board_type": "raw"},
