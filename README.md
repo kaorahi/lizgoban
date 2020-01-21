@@ -178,7 +178,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * Support 9x9 and 13x13 in "File" menu.
 * Add "Rule" into "Edit" menu for KataGo v1.3.
 * Separate estimations by different engines in winrate graph.
-* Indicate played zones in winrate graph.
+* Indicate ko fights and played zones in winrate graph.
 * Show start-up log when engine is down.
 * Fix blur in HiDPI display.
 

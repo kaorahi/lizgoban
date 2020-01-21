@@ -913,6 +913,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     if (R.busy || show_until) {return}
     clear_canvas(canvas, BLACK, g)
     draw_winrate_graph_frame(w, h, sr2coord, tics, g)
+    draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_zone(sr2coord, g)
     draw_winrate_graph_hotness(sr2coord, g)
     draw_winrate_graph_uncertainty(sr2coord, g)
@@ -1027,6 +1028,16 @@ function draw_winrate_graph_score(w, sr2coord, g) {
         g.fillStyle = `rgba(0,255,255,${alpha})`; fill_circle([x, y], radius, g)
     }
     draw_komi(); draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
+}
+
+function draw_winrate_graph_ko_fight(sr2coord, g) {
+    const radius = 5, alpha = 0.7
+    const plot = (z, s) => {
+        const [x, y] = sr2coord(s, 100), cy = y + radius * (z.is_black ? 1 : 2.5)
+        g.fillStyle = zone_color_for_move(z.move, alpha)
+        fill_circle([x, cy], radius, g)
+    }
+    R.move_history.forEach((z, s) => z.ko_fight && plot(z, s))
 }
 
 function draw_winrate_graph_zone(sr2coord, g) {

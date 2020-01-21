@@ -1,5 +1,5 @@
 require('./common.js').to(global)
-const {stones_from_history} = require('./rule.js')
+const {get_stones_and_set_ko_fight} = require('./rule.js')
 const TRANSFORM = require('./random_flip.js')
 const SGF = require('@sabaki/sgf')
 
@@ -8,7 +8,7 @@ const SGF = require('@sabaki/sgf')
 
 // example of history:
 // [{move: "D16", is_black: true, move_count: 1, b_winrate: 42.19, ...},
-//  {move: "Q4", is_black: false, move_count: 2, tag: "b", ...},
+//  {move: "Q4", is_black: false, move_count: 2, tag: "b", ko_fight: false, ...},
 //  {move: "Q16", is_black: false, move_count: 3, comment: "chance!" , ...},
 //  {move: "pass", is_black: true, move_count: 4, ...}]
 // 
@@ -42,7 +42,7 @@ function create_game(init_history, init_prop) {
         ref: mc => history[mc - 1] || self.move0,
         ref_current: () => self.ref(self.move_count),
         current_stones: () => self.stones_at(self.move_count),
-        stones_at: mc => stones_from_history(self.array_until(mc)),
+        stones_at: mc => get_stones_and_set_ko_fight(self.array_until(mc)),
         array_until: mc => history.slice(0, mc),
         delete_future: () => history.splice(self.move_count),
         last_move: () => (last(history) || {}).move,

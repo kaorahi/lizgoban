@@ -106,7 +106,9 @@ function set_renderer_state(...args) {
     const is_katago = AI.katago_p()
     const komi = game.get_komi(), bsize = board_size()
     const comment = game.ref(game.move_count).comment || ''
-    const move_history = [{}, ...game.map(z => ({move: z.move}))]
+    const move_history = [{}, ...game.map(z => ({
+        move: z.move, is_black: z.is_black, ko_fight: z.ko_fight
+    }))]
     const is_sticky_zone_chart = M.is_sticky_zone_chart()
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
