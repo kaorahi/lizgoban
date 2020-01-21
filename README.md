@@ -100,6 +100,12 @@ Here is a more practical example of config.json:
                        "-config", "/foo/bar/gtp.cfg"]
         },
         {
+            "label": "Aggressive",
+            "engine": ["/foo/bar/katago", "gtp",
+                       "-model", "/foo/kata_net/g104-b20c256.gz",
+                       "-config", "/foo/bar/gtp_aggressive.cfg"]
+        },
+        {
             "label": "LZ vs. KATA",
             "empty_board": true,
             "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/lz_net/254.gz"],
@@ -143,6 +149,16 @@ In addition, LizGoban reads external/config.json (and config.json in the "workin
 #### To use KataGo and its score/ownership estimations:
 
 Set KataGo like the above config.json and select it in [Preset] menu. See "KataGo" section in [Help] menu for details.
+
+For highly handicapped games, you have to prepare another gtp.cfg because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of gtp_aggressive.cfg.
+
+~~~~
+...
+# dynamicPlayoutDoublingAdvantageCapPerOppLead = 0.04
+...
+playoutDoublingAdvantage = 2.0
+...
+~~~~
 
 #### To enable endstate estimation (experimental, may be deleted in future):
 
