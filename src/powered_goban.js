@@ -120,7 +120,8 @@ function set_and_render(...args) {set_and_render_gen(true, ...args)}
 function set_and_render_maybe(...args) {set_and_render_gen(false, ...args)}
 function set_and_render_gen(is_board_changed, ...args) {
     set_renderer_state(...args)
-    const mask = M.show_suggest_p() ? {} : {suggest: [], visits: null}
+    const mask = M.show_suggest_p() ? {} :
+          {suggest: [], visits: null, show_endstate: false}
     M.render({...R, ...mask}, is_board_changed)
 }
 
@@ -155,7 +156,7 @@ function change_endstate_diff_target(proc) {
 }
 
 function add_endstate_to_stones(stones, endstate, update_diff_p) {
-    if (!endstate || !M.show_suggest_p()) {return}
+    if (!endstate) {return}
     aa_each(stones, (s, i, j) => (s.endstate = aa_ref(endstate, i, j)))
     update_diff_p && update_endstate_diff()
 }
