@@ -64,7 +64,7 @@ Otherwise, see the release note to replace the built-in engines with GPU version
 3. Put Leela Zero binary (version 0.17 or later) as "external/leelaz" together with its network weight as "external/network.gz".
 4. Type "npm start". (Windows: Double-click lizgoban_windows.vbs.)
 
-Use "npm start `-- --no-sandbox` if you get an error like "The SUID sandbox helper binary was found, but is not configured correctly" and you do not want to fix it.
+Use `npm start -- --no-sandbox` if you get an error like "The SUID sandbox helper binary was found, but is not configured correctly" and you do not want to fix it.
 
 #### To configure it:
 
