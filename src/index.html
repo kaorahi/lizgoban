@@ -50,7 +50,7 @@
  .close_button {position: absolute; top: 0px; right: 0px;}
  @media (max-aspect-ratio: 13/10) {
   body > * {width: 96vmin; display: block; margin: 1.5vmin; font-size: 3vw;}
-  #graph_overlay {position: absolute;}
+  #graph_overlay, #zone_chart_canvas {position: absolute;}
   .thumbbox {display: inline-block;}
   .thumbbox img {width: 3vw; height: 3vw;}
   #visits_trail_canvas {display: none;}
@@ -64,7 +64,7 @@
    font-size: calc((96vw - 96vh) * 3/100);
    text-align: left;
   }
-  #graph_overlay {position: fixed;}
+  #graph_overlay, #zone_chart_canvas {position: fixed;}
   #thumb_aligner {display: table-cell; text-align: left; width: 5vw;}
   #thumb_height_measurer:hover {position: relative; z-index: 9;}
   .thumbbox {width: 5vw; padding-left: 0.5vh;}
@@ -90,7 +90,6 @@
    background-color: rgba(128,128,128,0.6); width: max-content;
   }
   #visits_trail_canvas {position: fixed; right: 1vw; bottom: 1vh; z-index: -9;}
-  #zone_chart_canvas {vertical-align: top; float: right;}
  }
  </style>
  <style type="text/css">
@@ -122,10 +121,7 @@
 <div id="rest_div">
 
 <div id="sub_goban_container" style="text-align: center;"><canvas id="sub_goban"></canvas></div>
-<div>
- <canvas id="zone_chart_canvas" width="0" height="0"></canvas>
- <canvas id="winrate_graph"></canvas>
-</div>
+<div><canvas id="winrate_graph"></canvas></div>
 
 <div>
 
@@ -185,6 +181,7 @@
 <!-------- end rest_div ----------->
 
 <canvas id="graph_overlay"></canvas>
+<canvas id="zone_chart_canvas"></canvas>
 
 <div class='dialog' id='auto_play_sec_dialog'>
  <p>

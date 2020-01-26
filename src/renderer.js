@@ -542,6 +542,7 @@ function set_all_canvas_size() {
     const winrate_graph_height = main_board_max_size * 0.25
     const winrate_graph_width = (wr_only && !double_boards_p()) ?
           winrate_graph_height : rest_size * main_board_ratio
+    const zone_chart_canvas_size = rest_size * 0.05
     set_canvas_size(main_canvas, main_board_size, main_board_height)
     set_canvas_size(winrate_bar_canvas,
                     main_board_size, main_size - main_board_height)
@@ -550,7 +551,7 @@ function set_all_canvas_size() {
     set_overlay(graph_overlay_canvas, wr_only ? main_canvas: winrate_graph_canvas)
     set_canvas_size(visits_trail_canvas, rest_size * 0.25, main_board_max_size * 0.13)
     update_all_thumbnails()
-    set_canvas_square_size(zone_chart_canvas, rest_size * 0.05, true) &&
+    set_subscript(zone_chart_canvas, winrate_graph_canvas, zone_chart_canvas_size) &&
         D.draw_zone_color_chart(zone_chart_canvas)  // call this here for efficiency
 }
 
@@ -570,13 +571,29 @@ function set_canvas_size(canvas, width, height) {
 
 function set_overlay(canvas, orig) {
     set_canvas_size(canvas, orig.width / canvas_scale, orig.height / canvas_scale)
+    set_relative_canvas_position(canvas, orig)
+}
+
+function set_subscript(canvas, orig, width, height) {
+    const h = height || width
+    const shift_x = bounding_width => bounding_width
+    const shift_y = bounding_height => bounding_height - h
+    set_relative_canvas_position(canvas, orig, shift_x, shift_y)
+    return set_canvas_size(canvas, width, h)
+}
+
+function set_relative_canvas_position(canvas, orig, shift_x, shift_y) {
     const rect = orig.getBoundingClientRect()
     // "canvas.style.position === 'absolute'" does not work
     const absolute_p = portrait_p()  // fixme: is there a better way?
-    const set_without_margin = ([xy, wh, scroll]) =>
-          (canvas.style[xy] = (rect[xy] + (rect[wh] - orig[wh] / canvas_scale) / 2)
-           + (absolute_p ? window[scroll] : 0) + 'px')
-    const args = [['left', 'width', 'scrollX'], ['top', 'height', 'scrollY']]
+    const set_without_margin = ([xy, wh, scroll, shift]) => {
+        const margin = (rect[wh] - orig[wh] / canvas_scale) / 2
+        const scroll_maybe = (absolute_p ? window[scroll] : 0)
+        const pos = rect[xy] + scroll_maybe + (shift ? shift(rect[wh]) : margin)
+        canvas.style[xy] = `${pos}px`
+    }
+    const args = [['left', 'width', 'scrollX', shift_x],
+                  ['top', 'height', 'scrollY', shift_y]]
     args.forEach(set_without_margin)
 }
 
