@@ -911,15 +911,17 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
                                                 overlay)
     !show_until && draw_winrate_graph_future(w, sr2coord, overlay)
     if (R.busy || show_until) {return}
+    const draw_score = score_drawer(w, sr2coord, g)
     clear_canvas(canvas, BLACK, g)
     draw_winrate_graph_frame(w, h, sr2coord, g)
+    draw_score('komi')
     draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_unsafe_stones(sr2coord, g)
     draw_winrate_graph_ambiguity(sr2coord, g)
     draw_winrate_graph_zone(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
-    draw_winrate_graph_score(w, sr2coord, g)
+    draw_score('score')
     // mouse events
     handle_mouse_on_winrate_graph(canvas, coord2sr)
 }
@@ -1014,10 +1016,10 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 
 // additional plots
 
-function draw_winrate_graph_score(w, sr2coord, g) {
+function score_drawer(w, sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
     const max_score = Math.max(...scores.filter(truep).map(Math.abs))
-    if (max_score === - Infinity) {return}
+    if (max_score === - Infinity) {return do_nothing}
     const scale = max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
     const to_r = score => 50 + score * scale
     const draw_komi = () => {
@@ -1032,8 +1034,11 @@ function draw_winrate_graph_score(w, sr2coord, g) {
         const [radius, alpha] = big_p ? [4, 1.0] : [2, 0.8]
         fill_circle([x, y], radius, g)
     }
-    g.fillStyle = ORANGE
-    draw_komi(); draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
+    const draw_score = () => {
+        g.fillStyle = ORANGE
+        draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
+    }
+    return command => ({score: draw_score, komi: draw_komi})[command]()
 }
 
 function draw_winrate_graph_ko_fight(sr2coord, g) {
