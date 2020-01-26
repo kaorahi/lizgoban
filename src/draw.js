@@ -939,7 +939,7 @@ function draw_winrate_graph_frame(w, h, sr2coord, g) {
     // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
     // rect([0, 0], [w, h], g)
     // 50% line
-    g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
+    g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 2
     const y50 = r2y(50); line([0, y50], [w, y50], g)
     // bottom space for zone indicator
     g.fillStyle = DARK_GRAY; fill_rect([0, h], [w, r2y(0)], g)
@@ -957,7 +957,7 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
     const left_limit = (delta < 0 ? w - margin : margin)
     g.save()
     g.textAlign = x < left_limit ? 'left' : 'right'; g.textBaseline = 'bottom'
-    g.fillStyle = 'rgba(128,128,0,0.7)'
+    g.fillStyle = 'rgba(255,255,0,0.7)'
     fill_text(g, fontsize, ' ' + show_until + ' ', x, y)
     g.restore()
 }
@@ -976,7 +976,7 @@ function draw_winrate_graph_future(w, sr2coord, g) {
 
 function draw_winrate_graph_curve(sr2coord, g) {
     const [whs, rest] = R.winrate_history_set
-    const style_for = k => whs.length <= 1 ? null : k === 0 ? GREEN : '#f0f'
+    const style_for = k => whs.length <= 1 ? null : k === 0 ? "#0c0" : '#c0c'
     const draw1 = (a, style) => draw_winrate_graph_curve_for(a, style, sr2coord, g)
     rest.forEach(a => draw1(a, 'rest'))
     whs.forEach((a, which_engine) => draw1(a, style_for(which_engine)))
@@ -993,7 +993,7 @@ function draw_winrate_graph_curve_for(winrate_history, style, sr2coord, g) {
         truep(h.predict) && !thin && draw_predict(h.r, s, h.predict)
         g.strokeStyle = thin ? PALE_BLUE : style ? style :
             isNaN(h.move_eval) ? GRAY : h.pass ? PALE_BLUE :
-            (h.move_eval < 0) ? RED : (s > 1 && !truep(h.predict)) ? YELLOW : GREEN
+            (h.move_eval < 0) ? "#c00" : (s > 1 && !truep(h.predict)) ? "#ff0" : "#0c0"
         g.lineWidth = (thin ? 1 : s <= R.move_count ? 3 : 1)
         cur = sr2coord(s, h.r); prev && line(prev, cur, g); prev = cur
     })
@@ -1022,15 +1022,17 @@ function draw_winrate_graph_score(w, sr2coord, g) {
     const to_r = score => 50 + score * scale
     const draw_komi = () => {
         const [dummy, ky] = sr2coord(R.move_count, to_r(R.komi))
-        g.strokeStyle = 'rgba(255,128,0,0.4)'; line([0, ky], [w, ky], g)
+        g.lineWidth = 2; g.strokeStyle = ORANGE
+        line([0, ky], [w, ky], g)
     }
     const plotter = (x, y, s, g) => {
         const diff_target_p = R.endstate_diff_interval > 5 &&
               (s === R.move_count - R.endstate_diff_interval)
         const big_p = (s === R.move_count) || diff_target_p
-        const [radius, alpha] = big_p ? [3, 0.7] : [2, 0.3]
-        g.fillStyle = `rgba(0,255,255,${alpha})`; fill_circle([x, y], radius, g)
+        const [radius, alpha] = big_p ? [4, 1.0] : [2, 0.8]
+        fill_circle([x, y], radius, g)
     }
+    g.fillStyle = ORANGE
     draw_komi(); draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
 }
 
@@ -1058,7 +1060,7 @@ function draw_winrate_graph_unsafe_stones(sr2coord, g) {
 
 function draw_winrate_graph_ambiguity(sr2coord, g) {
     const radius = 2
-    g.fillStyle = "rgba(255,128,0,0.3)"
+    g.fillStyle = "rgba(255,0,0,0.3)"
     const plot = (ambiguity, s) => {
         if (!truep(ambiguity)) {return}
         const [x, y] = sr2coord(s, 100 - ambiguity)
