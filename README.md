@@ -60,9 +60,9 @@ Otherwise, see the release note to replace the built-in engines with GPU version
 #### To use it:
 
 1. Install [Node.js](https://nodejs.org/).
-2. Type "git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install" on a terminal.
-3. Put Leela Zero binary (version 0.17 or later) as "external/leelaz" together with its network weight as "external/network.gz".
-4. Type "npm start". (Windows: Double-click lizgoban_windows.vbs.)
+2. Type `git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install` on a terminal.
+3. Put Leela Zero binary (version 0.17 or later) as `external/leelaz` together with its network weight as `external/network.gz`.
+4. Type `npm start`. (Windows: Double-click `lizgoban_windows.vbs`.)
 
 Use `npm start -- --no-sandbox` if you get an error like "The SUID sandbox helper binary was found, but is not configured correctly" and you do not want to fix it.
 
