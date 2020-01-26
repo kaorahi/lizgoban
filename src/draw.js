@@ -941,7 +941,7 @@ function draw_winrate_graph_frame(w, h, sr2coord, g) {
     // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
     // rect([0, 0], [w, h], g)
     // 50% line
-    g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 2
+    g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
     const y50 = r2y(50); line([0, y50], [w, y50], g)
     // bottom space for zone indicator
     g.fillStyle = DARK_GRAY; fill_rect([0, h], [w, r2y(0)], g)
@@ -1020,22 +1020,23 @@ function score_drawer(w, sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
     const max_score = Math.max(...scores.filter(truep).map(Math.abs))
     if (max_score === - Infinity) {return do_nothing}
+    const color = alpha => `rgba(235,148,0,${alpha})`
     const scale = max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
     const to_r = score => 50 + score * scale
     const draw_komi = () => {
         const [dummy, ky] = sr2coord(R.move_count, to_r(R.komi))
-        g.lineWidth = 2; g.strokeStyle = ORANGE
+        g.lineWidth = 1; g.strokeStyle = color(0.6)
         line([0, ky], [w, ky], g)
     }
     const plotter = (x, y, s, g) => {
         const diff_target_p = R.endstate_diff_interval > 5 &&
               (s === R.move_count - R.endstate_diff_interval)
         const big_p = (s === R.move_count) || diff_target_p
-        const [radius, alpha] = big_p ? [4, 1.0] : [2, 0.8]
+        const [radius, alpha] = big_p ? [4, 0.8] : [2.5, 0.6]
+        g.fillStyle = color(alpha)
         fill_circle([x, y], radius, g)
     }
     const draw_score = () => {
-        g.fillStyle = ORANGE
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
     }
     return command => ({score: draw_score, komi: draw_komi})[command]()
