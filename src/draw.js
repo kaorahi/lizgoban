@@ -915,7 +915,6 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_frame(w, h, sr2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_zone(sr2coord, g)
-    draw_winrate_graph_uncertainty(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     draw_winrate_graph_score(w, sr2coord, g)
@@ -1052,27 +1051,9 @@ function draw_winrate_graph_zone(sr2coord, g) {
     })
 }
 
-function draw_winrate_graph_uncertainty(sr2coord, g) {
-    draw_winrate_graph_barchart('uncertainty', 10, '255,128,0', false, sr2coord, g)
-}
-
 function draw_winrate_graph_history(ary, to_r, plotter, sr2coord, g) {
     const f = (val, s) => truep(val) && plotter(...sr2coord(s, to_r(val)), s, g)
     ary.forEach(f)
-}
-
-function draw_winrate_graph_barchart(key, mag, rgb, upside_down, sr2coord, g) {
-    const values = winrate_history_values_of(key)
-    const conv = upside_down ? (val => 100 - val) : identity
-    const to_r = val => conv(clip(val * mag, 0, 100))
-    const threshold = num_sort(values.filter(truep)).slice(-10)[0]
-    const [_, base_y] = sr2coord(0, upside_down ? 100 : 0)
-    const plotter = (x, y, s, g) => {
-        const [line_width, alpha] = values[s] >= threshold ? [2, 0.5] : [1, 0.3]
-        g.strokeStyle = `rgba(${rgb},${alpha})`; g.lineWidth = line_width
-        line([x, y], [x, base_y], g)
-    }
-    draw_winrate_graph_history(values, to_r, plotter, sr2coord, g)
 }
 
 function winrate_history_values_of(key) {return R.winrate_history.map(h => h[key])}

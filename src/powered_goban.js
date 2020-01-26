@@ -206,11 +206,9 @@ function winrate_from_game(engine_id) {
         const pass = implicit_pass || M.is_pass(h.move)
         const score_without_komi = truep(cur.score_without_komi) ?
               cur.score_without_komi : average_endstate_sum(s)
-        const best = (h.suggest || [])[0]
-        const uncertainty = best && (1 - best.visits / h.visits)
         // drop "pass" to save data size for IPC
-        return merge({r, move_b_eval, move_eval, tag, score_without_komi,
-                      uncertainty}, pass ? {pass} : {predict})
+        return merge({r, move_b_eval, move_eval, tag, score_without_komi},
+                     pass ? {pass} : {predict})
     })
 }
 
