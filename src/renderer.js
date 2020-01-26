@@ -570,13 +570,12 @@ function set_canvas_size(canvas, width, height) {
 }
 
 function set_overlay(canvas, orig) {
-    set_canvas_size(canvas, orig.width, orig.height)
+    set_canvas_size(canvas, orig.width / canvas_scale, orig.height / canvas_scale)
     const rect = orig.getBoundingClientRect()
     // "canvas.style.position === 'absolute'" does not work
     const absolute_p = portrait_p()  // fixme: is there a better way?
-    const sqr_scale = canvas_scale ** 2  // I don't understand...
     const set_without_margin = ([xy, wh, scroll]) =>
-          (canvas.style[xy] = (rect[xy] + (rect[wh] - canvas[wh] / sqr_scale) / 2)
+          (canvas.style[xy] = (rect[xy] + (rect[wh] - orig[wh] / canvas_scale) / 2)
            + (absolute_p ? window[scroll] : 0) + 'px')
     const args = [['left', 'width', 'scrollX'], ['top', 'height', 'scrollY']]
     args.forEach(set_without_margin)
