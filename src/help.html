@@ -99,16 +99,26 @@ and horizontal orange lines indicate LCB (criterion for suggestion order).
 
 <h3>Winrate graph</h3>
 
+Main curve:
 <ul>
  <li>green segment: good move (increase winrate)</li>
  <li>red segment: bad move (decrease winrate)</li>
  <li>yellow segment: unexpected good move that was missed by engine</li>
  <li>yellow vertical line: evaluation error (difference between evaluations of the move before/after it was played)</li>
  <li>thin purple segments: estimations by other engines</li>
+</ul>
+
+Additional plots [K = KataGo only]:
+<ul>
+ <li>brown horizontal line: komi [K]</li>
+ <li>cyan dots: estimated score without komi [K]</li>
+ <li>brown dots: unambiguity of stones (high for 100% alive or 100% dead) [K]</li>
+ <li>gray dots: unsafe (or dead) stones (edged = black, filled = white) [K]</li>
  <li>alternating circles at top: ko fights</li>
  <li>rainbow bar at the bottom: played zones (left = purple, center = white, etc.)</li>
  <li>rainbow square beside the graph: zone color map</li>
 </ul>
+
 Click / drag on the graph to go to the corresponding move.
 Push "x" key (keep holding down) to enlarge winrate graph and zone color map.
 Push "c" key (keep holding down) and hover the mouse on the graph

@@ -10,7 +10,7 @@ const SGF = require('@sabaki/sgf')
 // [{move: "D16", is_black: true, move_count: 1, b_winrate: 42.19, ...},
 //  {move: "Q4", is_black: false, move_count: 2, tag: "b", ko_fight: false, ...},
 //  {move: "Q16", is_black: false, move_count: 3, comment: "chance!" , ...},
-//  {move: "pass", is_black: true, move_count: 4, ...}]
+//  {move: "pass", is_black: true, move_count: 4, unsafe_stones: {black: 5.3, white: 8.9}, ambiguity: 9.2, ...}]
 // 
 // Black played pass for the third move and the last move in this example.
 // * move_count = 1 for the first stone, that is history[0]

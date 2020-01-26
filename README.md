@@ -39,6 +39,7 @@ And more...
 * Analysis of gains and losses in recent moves by KataGo that reveals overlooked side effects
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
 * Personal exercise book that can be used like bookmarks in web browsers for random exercise
+* Indicators of game story (big kills, ko fights, etc.) that suggest highlight scenes
 
 ## Usage
 
@@ -193,8 +194,8 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 
 * Support 9x9 and 13x13 in "File" menu.
 * Add "Rule" into "Edit" menu for KataGo v1.3.
+* Indicate game story (big kills, ko fights, played zones) in winrate graph.
 * Separate estimations by different engines in winrate graph.
-* Indicate ko fights and played zones in winrate graph.
 * Show start-up log when engine is down.
 * Fix blur in HiDPI display.
 

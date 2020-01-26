@@ -50,7 +50,7 @@ function endstate_handler(h) {
         // need add_endstate_to_history before add_endstate_to_stones
         // because update_endstate_diff depends on game.ref_current().endstate
         leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
-        add_endstate_to_stones(R.stones, R.endstate, update_p)
+        add_endstate_to_stones(R.stones, R.endstate, leelaz_move_count, update_p)
     }
     set_renderer_state(h)
     AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
@@ -70,7 +70,7 @@ function suggest_handler(h) {
     game.engines[engine_id] = true
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = cur
-    R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, true)
+    R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, mc, true)
     set_and_render_maybe({...h, score_without_komi}); on_suggest()
 }
 
@@ -103,14 +103,17 @@ function set_renderer_state(...args) {
     const is_katago = AI.katago_p()
     const komi = game.get_komi(), bsize = board_size()
     const comment = game.ref(game.move_count).comment || ''
-    const move_history = [{}, ...game.map(z => ({
-        move: z.move, is_black: z.is_black, ko_fight: z.ko_fight
-    }))]
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)
     const endstate_clusters = get_endstate_clusters(endstate)
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
+    const invalid_endstate_p =
+          (endstate_clusters.length === 1 && endstate_clusters[0].ownership_sum === 0)
+    const move_history = [{}, ...game.map(z => ({
+        move: z.move, is_black: z.is_black, ko_fight: z.ko_fight,
+        unsafe_stones: z.unsafe_stones, ambiguity: z.ambiguity
+    }))]
     merge(R, {move_count, busy, winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, move_history,
@@ -155,10 +158,11 @@ function change_endstate_diff_target(proc) {
     endstate_diff_move_count() !== old && update_endstate_diff()
 }
 
-function add_endstate_to_stones(stones, endstate, update_diff_p) {
+function add_endstate_to_stones(stones, endstate, move_count, update_diff_p) {
     if (!endstate) {return}
     aa_each(stones, (s, i, j) => (s.endstate = aa_ref(endstate, i, j)))
     update_diff_p && update_endstate_diff()
+    merge(game.ref(move_count), get_ambiguity_etc(stones, game, move_count))
 }
 function update_endstate_diff() {
     const prev = endstate_diff_move_count(), sign = prev < game.move_count ? 1 : -1
@@ -188,6 +192,32 @@ function get_endstate_clusters(endstate, move_count) {
     const stones = M.is_bogoterritory() &&
           (move_count ? game.stones_at(move_count) : R.stones)
     return endstate_clusters_for(endstate, stones)
+}
+
+function get_ambiguity_etc(stones, game, move_count) {
+    // ambiguity = sum of (1 - |ownership|) for all stones on the board.
+    // unsafe_stones.black
+    //   = number of captured black stones + sum[1 - f(ownership)]
+    //   = number of black moves - sum[f(ownership)],
+    // where sum[*] is taken for all black stones on the board
+    // and f(x) = x (x > 0), 0 (x <= 0).
+    let ambiguity = 0, unsafe_stones = {black: 0, white: 0}
+    const add_to_unsafe_stones = (black_p, val) => {
+        unsafe_stones[black_p ? 'black' : 'white'] += val
+    }
+    const count_played_stones = () =>
+          game.array_until(move_count).forEach(({move, is_black}) => {
+              const pass = move2idx(move)[0] < 0
+              !pass && add_to_unsafe_stones(is_black, 1)
+          })
+    const check_endstate = h => {
+        const is_target = h.stone && truep(h.endstate); if (!is_target) {return}
+        const es = Math.abs(h.endstate), dead = xor(h.black, h.endstate > 0)
+        ambiguity += 1 - es
+        !dead && add_to_unsafe_stones(h.black, - es)
+    }
+    count_played_stones(); aa_each(stones, check_endstate)
+    return {ambiguity, unsafe_stones}
 }
 
 /////////////////////////////////////////////////
