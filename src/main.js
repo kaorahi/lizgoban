@@ -23,6 +23,7 @@ const default_path_for = name =>
 const option = {
     leelaz_command: 'leelaz',
     leelaz_args: ["-g", "-w", "network.gz"],
+    preset_label: {label: ''},
     analyze_interval_centisec: 10,
     minimum_suggested_moves: 30,
     engine_log_line_length: 500,
@@ -65,9 +66,9 @@ function parse_option(cur, succ) {
     const from_preset = orig => {
         const preset = orig.preset; if (!preset) {return {}}
         expand_preset(preset)
-        const first_preset = preset[0]
-        const keys = ['leelaz_command', 'leelaz_args']
-        return aa2hash(keys.map(k => [k, first_preset[k] || orig[k]]))
+        const p0 = preset[0], from_first_preset = {...p0, preset_label: {label: p0.label}}
+        const keys = ['leelaz_command', 'leelaz_args', 'preset_label']
+        return aa2hash(keys.map(k => [k, from_first_preset[k] || orig[k]]))
     }
     const convert_preset_to_white = preset => {
         if (!preset) return {}
@@ -598,9 +599,9 @@ function preset_menu_items(preset, menu_tools, white_p) {
     return preset.map(item_for)
 }
 function preset_menu_for_recent(menu_tools) {
-    const {menu, item, sep} = menu_tools, bn = PATH.basename
+    const {menu, item, sep} = menu_tools
     const label = ({black, white}, k) =>
-          `${bn(black.weight_file)}${white ? " / " + bn(white.weight_file) : ""}` +
+          `${black.preset_label_text}${white ? " / " + white.preset_label_text : ""}` +
           ([' (current)', ' (prev)'][k] || '')
     const accel = k => (k === 1 && 'Shift+T')
     const item_for = (info, k) => item(label(info, k), accel(k), () => AI.restore(k))
@@ -611,20 +612,22 @@ function preset_menu_for_recent(menu_tools) {
 function apply_preset(rule, win) {
     const cur = AI.engine_info().black
     const extended = {...cur, ...rule}
-    const {empty_board, board_type, weight_file, weight_file_for_white,
+    const {label, empty_board, board_type, weight_file, weight_file_for_white,
            engine_for_white} = rule
     const {leelaz_command, leelaz_args} = extended
     const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
     const need_restart = cur && (f(cur) !== f(extended))
     const load = (switcher, file) => switcher(() => load_weight_file(file))
+    const preset_label = {label: label || ''}
     empty_board && !game.is_empty() && new_empty_board()
     board_type && set_board_type(board_type, win)
-    need_restart && merge_option_and_restart({leelaz_command, leelaz_args})
+    need_restart &&
+        merge_option_and_restart({leelaz_command, leelaz_args, preset_label})
     // backward compatibility for obsolete "weight_file" and "weight_file_for_white"
     weight_file && load_weight_file(weight_file)
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
         unload_leelaz_for_white()
-    engine_for_white && AI.set_engine_for_white(engine_for_white)
+    engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label)
     AI.backup(); resume()
 }
 
@@ -752,8 +755,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     if (empty(R.suggest)) {return}
     // comment
-    const e = AI.engine_info().current, info = key => PATH.basename(e[key])
-    const comment = `by ${info('leelaz_command')} (${info('weight_file')})`
+    const comment = `by ${AI.engine_info().current.preset_label_text}`
     const play_com = m => play(m, false, null, comment)
     // move
     const move = (weaken_method === 'random_candidate' ?
@@ -1182,7 +1184,7 @@ function leelaz_start_args(weight_file) {
                tuning_handler: make_tuning_handler(),
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['analyze_interval_centisec', 'wait_for_startup',
-                  'minimum_suggested_moves', 'engine_log_line_length']
+                  'minimum_suggested_moves', 'engine_log_line_length', 'preset_label']
     opts.forEach(key => h[key] = option[key])
     return h
 }

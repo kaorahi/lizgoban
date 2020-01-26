@@ -1,6 +1,7 @@
 // ai.js: abstraction of engines
 
 require('./common.js').to(global)
+const PATH = require('path')
 const original_create_leelaz = require('./engine.js').create_leelaz
 
 // See "engine cache" section for leelaz objects in this file.
@@ -96,10 +97,10 @@ function swap_leelaz_for_black_and_white() {
 function switch_to_random_leelaz(percent) {
     switch_leelaz(xor(is_bturn(), Math.random() < percent / 100))
 }
-function set_engine_for_white(command_args) {
+function set_engine_for_white(command_args, preset_label) {
     const [leelaz_command, ...leelaz_args] = command_args
     const start_args = {...leelaz_for_black.start_args(), weight_file: null,
-                        leelaz_command, leelaz_args}
+                        leelaz_command, leelaz_args, preset_label}
     start_engine_for_white(start_args)
 }
 function start_engine_for_white(start_args) {
@@ -121,7 +122,8 @@ function load_weight_file(weight_file, white_p) {
     const lz = white_p ? (leelaz_for_white || (leelaz_for_white = create_leelaz()))
           : leelaz_for_black
     const sa = lz.start_args() || leelaz_for_black.start_args()
-    lz.restart({...sa, weight_file})
+    const {label} = sa.preset_label, preset_label = {label, modified_p: true}
+    lz.restart({...sa, preset_label, weight_file})
     switch_leelaz()
 }
 
@@ -140,9 +142,13 @@ function engine_info() {
     // fixme: duplication with all_start_args()
     const f = lz => {
         if (!lz || !lz.start_args()) {return null}
-        const {leelaz_command, leelaz_args} = lz.start_args()
-        return {leelaz_command, leelaz_args, is_ready: lz.is_ready(),
-                weight_file: lz.get_weight_file(), network_size: lz.network_size()}
+        const {leelaz_command, leelaz_args, preset_label} = lz.start_args()
+        const weight_file = lz.get_weight_file()
+        const {label, modified_p} = preset_label || {}
+        const preset_label_text = `${label || ''}` +
+              (modified_p ? `{${PATH.basename(weight_file || '')}}` : '')
+        return {leelaz_command, leelaz_args, is_ready: lz.is_ready(), preset_label_text,
+                weight_file, network_size: lz.network_size()}
     }
     return {engine_komi: leelaz.get_komi(),
             leelaz_for_white_p: leelaz_for_white_p(), current: f(leelaz),

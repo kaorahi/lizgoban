@@ -6,7 +6,6 @@
 require('./common.js').to(global)
 const {create_game} = require('./game.js')
 const {endstate_clusters_for} = require('./area.js')
-const PATH = require('path')
 
 // state
 let endstate_diff_interval = 12, endstate_diff_from = null
@@ -251,7 +250,7 @@ function weight_info_text() {
     const engine_komi = (game_komi || (ek !== leelaz_komi)) ?
           `komi=${ek}${s(game_komi)} ` : ''
     const f = z => z ?
-          `${PATH.basename(s(z.weight_file))} ${s(z.network_size)}${s(!z.is_ready && '(waiting...)')}` : ''
+          `${z.preset_label_text} ${s(z.network_size)}${s(!z.is_ready && '(waiting...)')}` : ''
     const weight_info = h.leelaz_for_white_p ?
           `${f(h.black)} / ${f(h.white)}` : f(h.black)
     const tuning = M.tuning_message()
