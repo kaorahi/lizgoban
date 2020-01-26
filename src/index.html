@@ -90,7 +90,7 @@
    background-color: rgba(128,128,128,0.6); width: max-content;
   }
   #visits_trail_canvas {position: fixed; right: 1vw; bottom: 1vh; z-index: -9;}
-  #zone_chart_canvas {vertical-align: middle;}
+  #zone_chart_canvas {vertical-align: top; float: right;}
  }
  </style>
  <style type="text/css">
@@ -122,7 +122,10 @@
 <div id="rest_div">
 
 <div id="sub_goban_container" style="text-align: center;"><canvas id="sub_goban"></canvas></div>
-<div><canvas id="winrate_graph"></canvas></div>
+<div>
+ <canvas id="zone_chart_canvas" width="0" height="0"></canvas>
+ <canvas id="winrate_graph"></canvas>
+</div>
 
 <div>
 
@@ -164,7 +167,6 @@
 (visits
 <input type='number' id='auto_analysis_visits' value='1' min='1' style='width: 4em'>
 )
-<canvas id="zone_chart_canvas" width="0" height="0"></canvas>
 </span>
 <!-------- end hide_when_attached2 ----------->
 <span id='detach'>

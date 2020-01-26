@@ -550,8 +550,7 @@ function set_all_canvas_size() {
     set_overlay(graph_overlay_canvas, wr_only ? main_canvas: winrate_graph_canvas)
     set_canvas_size(visits_trail_canvas, rest_size * 0.25, main_board_max_size * 0.13)
     update_all_thumbnails()
-    R.is_sticky_zone_chart &&
-        set_canvas_square_size(zone_chart_canvas, rest_size * 0.05, true) &&
+    set_canvas_square_size(zone_chart_canvas, rest_size * 0.05, true) &&
         D.draw_zone_color_chart(zone_chart_canvas)  // call this here for efficiency
 }
 

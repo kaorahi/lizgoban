@@ -31,7 +31,6 @@ const option = {
     minimum_auto_restart_millisec: 5000,
     wait_for_startup: true,
     use_bogoterritory: true,
-    sticky_zone_chart: false,
     endstate_leelaz: null,
     working_dir: process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.'),
     weight_dir: undefined,
@@ -149,7 +148,7 @@ const P = require('./powered_goban.js').pay({
     R, AI, on_suggest: try_auto, M: {
         // functions used in powered_goban.js
         render, show_suggest_p, is_pass,
-        auto_progress, is_busy, is_pausing, is_bogoterritory, is_sticky_zone_chart,
+        auto_progress, is_busy, is_pausing, is_bogoterritory,
         tuning_message: () => tuning_message,
     }
 })
@@ -160,7 +159,6 @@ function render(given_R, is_board_changed) {
 function is_busy() {return busy}
 function is_pausing() {return pausing}
 function is_bogoterritory() {return option.use_bogoterritory}
-function is_sticky_zone_chart() {return option.sticky_zone_chart}
 function show_error(message) {
     dialog.showMessageBox({type: "error", buttons: ["OK"], message})
 }
