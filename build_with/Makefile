@@ -6,9 +6,10 @@ REL_NOTE = $(DOC)/release.html
 SCR_IMG = $(DOC)/screen.gif
 LG_CONF = $(SAMPLE)/config.json
 KATA_CONF = $(SAMPLE)/katago_gtp.cfg
+AGG_CONF = $(SAMPLE)/katago_gtp_aggressive.cfg
 PD_HEADER = pandoc_header
 
-TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(LG_CONF) $(KATA_CONF)
+TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(LG_CONF) $(KATA_CONF) $(AGG_CONF)
 
 PANDOC = pandoc -H $(PD_HEADER)
 
@@ -28,6 +29,9 @@ $(LG_CONF): config.json
 
 $(KATA_CONF): katago_gtp.cfg
 	cp -f katago_gtp.cfg $(KATA_CONF)
+
+$(AGG_CONF): katago_gtp.cfg
+	cp -f katago_gtp_aggressive.cfg $(AGG_CONF)
 
 $(SCR_IMG): ../screen.gif
 	convert '../screen.gif[0]' $(SCR_IMG)

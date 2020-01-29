@@ -1,5 +1,5 @@
 {
-    "max_cached_engines": 2,
+    "max_cached_engines": 3,
     "preset": [
         {
             "label": "Leela Zero",
@@ -13,6 +13,13 @@
             "engine": [["built-in", "katago/katago"], "gtp",
                        "-model", ["built-in", "katanetwork.gz"],
                        "-config", ["built-in", "katago_gtp.cfg"]]
+        },
+        {
+            "label": "aggressive KataGo",
+            "accelerator": "F3",
+            "engine": [["built-in", "katago/katago"], "gtp",
+                       "-model", ["built-in", "katanetwork.gz"],
+                       "-config", ["built-in", "katago_gtp_aggressive.cfg"]]
         }
     ]
 }
