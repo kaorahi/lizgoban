@@ -24,7 +24,7 @@ const option = {
     leelaz_command: 'leelaz',
     leelaz_args: ["-g", "-w", "network.gz"],
     preset_label: {label: ''},
-    analyze_interval_centisec: 10,
+    analyze_interval_centisec: 20,
     minimum_suggested_moves: 30,
     engine_log_line_length: 500,
     sabaki_command: default_path_for('sabaki'),

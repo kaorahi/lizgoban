@@ -83,7 +83,7 @@ Here is a more practical example of config.json:
 
 ~~~~
 {
-    "analyze_interval_centisec": 10,
+    "analyze_interval_centisec": 20,
     "sgf_dir": "/foo/bar/sgf/",
     "exercise_dir": "/foo/bar/exercise/",
     "max_cached_engines": 1,
