@@ -86,7 +86,7 @@ Here is a more practical example of config.json:
     "analyze_interval_centisec": 20,
     "sgf_dir": "/foo/bar/sgf/",
     "exercise_dir": "/foo/bar/exercise/",
-    "max_cached_engines": 1,
+    "max_cached_engines": 3,
     "preset": [
         {
             "label": "Leela Zero",
@@ -123,7 +123,7 @@ Here is a more practical example of config.json:
 * analyze_interval_centisec: Update interval of analysis display (1 = 0.01sec).
 * sgf_dir: Default directory for [Open SGF] and [Save SGF] menus. (*1)
 * exercise_dir: Directory for your personal exercise book. (*1)
-* max_cached_engines: (Experimental) Maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.
+* max_cached_engines: Maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.
 * preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
   * label: Item name shown in [Preset] menu.
   * accelerator: Shortcut key like "Shift+F3", "CmdOrCtrl+F4", "Alt+F5", etc. It can be omitted as the above "LZ vs. KATA".
