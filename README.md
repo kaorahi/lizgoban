@@ -37,9 +37,9 @@ And more...
 * Play against weakened engines in several ways
 * Keyboard shortcuts, e.g. "3" key for the third variation
 * Analysis of gains and losses in recent moves by KataGo that reveals overlooked side effects
+* Indicators that suggest highlight scenes of the game (big kills, ko fights, etc.)
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
 * Personal exercise book that can be used like bookmarks in web browsers for random exercise
-* Indicators of game story (big kills, ko fights, etc.) that suggest highlight scenes
 
 ## Usage
 
@@ -151,7 +151,7 @@ In addition, LizGoban reads external/config.json (and config.json in the "workin
 
 Set KataGo like the above config.json and select it in [Preset] menu. See "KataGo" section in [Help] menu for details.
 
-For highly handicapped games, you have to prepare another gtp.cfg because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of gtp_aggressive.cfg.
+For highly handicapped games, you have to prepare another gtp.cfg because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of gtp_aggressive.cfg for KataGo v1.3.1.
 
 ~~~~
 ...
@@ -194,7 +194,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 
 * Support 9x9 and 13x13 in "File" menu.
 * Add "Rule" into "Edit" menu for KataGo v1.3.
-* Indicate game story (big kills, ko fights, played zones) in winrate graph.
+* Add indicators that suggest highlight scenes of the game (big kills, ko fights, etc.).
 * Separate estimations by different engines in winrate graph.
 * Show start-up log when engine is down.
 * Fix blur in HiDPI display.
