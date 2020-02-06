@@ -551,7 +551,7 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
     const b_wr0 = fake_winrate_for(z.r, z.score_without_komi, true)
     const b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
     const komi_wr = score_p && fake_winrate_for(0.5, R.komi, true)
-    const prev_score = score_p && origin_score()
+    const prev_score = score_p && origin_score(), ready = !empty(R.suggest)
     winrate_bar_prev = b_wr
     if (R.pausing && !truep(b_wr0)) {
         draw_winrate_bar_unavailable(w, h, g)
@@ -559,17 +559,18 @@ function draw_winrate_bar(canvas, large_bar, pale_text_p) {
         return
     }
     draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g)
-    large_bar && draw_winrate_bar_horizontal_lines(w, h, g)
     draw_winrate_bar_tics(b_wr, komi_wr, tics, w, h, vline, g)
-    if (empty(R.suggest)) {return}
-    draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g)
-    R.winrate_trail && draw_winrate_trail(canvas)
-    draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
-    draw_winrate_bar_text(prev_score, w, h, pale_text_p, g)
+    if (ready) {
+        large_bar && draw_winrate_bar_horizontal_lines(w, h, g)
+        draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g)
+        R.winrate_trail && draw_winrate_trail(canvas)
+        draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
+    }
+    draw_winrate_bar_text(b_wr, prev_score, w, h, pale_text_p, !ready, g)
 }
 
-function draw_winrate_bar_text(prev_score, w, h, pale_text_p, g) {
-    const b_wr = b_winrate(0); if (!truep(b_wr)) {return}
+function draw_winrate_bar_text(b_wr, prev_score, w, h, pale_text_p, score_only_p, g) {
+    if (!truep(b_wr)) {return}
     const scorep = score_bar_p(), b_sign = R.bturn ? 1 : -1
     const eval = scorep ? - (R.score_without_komi - prev_score) * b_sign
           : - (b_wr - origin_b_winrate()) * b_sign
@@ -594,7 +595,7 @@ function draw_winrate_bar_text(prev_score, w, h, pale_text_p, g) {
     const {lower, l_quarter, center, u_quarter, upper} = score_bar_fitter.range()
     const [left, right] = scorep ? [lower, upper].map(score_str) :
           [b_wr, 100 - b_wr].map(wr => f2s(wr) + '%')
-    f(left, 0, 'left', R.bturn); f(right, w, 'right', !R.bturn)
+    !score_only_p && (f(left, 0, 'left', R.bturn), f(right, w, 'right', !R.bturn))
     if (scorep) {
         g.textAlign = 'center'; g.fillStyle = wr_color
         const tics = [[l_quarter, 0.25], [center, 0.5], [u_quarter, 0.75]]
