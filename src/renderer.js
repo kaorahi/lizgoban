@@ -633,6 +633,8 @@ document.onkeydown = e => {
     case "ArrowRight": case "ArrowDown":
         busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
     case ";": busy('let_me_think_next', R.board_type); break;
+    case "[": busy('previous_sequence'); break;
+    case "]": busy('next_sequence'); break;
     }
     if (e.repeat) {return}
     // GROUP 3: usable with sabaki
@@ -669,8 +671,6 @@ document.onkeydown = e => {
     case "C-v": m('paste_sgf_or_url_from_clipboard'); break;
     case "C-x": m('cut_sequence'); break;
     case "C-w": m('close_window_or_cut_sequence'); break;
-    case "[": m('previous_sequence'); break;
-    case "]": m('next_sequence'); break;
     case "p": m('pass'); break;
     case "Enter": play_it(e.shiftKey ? 5 : 1); break;
     case "`": f(play_it, false, true); break;
