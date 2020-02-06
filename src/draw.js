@@ -259,12 +259,13 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g); return
     }
     each_coord((h, xy, idx) => {
+        const next_p = draw_next_p && h.next_move
         draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
-        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
-            h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
-        draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
+        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
+            h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, next_p, g) :
+            next_p ? draw_next_move(h, xy, stone_radius, g) : null
         const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
         if (empty(R.suggest)) {return}
@@ -391,11 +392,13 @@ function draw_next_move(h, xy, radius, g) {
 // suggest_as_stone = {suggest: true, data: suggestion_data}
 // See "suggestion reader" section in engine.js for suggestion_data.
 
-function draw_suggest(h, xy, radius, large_font_p, g) {
+function draw_suggest(h, xy, radius, large_font_p, next_p, g) {
     if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
     const suggest = h.data, {stroke, fill, lizzie_text_color} = suggest_color(suggest)
     g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_circle(xy, radius, g)
+    next_p && draw_next_move(h, xy, radius, g)
+    draw_suggestion_order(h, xy, radius, g.strokeStyle, large_font_p, g)
     if (R.lizzie_style) {
         const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
         const fontsize = to_i(radius * 0.8), half = fontsize / 2
@@ -409,7 +412,6 @@ function draw_suggest(h, xy, radius, large_font_p, g) {
         fill_text(g, fontsize, visits_text, x, y_lower, max_width)
         g.restore()
     }
-    draw_suggestion_order(h, xy, radius, g.strokeStyle, large_font_p, g)
 }
 
 function draw_suggest_0visits(h, xy, radius, g) {
