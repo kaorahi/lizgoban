@@ -146,7 +146,6 @@ function add_endstate_diff_interval(k) {
           (AI.another_leelaz_for_endstate_p() && !AI.katago_p()) ? [10, 2] : [1, 1]
     change_endstate_diff_target(() => {
         endstate_diff_interval = clip(endstate_diff_interval + k * unit, minimum)
-        update_info_in_stones()  // update "recent stone" marks
     })
 }
 function set_endstate_diff_from(k) {
@@ -292,9 +291,6 @@ function add_info_to_stones(stones, game) {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
         add_tag(s, h.tag)
         s.stone && (h.move_count <= game.move_count) && (s.move_count = h.move_count)
-        AI.support_endstate_p() && truep(s.move_count) &&
-            (game.move_count - endstate_diff_interval < s.move_count) &&
-            (s.recent = true)
         !s.anytime_stones && (s.anytime_stones = [])
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
@@ -304,7 +300,7 @@ function update_info_in_stones() {
     clear_info_in_stones(R.stones); add_info_to_stones(R.stones, game)
 }
 function clear_info_in_stones(stones) {
-    const keys = ['move_count', 'tag', 'recent', 'anytime_stones',
+    const keys = ['move_count', 'tag', 'anytime_stones',
                   'next_move', 'next_is_black']
     aa_each(stones, s => keys.forEach(key => {delete s[key]}))
 }
