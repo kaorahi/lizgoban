@@ -778,7 +778,7 @@ function suggest_color(suggest, alpha) {
     }
     const hsl_e = (h, s, l, emph) => hsla(h, s, l, alpha || alpha_emphasis(emph))
     const stroke = hsl_e(hue, 100, 20, 0.85), fill = hsl_e(hue, 100, 50, 0.4)
-    const lizzie_text_color = hsl_e(0, 0, 0, 0.75)
+    const lizzie_text_color = 'rgba(0,0,0,0.7)'
     return {stroke, fill, lizzie_text_color}
 }
 
