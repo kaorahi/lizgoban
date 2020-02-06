@@ -40,12 +40,11 @@ let leelaz_move_count = 0
 
 function endstate_handler(h) {
     if (M.is_pausing()) {return}
-    const sum = ary => flatten(ary).reduce((a, c) => a + c, 0)
     const endstate_setter = update_p => {
         const leelaz_move_count = R.endstate_move_count
         const add_endstate_to_history = z => {
             z.endstate = R.endstate; if (!update_p) {return}
-            z.endstate_sum = sum(R.endstate)
+            z.endstate_sum = sum(flatten(R.endstate))
         }
         // need add_endstate_to_history before add_endstate_to_stones
         // because update_endstate_diff depends on game.ref_current().endstate
