@@ -256,8 +256,9 @@ function create_leelaz () {
         if (!arg.suggest_handler) {return}
         const [i_str, o_str] = s.split(/\s*ownership\s*/)
         const ownership = ownership_parser(o_str)
-        const suggest = i_str.split(/info/).slice(1).map(suggest_parser).filter(truep)
-              .sort((a, b) => (a.order - b.order))
+        const unsorted_suggest =
+              i_str.split(/info/).slice(1).map(suggest_parser).filter(truep)
+        const suggest = sort_by_key(unsorted_suggest, 'order')
         const [wsum, visits, scsum] =
               suggest.map(h => [h.winrate, h.visits, h.score_without_komi || 0])
               .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
@@ -265,10 +266,8 @@ function create_leelaz () {
         const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
         const visits_per_sec = speedometer.per_sec(visits)
         const score_without_komi = is_katago() && (scsum / visits)
-        const add_order = (sort_key, order_key) => {
-            suggest.slice().sort((a, b) => (b[sort_key] - a[sort_key]))
-                .forEach((h, i) => (h[order_key] = i))
-        }
+        const add_order = (sort_key, order_key) => sort_by_key(suggest, sort_key)
+              .reverse().forEach((h, i) => (h[order_key] = i))
         // winrate is NaN if suggest = []
         add_order('visits', 'visits_order')
         add_order('winrate', 'winrate_order')
