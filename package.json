@@ -15,8 +15,8 @@
     "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^7.1.3",
-    "electron-builder": "^21.2.0"
+    "electron": "^7.1.11",
+    "electron-builder": "^22.3.2"
   },
   "build": {
     "files": [
