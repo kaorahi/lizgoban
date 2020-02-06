@@ -151,7 +151,7 @@ In addition, LizGoban reads external/config.json (and config.json in the "workin
 
 Set KataGo like the above config.json and select it in [Preset] menu. See "KataGo" section in [Help] menu for details.
 
-For highly handicapped games, you have to prepare another gtp.cfg because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of gtp_aggressive.cfg for KataGo v1.3.1.
+For high handicap games, you have to prepare another gtp.cfg because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of gtp_aggressive.cfg for KataGo v1.3.1.
 
 ~~~~
 ...
