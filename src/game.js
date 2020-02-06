@@ -98,10 +98,9 @@ function create_game_from_sgf(sgf_str) {
     // For robust parsing...
     // (1) drop junk before SGF by searching "(;" (ad hoc!)
     // (2) drop tails repeatedly until we get a valid SGF (brute force!)
-    const clipped = clip_sgf(sgf_str); if (!clipped) {return false}
-    try {return create_game_from_sgf_unsafe(clipped)} catch (e) {
-        return create_game_from_sgf(clipped.slice(0, -1))
-    }
+    const clipped = clip_sgf(sgf_str)
+    return clipped && (safely(create_game_from_sgf_unsafe, clipped) ||
+                       create_game_from_sgf(clipped.slice(0, -1)))
 }
 function create_game_from_sgf_unsafe(clipped_sgf) {
     const gametree = parse_sgf(clipped_sgf)[0]

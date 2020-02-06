@@ -54,7 +54,7 @@ function parse_argv() {
     argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
 }
 function parse_option(cur, succ) {
-    const read_file = path => {try {return fs.readFileSync(path)} catch(e) {return '{}'}}
+    const read_file = path => safely(fs.readFileSync, path) || '{}'
     const merge_json = str => merge_with_preset(JSON.parse(str))
     const merge_with_preset = orig => {
         // accept obsolete key "shortcut" for backward compatibility
@@ -87,7 +87,7 @@ function parse_option(cur, succ) {
 function option_path(key) {
     const path = option[key]; if (!path) {return path}
     const ret = PATH.resolve(option.working_dir, path)
-    try {key.endsWith('_dir') && fs.mkdirSync(ret)} catch(e) {}
+    key.endsWith('_dir') && safely(fs.mkdirSync, ret)
     return ret
 }
 
@@ -95,7 +95,6 @@ function option_path(key) {
 // setup
 
 // util
-function safely(proc, ...args) {try {return proc(...args)} catch(e) {return null}}
 const TMP = require('tmp')
 const store = new (safely(require, 'electron-store') ||
                    // try old name for backward compatibility

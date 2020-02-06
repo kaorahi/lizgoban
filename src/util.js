@@ -24,6 +24,7 @@ E.each_value = (h, f) => each_key_value(h, (_, v) => f(v))  // for non-array
 E.array2hash = a => {
     const h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h
 }
+E.safely = (proc, ...args) => {try {return proc(...args)} catch(e) {return null}}
 E.mac_p = () => (process.platform === 'darwin')
 E.leelaz_komi = 7.5
 E.handicap_komi = -0.5
