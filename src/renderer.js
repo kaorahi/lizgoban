@@ -472,10 +472,10 @@ function update_all_thumbnails(style) {
     const measurer = Q("#thumb_height_measurer")
     const hide_thumbnails = R.attached || R.sequence_length <= 1 ||
           R.board_type === 'variation' || R.board_type === 'winrate_only'
-    const ids = hide_thumbnails ? [] : R.sequence_ids
+    const ids = hide_thumbnails ? [] : R.sequence_ids, scrollp = !!style
     div.dataset.style = style || 'block'
     update_thumbnail_containers(ids, measurer)
-    update_thumbnail_contents(ids, measurer, preview)
+    update_thumbnail_contents(ids, measurer, preview, scrollp)
     !empty(ids) && !style && measurer.clientHeight > Q("#goban").clientHeight &&
         update_all_thumbnails('inline')
 }
@@ -489,7 +489,7 @@ function update_thumbnail_containers(ids, div) {
         })
 }
 
-function update_thumbnail_contents(ids, div, preview) {
+function update_thumbnail_contents(ids, div, preview, scrollp) {
     ids.forEach((id, n) => {
         const box = div.children[n], img = box.children[0], thumb = thumbnails[id]
         const set_action = (clickp, enter_leave_p) => {
@@ -505,10 +505,15 @@ function update_thumbnail_contents(ids, div, preview) {
         }
         const set_current = () => box.classList.add('current')
         const unset_current = () => box.classList.remove('current')
+        const scroll_maybe = () => {
+            const rect = box.getBoundingClientRect()
+            const inside = (rect.top >= 0 && rect.bottom <= window.innerHeight)
+            scrollp && !inside && box.scrollIntoView()
+        }
         box.classList.add('thumbbox')
         img.src = thumb ? thumb.url : 'no_thumbnail.png'
         img.draggable = false
-        id === current_sequence_id() ? (set_current(), set_action()) :
+        id === current_sequence_id() ? (set_current(), set_action(), scroll_maybe()) :
             (unset_current(), set_action(true, true))
         box.dataset.name = (thumb && thumb.name) || ''
         box.dataset.available = yes_no(thumb)
