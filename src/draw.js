@@ -356,7 +356,7 @@ function draw_stone(h, xy, radius, draw_last_p, g) {
 }
 
 function draw_movenums(h, xy, radius, g) {
-    const movenums = h.movenums.slice().sort((a, b) => a - b)
+    const movenums = num_sort(h.movenums)
     const bw = h.thin_movenums ? ['rgba(0,0,0,0.2)', 'rgba(255,255,255,0.3)'] :
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
     const color = (movenums[0] === 1) ? GREEN : h.variation_last ? RED :
