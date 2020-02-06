@@ -7,8 +7,8 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 // command line option
 
 // example:
-// npx electron src -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
-// npx electron src -c /foo/bar/config.json
+// npx electron . -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
+// npx electron . -c /foo/bar/config.json
 
 require('./common.js').to(global)
 const PATH = require('path'), fs = require('fs')
