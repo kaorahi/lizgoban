@@ -660,7 +660,7 @@ function draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g) {
     const prev_b_wr = score_bar_p() ?
           fake_winrate_for(dummy, prev_score, true) : obw
     if (!truep(obw) || (b_wr === prev_b_wr)) {return}
-    const [x1, x2] = [b_wr, prev_b_wr].map(xfor).sort()
+    const [x1, x2] = num_sort([b_wr, prev_b_wr].map(xfor))
     const last_gain = - (b_wr - prev_b_wr) * (R.bturn ? 1 : -1)
     if (!truep(last_gain)) {return}
     const [stroke, fill] = (last_gain >= 0 ? [GREEN, PALE_GREEN] : [RED, PALE_RED])
@@ -945,7 +945,7 @@ function draw_winrate_graph_frame(w, h, sr2coord, g) {
 
 function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) {
     // area
-    const [s0, s1] = [show_until, R.move_count].sort()
+    const [s0, s1] = num_sort([show_until, R.move_count])
     const xy0 = sr2coord(s0, 100), xy1 = sr2coord(s1, 0)
     g.strokeStyle = g.fillStyle = 'rgba(128,128,0,0.3)'; g.lineWidth = 1
     edged_fill_rect(xy0, xy1, g)
