@@ -398,7 +398,7 @@ function draw_suggest(h, xy, radius, large_font_p, next_p, g) {
     g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_circle(xy, radius, g)
     next_p && draw_next_move(h, xy, radius, g)
-    draw_suggestion_order(h, xy, radius, g.strokeStyle, large_font_p, g)
+    draw_suggestion_order(h, xy, radius, stroke, large_font_p, g)
     if (R.lizzie_style) {
         const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
         const fontsize = to_i(radius * 0.8), half = fontsize / 2
