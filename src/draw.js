@@ -259,13 +259,13 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g); return
     }
     each_coord((h, xy, idx) => {
-        const next_p = draw_next_p && h.next_move
         draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
+        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
+            h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
+        draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
-        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
-            h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, next_p, g) :
-            next_p ? draw_next_move(h, xy, stone_radius, g) : null
+        R.lizzie_style && h.suggest && draw_suggest_lizzie(h, xy, stone_radius, g)
         const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
         if (empty(R.suggest)) {return}
@@ -392,26 +392,29 @@ function draw_next_move(h, xy, radius, g) {
 // suggest_as_stone = {suggest: true, data: suggestion_data}
 // See "suggestion reader" section in engine.js for suggestion_data.
 
-function draw_suggest(h, xy, radius, large_font_p, next_p, g) {
+function draw_suggest(h, xy, radius, large_font_p, g) {
     if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
-    const suggest = h.data, {stroke, fill, lizzie_text_color} = suggest_color(suggest)
+    const suggest = h.data, {stroke, fill} = suggest_color(suggest)
     g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_circle(xy, radius, g)
-    next_p && draw_next_move(h, xy, radius, g)
-    draw_suggestion_order(h, xy, radius, stroke, large_font_p, g)
-    if (R.lizzie_style) {
-        const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
-        const fontsize = to_i(radius * 0.8), half = fontsize / 2
-        const y_upper = y - half, y_lower = y + half
-        const [winrate_text, visits_text] = suggest_texts(suggest)
-        const score_text = score_bar_p() && f2s(suggest.score_without_komi)
-        g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'
-        g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
-        fill_text(g, fontsize, score_text || winrate_text, x, y_upper, max_width)
-        g.fillStyle = suggest.order === 0 ? champ_color : lizzie_text_color
-        fill_text(g, fontsize, visits_text, x, y_lower, max_width)
-        g.restore()
-    }
+    !R.lizzie_style && draw_suggestion_order(h, xy, radius, stroke, large_font_p, g)
+}
+
+function draw_suggest_lizzie(h, xy, radius, g) {
+    const suggest = h.data; if (suggest.visits === 0) {return}
+    const lizzie_text_color = 'rgba(0,0,0,0.7)'
+    const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
+    const fontsize = to_i(radius * 0.8), half = fontsize / 2
+    const y_upper = y - half, y_lower = y + half
+    const [winrate_text, visits_text] = suggest_texts(suggest)
+    const score_text = score_bar_p() && f2s(suggest.score_without_komi)
+    draw_suggestion_order_lizzie(h, xy, radius, g)
+    g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
+    fill_text(g, fontsize, score_text || winrate_text, x, y_upper, max_width)
+    g.fillStyle = suggest.order === 0 ? champ_color : lizzie_text_color
+    fill_text(g, fontsize, visits_text, x, y_lower, max_width)
+    g.restore()
 }
 
 function draw_suggest_0visits(h, xy, radius, g) {
@@ -421,9 +424,14 @@ function draw_suggest_0visits(h, xy, radius, g) {
     circle(xy, radius * size, g)
 }
 
-function draw_suggestion_order(h, [x, y], radius, color, large_font_p, g) {
+function draw_suggestion_order(h, xy, radius, color, large_font_p, g) {
+    draw_suggestion_order_gen(false, h, xy, radius, color, large_font_p, g)
+}
+function draw_suggestion_order_lizzie(h, xy, radius, g) {
+    draw_suggestion_order_gen(true, h, xy, radius, null, false, g)
+}
+function draw_suggestion_order_gen(lizzie, h, [x, y], radius, color, large_font_p, g) {
     if (h.data.order >= 9) {return}
-    const lizzie = R.lizzie_style
     const both_champ = (h.data.order + h.data.winrate_order === 0)
     const either_champ = (h.data.order * h.data.winrate_order === 0)
     const huge = [2, -1], large = [1.5, -0.5], normal = [1, -0.1], small = [0.8, 0.3]
@@ -778,8 +786,7 @@ function suggest_color(suggest, alpha) {
     }
     const hsl_e = (h, s, l, emph) => hsla(h, s, l, alpha || alpha_emphasis(emph))
     const stroke = hsl_e(hue, 100, 20, 0.85), fill = hsl_e(hue, 100, 50, 0.4)
-    const lizzie_text_color = 'rgba(0,0,0,0.7)'
-    return {stroke, fill, lizzie_text_color}
+    return {stroke, fill}
 }
 
 function winrate_color_hue(winrate, score) {
