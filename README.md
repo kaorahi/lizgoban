@@ -101,10 +101,10 @@ Here is a more practical example of config.json:
                        "-config", "/foo/bar/gtp.cfg"]
         },
         {
-            "label": "Aggressive",
+            "label": "KataGo for handicap games",
             "engine": ["/foo/bar/katago", "gtp",
                        "-model", "/foo/kata_net/g104-b20c256.gz",
-                       "-config", "/foo/bar/gtp_aggressive.cfg"]
+                       "-config", "/foo/bar/gtp_handicap.cfg"]
         },
         {
             "label": "LZ vs. KATA",
@@ -151,7 +151,7 @@ In addition, LizGoban reads external/config.json (and config.json in the "workin
 
 Set KataGo like the above config.json and select it in [Preset] menu. See "KataGo" section in [Help] menu for details.
 
-For high handicap games, you have to prepare another gtp.cfg because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of gtp_aggressive.cfg for KataGo v1.3.1.
+For high handicap games, you have to prepare another gtp.cfg because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of gtp_handicap.cfg for KataGo v1.3.1.
 
 ~~~~
 ...

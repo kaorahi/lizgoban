@@ -15,11 +15,11 @@
                        "-config", ["built-in", "katago_gtp.cfg"]]
         },
         {
-            "label": "aggressive KataGo",
+            "label": "KataGo for handicap games",
             "accelerator": "F3",
             "engine": [["built-in", "katago/katago"], "gtp",
                        "-model", ["built-in", "katanetwork.gz"],
-                       "-config", ["built-in", "katago_gtp_aggressive.cfg"]]
+                       "-config", ["built-in", "katago_gtp_handicap.cfg"]]
         }
     ]
 }

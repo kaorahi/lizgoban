@@ -29,7 +29,7 @@
         "filter": [
           "config.json",
           "katago_gtp.cfg",
-          "katago_gtp_aggressive.cfg"
+          "katago_gtp_handicap.cfg"
         ]
       },
       {
