@@ -201,7 +201,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 
 Incompatibilities:
 
-* Upgrade libraries (Electron 7, etc.). So you may need to do "npm install" again.
+* Upgrade libraries (Electron 8, etc.). So you may need to do "npm install" again.
 * "weight_dir" in config.json is obsolete now. (See above.)
 * "Komi" and "Info" are moved from [Tool] to [Edit] menu.
 
