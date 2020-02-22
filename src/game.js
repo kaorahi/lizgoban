@@ -114,8 +114,9 @@ function parse_sgf(sgf_str) {
 }
 
 // pick "(; ... ... ])...)"
+// [2020-02-14] allow "...;)" for old (199X) SGF by IGS, NNGS, WING, xigc, etc.
 function clip_sgf(sgf_str) {
-    const m = sgf_str.match(/\(\s*;[^]*\][\s\)]*\)/); return m && m[0]
+    const m = sgf_str.match(/\(\s*;[^]*\][;\s\)]*\)/); return m && m[0]
 }
 
 function convert_to_sabaki_sgf_v131_maybe(parsed) {
