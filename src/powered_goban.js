@@ -227,7 +227,8 @@ function winrate_from_game(engine_id) {
     const score_loss = {b: 0, w: 0}; let prev_score = game.get_komi()
     return winrates.map((r, s, a) => {
         const cur = game.ref(s)
-        const [turn_letter, turn_sign] = cur.is_black ? ['b', 1] : ['w', -1]
+        const [turn_letter, opponent_letter, turn_sign] =
+              cur.is_black ? ['b', 'w', 1] : ['w', 'b', -1]
         const h = append_endstate_tag_maybe(cur), tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
@@ -238,9 +239,19 @@ function winrate_from_game(engine_id) {
         const score_without_komi = truep(cur.score_without_komi) ?
               cur.score_without_komi : average_endstate_sum(s)
         if (truep(score_without_komi)) {
-            const loss = - (score_without_komi - prev_score) * turn_sign
+            const gain = (score_without_komi - prev_score) * turn_sign
             const valid = !pass || s === 0
-            valid && (score_loss[turn_letter] += loss)
+            if (valid) {
+                // (A) gain < 0: Your move is bad.
+                // (B) gain > 0: Your move is good or the opponent's last move was bad.
+                // The case (B) never happens if the engine is perfectly accurate.
+                // So we cannot trust positive gains literally.
+                const responsibility_of_opponent = 0.5
+                const transferred = clip(gain, 0) * responsibility_of_opponent
+                const loss = - (gain - transferred)
+                score_loss[turn_letter] += loss
+                score_loss[opponent_letter] += transferred
+            }
             prev_score = score_without_komi
         }
         const cumulative_score_loss = {...score_loss}  // dup
