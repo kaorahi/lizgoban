@@ -1084,14 +1084,21 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
     R.move_history.forEach((z, s) => plot(z.ambiguity, s))
 }
 
+let last_score_loss_shift = 0  // avoid flicker in auto-analysis
 function draw_winrate_graph_score_loss(sr2coord, g) {
     if (!R.winrate_history) {return}
-    const style = {b: "rgba(0,255,0,0.5)", w: "rgba(255,0,255,0.5)"}
+    const style = {b: "rgba(0,255,0,0.7)", w: "rgba(255,0,255,0.7)"}
+    const offset = 10, margin = 3, turn = R.bturn ? 'b' : 'w'
+    const visible_range = [- offset + margin, 100 - offset - margin]
+    const current = (R.winrate_history[R.move_count].cumulative_score_loss || {})[turn]
+    const shift = last_score_loss_shift = truep(current) ?
+          clip(current, ...visible_range) - current : last_score_loss_shift
+    const to_r = loss => (100 - offset - shift) - loss
     g.lineWidth = 1
-    each_key_value(style, (turn, color) => {
-        g.strokeStyle = color
+    each_key_value(style, (key, style_for_key) => {
+        g.strokeStyle = style_for_key
         const to_xy = ({cumulative_score_loss}, s) => cumulative_score_loss ?
-              sr2coord(s, 90 - cumulative_score_loss[turn]) : [NaN, NaN]
+              sr2coord(s, to_r(cumulative_score_loss[key])) : [NaN, NaN]
         line(...R.winrate_history.map(to_xy), g)
     })
 }
