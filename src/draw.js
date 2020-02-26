@@ -918,12 +918,14 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     !show_until && draw_winrate_graph_future(w, sr2coord, overlay)
     if (R.busy || show_until) {return}
     const draw_score = score_drawer(w, sr2coord, g)
+    const score_loss_p = R.show_score_loss && !alternative_engine_for_white_p()
     clear_canvas(canvas, BLACK, g)
     draw_winrate_graph_frame(w, h, sr2coord, g)
     draw_score('komi')
     draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_unsafe_stones(sr2coord, g)
     draw_winrate_graph_ambiguity(sr2coord, g)
+    score_loss_p && draw_winrate_graph_score_loss(sr2coord, g)
     draw_winrate_graph_zone(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
@@ -1080,6 +1082,18 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
         fill_square_around([x, y], radius, g)
     }
     R.move_history.forEach((z, s) => plot(z.ambiguity, s))
+}
+
+function draw_winrate_graph_score_loss(sr2coord, g) {
+    if (!R.winrate_history) {return}
+    const style = {b: "rgba(0,255,0,0.5)", w: "rgba(255,0,255,0.5)"}
+    g.lineWidth = 1
+    each_key_value(style, (turn, color) => {
+        g.strokeStyle = color
+        const to_xy = ({cumulative_score_loss}, s) => cumulative_score_loss ?
+              sr2coord(s, 90 - cumulative_score_loss[turn]) : [NaN, NaN]
+        line(...R.winrate_history.map(to_xy), g)
+    })
 }
 
 function draw_winrate_graph_zone(sr2coord, g) {

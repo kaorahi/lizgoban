@@ -224,20 +224,30 @@ function get_ambiguity_etc(stones, game, move_count) {
 function winrate_from_game(engine_id) {
     // +1 for move_count (see game.js)
     const winrates = seq(game.len() + 1).map(mc => get_b_winrate(mc, engine_id))
+    const score_loss = {b: 0, w: 0}; let prev_score = game.get_komi()
     return winrates.map((r, s, a) => {
         const cur = game.ref(s)
+        const [turn_letter, turn_sign] = cur.is_black ? ['b', 1] : ['w', -1]
         const h = append_endstate_tag_maybe(cur), tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
-        const move_eval = move_b_eval && move_b_eval * (cur.is_black ? 1 : -1)
+        const move_eval = move_b_eval && move_b_eval * turn_sign
         const predict = winrate_suggested(s, engine_id)
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const pass = implicit_pass || M.is_pass(h.move)
         const score_without_komi = truep(cur.score_without_komi) ?
               cur.score_without_komi : average_endstate_sum(s)
+        if (truep(score_without_komi)) {
+            const loss = - (score_without_komi - prev_score) * turn_sign
+            const valid = !pass || s === 0
+            valid && (score_loss[turn_letter] += loss)
+            prev_score = score_without_komi
+        }
+        const cumulative_score_loss = {...score_loss}  // dup
         // drop "pass" to save data size for IPC
-        return merge({r, move_b_eval, move_eval, tag, score_without_komi},
-                     pass ? {pass} : {predict})
+        return merge({
+            r, move_b_eval, move_eval, tag, score_without_komi, cumulative_score_loss,
+        }, pass ? {pass} : {predict})
     })
 }
 
