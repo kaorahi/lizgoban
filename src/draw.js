@@ -1094,12 +1094,15 @@ function draw_winrate_graph_score_loss(sr2coord, g) {
     const shift = last_score_loss_shift = truep(current) ?
           clip(current, ...visible_range) - current : last_score_loss_shift
     const to_r = loss => (100 - offset - shift) - loss
+    const to_step = ([x, y], k, a) => {
+        const [x0, y0] = a[k - 1] || [x, y]; return [[x, y0], [x, y]]
+    }
     g.lineWidth = 1
     each_key_value(style, (key, style_for_key) => {
         g.strokeStyle = style_for_key
         const to_xy = ({cumulative_score_loss}, s) => cumulative_score_loss ?
               sr2coord(s, to_r(cumulative_score_loss[key])) : [NaN, NaN]
-        line(...R.winrate_history.map(to_xy), g)
+        line(...flatten(R.winrate_history.map(to_xy).map(to_step)), g)
     })
 }
 
