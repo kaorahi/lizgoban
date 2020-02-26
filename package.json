@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@sabaki/sgf": "^3.4.4",
-    "electron-store": "^5.1.0",
+    "electron-store": "^5.1.1",
     "tmp": "^0.1.0"
   },
   "devDependencies": {
