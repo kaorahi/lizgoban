@@ -984,7 +984,8 @@ function draw_winrate_graph_future(w, sr2coord, g) {
 
 function draw_winrate_graph_curve(sr2coord, g) {
     const [whs, rest] = R.winrate_history_set
-    const style_for = k => whs.length <= 1 ? null : k === 0 ? "#0c0" : '#c0c'
+    const style_for = k =>
+          alternative_engine_for_white_p() && (k === 0 ? "#0c0" : '#c0c')
     const draw1 = (a, style) => draw_winrate_graph_curve_for(a, style, sr2coord, g)
     rest.forEach(a => draw1(a, 'rest'))
     whs.forEach((a, which_engine) => draw1(a, style_for(which_engine)))
@@ -1369,8 +1370,12 @@ function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
 function winrate_history_ref(key, nth_prev) {
     const [whs, rest] = R.winrate_history_set
     const winrate_history = !truep(nth_prev) ? R.winrate_history :
-          (whs.length > 1 && !R.bturn) ? whs[1] : whs[0]
+          (alternative_engine_for_white_p() && !R.bturn) ? whs[1] : whs[0]
     return (winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
+}
+
+function alternative_engine_for_white_p() {
+    const a = R.winrate_history_set; return a && (a[0].length > 1)
 }
 
 function flip_maybe(x, bturn) {
