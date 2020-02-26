@@ -1075,7 +1075,7 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
     g.fillStyle = "rgba(255,0,0,0.3)"
     const plot = (ambiguity, s) => {
         if (!truep(ambiguity)) {return}
-        const [x, y] = sr2coord(s, 100 - ambiguity)
+        const [x, y] = sr2coord(s, ambiguity)
         fill_square_around([x, y], radius, g)
     }
     R.move_history.forEach((z, s) => plot(z.ambiguity, s))
