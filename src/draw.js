@@ -1084,16 +1084,12 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
     R.move_history.forEach((z, s) => plot(z.ambiguity, s))
 }
 
-let last_score_loss_shift = 0  // avoid flicker in auto-analysis
 function draw_winrate_graph_score_loss(sr2coord, g) {
     if (!R.winrate_history || R.history_length === 0) {return}
     const style = {b: "rgba(0,255,0,0.7)", w: "rgba(255,0,255,0.7)"}
-    const offset = 10, margin = 3, turn = R.bturn ? 'b' : 'w'
-    const visible_range = [- offset + margin, 100 - offset - margin]
+    const offset = 10, turn = R.bturn ? 'b' : 'w'
     const current = (R.winrate_history[R.move_count].cumulative_score_loss || {})[turn]
-    const shift = last_score_loss_shift = truep(current) ?
-          clip(current, ...visible_range) - current : last_score_loss_shift
-    const to_r = loss => (100 - offset - shift) - loss
+    const to_r = loss => 100 - offset - loss
     const to_step = ([x, y], k, a) => {
         const [x0, y0] = a[k - 1] || [x, y]; return [[x, y0], [x, y]]
     }
