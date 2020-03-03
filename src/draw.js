@@ -1086,7 +1086,7 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
 
 let last_score_loss_shift = 0  // avoid flicker in auto-analysis
 function draw_winrate_graph_score_loss(sr2coord, g) {
-    if (!R.winrate_history) {return}
+    if (!R.winrate_history || R.history_length === 0) {return}
     const style = {b: "rgba(0,255,0,0.7)", w: "rgba(255,0,255,0.7)"}
     const offset = 10, margin = 3, turn = R.bturn ? 'b' : 'w'
     const visible_range = [- offset + margin, 100 - offset - margin]
