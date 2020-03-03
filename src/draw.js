@@ -395,8 +395,8 @@ function draw_next_move(h, xy, radius, g) {
 function draw_loss(h, xy, radius, g) {
     const {gain} = h, NOTHING = []
     const [color, size, line_width, draw] = !truep(gain) ? NOTHING :
-          (gain <= -5) ? [RED, 1, 1, rev_triangle_around] :
-          (gain <= -2) ? [BLUE, 0.7, 1, rev_triangle_around] :
+          (gain <= big_blunder_threshold) ? [RED, 1, 1, rev_triangle_around] :
+          (gain <= blunder_threshold) ? [BLUE, 0.7, 1, rev_triangle_around] :
           // annoying in auto_analysis with visits = 1
           // (gain >= 5) ? ['#0c0', 1, 1, triangle_around] :
           NOTHING
