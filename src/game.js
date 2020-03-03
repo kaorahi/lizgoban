@@ -7,7 +7,7 @@ const SGF = require('@sabaki/sgf')
 // game
 
 // example of history:
-// [{move: "D16", is_black: true, move_count: 1, b_winrate: 42.19, ...},
+// [{move: "D16", is_black: true, move_count: 1, b_winrate: 42.19, gain: -1.3, ...},
 //  {move: "Q4", is_black: false, move_count: 2, tag: "b", ko_fight: false, ...},
 //  {move: "Q16", is_black: false, move_count: 3, comment: "chance!" , ...},
 //  {move: "pass", is_black: true, move_count: 4, unsafe_stones: {black: 5.3, white: 8.9}, ambiguity: 9.2, ...}]
@@ -59,6 +59,13 @@ function create_game(init_history, init_prop) {
         random_flip_rotate: () => {self.transform('random_flip_rotation')},
         transform: command => {
             history.splice(0, Infinity, ...TRANSFORM[command](history))
+        },
+        search_blunder: (threshold, backwardp) => {
+            const direction = backwardp ? -1 : 1, mc = self.move_count + 1
+            const pred = z => truep(z.gain) && z.gain <= threshold &&
+                  Math.sign(z.move_count - mc) === direction
+            const a = history.filter(pred), hit = backwardp ? last(a) : a[0]
+            return hit ? hit.move_count - 1 : self.move_count
         },
         to_sgf: () => game_to_sgf(self),
         load_sabaki_gametree: (gametree, index) =>

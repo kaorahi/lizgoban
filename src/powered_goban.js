@@ -252,7 +252,8 @@ function winrate_from_game(engine_id) {
                 score_loss[opponent_letter] += transferred
                 // clean me: record gain as a side effect
                 !engine_id && s > 0 && truep(score_without_komi_at(s - 1)) &&
-                    merge(aa_ref(R.stones, ...move2idx(cur.move)) || {}, {gain})
+                    (merge(aa_ref(R.stones, ...move2idx(cur.move)) || {}, {gain}),
+                     merge(cur, {gain}))
             }
             prev_score = score_without_komi
         }

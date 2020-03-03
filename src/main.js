@@ -373,6 +373,12 @@ function update_state_to_move_count_tentatively(count) {
     next_s.next_move = false; game.move_count = count; R.bturn = (count % 2 === 0)
 }
 
+function goto_next_blunder() {goto_previous_or_next_blunder()}
+function goto_previous_blunder() {goto_previous_or_next_blunder(true)}
+function goto_previous_or_next_blunder(backwardp) {
+    goto_move_count(game.search_blunder(blunder_threshold, backwardp))
+}
+
 /////////////////////////////////////////////////
 // another source of change: menu
 
@@ -490,6 +496,9 @@ function menu_template(win) {
     const tool_menu = menu('Tool', [
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('AI vs. AI', 'Shift+P', ask_sec(false), true),
+        sep,
+        item('Next blunder', '>', goto_next_blunder),
+        item('Previous blunder', '<', goto_previous_blunder),
         sep,
         ...insert_if(option.exercise_dir,
                      item('Store as exercise', '!', store_as_exercise),
