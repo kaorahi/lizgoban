@@ -1022,7 +1022,7 @@ function draw_winrate_graph_curve_for(winrate_history, style, sr2coord, g) {
         truep(h.predict) && !thin && draw_predict(h.r, s, h.predict)
         g.strokeStyle = thin ? PALE_BLUE : style ? style :
             isNaN(h.move_eval) ? GRAY : h.pass ? PALE_BLUE :
-            (h.move_eval < 0) ? "#e00" : (s > 1 && !truep(h.predict)) ? "#ff0" : "#0d0"
+            (h.move_eval < 0) ? "#e00" : (s > 1 && !truep(h.predict)) ? "#ff0" : "#0c2"
         g.lineWidth = (thin ? 1 : s <= R.move_count ? 3 : 1)
         cur = sr2coord(s, h.r); prev && line(prev, cur, g); prev = cur
     })

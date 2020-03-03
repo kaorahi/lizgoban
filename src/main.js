@@ -431,8 +431,7 @@ function menu_template(win) {
           () => duplicate_sequence(until_current_move_p, true)
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', () => new_empty_board(), true),
-        item('New handicap game', undefined, ask_handicap_stones,
-             true, board_size() === 19),
+        item('New handicap game', undefined, ask_handicap_stones, true),
         ...[19, 13, 9].map(n => item(`New ${n}x${n} board`, undefined,
                                      () => new_empty_board(n), true,
                                      n === 19 || AI.katago_p())),
@@ -834,10 +833,14 @@ function add_handicap_stones(k) {
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
     // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
-    const exceptions = [5, 7], first = 'Q16', center = 'K10'
-    const pos = [first, 'D4', 'Q4', 'D16', 'Q10', 'D10', 'K16', 'K4', center]
+    const size = board_size(), exceptional_ks = [5, 7]
+    const i1 = size > 9 ? 3 : 2, i2 = Math.floor(size / 2), i3 = size - 1 - i1
+    const corners = [[i1, i3], [i3, i1], [i3, i3], [i1, i1]]
+    const edges = [[i2, i3], [i2, i1], [i1, i2], [i3, i2]]
+    const center = [i2, i2]
+    const pos = [...corners, ...edges, center].map(ij => idx2move(...ij))
     const moves = pos.slice(0, k)
-    exceptions.includes(k) && (moves[k - 1] = center)
+    exceptional_ks.includes(k) && (moves[k - 1] = last(pos))
     moves.forEach(m => do_play(m, true))
 }
 function ask_handicap_stones() {
