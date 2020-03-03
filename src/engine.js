@@ -310,6 +310,8 @@ function create_leelaz () {
         (arg.tuning_handler || do_nothing)(s);
         (m = s.match(/Detecting residual layers.*?([0-9]+) channels.*?([0-9]+) blocks/)) &&
             (network_size_text = `${m[1]}x${m[2]}`);
+        (m = s.match(/Model name: g[0-9]+-b([0-9]+)c([0-9]+)-s[0-9]+-d.[0-9]+/)) &&
+            (network_size_text = `${m[2]}x${m[1]}`);
         // "GTP ready" for KataGo
         s.match(/(Setting max tree size)|(GTP ready)/) && on_ready();
         s.match(/Weights file is the wrong version/) && on_error();
