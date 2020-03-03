@@ -30,7 +30,7 @@ $(LG_CONF): config.json
 $(KATA_CONF): katago_gtp.cfg
 	cp -f katago_gtp.cfg $(KATA_CONF)
 
-$(HCAP_CONF): katago_gtp.cfg
+$(HCAP_CONF): katago_gtp_handicap.cfg
 	cp -f katago_gtp_handicap.cfg $(HCAP_CONF)
 
 $(SCR_IMG): ../screen.gif
