@@ -1300,12 +1300,6 @@ function fan_gen([x, y], r, [deg1, deg2], g) {
 function square_around_gen([x, y], radius, g) {
     rect_gen([x - radius, y - radius], [x + radius, y + radius], g)
 }
-function triangle_around_gen([x, y], half_width, g) {
-    // u = (height / 3 of regular triangle)
-    const u = half_width / Math.sqrt(3), top = y - u * 2, bottom = y + u
-    line_gen([x, top], [x - half_width, bottom], [x + half_width, bottom], g)
-    g.closePath()
-}
 
 const [line, fill_line, edged_fill_line] = drawers_trio(line_gen)
 const [rect, fill_rect, edged_fill_rect] = drawers_trio(rect_gen)
@@ -1313,8 +1307,6 @@ const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
 const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
 const [square_around, fill_square_around, edged_fill_square_around] =
       drawers_trio(square_around_gen)
-const [triangle_around, fill_triangle_around, edged_fill_triangle_around] =
-      drawers_trio(triangle_around_gen)
 
 function x_shape_around([x, y], radius, g) {
     line([x - radius, y - radius], [x + radius, y + radius], g)
