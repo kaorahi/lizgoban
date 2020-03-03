@@ -1,0 +1,17 @@
+--- katago_gtp.cfg
++++ katago_gtp_handicap.cfg
+@@ -107,12 +107,12 @@
+ 
+ # Makes katago dynamically adjust to play more aggressively in handicap games based on the handicap and the current state of the game.
+ # Comment to disable this and make KataGo play the same always.
+-dynamicPlayoutDoublingAdvantageCapPerOppLead = 0.04
++#dynamicPlayoutDoublingAdvantageCapPerOppLead = 0.04
+ # Instead of setting dynamicPlayoutDoublingAdvantageCapPerOppLead, you can uncomment these and set this to a value from -3.0 to 3.0
+ # to set KataGo's aggression to a FIXED level.
+ # Negative makes KataGo behave as if it is much weaker than the opponent, preferring to play defensively
+ # Positive makes KataGo behave as if it is much stronger than the opponent, prefering to play aggressively or even overplay slightly.
+-# playoutDoublingAdvantage = 0.0
++playoutDoublingAdvantage = 2.0
+ 
+ # Controls which side dynamicPlayoutDoublingAdvantageCapPerOppLead or playoutDoublingAdvantage applies to.
+ playoutDoublingAdvantagePla = WHITE

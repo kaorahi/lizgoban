@@ -1,0 +1,22 @@
+--- gtp_example.cfg
++++ katago_gtp.cfg
+@@ -42,8 +42,8 @@
+ # Where to output log?
+ logFile = gtp.log
+ # Logging options
+-logAllGTPCommunication = true
+-logSearchInfo = true
++logAllGTPCommunication = false
++logSearchInfo = false
+ logToStderr = false
+ 
+ # KataGo will display some info to stderr on GTP startup
+@@ -55,7 +55,7 @@
+ 
+ # Configure the maximum length of analysis printed out by lz-analyze and other places.
+ # Controls the number of moves after the first move in a variation.
+-# analysisPVLen = 9
++analysisPVLen = 50
+ 
+ # Report winrates for chat and analysis as (BLACK|WHITE|SIDETOMOVE).
+ # Default is SIDETOMOVE, which is what tools that use LZ probably also expect
