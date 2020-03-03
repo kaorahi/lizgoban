@@ -264,7 +264,7 @@ const api = merge({}, simple_api, {
     new_window, init_from_renderer,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
-    let_me_think_next,
+    let_me_think_next, goto_next_blunder, goto_previous_blunder,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
     paste_sgf_or_url_from_clipboard,
     read_sgf, open_url, set_game_info,
