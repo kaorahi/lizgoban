@@ -54,7 +54,7 @@ function draw_goban_until(canvas, show_until, opts) {
     const all_p = [R.move_count, Infinity].includes(show_until)
     const displayed_stones = stones_until(show_until, all_p)
     draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, draw_next_p: true,
+               {draw_last_p: true, draw_next_p: true, draw_loss_p: true,
                 draw_endstate_diff_p: R.show_endstate, ...opts})
 }
 
@@ -83,8 +83,8 @@ function stones_until(show_until, all_p, for_endstate) {
                                thin_movenums, tag: null})
         } else {
             for_endstate && (h.stone = false)
-            h.stone && ((h.displayed_colors = [PALER_BLACK, PALER_WHITE]),
-                        (h.last = false))
+            h.stone && merge(h, {displayed_colors: [PALER_BLACK, PALER_WHITE],
+                                 last: false, future_stone: true})
         }
         h.displayed_tag = h.tag
         const next_stone = ss && ss.find(z => (z.move_count === show_until + 1))
@@ -103,6 +103,7 @@ function draw_goban_with_suggest(canvas, opts) {
         set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
+                draw_loss_p: true,
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
                 tag_clickable_p: true, mapping_tics_p: !opts.main_canvas_p, ...opts})
 }
@@ -161,6 +162,7 @@ function draw_endstate_goban(canvas, options) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
+           draw_loss_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
@@ -182,7 +184,7 @@ function draw_goban(canvas, stones, opts) {
         draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     const drawp = {
-        draw_last_p, draw_next_p, draw_expected_p,
+        draw_last_p, draw_next_p, draw_expected_p, draw_loss_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
         tag_clickable_p, hovered_move, show_until,
     }
@@ -245,7 +247,7 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 }
 
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
-    const {draw_last_p, draw_next_p, draw_expected_p,
+    const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            large_font_p, tag_clickable_p, hovered_move, show_until}
           = drawp
@@ -260,7 +262,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
     }
     each_coord((h, xy, idx) => {
         draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
-        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, g) :
+        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
@@ -283,7 +285,7 @@ function draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g) {
     each_coord((h, xy, idx) => {
         const stone_p = h.stone
         past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
-        stone_p && draw_stone(h, xy, stone_radius, true, g)
+        stone_p && draw_stone(h, xy, stone_radius, true, false, g)
         past_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_endstate_value(h, past_p, sign, xy, stone_radius, g)
     })
@@ -343,15 +345,17 @@ function past_endstate_p(flag) {return flag === 'past'}
 
 // stone
 
-function draw_stone(h, xy, radius, draw_last_p, g) {
+function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
     const [b_color, w_color] = h.displayed_colors ||
           (h.maybe ? [MAYBE_BLACK, MAYBE_WHITE] :
            h.maybe_empty ? [PALE_BLACK, PALE_WHITE] :
            h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
            [BLACK, WHITE])
+    const hide_loss_p = h.suggest || h.future_stone
     g.lineWidth = 1; g.strokeStyle = b_color
     g.fillStyle = h.black ? b_color : w_color
     edged_fill_circle(xy, radius, g)
+    draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
     draw_last_p && h.last && draw_last_move(h, xy, radius, g)
     h.movenums && draw_movenums(h, xy, radius, g)
 }
@@ -385,6 +389,20 @@ function draw_last_move(h, xy, radius, g) {
 
 function draw_next_move(h, xy, radius, g) {
     g.strokeStyle = h.next_is_black ? BLACK : WHITE; g.lineWidth = 3; circle(xy, radius, g)
+}
+
+// ref. https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067
+function draw_loss(h, xy, radius, g) {
+    const {gain} = h, NOTHING = []
+    const [color, size, line_width, draw] = !truep(gain) ? NOTHING :
+          (gain <= -5) ? [RED, 1, 1, rev_triangle_around] :
+          (gain <= -2) ? [BLUE, 0.7, 1, rev_triangle_around] :
+          // annoying in auto_analysis with visits = 1
+          // (gain >= 5) ? ['#0c0', 1, 1, triangle_around] :
+          NOTHING
+    if (!draw) {return}
+    g.strokeStyle = color; g.lineWidth = line_width
+    draw(xy, radius * size - line_width, g)
 }
 
 // suggestions
@@ -1300,6 +1318,17 @@ function fan_gen([x, y], r, [deg1, deg2], g) {
 function square_around_gen([x, y], radius, g) {
     rect_gen([x - radius, y - radius], [x + radius, y + radius], g)
 }
+function signed_triangle_around_gen(sign, [x, y], radius, g) {
+    const half_width = radius * Math.sqrt(3) / 2
+    const y1 = y - radius * sign, y2 = y + radius / 2 * sign
+    line_gen([x, y1], [x - half_width, y2], [x + half_width, y2], g); g.closePath()
+}
+function triangle_around_gen(xy, radius, g) {
+    signed_triangle_around_gen(1, xy, radius, g)
+}
+function rev_triangle_around_gen(xy, radius, g) {
+    signed_triangle_around_gen(-1, xy, radius, g)
+}
 
 const [line, fill_line, edged_fill_line] = drawers_trio(line_gen)
 const [rect, fill_rect, edged_fill_rect] = drawers_trio(rect_gen)
@@ -1307,6 +1336,10 @@ const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
 const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
 const [square_around, fill_square_around, edged_fill_square_around] =
       drawers_trio(square_around_gen)
+const [triangle_around, fill_triangle_around, edged_fill_triangle_around] =
+      drawers_trio(triangle_around_gen)
+const [rev_triangle_around, fill_rev_triangle_around, edged_fill_rev_triangle_around] =
+      drawers_trio(rev_triangle_around_gen)
 
 function x_shape_around([x, y], radius, g) {
     line([x - radius, y - radius], [x + radius, y + radius], g)

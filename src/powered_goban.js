@@ -236,8 +236,7 @@ function winrate_from_game(engine_id) {
         const predict = winrate_suggested(s, engine_id)
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const pass = implicit_pass || M.is_pass(h.move)
-        const score_without_komi = truep(cur.score_without_komi) ?
-              cur.score_without_komi : average_endstate_sum(s)
+        const score_without_komi = score_without_komi_at(s)
         if (truep(score_without_komi)) {
             const gain = (score_without_komi - prev_score) * turn_sign
             const valid = !pass || s === 0
@@ -251,6 +250,9 @@ function winrate_from_game(engine_id) {
                 const loss = - (gain - transferred)
                 score_loss[turn_letter] += loss
                 score_loss[opponent_letter] += transferred
+                // clean me: record gain as a side effect
+                !engine_id && s > 0 && truep(score_without_komi_at(s - 1)) &&
+                    merge(aa_ref(R.stones, ...move2idx(cur.move)) || {}, {gain})
             }
             prev_score = score_without_komi
         }
@@ -260,6 +262,11 @@ function winrate_from_game(engine_id) {
             r, move_b_eval, move_eval, tag, score_without_komi, cumulative_score_loss,
         }, pass ? {pass} : {predict})
     })
+}
+
+function score_without_komi_at(move_count) {
+    const ret = game.ref(move_count).score_without_komi
+    return truep(ret) ? ret : average_endstate_sum(move_count)
 }
 
 function get_initial_b_winrate(engine_id) {return get_b_winrate(0, engine_id)}

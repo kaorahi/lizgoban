@@ -197,6 +197,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * Add indicators that suggest highlight scenes of the game (big kills, ko fights, etc.).
 * Separate estimations by different engines in winrate graph.
 * Plot cumulative score loss.
+* [Show mistakes over stones.](https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067)
 * Show start-up log when engine is down.
 * Fix blur in HiDPI display.
 
