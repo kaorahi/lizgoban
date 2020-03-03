@@ -918,7 +918,7 @@ function init_from_renderer() {}
 
 function set_board() {
     AI.set_board(P.set_board(game), game.get_komi(), get_gorule())
-    AI.switch_leelaz(); update_let_me_think()
+    AI.switch_leelaz(); update_let_me_think(true)
 }
 
 function wink_if_pass(proc, ...args) {
