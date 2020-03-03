@@ -918,7 +918,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     !show_until && draw_winrate_graph_future(w, sr2coord, overlay)
     if (R.busy || show_until) {return}
     const draw_score = score_drawer(w, sr2coord, g)
-    const score_loss_p = R.show_score_loss && !alternative_engine_for_white_p()
+    const score_loss_p = !alternative_engine_for_white_p()
     clear_canvas(canvas, BLACK, g)
     draw_winrate_graph_frame(w, h, sr2coord, g)
     draw_score('komi')

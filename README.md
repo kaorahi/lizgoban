@@ -196,6 +196,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * Add "Rule" into "Edit" menu for KataGo v1.3.
 * Add indicators that suggest highlight scenes of the game (big kills, ko fights, etc.).
 * Separate estimations by different engines in winrate graph.
+* Plot cumulative score loss.
 * Show start-up log when engine is down.
 * Fix blur in HiDPI display.
 

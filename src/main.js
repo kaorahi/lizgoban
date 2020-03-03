@@ -125,7 +125,6 @@ let pausing = false, busy = false
 const default_for_stored_key = {
     lizzie_style: true, expand_winrate_bar: false, score_bar: true,
     let_me_think: false, show_endstate: true, gorule: default_gorule,
-    show_score_loss: false,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
@@ -523,7 +522,6 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
-        store_toggler_menu_item('Cumulative score loss', 'show_score_loss'),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
