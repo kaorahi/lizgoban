@@ -314,10 +314,10 @@ ipc.on('close_window_or_cut_sequence',
 // update after every command
 
 function update_all(keep_board) {
-    debug_log(`update_all start`)
+    debug_log('update_all start')
     keep_board || set_board()
     update_state(keep_board); update_ponder(); update_ui(); update_menu()
-    debug_log(`update_all done`)
+    debug_log('update_all done')
 }
 
 /////////////////////////////////////////////////
