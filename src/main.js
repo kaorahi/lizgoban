@@ -96,11 +96,12 @@ function option_path(key) {
 
 // util
 const TMP = require('tmp')
-const store = new (safely(require, 'electron-store') ||
+const ELECTRON_STORE = safely(require, 'electron-store') ||
                    // try old name for backward compatibility
                    safely(require, 'electron-config') ||
                    // ... and throw the original error when both fail
-                   require('electron-store'))({name: 'lizgoban'})
+                   require('electron-store')
+const store = new ELECTRON_STORE({name: 'lizgoban'})
 
 // debug log
 const debug_log_key = 'debug_log'
@@ -173,9 +174,9 @@ fs.access(option.sabaki_command, null,
 
 // app
 
-app.on('ready', () => {start_leelaz(); new_window('double_boards')})
+app.on('ready', () => {start_leelaz(); new_window('double_boards'); restore_session()})
 app.on('window-all-closed', app.quit)
-app.on('quit', kill_all_leelaz)
+app.on('quit', () => {kill_all_leelaz, store_session()})
 
 function start_leelaz() {
     debug_log("option: " + JSON.stringify(option))
@@ -1071,6 +1072,25 @@ function push_deleted_sequence(sequence) {
 }
 function pop_deleted_sequence() {return deleted_sequences.pop()}
 function exist_deleted_sequence() {return !empty(deleted_sequences)}
+
+/////////////////////////////////////////////////
+// autosave
+
+const stored_session = new ELECTRON_STORE({name: 'lizgoban_session'})
+function store_session() {
+    debug_log('store_session start')
+    // reverse sequence so that one can recover the same order by repeated ctrl-z
+    const rev_seq = [...sequence].reverse()
+    const saved_seq = [...deleted_sequences, ...rev_seq].filter(g => !g.is_empty())
+    stored_session.set('sequences', saved_seq.map(g => g.to_sgf()))
+    debug_log('store_session done')
+}
+function restore_session() {
+    debug_log('restore_session start')
+    const loaded_seq = stored_session.get('sequences', []).map(create_game_from_sgf)
+    deleted_sequences.push(...loaded_seq)
+    debug_log('restore_session done')
+}
 
 /////////////////////////////////////////////////
 // utils for updating renderer state
