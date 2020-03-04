@@ -84,6 +84,7 @@ Here is a more practical example of config.json:
 ~~~~
 {
     "analyze_interval_centisec": 20,
+    "autosave_sec": 300,
     "sgf_dir": "/foo/bar/sgf/",
     "exercise_dir": "/foo/bar/exercise/",
     "max_cached_engines": 3,
@@ -121,6 +122,7 @@ Here is a more practical example of config.json:
 ~~~~
 
 * analyze_interval_centisec: Update interval of analysis display (1 = 0.01sec).
+* autosave_sec: Auto-save frequency (1 = 1sec).
 * sgf_dir: Default directory for [Open SGF] and [Save SGF] menus. (*1)
 * exercise_dir: Directory for your personal exercise book. (*1)
 * max_cached_engines: Maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.

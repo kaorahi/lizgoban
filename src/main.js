@@ -29,6 +29,7 @@ const option = {
     engine_log_line_length: 500,
     sabaki_command: default_path_for('sabaki'),
     minimum_auto_restart_millisec: 5000,
+    autosave_sec: 300,
     wait_for_startup: true,
     use_bogoterritory: true,
     endstate_leelaz: null,
@@ -331,6 +332,7 @@ function play(move, force_create, default_tag, comment) {
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     do_play(move, R.bturn, tag || default_tag || undefined, comment)
     pass && wink()
+    autosave_later()
 }
 function do_play(move, is_black, tag, comment) {
     // We drop "double pass" to avoid halt of analysis by Leelaz.
@@ -343,7 +345,8 @@ function do_play(move, is_black, tag, comment) {
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    game.move_count < game.len() ? undo() : wink_if_pass(game.pop)
+    const delete_last_move = () => {game.pop(); autosave_later()}
+    game.move_count < game.len() ? undo() : wink_if_pass(delete_last_move)
 }
 const pass_command = 'pass'
 function pass() {play(pass_command)}
@@ -1047,6 +1050,7 @@ function delete_sequence() {
     const nextp = (sequence_cursor === 0)
     switch_to_nth_sequence(Math.max(sequence_cursor - 1, 0))
     nextp ? next_sequence_effect() : previous_sequence_effect()
+    autosave_later()
 }
 function delete_sequence_internal() {sequence.splice(sequence_cursor, 1)}
 
@@ -1054,6 +1058,7 @@ function insert_sequence(new_game, before) {
     if (!new_game) {return}
     const n = sequence_cursor + (before ? 0 : 1)
     sequence.splice(n, 0, new_game); switch_to_nth_sequence(n); next_sequence_effect()
+    autosave_later()
 }
 function replace_sequence(new_game) {
     sequence.splice(sequence_cursor, 1, new_game)
@@ -1090,6 +1095,13 @@ function restore_session() {
     const loaded_seq = stored_session.get('sequences', []).map(create_game_from_sgf)
     deleted_sequences.push(...loaded_seq)
     debug_log('restore_session done')
+}
+
+let autosave_timer = null
+function autosave_later() {
+    const f = () => {store_session(); autosave_timer = null}
+    const delay = option.autosave_sec * 1000
+    !truep(autosave_timer) && (autosave_timer = setTimeout(f, delay))
 }
 
 /////////////////////////////////////////////////
