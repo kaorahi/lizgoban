@@ -177,7 +177,7 @@ fs.access(option.sabaki_command, null,
 
 app.on('ready', () => {start_leelaz(); new_window('double_boards'); restore_session()})
 app.on('window-all-closed', app.quit)
-app.on('quit', () => {kill_all_leelaz(); store_session()})
+app.on('quit', () => {store_session(); kill_all_leelaz()})
 
 function start_leelaz() {
     debug_log("option: " + JSON.stringify(option))
