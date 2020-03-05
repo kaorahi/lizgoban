@@ -1063,6 +1063,7 @@ function insert_sequence(new_game, before) {
 function replace_sequence(new_game) {
     sequence.splice(sequence_cursor, 1, new_game)
     switch_to_nth_sequence(sequence_cursor)
+    autosave_later()
 }
 
 function switch_to_nth_sequence(n) {game = sequence[sequence_cursor = n]}
