@@ -29,6 +29,7 @@ const option = {
     engine_log_line_length: 500,
     sabaki_command: default_path_for('sabaki'),
     minimum_auto_restart_millisec: 5000,
+    autosave_deleted_boards: 5,
     autosave_sec: 300,
     wait_for_startup: true,
     use_bogoterritory: true,
@@ -1087,7 +1088,8 @@ function store_session() {
     debug_log('store_session start')
     // reverse sequence so that one can recover the same order by repeated ctrl-z
     const rev_seq = sequence.slice().reverse()
-    const saved_seq = [...deleted_sequences, ...rev_seq].filter(g => !g.is_empty())
+    const deleted_seq = deleted_sequences.slice(- option.autosave_deleted_boards)
+    const saved_seq = [...deleted_seq, ...rev_seq].filter(g => !g.is_empty())
     stored_session.set('sequences', saved_seq.map(g => g.to_sgf()))
     debug_log('store_session done')
 }

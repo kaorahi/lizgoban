@@ -84,6 +84,7 @@ Here is a more practical example of config.json:
 ~~~~
 {
     "analyze_interval_centisec": 20,
+    "autosave_deleted_boards": 5,
     "autosave_sec": 300,
     "sgf_dir": "/foo/bar/sgf/",
     "exercise_dir": "/foo/bar/exercise/",
@@ -122,6 +123,7 @@ Here is a more practical example of config.json:
 ~~~~
 
 * analyze_interval_centisec: Update interval of analysis display (1 = 0.01sec).
+* autosave_deleted_boards: Maximum number of deleted boards that are kept across sessions.
 * autosave_sec: Auto-save frequency (1 = 1sec).
 * sgf_dir: Default directory for [Open SGF] and [Save SGF] menus. (*1)
 * exercise_dir: Directory for your personal exercise book. (*1)
