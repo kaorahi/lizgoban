@@ -100,7 +100,18 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 /////////////////////////////////////////////////
 // from main
 
-ipc.on('render', (e, h, is_board_changed) => {
+let latest_rendering_request = null
+ipc.on('render', (...args) => {
+    // skip too frequent requests so that we can avoid serious lags
+    const render_latest = () => {
+        render_now(...latest_rendering_request); latest_rendering_request = null
+    }
+    const idle = !latest_rendering_request; latest_rendering_request = args
+    idle && setTimeout(render_latest)  // executed in the next event cycle
+    // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout
+})
+
+function render_now(e, h, is_board_changed) {
     // for smooth reaction or readable variation display
     if (showing_until() && !is_board_changed) {return}
     keep_selected_variation_maybe(h.suggest)
@@ -111,7 +122,7 @@ ipc.on('render', (e, h, is_board_changed) => {
     setq('#comment', R.comment)
     D.update_winrate_trail()
     update_goban()
-})
+}
 
 ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     R.pausing = availability.resume
