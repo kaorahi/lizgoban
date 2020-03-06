@@ -1086,7 +1086,7 @@ const stored_session = new ELECTRON_STORE({name: 'lizgoban_session'})
 function store_session() {
     debug_log('store_session start')
     // reverse sequence so that one can recover the same order by repeated ctrl-z
-    const rev_seq = [...sequence].reverse()
+    const rev_seq = sequence.slice().reverse()
     const saved_seq = [...deleted_sequences, ...rev_seq].filter(g => !g.is_empty())
     stored_session.set('sequences', saved_seq.map(g => g.to_sgf()))
     debug_log('store_session done')
