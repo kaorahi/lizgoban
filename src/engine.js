@@ -27,7 +27,7 @@ function create_leelaz () {
         const message = `[${(leelaz_process || {}).pid}] ${header} ${s}`
         !is_ready && (header !== queue_log_header) && startup_log.push(message)
         debug_log(message +
-                  (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
+                  (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''), 0,
                   arg && arg.engine_log_line_length || 500)
     }
 
@@ -249,16 +249,20 @@ function create_leelaz () {
             on_response && (on_response(ok), delete on_response_for_id[id])
         }
         up_to_date_response() && s.match(/^info /) && suggest_reader(s)
+        debug_log('stdout_reader: fetch command queue', 1)
         send_from_queue()
+        debug_log('stdout_reader: done', 1)
     }
 
     const suggest_reader = (s) => {
         if (!arg.suggest_handler) {return}
+        debug_log('suggest_reader: start parsing', 1)
         const [i_str, o_str] = s.split(/\s*ownership\s*/)
         const ownership = ownership_parser(o_str)
         const unsorted_suggest =
               i_str.split(/info/).slice(1).map(suggest_parser).filter(truep)
         const suggest = sort_by_key(unsorted_suggest, 'order')
+        debug_log('suggest_reader: start calculating', 1)
         const [wsum, visits, scsum] =
               suggest.map(h => [h.winrate, h.visits, h.score_without_komi || 0])
               .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
@@ -273,6 +277,7 @@ function create_leelaz () {
         add_order('winrate', 'winrate_order')
         arg.suggest_handler({engine_id, suggest, visits, b_winrate, visits_per_sec,
                              score_without_komi, ownership})
+        debug_log('suggest_reader: done', 1)
     }
 
     // (sample of leelaz output for "lz-analyze 10")

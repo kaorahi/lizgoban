@@ -54,9 +54,11 @@ E.around_idx = ([i, j]) => {
 // str_uniq('zabcacd') = 'zabcd'
 E.str_uniq = str => [...new Set(str.split(''))].join('')
 
+const debug_log_level = 1
 let debug_log_p = false
-E.debug_log = (arg, limit_len) => (typeof arg === 'boolean') ?
-    (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len))
+E.debug_log = (arg, level, limit_len) =>
+    (typeof arg === 'boolean') ? (debug_log_p = arg) :
+    (debug_log_p && (level || 0) <= debug_log_level && do_debug_log(arg, limit_len))
 function do_debug_log(arg, limit_len) {
     const HALF = Math.floor((limit_len || Infinity) / 2)
     const s = E.to_s(arg), over = s.length - HALF * 2
@@ -105,9 +107,13 @@ E.common_header_length = (a, b) => {
 E.each_line = (f) => {
     let buf = ''
     return stream => {
-        const a = stream.toString().split(/\r?\n/), rest = a.pop()
+        const raw_str = stream.toString()
+        debug_log(`each_line: received ${raw_str.length} chars`, 1)
+        const a = raw_str.split(/\r?\n/), rest = a.pop()
+        debug_log(`each_line: ${a.length} lines + ${rest.length} chars`, 1)
         !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
         buf += rest
+        debug_log(`each_line: done`, 1)
     }
 }
 E.set_error_handler = (process, handler) => {

@@ -57,6 +57,7 @@ function endstate_handler(h) {
 
 const too_small_prior = 1e-3
 function suggest_handler(h) {
+    debug_log('suggest_handler: start', 1)
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
@@ -71,6 +72,7 @@ function suggest_handler(h) {
     const {endstate, score_without_komi} = cur
     R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, mc, true)
     set_and_render_maybe({...h, score_without_komi}); on_suggest()
+    debug_log('suggest_handler: done', 1)
 }
 
 function endstate_from_ownership(ownership) {
@@ -90,6 +92,7 @@ function winrate_history_set_from_game() {
 }
 
 function set_renderer_state(...args) {
+    debug_log('set_renderer_state: start', 1)
     merge(R, ...args)  // use updated R in below lines
     const move_count = game.move_count
     const busy = M.is_busy()
@@ -117,6 +120,7 @@ function set_renderer_state(...args) {
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, move_history,
               previous_suggest, winrate_trail}, endstate_d_i)
+    debug_log('set_renderer_state: done', 1)
 }
 function set_and_render(...args) {set_and_render_gen(true, ...args)}
 function set_and_render_maybe(...args) {set_and_render_gen(false, ...args)}
