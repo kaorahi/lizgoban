@@ -106,7 +106,7 @@ E.common_header_length = (a, b) => {
 }
 E.each_line = (f) => {
     let buf = ''
-    return stream => {
+    return stream => setTimeout(() => {
         const raw_str = stream.toString()
         debug_log(`each_line: received ${raw_str.length} chars`, 1)
         const a = raw_str.split(/\r?\n/), rest = a.pop()
@@ -114,7 +114,7 @@ E.each_line = (f) => {
         !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
         buf += rest
         debug_log(`each_line: done`, 1)
-    }
+    })
 }
 E.set_error_handler = (process, handler) => {
     ['stdin', 'stdout', 'stderr'].forEach(k => process[k].on('error', handler))
