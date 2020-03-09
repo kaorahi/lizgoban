@@ -104,8 +104,8 @@ E.common_header_length = (a, b) => {
 }
 E.each_line = (f) => {
     let buf = ''
-    return stream => {
-        const a = stream.toString().split(/\r?\n/), rest = a.pop()
+    return chunk => {
+        const a = chunk.toString().split(/\r?\n/), rest = a.pop()
         !empty(a) && (a[0] = buf + a[0], buf = '', a.forEach(f))
         buf += rest
     }
