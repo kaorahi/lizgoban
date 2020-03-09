@@ -347,7 +347,8 @@ function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
     const delete_last_move = () => {game.pop(); autosave_later()}
-    game.move_count < game.len() ? undo() : wink_if_pass(delete_last_move)
+    game.move_count <= game.handicaps ? wink() :
+        game.move_count < game.len() ? undo() : wink_if_pass(delete_last_move)
 }
 const pass_command = 'pass'
 function pass() {play(pass_command)}
@@ -360,7 +361,7 @@ function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
 
 function goto_move_count(count) {
-    const c = clip(count, 0, game.len())
+    const c = clip(count, game.handicaps, game.len())
     if (c === game.move_count) {return}
     update_state_to_move_count_tentatively(c)
 }
@@ -834,7 +835,7 @@ function set_board_type(type, win, keep_let_me_think) {
 
 // handicap stones & komi
 function add_handicap_stones(k) {
-    game.komi = handicap_komi
+    merge(game, {handicaps: k, komi: handicap_komi})
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
     // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
@@ -908,7 +909,7 @@ function tag_or_untag() {
 /////////////////////////////////////////////////
 // utils for actions
 
-function undoable() {return game.move_count > 0}
+function undoable() {return game.move_count > game.handicaps}
 function redoable() {return game.len() > game.move_count}
 function pause() {pausing = true}
 function resume() {pausing = false}
@@ -1144,7 +1145,7 @@ function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10
 
 function availability() {
     return {
-        undo: game.move_count > 0,
+        undo: undoable(),
         redo: redoable(),
         attach: !attached,
         detach: attached,

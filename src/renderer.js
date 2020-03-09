@@ -19,7 +19,8 @@ let canvas_scale = 1
 
 // renderer state
 const R = {
-    stones: [], move_count: 0, bturn: true, history_length: 0, suggest: [], visits: 1,
+    stones: [], move_count: 0, handicaps: 0, bturn: true,
+    history_length: 0, suggest: [], visits: 1,
     visits_per_sec: 0,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
@@ -117,8 +118,8 @@ function render_now(e, h, is_board_changed) {
     keep_selected_variation_maybe(h.suggest)
     merge(R, h)
     set_board_size(R.bsize)
-    setq('#move_count', R.move_count)
-    setq('#history_length', ' (' + R.history_length + ')')
+    setq('#move_count', D.movenum())
+    setq('#history_length', ' (' + D.max_movenum() + ')')
     setq('#comment', R.comment)
     D.update_winrate_trail()
     update_goban()
@@ -460,7 +461,7 @@ function take_thumbnail() {
         const players = (R.player_black || R.player_white) ?
               `${R.player_black || "?"}/${R.player_white || "?"} ` : ''
         const name = (R.trial ? tags : players + tags) +
-              ` ${R.move_count}(${R.history_length})`
+              ` ${D.movenum()}(${D.max_movenum()})`
         store_thumbnail_later(current_sequence_id(), URL.createObjectURL(blob), name)
     }, 'image/jpeg', 0.3)
 }
@@ -747,7 +748,8 @@ function showing_until(canvas) {
     const hover_on_any_board = !!hovered_board_canvas
     const i_am_first_board = is_first_board_canvas(canvas)
     const my_duty_p = hover_on_me || (!hover_on_any_board && i_am_first_board)
-    return accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
+    const retval = accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
+    return retval && D.clip_handicaps(retval)
 }
 function update_showing_until() {
     const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)

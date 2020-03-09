@@ -61,8 +61,8 @@ function draw_goban_until(canvas, show_until, opts) {
 function stones_until(show_until, all_p, for_endstate) {
     // fixme: need cleaning (for_endstate)
     const recent_moves = 3, thick_moves = 7
-    const unnumbered = for_endstate ? Infinity :
-          all_p ? 0 : clip(show_until - recent_moves, 0)
+    const unnumbered =
+          clip_handicaps(for_endstate ? Infinity : all_p ? 0 : show_until - recent_moves)
     const highlighted_after = for_endstate ? Infinity :
           all_p ? clip(show_until, 0, R.history_length) - recent_moves : show_until - 1
     const thin_before =  for_endstate ? 0 :
@@ -73,6 +73,7 @@ function stones_until(show_until, all_p, for_endstate) {
         if (target) {
             h.black = target.is_black
             h.last = [show_until, thin_before - 1].includes(target.move_count)
+                && show_until > R.handicaps
             h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
             h.stone = true
             const m = target.move_count - unnumbered
@@ -142,11 +143,11 @@ function draw_endstate_goban(canvas, options) {
     const past_p = past_endstate_p(options.draw_endstate_value_p)
     const scores = winrate_history_values_of('score_without_komi')
     const {show_until} = options, mc = R.move_count
-    const past_mc = (truep(show_until) && show_until !== mc) ?
-          show_until : R.move_count - R.endstate_diff_interval
+    const past_mc = clip_handicaps((truep(show_until) && show_until !== mc) ?
+                                   show_until : R.move_count - R.endstate_diff_interval)
     const past_score = scores[past_mc]
     const past_text = (d_i, es) =>
-          `  at ${past_mc} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
+          `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
           (truep(es) ? `  endstate = ${f2s(es)}` : '')
     const common = {read_only: true, draw_endstate_p: R.show_endstate,
                     draw_endstate_diff_p: R.show_endstate}
@@ -355,7 +356,8 @@ function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
     g.fillStyle = h.black ? b_color : w_color
     edged_fill_circle(xy, radius, g)
     draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
-    draw_last_p && h.last && draw_last_move(h, xy, radius, g)
+    draw_last_p && h.last && h.move_count > R.handicaps &&
+        draw_last_move(h, xy, radius, g)
     h.movenums && draw_movenums(h, xy, radius, g)
 }
 
@@ -924,10 +926,12 @@ const zone_indicator_height_percent = 3
 function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const xmargin = w * 0.02, fontsize = to_i(w * 0.04)
-    const smax = Math.max(R.history_length, 1), rmin = - zone_indicator_height_percent
+    const smin = R.handicaps, smax = Math.max(R.history_length, smin + 1)
+    const rmin = - zone_indicator_height_percent
     // s = move_count, r = winrate
-    const [sr2coord, coord2sr] =
-          uv2coord_translator_pair(canvas, [0, smax], [100, rmin], xmargin, 0)
+    const [sr2coord_raw, coord2sr] =
+          uv2coord_translator_pair(canvas, [smin, smax], [100, rmin], xmargin, 0)
+    const sr2coord = (s, r) => s < R.handicaps ? [NaN, NaN] : sr2coord_raw(s, r)
     const overlay = graph_overlay_canvas.getContext("2d")
     clear_canvas(graph_overlay_canvas)
     show_until && draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord,
@@ -953,7 +957,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
 
 function draw_winrate_graph_frame(w, h, sr2coord, g) {
     const tics = 9, xtics = 10, xtics_delta = 50
-    const s2x = s => sr2coord(s, 0)[0], r2y = r => sr2coord(0, r)[1]
+    const s2x = s => sr2coord(s, 0)[0], r2y = r => sr2coord(R.handicaps, r)[1]
     // horizontal / vertical lines (tics)
     g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
     seq(tics, 1).forEach(i => {
@@ -985,12 +989,13 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
     g.save()
     g.textAlign = x < left_limit ? 'left' : 'right'; g.textBaseline = 'bottom'
     g.fillStyle = 'rgba(255,255,0,0.7)'
-    fill_text(g, fontsize, ' ' + show_until + ' ', x, y)
+    fill_text(g, fontsize, ' ' + mc2movenum(show_until) + ' ', x, y)
     g.restore()
 }
 
 function draw_winrate_graph_future(w, sr2coord, g) {
-    const [x, y] = sr2coord(R.move_count, 50), [_, y_base] = sr2coord(0, 0)
+    const [x, y] = sr2coord(clip_handicaps(R.move_count), 50)
+    const [_, y_base] = sr2coord(R.handicaps, 0)
     const paint = (partial, l_alpha, r_alpha, y0, y1) => {
         const c = a => `rgba(255,255,255,${a})`
         const grad = side_gradation(x, (1 - partial) * x + partial * w,
@@ -1404,6 +1409,14 @@ function latest_move(moves, show_until) {
     return n >= 0 ? moves[n - 1] : last(moves)
 }
 
+// handicaps
+
+function clip_handicaps(move_count) {
+    return clip(move_count, R.handicaps, R.history_length)
+}
+function mc2movenum(move_count) {return clip(move_count - R.handicaps, 0)}
+function max_movenum() {return mc2movenum(R.history_length)}
+
 // visits & winrate
 
 function suggest_texts(suggest) {
@@ -1468,6 +1481,7 @@ function kilo_str_sub(x, rules) {
 
 module.exports = {
     set_state,
+    movenum: () => mc2movenum(R.move_count), max_movenum, clip_handicaps,
     draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,

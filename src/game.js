@@ -29,6 +29,7 @@ function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
+        handicaps: 0,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
         trial: false, last_loaded_element: null, engines: {},
     }
@@ -86,17 +87,23 @@ function create_game(init_history, init_prop) {
 // SGF
 
 function game_to_sgf(game) {
+    // util
     const f = (t, p) => p ? `${t}[${SGF.escapeString(p)}]` : ''
+    const m2s = move => `[${move2sgfpos(move)}]`
     // header
     const km = truep(game.komi) ? `KM[${game.komi}]` : ''
     const com0 = f('C', game.move0.comment)
     const sz = `SZ[${game.board_size}]`
+    const {handicaps} = game
+    const handicap_stones = handicaps === 0 ? '' :
+          `AB${game.slice(0, handicaps).map(h => m2s(h.move)).join('')}`
     const header =
           `;${sz}${km}${f('PW', game.player_white)}${f('PB', game.player_black)}${com0}`
+          + handicap_stones
     // body
     const move2sgf = ({move, is_black, comment}) =>
-          `;${is_black ? 'B' : 'W'}[${move2sgfpos(move)}]${f('C', comment)}`
-    const body = game.map(move2sgf).join('')
+          `;${is_black ? 'B' : 'W'}${m2s(move)}${f('C', comment)}`
+    const body = game.slice(handicaps).map(move2sgf).join('')
     // all
     return `(${header}${body})`
 }
@@ -153,6 +160,7 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     const new_hist = history_from_sabaki_nodes(nodes)
     game.set_with_reuse(new_hist)
     game.set_last_loaded_element()
+    game.handicaps = handicaps_from_sabaki_nodes(nodes)
     game.move_count = history_from_sabaki_nodes(nodes_until_index).length
     const player_name = bw => (first_node[bw] || [""])[0]
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
@@ -176,6 +184,10 @@ function history_from_sabaki_nodes(nodes) {
     }
     nodes.forEach(h => {f(h, 'AB', true); f(h, 'B', true); f(h, 'W', false)})
     return new_history
+}
+
+function handicaps_from_sabaki_nodes(nodes) {
+    return sum(nodes.map(h => (h['AB'] || []).length))
 }
 
 function nodes_from_sabaki_gametree(gametree) {

@@ -91,7 +91,7 @@ function winrate_history_set_from_game() {
 
 function set_renderer_state(...args) {
     merge(R, ...args)  // use updated R in below lines
-    const move_count = game.move_count
+    const {move_count, handicaps} = game
     const busy = M.is_busy()
     const winrate_history = busy ? [] : winrate_from_game()
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
@@ -113,7 +113,7 @@ function set_renderer_state(...args) {
         move: z.move, is_black: z.is_black, ko_fight: z.ko_fight,
         unsafe_stones: z.unsafe_stones, ambiguity: z.ambiguity
     }))]
-    merge(R, {move_count, busy, winrate_history, winrate_history_set,
+    merge(R, {move_count, handicaps, busy, winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, move_history,
               previous_suggest, winrate_trail}, endstate_d_i)
@@ -134,6 +134,7 @@ function append_endstate_tag_maybe(h) {
     const h_copy = merge({}, h)
     AI.support_endstate_p() && R.show_endstate &&
         h.move_count === game.move_count - endstate_diff_interval &&
+        h.move_count >= game.handicaps &&
         add_tag(h_copy, endstate_diff_tag_letter)
     return h_copy
 }
