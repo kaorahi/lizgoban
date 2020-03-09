@@ -188,7 +188,7 @@ function keep_selected_variation_maybe(suggest) {
 function with_opts(d, opts) {
     return c => (update_first_board_canvas(c), d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
-        first_board_p: is_first_board_canvas(c),
+        first_board_p: is_first_board_canvas(c), draw_visits_p: is_first_board_canvas(c),
         show_until: showing_until(c),
         hovered_move: if_hover_on(c, hovered_move),
         handle_mouse_on_goban,
@@ -203,7 +203,7 @@ const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
 const draw_raw_pure = draw_raw_gen({})
-const draw_raw_main = draw_raw_gen({draw_last_p: true, draw_visits_p: true})
+const draw_raw_main = draw_raw_gen({draw_last_p: true})
 const draw_es_gen = options => with_opts(D.draw_endstate_goban, options)
 const draw_current_endstate_value = draw_es_gen({draw_endstate_value_p: true})
 const draw_past_endstate_value =
