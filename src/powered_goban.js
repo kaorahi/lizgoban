@@ -61,8 +61,8 @@ function suggest_handler(h) {
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
     h.ownership &&
-        ((cur.endstate = h.endstate = endstate_from_ownership(h.ownership)),
-         (cur.score_without_komi = h.score_without_komi))
+        (cur.endstate = h.endstate = endstate_from_ownership(h.ownership))
+    truep(h.score_without_komi) && (cur.score_without_komi = h.score_without_komi)
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
     const keys = ['suggest', 'visits', 'b_winrate']
     keys.forEach(k => cur.by[engine_id][k] = cur[k] = h[k])
