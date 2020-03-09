@@ -148,7 +148,7 @@ function draw_endstate_goban(canvas, options) {
     const past_score = scores[past_mc]
     const past_text = (d_i, es) =>
           `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
-          (truep(es) ? `  endstate = ${f2s(es)}` : '')
+          (truep(es) ? `  score = ${f2s(es)}` : '')
     const common = {read_only: true, draw_endstate_p: R.show_endstate,
                     draw_endstate_diff_p: R.show_endstate}
     const current = {draw_visits_p: true, draw_next_p: true}
@@ -220,7 +220,7 @@ function draw_visits(text_maybe, margin, canvas, g) {
     if (!truep(R.visits)) {return}
     const maybe = (z, g) => truep(z) ? g(z >= 1000 ? kilo_str(z) : f2s(z)) : ''
     const vps = maybe(R.visits_per_sec, z => `  (${z} v/s)`)
-    const esum = maybe(R.endstate_sum, z => `  endstate = ${z}`)
+    const esum = maybe(R.endstate_sum, z => `  score = ${z}`)
     const text = `  visits = ${R.visits}${esum}${vps}`
     draw_visits_text(text, margin, canvas, g)
 }

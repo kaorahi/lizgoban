@@ -492,7 +492,7 @@ function menu_template(win) {
                      store_toggler_menu_item('Score bar', 'score_bar', 'Shift+C')),
         ...insert_if(AI.support_endstate_p(),
             sep,
-            store_toggler_menu_item(`Endstate (diff: ${P.get_endstate_diff_interval()} moves)`, 'show_endstate', 'Shift+E'),
+            store_toggler_menu_item(`Ownership (diff: ${P.get_endstate_diff_interval()} moves)`, 'show_endstate', 'Shift+E'),
             item('...longer diff', '{', endstate_diff_interval_adder(1),
                  false, R.show_endstate, true),
             item('...shorter diff', '}', endstate_diff_interval_adder(-1),
