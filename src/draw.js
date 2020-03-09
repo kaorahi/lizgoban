@@ -279,7 +279,6 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
 
 function draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g) {
     if (past_p && !R.prev_endstate_clusters) {return}
-    const mc = R.move_count
     const d = (!truep(show_until) || show_until === R.move_count) ? R.endstate_diff_interval : (R.move_count - show_until)
     const sign = Math.sign(d)
     each_coord((h, xy, idx) => {
