@@ -11,7 +11,7 @@ function create_leelaz () {
     const speedometer = make_speedometer(speedo_interval_sec, speedo_premature_sec)
     const queue_log_header = 'queue>'
 
-    let leelaz_process, arg, engine_id, is_ready = false
+    let leelaz_process, arg, engine_id, is_ready = false, ownership_p = false
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
@@ -64,11 +64,12 @@ function create_leelaz () {
     }
 
     const start_analysis = () => {
-        const analyzer = is_katago() ? 'kata-analyze ownership true' : 'lz-analyze'
-        const command = is_supported('minmoves') ?
-              `${analyzer} interval ${arg.analyze_interval_centisec} minmoves ${arg.minimum_suggested_moves}` :
-              `${analyzer} ${arg.analyze_interval_centisec}`
-        pondering && leelaz(command)
+        pondering && leelaz([
+            is_katago() ? 'kata-analyze' : 'lz-analyze',
+            `interval ${arg.analyze_interval_centisec}`,
+            is_katago() && ownership_p && 'ownership true',
+            is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
+        ].filter(truep).join(' '))
     }
     const stop_analysis = () => {leelaz('name')}
     const set_pondering = bool => {
@@ -99,16 +100,18 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
-    const set_board = (history, new_komi, new_gorule) => {
+    const set_board = (history, new_komi, new_gorule, new_ownership_p) => {
         change_board_size(board_size())
         let update_kata_p = false
         const update_kata = (val, new_val, command) => {
             const update_p = is_katago(true) && truep(new_val) && new_val !== val
             if (!update_p) {return val}
-            leelaz(`${command} ${new_val}`); update_kata_p = true; return new_val
+            command && leelaz(`${command} ${new_val}`)
+            update_kata_p = true; return new_val
         }
         komi = update_kata(komi, new_komi, 'komi')
         gorule = update_kata(gorule, new_gorule, 'kata-set-rules')
+        ownership_p = update_kata(ownership_p, new_ownership_p)
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg

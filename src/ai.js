@@ -33,8 +33,8 @@ function restart(h, new_weight_p) {
           (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
-function set_board(hist, komi, gorule) {
-    each_leelaz(z => z.set_board(hist, komi, gorule), katago_p())
+function set_board(hist, komi, gorule, ownership_p) {
+    each_leelaz(z => z.set_board(hist, komi, gorule, ownership_p), katago_p())
 }
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 let prev_pondering

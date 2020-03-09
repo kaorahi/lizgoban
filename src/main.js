@@ -923,7 +923,7 @@ function update_ponder() {
 function init_from_renderer() {}
 
 function set_board() {
-    AI.set_board(P.set_board(game), game.get_komi(), get_gorule())
+    AI.set_board(P.set_board(game), game.get_komi(), get_gorule(), R.show_endstate)
     AI.switch_leelaz(); update_let_me_think(true)
 }
 
