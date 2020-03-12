@@ -118,9 +118,18 @@ function create_games_from_sgf(sgf_str) {
         : []
 }
 function create_games_from_sgf_unsafe(clipped_sgf) {
-    return parse_sgf(clipped_sgf).map(gametree => {
+    return unify_common_headers(parse_sgf(clipped_sgf).map(gametree => {
         const game = create_game()
         game.load_sabaki_gametree(gametree); game.sgf_str = clipped_sgf
+        return game
+    }))
+}
+
+function unify_common_headers(gs) {
+    let game = gs[0]
+    return gs.map(new_game => {
+        game = game.shallow_copy()
+        game.set_with_reuse(new_game.array_until(Infinity))
         return game
     })
 }
