@@ -55,7 +55,8 @@ function draw_goban_until(canvas, show_until, opts) {
     const displayed_stones = stones_until(show_until, all_p)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_loss_p: true,
-                draw_endstate_diff_p: R.show_endstate, ...opts})
+                draw_endstate_diff_p: R.show_endstate, ...opts,
+                draw_visits_p: false, draw_coordinates_p: true})
 }
 
 function stones_until(show_until, all_p, for_endstate) {
@@ -163,7 +164,7 @@ function draw_endstate_goban(canvas, options) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
-           draw_loss_p,
+           draw_loss_p, draw_coordinates_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
@@ -178,6 +179,7 @@ function draw_goban(canvas, stones, opts) {
     fill_rect([hm, hm], [canvas.width - hm, canvas.height - hm], g)
     // draw
     draw_grid(unit, idx2coord, g)
+    draw_coordinates_p && draw_coordinates(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(draw_visits_p, font_unit, canvas, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
@@ -212,6 +214,20 @@ function draw_grid(unit, idx2coord, g) {
     })
     const star_radius = unit * 0.1, ijs = stars[bsize] || []
     ijs.forEach(ij => fill_circle(idx2coord(...ij), star_radius, g))
+}
+
+function draw_coordinates(unit, idx2coord, g) {
+    const fontsize = unit * 0.4, maxwidth = unit / 2, bsize = board_size()
+    const edges = [-0.75, bsize - 0.25]
+    const draw = (text, i, j) =>
+          fill_text(g, fontsize, text, ...idx2coord(i, j), maxwidth)
+    g.save()
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = BLACK
+    seq(bsize).forEach(i => {
+        const [row, col] = idx2rowcol(i, i)
+        edges.forEach(e => {draw(row, i, e); draw(col, e, i)})
+    })
+    g.restore()
 }
 
 function draw_visits(text_maybe, margin, canvas, g) {

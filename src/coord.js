@@ -27,9 +27,14 @@ const stars = {
     9: [[4,4]],
 }
 
+function idx2rowcol(i, j) {
+    const bsize = board_size()
+    return (0 <= i) && (i < bsize) && (0 <= j) && (j < bsize) ?
+        [to_s(bsize - i), col_name[j]] : [null, null]
+}
+
 function idx2move(i, j) {
-    return (0 <= i) && (i < board_size()) && (0 <= j) && (j < board_size()) &&
-        col_name[j] + (board_size() - i)
+    const [row, col] = idx2rowcol(i, j); return truep(row) && (col + row)
 }
 
 function move2idx(move) {
@@ -94,6 +99,7 @@ function sgfpos2move(pos) {
 }
 
 module.exports = {
+    idx2rowcol,
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
     board_size, set_board_size, sgfpos2move, move2sgfpos, stars,
 }

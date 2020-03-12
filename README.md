@@ -204,6 +204,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * [Show mistakes over stones.](https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067)
 * Recognize handicap stones.
 * Enable "Undelete board" in Edit menu across sessions.
+* Show coordinates by "c" key.
 * Show start-up log when engine is down.
 * Fix blur in HiDPI display.
 
