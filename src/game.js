@@ -150,10 +150,11 @@ function convert_to_sabaki_sgf_v131_maybe(parsed) {
     // https://github.com/SabakiHQ/sgf/commit/a57dfe36634190ca995755bd83f677375d543b80
     return flatten(parsed.map(item => {
         const is_v131 = item.nodes; if (is_v131) {return [item]}
+        const minimum_v131_gametree = nodes => ({nodes, parent: null})
         const recur = (nodes, {data, children}) => {
             const k = children.length
             nodes.push({...data, branching_tag: k > 1 && unused_tag()})
-            return k === 0 ? [{nodes, parent: null}] :
+            return k === 0 ? [minimum_v131_gametree(nodes)] :
             k === 1 ? recur(nodes, children[0]) :
             flatten(children.map(c => recur(nodes.slice(), c)))
         }
