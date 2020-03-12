@@ -150,10 +150,10 @@ function convert_to_sabaki_sgf_v131_maybe(parsed) {
     // https://github.com/SabakiHQ/sgf/commit/a57dfe36634190ca995755bd83f677375d543b80
     return flatten(parsed.map(item => {
         const is_v131 = item.nodes; if (is_v131) {return [item]}
-        const recur = (nodes, {data, children}) => {
-            nodes.push({...data, branching_tag: children.length > 1 && unused_tag()})
+        const recur = (nodes, {data, children}, tag_p) => {
+            nodes.push({...data, branching_tag: tag_p && unused_tag()})
             return empty(children) ? [{nodes, parent: null}]
-            : flatten(children.map(c => recur(nodes.slice(), c)))
+            : flatten(children.map((c, k) => recur(nodes.slice(), c, k > 0)))
         }
         return recur([], item)
     }))
