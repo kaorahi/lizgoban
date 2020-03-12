@@ -199,20 +199,21 @@
 <div class='dialog' id='game_info_dialog'>
  <div>
   <table>
-   <tr><td>Player Black:</td><td><input id='player_black'></td></tr>
-   <tr><td>Player White:</td><td><input id='player_white'></td></tr>
-   <tr><td>Komi:</td><td><input id='komi'></td></tr>
+   <tr><td>Player Black (<u>B</u>)</td><td><input id='player_black' accesskey='b'></td></tr>
+   <tr><td>Player White (<u>W</u>)</td><td><input id='player_white' accesskey='w'></td></tr>
+   <tr><td>Komi (<u>K</u>)</td><td><input id='komi' accesskey='k'></td></tr>
    <tr>
-    <td>Rule:</td><td><input id='orig_rule'></td>
-    <td>(engine rule) <select id='rule'></select></td>
+    <td>Rule (<u>R</u>)</td><td><input id='orig_rule' accesskey='r'></td>
+    <td>Engine rule (<u>E</u>) <select id='rule' accesskey='e'></select></td>
    </tr>
   </table>
-  Move comment:<br>
-  <textarea id='comment_form' rows="5"></textarea><br>
-  Info:<br>
-  <textarea id='info_form' style="height: 20vh;" readonly></textarea>
+  Move comment (<u>C</u>)<br>
+  <textarea id='comment_form' rows="5" accesskey='c'></textarea><br>
+  Info (<u>I</u>)<br>
+  <textarea id='info_form' style="height: 20vh;" readonly accesskey='i'></textarea>
   <div style='text-align: center; padding: 1em 0em 0em 0em;'>
-   <input type='button' onclick="set_game_info()" value=" ok ">
+   (<u>O</u>)
+   <input type='button' onclick="set_game_info()" value=" ok " accesskey='o'>
   </div>
   <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
  </div>

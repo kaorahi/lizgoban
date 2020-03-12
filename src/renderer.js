@@ -650,11 +650,11 @@ document.onkeydown = e => {
     switch (key === "Enter" && e.target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "auto_play_sec": start_auto_play(); return
-    case "player_black": case "player_white": case "komi": case "orig_rule": case "rule":
+    case "player_black": case "player_white": case "komi": case "orig_rule":
         set_game_info(); return
     }
     if ((e.target.tagName === "INPUT" && e.target.type !== "button") ||
-        e.target.tagName === "TEXTAREA") {
+        e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") {
         escape && e.target.blur(); return
     }
     // GROUP 2: allow auto-repeat
