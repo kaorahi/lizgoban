@@ -116,7 +116,7 @@ ipc.on('render', (...args) => {
 
 function render_now(e, h, is_board_changed) {
     // for smooth reaction or readable variation display
-    if (showing_until() && !is_board_changed) {return}
+    if (truep(showing_until()) && !is_board_changed) {return}
     keep_selected_variation_maybe(h.suggest)
     set_board_size(R.bsize)
     setq('#move_count', D.movenum())
@@ -750,7 +750,7 @@ function showing_until(canvas) {
     const i_am_first_board = is_first_board_canvas(canvas)
     const my_duty_p = hover_on_me || (!hover_on_any_board && i_am_first_board)
     const retval = accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
-    return retval && D.clip_handicaps(retval)
+    return truep(retval) && D.clip_handicaps(retval)
 }
 function update_showing_until() {
     const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)

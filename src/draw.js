@@ -35,18 +35,18 @@ function f2s(z, digits) {return truep(z) ? z.toFixed(truep(digits) ? digits : 1)
 
 function draw_raw_goban(canvas, options) {
     const u = options.show_until
-    u ? draw_goban_until(canvas, u, options) : draw_goban(canvas, null, options)
+    truep(u) ? draw_goban_until(canvas, u, options) : draw_goban(canvas, null, options)
 }
 
 function draw_main_goban(canvas, options) {
     const opts = {read_only: R.attached, ...options}
     const u = options.show_until, h = options.selected_suggest
-    target_move = !u && (h.visits > 0) && h.move
+    target_move = !truep(u) && (h.visits > 0) && h.move
     // case I: "variation"
     if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
     const mapping_to_winrate_bar = h.move && mapping_text(h, opts)
-    u ? draw_goban_until(canvas, u, opts)
+    truep(u) ? draw_goban_until(canvas, u, opts)
         : draw_goban_with_suggest(canvas, {...opts, mapping_to_winrate_bar})
 }
 
