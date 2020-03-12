@@ -104,6 +104,7 @@ const ELECTRON_STORE = safely(require, 'electron-store') ||
                    // ... and throw the original error when both fail
                    require('electron-store')
 const store = new ELECTRON_STORE({name: 'lizgoban'})
+const {katago_supported_rules} = require('./katago_rules.js')
 
 // debug log
 const debug_log_key = 'debug_log'
@@ -561,12 +562,7 @@ function board_type_menu_item(label, type, win) {
 }
 
 function gorule_submenu() {
-    // https://github.com/lightvector/KataGo/blob/master/docs/GTP_Extensions.md
-    const gorule_names = [
-        'tromp-taylor', 'chinese', 'japanese', 'korean', 'stone-scoring',
-        'aga', 'bga', 'new-zealand', 'aga-button',
-    ]
-    return gorule_names.map(label => ({
+    return katago_supported_rules.map(label => ({
         label, type: 'radio', checked: get_gorule() === label,
         click: () => {set_gorule(label); update_all()},
     }))
