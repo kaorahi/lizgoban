@@ -621,7 +621,7 @@ function portrait_p() {
 }
 
 /////////////////////////////////////////////////
-// keyboard operation
+// keyboard control
 
 document.onkeydown = e => {
     const key = (e.ctrlKey ? 'C-' : '') + e.key
