@@ -112,9 +112,14 @@ function toggle_debug_log() {debug_log(!!toggle_stored(debug_log_key))}
 update_debug_log()
 
 // game
-const GAME = require('./game.js'), {create_games_from_sgf} = GAME
+const GAME = require('./game.js')
 function create_game_with_gorule(gorule) {
     const new_game = GAME.create_game(); merge(new_game, {gorule}); return new_game
+}
+function create_games_from_sgf(sgf_str) {
+    const gs = GAME.create_games_from_sgf(sgf_str)
+    gs.forEach(new_game => !new_game.gorule && (new_game.gorule = get_gorule(true)))
+    return gs
 }
 
 // state
@@ -566,7 +571,9 @@ function gorule_submenu() {
         click: () => {set_gorule(label); update_all()},
     }))
 }
-function get_gorule() {return game.gorule || get_stored('gorule') || default_gorule}
+function get_gorule(stored_p) {
+    return (!stored_p && game.gorule) || get_stored('gorule') || default_gorule
+}
 function set_gorule(new_gorule) {set_stored('gorule', (game.gorule = new_gorule))}
 function is_gorule_supported() {return AI.is_supported('kata-set-rules')}
 
