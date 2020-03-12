@@ -76,10 +76,10 @@ function start_auto_play() {
     main('auto_play', to_f(Q('#auto_play_sec').value)); hide_dialog()
 }
 function set_game_info() {
-    const keys = ['#player_black', '#player_white', '#komi', '#comment_form']
-    const [pb, pw, komi_text, comment] = keys.map(key => Q(key).value)
+    const keys = ['#player_black', '#player_white', '#komi', '#rule', '#comment_form']
+    const [pb, pw, komi_text, rule, comment] = keys.map(key => Q(key).value)
     const komi = Math.round(to_f(komi_text) * 2) / 2  // int or half-int
-    main('set_game_info', pb, pw, komi, comment); hide_dialog()
+    main('set_game_info', pb, pw, komi, rule, comment); hide_dialog()
 }
 
 function show_dialog(name) {
@@ -141,12 +141,19 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
 })
 
 ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog', true))
-ipc.on('ask_game_info', (e, info_text) => {
+ipc.on('ask_game_info', (e, info_text, current_rule, supported_rules) => {
     Q('#player_black').value = R.player_black
     Q('#player_white').value = R.player_white
     Q('#komi').value = R.komi
     Q('#comment_form').value = R.comment
     Q('#info_form').value = info_text
+    const sel = Q('#rule'), rules = supported_rules || [current_rule]
+    while (sel.firstChild) {sel.removeChild(sel.firstChild)}
+    sel.append(...rules.map(rule => {
+        const opt = document.createElement("option")
+        opt.value =  opt.innerText = rule; return opt
+    }))
+    sel.value = current_rule; sel.disabled = !supported_rules
     show_dialog('#game_info_dialog')
 })
 
@@ -632,7 +639,8 @@ document.onkeydown = e => {
     switch (key === "Enter" && e.target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "auto_play_sec": start_auto_play(); return
-    case "player_black": case "player_white": case "komi": set_game_info(); return
+    case "player_black": case "player_white": case "komi": case "rule":
+        set_game_info(); return
     }
     if ((e.target.tagName === "INPUT" && e.target.type !== "button") ||
         e.target.tagName === "TEXTAREA") {

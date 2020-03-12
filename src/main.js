@@ -739,7 +739,10 @@ function auto_play_progress() {
 function ask_auto_play_sec(win, replaying) {
     auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
 }
-function ask_game_info(win) {win.webContents.send('ask_game_info', info_text())}
+function ask_game_info(win) {
+    win.webContents.send('ask_game_info', info_text(), get_gorule(),
+                         AI.is_gorule_supported() && katago_supported_rules)
+}
 function increment_auto_play_count(n) {
     auto_playing(true) && stop_auto_play()
     auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
@@ -899,8 +902,8 @@ function info_text() {
           f("sgf", game.sgf_str)
     return message
 }
-function set_game_info(player_black, player_white, komi, comment) {
-    merge(game, {player_black, player_white, komi})
+function set_game_info(player_black, player_white, komi, gorule, comment) {
+    merge(game, {player_black, player_white, komi, gorule})
     merge(game.ref_current(), {comment})
 }
 function endstate_diff_interval_adder(k) {
