@@ -204,12 +204,13 @@ function goban_params(canvas) {
 }
 
 function draw_grid(unit, idx2coord, g) {
+    const bsize = board_size()
     g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
-    seq(board_size()).forEach(i => {
-        line(idx2coord(i, 0), idx2coord(i, board_size() - 1), g)
-        line(idx2coord(0, i), idx2coord(board_size() - 1, i), g)
+    seq(bsize).forEach(i => {
+        line(idx2coord(i, 0), idx2coord(i, bsize - 1), g)
+        line(idx2coord(0, i), idx2coord(bsize - 1, i), g)
     })
-    const star_radius = unit * 0.1, ijs = stars[board_size()] || []
+    const star_radius = unit * 0.1, ijs = stars[bsize] || []
     ijs.forEach(ij => fill_circle(idx2coord(...ij), star_radius, g))
 }
 
