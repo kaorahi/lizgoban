@@ -151,7 +151,7 @@ function convert_to_sabaki_sgf_v131_maybe(parsed) {
     return flatten(parsed.map(item => {
         const is_v131 = item.nodes; if (is_v131) {return [item]}
         const recur = (nodes, {data, children}) => {
-            nodes.push(data)
+            nodes.push({...data, branching_tag: children.length > 1 && unused_tag()})
             return empty(children) ? [{nodes, parent: null}]
             : flatten(children.map(c => recur(nodes.slice(), c)))
         }
@@ -192,8 +192,9 @@ function history_from_sabaki_nodes(nodes) {
     const f = (h, key, is_black) => {
         (h[key] || []).forEach((pos, k) => {
             const move = sgfpos2move(pos), comment = k === 0 && (h.C || [])[0]
+            const tag = h.branching_tag
             move && ++move_count &&
-                new_history.push({move, is_black, move_count, comment})
+                new_history.push({move, is_black, move_count, comment, tag})
         })
     }
     nodes.forEach(h => {f(h, 'AB', true); f(h, 'B', true); f(h, 'W', false)})
@@ -218,8 +219,9 @@ function new_tag_maybe_for_game(game, new_sequence_p, move_count) {
            game.ref(move_count) === game.last_loaded_element ?
            last_loaded_element_tag_letter : false
 }
-function new_tag_for_game(game) {
-    const used = game.map(h => h.tag || '').join('')
+function new_tag_for_game(game) {return unused_tag(game.map(h => h.tag || '').join(''))}
+function unused_tag(used_tags) {
+    const used = used_tags || ''
     const first_unused_index = normal_tag_letters.repeat(2).slice(next_tag_count)
           .split('').findIndex(c => used.indexOf(c) < 0)
     const tag_count = (next_tag_count + Math.max(first_unused_index, 0))
