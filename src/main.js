@@ -112,7 +112,7 @@ function toggle_debug_log() {debug_log(!!toggle_stored(debug_log_key))}
 update_debug_log()
 
 // game
-const {create_game, create_game_from_sgf} = require('./game.js')
+const {create_game, create_games_from_sgf} = require('./game.js')
 
 // state
 let game = create_game()
@@ -1098,7 +1098,7 @@ function store_session() {
 }
 function restore_session() {
     debug_log('restore_session start')
-    const loaded_seq = stored_session.get('sequences', []).map(create_game_from_sgf)
+    const loaded_seq = flatten(stored_session.get('sequences', []).map(create_games_from_sgf))
     deleted_sequences.push(...loaded_seq)
     debug_log('restore_session done')
 }
@@ -1292,9 +1292,12 @@ function save_sgf_to(filename, if_success) {
 }
 
 function read_sgf(sgf_str) {
-    const new_game = create_game_from_sgf(sgf_str)
-    new_game ? backup_and_replace_game(new_game) :
-        dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"')
+    const new_games = create_games_from_sgf(sgf_str)
+    empty(new_games) ?
+        dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"') :
+        new_games.reverse().forEach(backup_and_replace_game)
+    // keep sequence_cursor trickily!
+    // (see the second argument of backup_and_replace_game)
 }
 
 function open_url(url) {

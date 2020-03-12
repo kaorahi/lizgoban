@@ -108,19 +108,21 @@ function game_to_sgf(game) {
     return `(${header}${body})`
 }
 
-function create_game_from_sgf(sgf_str) {
+function create_games_from_sgf(sgf_str) {
     // For robust parsing...
     // (1) drop junk before SGF by searching "(;" (ad hoc!)
     // (2) drop tails repeatedly until we get a valid SGF (brute force!)
     const clipped = clip_sgf(sgf_str)
-    return clipped && (safely(create_game_from_sgf_unsafe, clipped) ||
-                       create_game_from_sgf(clipped.slice(0, -1)))
+    return clipped ? (safely(create_games_from_sgf_unsafe, clipped) ||
+                      create_games_from_sgf(clipped.slice(0, -1)))
+        : []
 }
-function create_game_from_sgf_unsafe(clipped_sgf) {
-    const gametree = parse_sgf(clipped_sgf)[0]
-    const game = create_game()
-    game.load_sabaki_gametree(gametree); game.sgf_str = clipped_sgf
-    return game
+function create_games_from_sgf_unsafe(clipped_sgf) {
+    return parse_sgf(clipped_sgf).map(gametree => {
+        const game = create_game()
+        game.load_sabaki_gametree(gametree); game.sgf_str = clipped_sgf
+        return game
+    })
 }
 
 function parse_sgf(sgf_str) {
@@ -137,13 +139,15 @@ function convert_to_sabaki_sgf_v131_maybe(parsed) {
     // convert v3.0.0-style to v1.3.1-style for the result of parse() of @sabaki/sgf
     // (ref.) incompatible change in @sabaki/sgf v3.0.0
     // https://github.com/SabakiHQ/sgf/commit/a57dfe36634190ca995755bd83f677375d543b80
-    const first = parsed[0]; if (!first) {return null}
-    const is_v131 = first.nodes; if (is_v131) {return parsed}
-    let nodes = []
-    const recur = n => n && (nodes.push(n.data), recur(n.children[0]))
-    recur(first)
-    const parent = null, minimum_v131_gametree = {nodes, parent}
-    return [minimum_v131_gametree]
+    return flatten(parsed.map(item => {
+        const is_v131 = item.nodes; if (is_v131) {return [item]}
+        const recur = (nodes, {data, children}) => {
+            nodes.push(data)
+            return empty(children) ? [{nodes, parent: null}]
+            : flatten(children.map(c => recur(nodes.slice(), c)))
+        }
+        return recur([], item)
+    }))
 }
 
 /////////////////////////////////////////////////
@@ -222,4 +226,4 @@ function add_or_remove_tag_on_game(game) {
 /////////////////////////////////////////////////
 // exports
 
-module.exports = {create_game, create_game_from_sgf}
+module.exports = {create_game, create_games_from_sgf}
