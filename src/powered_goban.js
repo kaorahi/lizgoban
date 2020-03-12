@@ -101,7 +101,7 @@ function set_renderer_state(...args) {
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
     const komi = game.get_komi(), bsize = board_size()
-    const comment = game.ref(game.move_count).comment || ''
+    const comment = game.ref_current().comment || ''
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)

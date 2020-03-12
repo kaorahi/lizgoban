@@ -928,7 +928,7 @@ function set_board() {
 }
 
 function wink_if_pass(proc, ...args) {
-    const rec = () => game.ref(game.move_count)
+    const rec = () => game.ref_current()
     const before = rec()
     proc(...args)
     const after = rec(), d = after.move_count - before.move_count
