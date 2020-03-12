@@ -156,19 +156,20 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     const idx = (!index && index !== 0) ? Infinity : index
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     const first_node = nodes_until_index[0]
-    set_board_size(to_i((first_node["SZ"] || [19])[0])) // before generating history
+    const first_node_ref = (key, missing) => (first_node[key] || [missing])[0]
+    set_board_size(to_i(first_node_ref("SZ", 19))) // before generating history
     const new_hist = history_from_sabaki_nodes(nodes)
     game.set_with_reuse(new_hist)
     game.set_last_loaded_element()
     game.handicaps = handicaps_from_sabaki_nodes(nodes)
     game.move_count = history_from_sabaki_nodes(nodes_until_index).length
-    const player_name = bw => (first_node[bw] || [""])[0]
+    const player_name = bw => first_node_ref(bw)
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
-    const km = (first_node["KM"] || [false])[0]
+    const km = first_node_ref("KM")
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
                  komi, board_size: board_size(), trial: false})
-    const comment = (first_node["C"] || [])[0]
+    const comment = first_node_ref("C")
     merge(game.ref(0), comment ? {comment} : {})
     return true
 }
