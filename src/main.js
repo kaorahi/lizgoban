@@ -998,8 +998,8 @@ function new_empty_board(given_board_size) {
 }
 
 function backup_game() {backup_and_replace_game(game.shallow_copy())}
-function backup_and_replace_game(new_game) {
-    game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game)
+function backup_and_replace_game(new_game, before) {
+    game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game, before)
 }
 
 function create_sequence_maybe(force) {
@@ -1034,7 +1034,8 @@ function cut_sequence() {
 }
 function uncut_sequence() {
     insert_before = (cut_first_p && sequence_cursor === 0)
-    exist_deleted_sequence() && insert_sequence(pop_deleted_sequence(), insert_before)
+    exist_deleted_sequence() &&
+        backup_and_replace_game(pop_deleted_sequence(), insert_before)
 }
 
 function duplicate_sequence(until_current_move_p, explicit) {
