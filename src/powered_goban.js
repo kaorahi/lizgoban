@@ -304,12 +304,14 @@ function weight_info_text() {
     const s = val => truep(val) ? to_s(val) : ''
     const engine_komi = (game_komi || (ek !== leelaz_komi)) ?
           `komi=${ek}${s(game_komi)} ` : ''
+    const game_gorule = AI.is_gorule_supported() && game.gorule
+    const gorule = game_gorule ? `(${game_gorule}) ` : ''
     const f = z => z ?
           `${z.preset_label_text} ${s(z.network_size)}${s(!z.is_ready && '(waiting...)')}` : ''
     const weight_info = h.leelaz_for_white_p ?
           `${f(h.black)} / ${f(h.white)}` : f(h.black)
     const tuning = M.tuning_message()
-    return engine_komi + weight_info + (tuning ? ` | ${tuning}` : '')
+    return engine_komi + gorule + weight_info + (tuning ? ` | ${tuning}` : '')
 }
 function add_next_mark_to_stones(stones, game, move_count) {
     const h = game.ref(move_count + 1), s = stone_for_history_elem(h, stones)

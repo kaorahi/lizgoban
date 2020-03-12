@@ -69,6 +69,7 @@ function with_handlers(h) {
 }
 
 function katago_p() {return leelaz.is_katago()}
+function is_gorule_supported() {return leelaz.is_supported('kata-set-rules')}
 
 /////////////////////////////////////////////////
 // leelaz for endstate
@@ -252,5 +253,5 @@ require('./give_and_take.js').offer(module, {
     // powered_goban.js only
     set_handlers, another_leelaz_for_endstate_p, engine_ids,
     // both
-    katago_p, support_endstate_p, engine_info,
+    katago_p, support_endstate_p, engine_info, is_gorule_supported,
 }, global)

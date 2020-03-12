@@ -478,7 +478,7 @@ function menu_template(win) {
                                     () => game.transform(key)) : sep)
             ),
         item(`Komi (${game.get_komi()})`, undefined, ask_komi),
-        menu(`Rule (${get_gorule()})`, is_gorule_supported() ? gorule_submenu() : []),
+        menu(`Rule (${get_gorule()})`, AI.is_gorule_supported() ? gorule_submenu() : []),
         item('Info', 'CmdOrCtrl+I', () => ask_game_info(win)),
     ])
     const view_menu = menu('View', [
@@ -575,7 +575,6 @@ function get_gorule(stored_p) {
     return (!stored_p && game.gorule) || get_stored('gorule') || default_gorule
 }
 function set_gorule(new_gorule) {set_stored('gorule', (game.gorule = new_gorule))}
-function is_gorule_supported() {return AI.is_supported('kata-set-rules')}
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
     const toggle_it = () => toggle_stored(key)
