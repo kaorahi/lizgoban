@@ -151,9 +151,11 @@ function convert_to_sabaki_sgf_v131_maybe(parsed) {
     return flatten(parsed.map(item => {
         const is_v131 = item.nodes; if (is_v131) {return [item]}
         const recur = (nodes, {data, children}) => {
-            nodes.push({...data, branching_tag: children.length > 1 && unused_tag()})
-            return empty(children) ? [{nodes, parent: null}]
-            : flatten(children.map(c => recur(nodes.slice(), c)))
+            const k = children.length
+            nodes.push({...data, branching_tag: k > 1 && unused_tag()})
+            return k === 0 ? [{nodes, parent: null}] :
+            k === 1 ? recur(nodes, children[0]) :
+            flatten(children.map(c => recur(nodes.slice(), c)))
         }
         return recur([], item)
     }))
