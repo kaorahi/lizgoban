@@ -29,7 +29,7 @@ function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
-        handicaps: 0,
+        handicaps: 0, gorule: null,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
         trial: false, last_loaded_element: null, engines: {},
     }

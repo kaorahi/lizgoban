@@ -112,10 +112,13 @@ function toggle_debug_log() {debug_log(!!toggle_stored(debug_log_key))}
 update_debug_log()
 
 // game
-const {create_game, create_games_from_sgf} = require('./game.js')
+const GAME = require('./game.js'), {create_games_from_sgf} = GAME
+function create_game_with_gorule(gorule) {
+    const new_game = GAME.create_game(); merge(new_game, {gorule}); return new_game
+}
 
 // state
-let game = create_game()
+let game = create_game_with_gorule(store.get('gorule', default_gorule))
 let sequence = [game], sequence_cursor = 0
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 const simple_ui = false
@@ -563,8 +566,8 @@ function gorule_submenu() {
         click: () => {set_gorule(label); update_all()},
     }))
 }
-function get_gorule() {return get_stored('gorule')}
-function set_gorule(new_gorule) {set_stored('gorule', new_gorule)}
+function get_gorule() {return game.gorule || get_stored('gorule') || default_gorule}
+function set_gorule(new_gorule) {set_stored('gorule', (game.gorule = new_gorule))}
 function is_gorule_supported() {return AI.is_supported('kata-set-rules')}
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
@@ -990,6 +993,10 @@ function let_me_think_next(board_type) {
 
 /////////////////////////////////////////////////
 // sequence (list of games)
+
+function create_game() {
+    return create_game_with_gorule(get_stored('gorule') || default_gorule)
+}
 
 function new_empty_board(given_board_size) {
     const new_game = create_game()
