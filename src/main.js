@@ -1076,7 +1076,8 @@ const deleted_sequences = []
 const max_deleted_sequences = 100
 function push_deleted_sequence(sequence) {
     deleted_sequences.push(sequence)
-    deleted_sequences.splice(max_deleted_sequences)
+    const expired = deleted_sequences.length - max_deleted_sequences
+    expired > 0 && deleted_sequences.splice(0, expired)
 }
 function pop_deleted_sequence() {return deleted_sequences.pop()}
 function exist_deleted_sequence() {return !empty(deleted_sequences)}
