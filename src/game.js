@@ -2,7 +2,6 @@ require('./common.js').to(global)
 const {get_stones_and_set_ko_fight} = require('./rule.js')
 const TRANSFORM = require('./random_flip.js')
 const SGF = require('@sabaki/sgf')
-const {katago_rule_from_sgf_rule, sgf_rule_from_katago_rule} = require('./katago_rules.js')
 
 /////////////////////////////////////////////////
 // game
@@ -30,7 +29,7 @@ function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
-        handicaps: 0, gorule: null,
+        handicaps: 0, orig_gorule: "", gorule: null,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
         trial: false, last_loaded_element: null, engines: {},
     }
@@ -93,8 +92,7 @@ function game_to_sgf(game) {
     const m2s = move => `[${move2sgfpos(move)}]`
     // header
     const km = truep(game.komi) ? `KM[${game.komi}]` : ''
-    const rule = sgf_rule_from_katago_rule(game.gorule)
-    const ru = rule ? `RU[${rule}]` : ''
+    const ru = f('RU', game.orig_gorule)
     const com0 = f('C', game.move0.comment)
     const sz = `SZ[${game.board_size}]`
     const {handicaps} = game
@@ -186,9 +184,9 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
     const km = first_node_ref("KM")
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
-    const gorule = katago_rule_from_sgf_rule(first_node_ref("RU"))
+    const orig_gorule = first_node_ref("RU") || ''
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
-                 komi, gorule, board_size: board_size(), trial: false})
+                 komi, orig_gorule, board_size: board_size(), trial: false})
     const comment = first_node_ref("C")
     merge(game.ref(0), comment ? {comment} : {})
     return true

@@ -104,7 +104,7 @@ const ELECTRON_STORE = safely(require, 'electron-store') ||
                    // ... and throw the original error when both fail
                    require('electron-store')
 const store = new ELECTRON_STORE({name: 'lizgoban'})
-const {katago_supported_rules} = require('./katago_rules.js')
+const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 
 // debug log
 const debug_log_key = 'debug_log'
@@ -119,8 +119,11 @@ function create_game_with_gorule(gorule) {
 }
 function create_games_from_sgf(sgf_str) {
     const gs = GAME.create_games_from_sgf(sgf_str)
-    gs.forEach(new_game => !new_game.gorule && (new_game.gorule = get_gorule(true)))
-    return gs
+    const set_gorule = new_game => {
+        new_game.gorule =
+            katago_rule_from_sgf_rule(new_game.orig_gorule) || get_gorule(true)
+    }
+    gs.forEach(set_gorule); return gs
 }
 
 // state
@@ -740,7 +743,7 @@ function ask_auto_play_sec(win, replaying) {
     auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
 }
 function ask_game_info(win) {
-    win.webContents.send('ask_game_info', info_text(), get_gorule(),
+    win.webContents.send('ask_game_info', info_text(), game.orig_gorule, get_gorule(),
                          AI.is_gorule_supported() && katago_supported_rules)
 }
 function increment_auto_play_count(n) {
@@ -902,8 +905,9 @@ function info_text() {
           f("sgf", game.sgf_str)
     return message
 }
-function set_game_info(player_black, player_white, komi, gorule, comment) {
-    merge(game, {player_black, player_white, komi, gorule})
+function set_game_info(player_black, player_white, komi, orig_gorule, gorule, comment) {
+    merge(game, {player_black, player_white, komi, orig_gorule})
+    katago_supported_rules.includes(gorule) && merge(game, {gorule})
     merge(game.ref_current(), {comment})
 }
 function endstate_diff_interval_adder(k) {
