@@ -91,6 +91,9 @@ function create_game(init_history, init_prop) {
 // SGF
 
 function game_to_sgf(game) {
+    return with_board_size(game.board_size, game_to_sgf_sub, game)
+}
+function game_to_sgf_sub(game) {
     // util
     const f = (t, p) => p ? `${t}[${SGF.escapeString(p)}]` : ''
     const m2s = move => `[${move2sgfpos(move)}]`

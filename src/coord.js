@@ -16,6 +16,11 @@ let the_board_size = 19
 function board_size() {return the_board_size}
 function set_board_size(n) {the_board_size = n}
 
+function with_board_size(bsize, proc, ...args) {
+    const previous = board_size(); set_board_size(bsize)
+    const ret = proc(...args); set_board_size(previous); return ret
+}
+
 /////////////////////////////////////////////////
 // idx <=> move
 
@@ -101,5 +106,5 @@ function sgfpos2move(pos) {
 module.exports = {
     idx2rowcol,
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
-    board_size, set_board_size, sgfpos2move, move2sgfpos, stars,
+    board_size, set_board_size, with_board_size, sgfpos2move, move2sgfpos, stars,
 }
