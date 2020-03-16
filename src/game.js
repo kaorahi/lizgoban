@@ -57,6 +57,10 @@ function create_game(init_history, init_prop) {
             // keep old history for keeping winrate
             history.splice(com, Infinity, ...new_history.slice(com))
         },
+        copy_with_reuse_to: another_game => {
+            Object.keys(prop).forEach(k => k !== 'id' && (another_game[k] = self[k]))
+            another_game.set_with_reuse(history)
+        },
         random_flip_rotate: () => {self.transform('random_flip_rotation')},
         transform: command => {
             history.splice(0, Infinity, ...TRANSFORM[command](history))
@@ -129,9 +133,7 @@ function create_games_from_sgf_unsafe(clipped_sgf) {
 function unify_common_headers(gs) {
     let game = gs[0]
     return gs.map(new_game => {
-        game = game.shallow_copy()
-        game.set_with_reuse(new_game.array_until(Infinity))
-        return game
+        game = game.shallow_copy(); new_game.copy_with_reuse_to(game); return game
     })
 }
 
