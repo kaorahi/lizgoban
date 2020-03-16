@@ -78,10 +78,10 @@ function start_auto_play() {
 }
 function set_game_info() {
     const keys = ['#player_black', '#player_white', '#komi',
-                  '#orig_rule', '#rule', '#comment_form']
-    const [pb, pw, komi_text, orig_rule, rule, comment] = keys.map(key => Q(key).value)
+                  '#sgf_rule', '#rule', '#comment_form']
+    const [pb, pw, komi_text, sgf_rule, rule, comment] = keys.map(key => Q(key).value)
     const komi = Math.round(to_f(komi_text) * 2) / 2  // int or half-int
-    main('set_game_info', pb, pw, komi, orig_rule, rule, comment); hide_dialog()
+    main('set_game_info', pb, pw, komi, sgf_rule, rule, comment); hide_dialog()
 }
 
 function show_dialog(name) {
@@ -143,12 +143,12 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
 })
 
 ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog', true))
-ipc.on('ask_game_info', (e, info_text, orig_rule, current_rule, supported_rules) => {
+ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules) => {
     // defaults
     Q('#player_black').value = R.player_black
     Q('#player_white').value = R.player_white
     Q('#komi').value = R.komi
-    Q('#orig_rule').value = orig_rule
+    Q('#sgf_rule').value = sgf_rule
     Q('#comment_form').value = R.comment
     Q('#info_form').value = info_text
     // rule selection
@@ -161,8 +161,8 @@ ipc.on('ask_game_info', (e, info_text, orig_rule, current_rule, supported_rules)
     sel.value = supported_rules ? current_rule : rules[0]
     sel.disabled = !supported_rules
     sel.onchange = () => {
-        const new_orig_rule = sgf_rule_from_katago_rule(sel.value)
-        new_orig_rule && (Q('#orig_rule').value = new_orig_rule)
+        const new_sgf_rule = sgf_rule_from_katago_rule(sel.value)
+        new_sgf_rule && (Q('#sgf_rule').value = new_sgf_rule)
     }
     // show it
     show_dialog('#game_info_dialog')
@@ -650,7 +650,7 @@ document.onkeydown = e => {
     switch (key === "Enter" && e.target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "auto_play_sec": start_auto_play(); return
-    case "player_black": case "player_white": case "komi": case "orig_rule":
+    case "player_black": case "player_white": case "komi": case "sgf_rule":
         set_game_info(); return
     }
     if ((e.target.tagName === "INPUT" && e.target.type !== "button") ||
