@@ -108,6 +108,7 @@ ipc.on('render', (...args) => {
     const [e, h, is_board_changed] = args
     // for smooth reaction or readable variation display
     if (truep(showing_until()) && !is_board_changed) {return}
+    keep_selected_variation_maybe(h.suggest)
     // renderer state must be updated before update_ui is called
     merge(R, h)
     // skip too frequent requests so that we can avoid serious lags
@@ -120,7 +121,6 @@ ipc.on('render', (...args) => {
 })
 
 function render_now(e, h, is_board_changed) {
-    keep_selected_variation_maybe(h.suggest)
     set_board_size(R.bsize)
     setq('#move_count', D.movenum())
     setq('#history_length', ' (' + D.max_movenum() + ')')
