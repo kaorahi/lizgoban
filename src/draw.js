@@ -1124,7 +1124,9 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
 }
 
 function draw_winrate_graph_score_loss(sr2coord, g) {
-    if (!R.winrate_history || R.history_length === 0) {return}
+    const ready = R.winrate_history && R.history_length > 0 &&
+          R.winrate_history.map(h => h.score_without_komi).filter(truep).length > 1
+    if (!ready) {return}
     const style = {b: "rgba(0,255,0,0.7)", w: "rgba(255,0,255,0.7)"}
     const offset = 10, turn = R.bturn ? 'b' : 'w'
     const current = (R.winrate_history[R.move_count].cumulative_score_loss || {})[turn]
