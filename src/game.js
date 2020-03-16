@@ -29,7 +29,7 @@ function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
-        handicaps: 0, orig_gorule: "", gorule: null,
+        handicaps: 0, sgf_gorule: "", gorule: null,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
         trial: false, last_loaded_element: null, engines: {},
     }
@@ -92,7 +92,7 @@ function game_to_sgf(game) {
     const m2s = move => `[${move2sgfpos(move)}]`
     // header
     const km = truep(game.komi) ? `KM[${game.komi}]` : ''
-    const ru = f('RU', game.orig_gorule)
+    const ru = f('RU', game.sgf_gorule)
     const com0 = f('C', game.move0.comment)
     const sz = `SZ[${game.board_size}]`
     const {handicaps} = game
@@ -184,9 +184,9 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
     const km = first_node_ref("KM")
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
-    const orig_gorule = first_node_ref("RU") || ''
+    const sgf_gorule = first_node_ref("RU") || ''
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
-                 komi, orig_gorule, board_size: board_size(), trial: false})
+                 komi, sgf_gorule, board_size: board_size(), trial: false})
     const comment = first_node_ref("C")
     merge(game.ref(0), comment ? {comment} : {})
     return true
