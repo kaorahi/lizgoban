@@ -542,14 +542,15 @@ function update_thumbnail_contents(ids, div, preview, scrollp) {
             const inside = (rect.top >= 0 && rect.bottom <= window.innerHeight)
             scrollp && !inside && box.scrollIntoView()
         }
+        const url = (thumb || {}).url
         box.classList.add('thumbbox')
-        img.src = thumb ? thumb.url : 'no_thumbnail.png'
+        img.src = url || 'no_thumbnail.png'
         img.draggable = false
         id === current_sequence_id() ? (set_current(), set_action(), scroll_maybe()) :
             (unset_current(), set_action(true, true))
         box.dataset.name = (thumb && thumb.name) || ''
-        box.dataset.available = yes_no(thumb)
-        !thumb && set_action(true)
+        box.dataset.available = yes_no(url)
+        !url && set_action(true)
     })
 }
 
