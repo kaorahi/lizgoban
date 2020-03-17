@@ -762,7 +762,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     if (empty(R.suggest)) {return}
     // comment
-    const comment = `by ${AI.engine_info().current.preset_label_text}`
+    const comment = `{{by ${AI.engine_info().current.preset_label_text}}}`
     const play_com = m => play(m, false, null, comment)
     // move
     const move = (weaken_method === 'random_candidate' ?
