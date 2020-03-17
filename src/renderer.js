@@ -477,16 +477,19 @@ function take_thumbnail() {
     take_shumbnail_of_stones(R.stones, url => store_thumbnail(id, url))
 }
 
+let reusable_canvas = null
 function take_shumbnail_of_stones(stones, proc) {
     // remember that main_canvas can be rectangular by "x" key
     const [size, _] = get_canvas_size(main_canvas)
-    const canvas = document.createElement("canvas")
+    const canvas = reusable_canvas || document.createElement("canvas")
+    reusable_canvas = null
     set_canvas_square_size(canvas, size)
     D.draw_goban(canvas, stones, {draw_last_p: true, draw_next_p: true})
     let fired = false
     canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???
         proc(URL.createObjectURL(blob))
+        reusable_canvas = canvas
     }, 'image/jpeg', 0.3)
 }
 
