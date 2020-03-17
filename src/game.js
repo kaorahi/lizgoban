@@ -65,13 +65,6 @@ function create_game(init_history, init_prop) {
         transform: command => {
             history.splice(0, Infinity, ...TRANSFORM[command](history))
         },
-        search_blunder: (threshold, backwardp) => {
-            const direction = backwardp ? -1 : 1, mc = self.move_count + 1
-            const pred = z => truep(z.gain) && z.gain <= threshold &&
-                  Math.sign(z.move_count - mc) === direction
-            const a = history.filter(pred), hit = backwardp ? last(a) : a[0]
-            return hit ? hit.move_count - 1 : self.move_count
-        },
         to_sgf: () => game_to_sgf(self),
         load_sabaki_gametree: (gametree, index) =>
             load_sabaki_gametree_to_game(gametree, index, self),

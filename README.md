@@ -202,6 +202,7 @@ It is ignored when you are using KataGo, that gives more reliable estimations.
 * Separate estimations by different engines in winrate graph.
 * Plot cumulative score loss.
 * [Show mistakes over stones.](https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067)
+* Add buttons "?<" and ">?" for previous and next something (comment, tag, mistake).
 * Recognize handicap stones.
 * Read variations in SGF.
 * Enable "Undelete board" in Edit menu across sessions.

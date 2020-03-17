@@ -279,7 +279,7 @@ const api = merge({}, simple_api, {
     new_window, init_from_renderer,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
-    let_me_think_next, goto_next_blunder, goto_previous_blunder,
+    let_me_think_next, goto_next_something, goto_previous_something,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
     paste_sgf_or_url_from_clipboard,
     read_sgf, open_url, set_game_info,
@@ -376,10 +376,29 @@ function goto_move_count(count) {
     game.move_count = clip(count, game.handicaps, game.len())
 }
 
-function goto_next_blunder() {goto_previous_or_next_blunder()}
-function goto_previous_blunder() {goto_previous_or_next_blunder(true)}
-function goto_previous_or_next_blunder(backwardp) {
-    goto_move_count(game.search_blunder(blunder_threshold, backwardp))
+function goto_next_something() {goto_previous_or_next_something()}
+function goto_previous_something() {goto_previous_or_next_something(true)}
+function goto_previous_or_next_something(backwardp) {
+    const sign = backwardp ? -1 : 1
+    const valid = h => (h.move_count - game.move_count) * sign > 0
+    const comment_p = h => h.comment && !h.comment.match(/^{{.*}}$/)
+    const beginning_len = 40
+    const beginning_of =
+          s => s.length > beginning_len ? s.slice(0, beginning_len) + '...' : s
+    const check_blunder = h => truep(h.gain) && h.gain <= blunder_threshold &&
+          `${h.is_black ? 'B' : 'W'} ${Math.round(h.gain)}`
+    let reason = ''
+    const interesting = (h, k, ary) => {
+        reason = valid(h) && [
+            comment_p(h) && beginning_of(h.comment),
+            h.tag,
+            check_blunder(ary[k + sign] || {}),  // show the board BEFORE the blunder
+        ].filter(truep).join(' / '); return reason
+    }
+    const all = game.array_until(Infinity); backwardp && all.reverse()
+    const hit = all.find(interesting)
+    hit ? (goto_move_count(hit.move_count), toast(reason, 1000)) :
+        backwardp ? undo_to_start() : redo_to_end()
 }
 
 /////////////////////////////////////////////////
@@ -499,8 +518,8 @@ function menu_template(win) {
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('AI vs. AI', 'Shift+P', ask_sec(false), true),
         sep,
-        item('Next blunder', '>', goto_next_blunder),
-        item('Previous blunder', '<', goto_previous_blunder),
+        item('Next something', '>', goto_next_something),
+        item('Previous something', '<', goto_previous_something),
         sep,
         ...insert_if(option.exercise_dir,
                      item('Store as exercise', '!', store_as_exercise),
