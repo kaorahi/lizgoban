@@ -164,6 +164,7 @@ function draw_endstate_goban(canvas, options) {
 
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
+           pausing_p, trial_p,
            draw_loss_p, draw_coordinates_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
@@ -173,9 +174,10 @@ function draw_goban(canvas, stones, opts) {
     const large_font_p = !main_canvas_p
     const font_unit = Math.min(margin, canvas.height / 20)
     // clear
-    g.strokeStyle = BLACK; g.fillStyle = goban_bg(true); g.lineWidth = 1
+    g.strokeStyle = BLACK; g.fillStyle = goban_bg(pausing_p, trial_p, true)
+    g.lineWidth = 1
     edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
-    g.fillStyle = goban_bg()
+    g.fillStyle = goban_bg(pausing_p, trial_p)
     fill_rect([hm, hm], [canvas.width - hm, canvas.height - hm], g)
     // draw
     draw_grid(unit, idx2coord, g)
@@ -194,7 +196,8 @@ function draw_goban(canvas, stones, opts) {
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     draw_endstate_p && draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     // mouse events
-    handle_mouse_on_goban(canvas, coord2idx, read_only, tag_clickable_p)
+    const mouse_handler = handle_mouse_on_goban || do_nothing
+    mouse_handler(canvas, coord2idx, read_only, tag_clickable_p)
 }
 
 function goban_params(canvas) {
@@ -308,8 +311,8 @@ function draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g) {
     })
 }
 
-function goban_bg(border) {
-    return GOBAN_BG_COLOR[(R.pausing ? 'p' : '') + (R.trial && border ? 't' : '')]
+function goban_bg(pausing_p, trial_p, border) {
+    return GOBAN_BG_COLOR[(pausing_p ? 'p' : '') + (trial_p && border ? 't' : '')]
 }
 
 function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
@@ -1501,6 +1504,7 @@ function kilo_str_sub(x, rules) {
 module.exports = {
     set_state,
     movenum: () => mc2movenum(R.move_count), max_movenum, clip_handicaps,
+    draw_goban,
     draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,

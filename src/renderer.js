@@ -209,6 +209,7 @@ function with_opts(d, opts) {
     return c => (update_first_board_canvas(c), d(c, {
         main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
         first_board_p: is_first_board_canvas(c), draw_visits_p: is_first_board_canvas(c),
+        pausing_p: R.pausing, trial_p: R.trial,
         show_until: showing_until(c),
         hovered_move: if_hover_on(c, hovered_move),
         handle_mouse_on_goban,
@@ -473,11 +474,20 @@ const [try_thumbnail, store_thumbnail_later] =
                      [store_thumbnail, thumbnail_deferring_millisec])
 
 function take_thumbnail() {
-    const canvas = first_board_canvas(); if (!canvas) {return}
+    const id = current_sequence_id()
+    take_shumbnail_of_stones(R.stones, url => store_thumbnail_later(id, url))
+}
+
+function take_shumbnail_of_stones(stones, proc) {
+    // remember that main_canvas can be rectangular by "x" key
+    const [size, _] = get_canvas_size(main_canvas)
+    const canvas = document.createElement("canvas")
+    set_canvas_square_size(canvas, size)
+    D.draw_goban(canvas, stones, {draw_last_p: true, draw_next_p: true})
     let fired = false
     canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???
-        store_thumbnail_later(current_sequence_id(), URL.createObjectURL(blob))
+        proc(URL.createObjectURL(blob))
     }, 'image/jpeg', 0.3)
 }
 
@@ -616,8 +626,16 @@ function set_canvas_size(canvas, width, height) {
 }
 
 function set_overlay(canvas, orig) {
-    set_canvas_size(canvas, orig.width / canvas_scale, orig.height / canvas_scale)
+    copy_canvas_size(canvas, orig)
     set_relative_canvas_position(canvas, orig)
+}
+
+function copy_canvas_size(canvas, orig) {
+    set_canvas_size(canvas, ...get_canvas_size(orig))
+}
+
+function get_canvas_size(canvas) {
+    return [canvas.width / canvas_scale, canvas.height / canvas_scale]
 }
 
 function set_subscript(canvas, orig, width, height) {
