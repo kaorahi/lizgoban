@@ -238,26 +238,30 @@ function winrate_from_game(engine_id) {
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const pass = implicit_pass || M.is_pass(h.move)
         const score_without_komi = score_without_komi_at(s)
-        if (truep(score_without_komi)) {
+        const record_gain_as_side_effect = gain => {
+            if (engine_id || s === 0 || !truep(score_without_komi_at(s - 1))) {return}
+            merge(cur, {gain})
+            s <= game.move_count &&
+                merge(aa_ref(R.stones, ...move2idx(cur.move)) || {}, {gain})
+        }
+        const update_score_loss = gain => {
+            // (A) gain < 0: Your move is bad.
+            // (B) gain > 0: Your move is good or the opponent's last move was bad.
+            // The case (B) never happens if the engine is perfectly accurate.
+            // So we cannot trust positive gains literally.
+            const responsibility_of_opponent = 0.5
+            const transferred = clip(gain, 0) * responsibility_of_opponent
+            const loss = - (gain - transferred)
+            score_loss[turn_letter] += loss
+            score_loss[opponent_letter] += transferred
+            record_gain_as_side_effect(gain)  // clean me
+        }
+        const update_score_loss_maybe = () => {
             const gain = (score_without_komi - prev_score) * turn_sign
-            const valid = !pass || s === 0
-            if (valid) {
-                // (A) gain < 0: Your move is bad.
-                // (B) gain > 0: Your move is good or the opponent's last move was bad.
-                // The case (B) never happens if the engine is perfectly accurate.
-                // So we cannot trust positive gains literally.
-                const responsibility_of_opponent = 0.5
-                const transferred = clip(gain, 0) * responsibility_of_opponent
-                const loss = - (gain - transferred)
-                score_loss[turn_letter] += loss
-                score_loss[opponent_letter] += transferred
-                // clean me: record gain as a side effect
-                !engine_id && s > 0 && truep(score_without_komi_at(s - 1)) &&
-                    (s <= game.move_count && merge(aa_ref(R.stones, ...move2idx(cur.move)) || {}, {gain}),
-                     merge(cur, {gain}))
-            }
+            const valid = !pass || s === 0; valid && update_score_loss(gain)
             prev_score = score_without_komi
         }
+        truep(score_without_komi) && update_score_loss_maybe()
         const cumulative_score_loss = {...score_loss}  // dup
         // drop "pass" to save data size for IPC
         return merge({
