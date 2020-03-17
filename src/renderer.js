@@ -469,13 +469,12 @@ function mouse2move(e, coord2idx) {
 
 const thumbnail_deferring_millisec = 500
 
-const [try_thumbnail, store_thumbnail_later] =
-      deferred_procs([take_thumbnail, thumbnail_deferring_millisec],
-                     [store_thumbnail, thumbnail_deferring_millisec])
+const [try_thumbnail] =
+      deferred_procs([take_thumbnail, thumbnail_deferring_millisec])
 
 function take_thumbnail() {
     const id = current_sequence_id()
-    take_shumbnail_of_stones(R.stones, url => store_thumbnail_later(id, url))
+    take_shumbnail_of_stones(R.stones, url => store_thumbnail(id, url))
 }
 
 function take_shumbnail_of_stones(stones, proc) {
