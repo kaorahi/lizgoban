@@ -1084,6 +1084,16 @@ function push_deleted_sequence(sequence) {
 function pop_deleted_sequence() {return deleted_sequences.pop()}
 function exist_deleted_sequence() {return !empty(deleted_sequences)}
 
+function sequence_prop_of(given_game) {
+    const pick_tag = h => {
+        const h_copy = P.append_endstate_tag_maybe(h); return h_copy.tag || ''
+    }
+    const tags = given_game.map(pick_tag).join('')
+          .replace(endstate_diff_tag_letter, '')
+    const {player_black, player_white, handicaps, move_count, trial} = given_game
+    return {player_black, player_white, handicaps, move_count, trial, len: given_game.len(), tags}
+}
+
 /////////////////////////////////////////////////
 // autosave
 
@@ -1117,6 +1127,7 @@ function autosave_later() {
 function update_state(keep_suggest_p) {
     const history_length = game.len(), sequence_length = sequence.length
     const sequence_ids = sequence.map(h => h.id)
+    const sequence_props = aa2hash(sequence.map(h => [h.id, sequence_prop_of(h)]))
     const pick_tagged = h => {
         const h_copy = P.append_endstate_tag_maybe(h)
         return h_copy.tag ? [h_copy] : []
@@ -1125,7 +1136,7 @@ function update_state(keep_suggest_p) {
     const {player_black, player_white, trial} = game
     P.set_and_render({
         history_length, sequence_cursor, sequence_length, attached,
-        player_black, player_white, trial, sequence_ids, history_tags
+        player_black, player_white, trial, sequence_ids, sequence_props, history_tags
     }, keep_suggest_p ? {} : {suggest: []})
 }
 

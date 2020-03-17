@@ -30,7 +30,7 @@ const R = {
     progress: 0.0, weight_info: '', is_katago: false, engine_id: null,
     komi: 7.5, player_black: '', player_white: '',
     move_history: [],
-    sequence_cursor: 1, sequence_length: 1, sequence_ids: [],
+    sequence_cursor: 1, sequence_length: 1, sequence_ids: [], sequence_props: {},
     history_tags: [], endstate_clusters: [], prev_endstate_clusters: null,
     lizzie_style: false,
     window_id: -1,
@@ -477,17 +477,13 @@ function take_thumbnail() {
     let fired = false
     canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???
-        const tags = current_tag_letters()
-        const players = (R.player_black || R.player_white) ?
-              `${R.player_black || "?"}/${R.player_white || "?"} ` : ''
-        const name = (R.trial ? tags : players + tags) +
-              ` ${D.movenum()}(${D.max_movenum()})`
-        store_thumbnail_later(current_sequence_id(), URL.createObjectURL(blob), name)
+        store_thumbnail_later(current_sequence_id(), URL.createObjectURL(blob))
     }, 'image/jpeg', 0.3)
 }
 
-function store_thumbnail(id, url, name) {
-    thumbnails[id] = {url, name}; update_all_thumbnails()
+function store_thumbnail(id, url) {
+    !thumbnails[id] && (thumbnails[id] = {})  // can't happen
+    merge(thumbnails[id], {url}); update_all_thumbnails()
 }
 
 // (2) show thumbnails
@@ -505,11 +501,22 @@ function update_all_thumbnails(style) {
     const hide_thumbnails = R.attached || R.sequence_length <= 1 ||
           R.board_type === 'variation' || R.board_type === 'winrate_only'
     const ids = hide_thumbnails ? [] : R.sequence_ids, scrollp = !!style
+    ids.forEach(set_thumbnail_name)
     div.dataset.style = style || 'block'
     update_thumbnail_containers(ids, measurer)
     update_thumbnail_contents(ids, measurer, preview, scrollp)
     !empty(ids) && !style && measurer.clientHeight > Q("#goban").clientHeight &&
         update_all_thumbnails('inline')
+}
+
+function set_thumbnail_name(id) {
+    const {player_black, player_white, handicaps, move_count, trial, len, tags} = R.sequence_props[id]
+    const players = (player_black || player_white) ?
+          `${player_black || "?"}/${player_white || "?"} ` : ''
+    const name = (trial ? tags : players + tags) +
+          ` ${move_count - handicaps}(${len - handicaps})`
+    !thumbnails[id] && (thumbnails[id] = {})
+    merge(thumbnails[id], {name})
 }
 
 function update_thumbnail_containers(ids, div) {
