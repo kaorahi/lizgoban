@@ -590,6 +590,7 @@ function set_all_canvas_size() {
     update_all_thumbnails()
     set_subscript(zone_chart_canvas, winrate_graph_canvas, zone_chart_canvas_size) &&
         D.draw_zone_color_chart(zone_chart_canvas)  // call this here for efficiency
+    set_cut_button_position_maybe()
 }
 
 function set_canvas_square_size(canvas, size) {
@@ -637,6 +638,20 @@ function set_relative_canvas_position(canvas, orig, shift_x, shift_y) {
 function portrait_p() {
     const [my, sy] = [main_canvas, sub_canvas].map(c => c.getBoundingClientRect().y)
     return my < sy
+}
+
+// "X" button (cut_sequence) beside trial board:
+// VERY ANNOYING! be careful of...
+// - margin inclusion/exclusion
+// - portrait/landscape and expand_winrate_bar
+// - slide-up/down animation of main_canvas
+function set_cut_button_position_maybe() {after_effect(set_cut_button_position)}
+function set_cut_button_position() {
+    const style = Q('#trial').style, portrait = portrait_p()
+    style.left =
+        main_canvas.getBoundingClientRect()[portrait ? 'width' : 'right'] - 1 + 'px'
+    style.top =
+        (portrait ? Q('#thumb_aligner').getBoundingClientRect().bottom : 0) + 1 + 'px'
 }
 
 /////////////////////////////////////////////////
@@ -848,13 +863,29 @@ function set_selection(elem, val) {
 /////////////////////////////////////////////////
 // effect
 
+const effect_duration_millisec = 200
+
+// to avoid flicker of scroll bar in repeated "[" key
+let in_effect = false
+const procs_after_effect = []
+const [do_procs_after_effect] = deferred_procs([() => {
+    procs_after_effect.forEach(proc => proc()); procs_after_effect.splice(0)
+}, effect_duration_millisec + 100])
+function after_effect(proc) {
+    in_effect ? (procs_after_effect.push(proc), do_procs_after_effect()) : proc()
+}
+
 function slide_in(direction) {
     const shift = {next: '30%', previous: '-30%'}[direction]
     effect_gen({transform: `translate(0%, ${shift})`, opacity: 0},
                {transform: 'translate(0)', opacity: 1})
 }
 function wink() {effect_gen({opacity: 1}, {opacity: 0.7}, {opacity: 1})}
-function effect_gen(...transforms) {Q('#goban').animate(transforms, 200)}
+function effect_gen(...transforms) {
+    in_effect = true
+    Q('#goban').animate(transforms, effect_duration_millisec)
+    after_effect(() => {in_effect = false})
+}
 
 function toast(message, millisec) {
     setq('#toast_message', message)

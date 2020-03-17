@@ -111,12 +111,13 @@
 <img id="preview"></img>
 <div style="position: relative; overflow-y: hidden;">
  <canvas id="goban"></canvas>
- <div id='trial' style="position: absolute; top: 0px; right: 0px;">
-  <input type='button' style="color: red; font-size: 150%;"
-   onclick="main('cut_sequence')" value=" × ">
- </div>
 </div>
 <div><canvas id="winrate_bar"></canvas></div>
+</div>
+
+<div id='trial' style="position: absolute;">
+ <input id='cut_sequence_button' type='button' style="color: red; font-size: 150%;"
+  onclick="main('cut_sequence')" value=" × ">
 </div>
 
 <!-------- begin rest_div ----------->
