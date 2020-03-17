@@ -373,22 +373,7 @@ function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
 
 function goto_move_count(count) {
-    const c = clip(count, game.handicaps, game.len())
-    if (c === game.move_count) {return}
-    update_state_to_move_count_tentatively(c)
-}
-function update_state_to_move_count_tentatively(count) {
-    const forward = (count > game.move_count)
-    const [from, to] = forward ? [game.move_count, count] : [count, game.move_count]
-    const set_stone_at = (move, stone_array, stone) => {
-        aa_set(stone_array, ...move2idx(move), stone)
-    }
-    game.slice(from, to).forEach(m => set_stone_at(m.move, R.stones, {
-        stone: true, maybe: forward, maybe_empty: !forward, black: m.is_black
-    }))
-    const next_h = game.ref(game.move_count + 1)
-    const next_s = P.stone_for_history_elem(next_h, R.stones) || {}
-    next_s.next_move = false; game.move_count = count; R.bturn = (count % 2 === 0)
+    game.move_count = clip(count, game.handicaps, game.len())
 }
 
 function goto_next_blunder() {goto_previous_or_next_blunder()}
