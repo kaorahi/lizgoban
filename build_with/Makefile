@@ -37,11 +37,11 @@ $(HCAP_CONF): $(HCAP_CONF_SRC)
 
 $(KATA_CONF_SRC): src/gtp_example.cfg src/katago_gtp.patch
 	cp -f src/gtp_example.cfg $(KATA_CONF_SRC)
-	patch $(KATA_CONF_SRC) src/katago_gtp.patch
+	patch --no-backup-if-mismatch $(KATA_CONF_SRC) src/katago_gtp.patch
 
 $(HCAP_CONF_SRC): $(KATA_CONF_SRC) src/katago_gtp_handicap.patch
 	cp -f $(KATA_CONF_SRC) $(HCAP_CONF_SRC)
-	patch $(HCAP_CONF_SRC) src/katago_gtp_handicap.patch
+	patch --no-backup-if-mismatch $(HCAP_CONF_SRC) src/katago_gtp_handicap.patch
 
 $(SCR_IMG): ../screen.gif
 	convert '../screen.gif[0]' $(SCR_IMG)
