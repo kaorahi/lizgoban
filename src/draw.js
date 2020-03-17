@@ -159,6 +159,12 @@ function draw_endstate_goban(canvas, options) {
     draw_goban(canvas, displayed_stones, opts)
 }
 
+function draw_thumbnail_goban(canvas, stones) {
+    const opts = {draw_last_p: true, draw_next_p: true}
+    each_stone(stones, h => (h.displayed_tag = h.tag))
+    draw_goban(canvas, stones, opts)
+}
+
 /////////////////////////////////////////////////
 // generic goban
 
@@ -1504,7 +1510,7 @@ function kilo_str_sub(x, rules) {
 module.exports = {
     set_state,
     movenum: () => mc2movenum(R.move_count), max_movenum, clip_handicaps,
-    draw_goban,
+    draw_thumbnail_goban,
     draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
