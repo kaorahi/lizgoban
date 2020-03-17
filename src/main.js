@@ -1001,6 +1001,8 @@ function new_empty_board(given_board_size) {
 function backup_game() {backup_and_replace_game(game.shallow_copy())}
 function backup_and_replace_game(new_game, before) {
     game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game, before)
+    const stones = new_game.current_stones()
+    renderer('take_thumbnail', new_game.id, stones)
 }
 
 function create_sequence_maybe(force) {

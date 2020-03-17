@@ -169,6 +169,7 @@ ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules) 
     show_dialog('#game_info_dialog')
 })
 
+ipc.on('take_thumbnail', (e, id, stones) => take_thumbnail(id, stones))
 ipc.on('slide_in', (e, direction) => slide_in(direction))
 ipc.on('wink', (e) => wink())
 ipc.on('toast', (e, ...a) => toast(...a))
@@ -472,9 +473,10 @@ const thumbnail_deferring_millisec = 500
 const [try_thumbnail] =
       deferred_procs([take_thumbnail, thumbnail_deferring_millisec])
 
-function take_thumbnail() {
-    const id = current_sequence_id()
-    take_shumbnail_of_stones(R.stones, url => store_thumbnail(id, url))
+function take_thumbnail(given_id, given_stones) {
+    const id = truep(given_id) ? given_id : current_sequence_id()
+    const stones = given_stones || R.stones
+    take_shumbnail_of_stones(stones, url => store_thumbnail(id, url))
 }
 
 let reusable_canvas = null
@@ -494,7 +496,7 @@ function take_shumbnail_of_stones(stones, proc) {
 }
 
 function store_thumbnail(id, url) {
-    !thumbnails[id] && (thumbnails[id] = {})  // can't happen
+    !thumbnails[id] && (thumbnails[id] = {})
     merge(thumbnails[id], {url}); update_all_thumbnails()
 }
 
