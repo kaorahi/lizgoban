@@ -109,7 +109,7 @@ function set_renderer_state(...args) {
     const invalid_endstate_p =
           (endstate_clusters.length === 1 && endstate_clusters[0].ownership_sum === 0)
     const move_history = [{}, ...game.map(z => ({
-        move: z.move, is_black: z.is_black, ko_fight: z.ko_fight,
+        move: z.move, is_black: z.is_black, ko_state: z.ko_state,
         unsafe_stones: z.unsafe_stones, ambiguity: z.ambiguity
     }))]
     merge(R, {move_count, handicaps, busy, winrate_history, winrate_history_set,

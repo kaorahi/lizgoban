@@ -156,13 +156,19 @@ function score_drawer(w, sr2coord, g) {
 }
 
 function draw_winrate_graph_ko_fight(sr2coord, g) {
-    const radius = 5, alpha = 0.7
-    const plot = (z, s) => {
+    const radius = 5, alpha = 0.7, lineWidth = 2
+    const marker_for = {ko_captured: fill_circle,
+                        resolved_by_connection: circle,
+                        resolved_by_capture: x_shape_around}
+    const plot = (z, s, marker) => {
         const [x, y] = sr2coord(s, 100), cy = y + radius * (z.is_black ? 1 : 2.5)
+        g.lineWidth = lineWidth
+        g.strokeStyle = zone_color_for_move(z.move)
         g.fillStyle = zone_color_for_move(z.move, alpha)
-        fill_circle([x, cy], radius, g)
+        marker([x, cy], radius, g)
     }
-    R.move_history.forEach((z, s) => z.ko_fight && plot(z, s))
+    const f = (z, s) => (key, val) => val && plot(z, s, marker_for[key])
+    R.move_history.forEach((z, s) => each_key_value(z.ko_state || {}, f(z, s)))
 }
 
 function draw_winrate_graph_unsafe_stones(sr2coord, g) {
