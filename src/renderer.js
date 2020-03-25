@@ -734,7 +734,7 @@ document.onkeydown = e => {
     case "[": skip_maybe('previous_sequence'); break;
     case "]": skip_maybe('next_sequence'); break;
     }
-    if (e.repeat) {return}
+    if (e.repeat) {e.preventDefault(); return}
     // GROUP 3: usable with sabaki
     const challenging = (R.board_type === "raw" && current_board_type() === "raw" &&
                          !R.attached)
