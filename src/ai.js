@@ -50,7 +50,7 @@ function all_start_args() {
     return {black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
 function restore_all_start_args({black, white}) {
-    unload_leelaz_for_white()
+    unload_leelaz_for_white(); leelaz.kill()  // white must be first
     leelaz.start(black); white && start_engine_for_white(white)
 }
 function leelaz_weight_file(white_p) {
