@@ -204,6 +204,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 * Enable "Undelete board" in Edit menu across sessions.
 * Show coordinates by "c" key.
 * Show start-up log when engine is down.
+* Improve thumbnails (delay, color, etc.).
 * Fix blur in HiDPI display.
 
 Incompatibilities:
