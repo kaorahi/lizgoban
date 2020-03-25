@@ -43,6 +43,7 @@ const default_option = {
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
 }
 const option = {}
+let white_preset = []
 
 const default_config_paths = [
     default_path_for('.'), process.env.PORTABLE_EXECUTABLE_DIR,
@@ -65,7 +66,7 @@ function parse_option(cur, succ) {
         // accept obsolete key "shortcut" for backward compatibility
         orig.shortcut && (orig.preset = [...(orig.preset || []), ...orig.shortcut])
         merge(option, orig); merge(option, from_preset(option))
-        merge(option, convert_preset_to_white(option.preset))
+        update_white_preset(option.preset)
     }
     const from_preset = orig => {
         const preset = orig.preset; if (!preset) {return {}}
@@ -74,14 +75,13 @@ function parse_option(cur, succ) {
         const keys = ['leelaz_command', 'leelaz_args', 'preset_label']
         return aa2hash(keys.map(k => [k, from_first_preset[k] || orig[k]]))
     }
-    const convert_preset_to_white = preset => {
-        if (!preset) return {}
-        const white_preset = preset.map(h => {
+    const update_white_preset = preset => {
+        const new_white_preset = (preset || []).map(h => {
             const {label, leelaz_command, leelaz_args, engine_for_white} = h
             return (leelaz_command && leelaz_args && !engine_for_white) &&
                 {label, engine_for_white: [leelaz_command, ...leelaz_args]}
         }).filter(truep)
-        return empty(white_preset) ? {} : {white_preset}
+        !empty(new_white_preset) && (white_preset = new_white_preset)
     }
     switch (cur) {
     case '-j': merge_json(succ); break
@@ -614,7 +614,7 @@ function preset_menu_maybe(menu_tools) {
 }
 function preset_menu_for_white(menu_tools) {
     const {menu} = menu_tools
-    const items = preset_menu_items(option.white_preset, menu_tools, true)
+    const items = preset_menu_items(white_preset, menu_tools, true)
     return menu('Engine for white', items)
 }
 function preset_menu_items(preset, menu_tools, white_p) {
