@@ -722,7 +722,6 @@ document.onkeydown = e => {
         busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
     case "ArrowRight": case "ArrowDown":
         busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
-    case ";": busy('let_me_think_next', R.board_type); break;
     case "[": skip_maybe('previous_sequence'); break;
     case "]": skip_maybe('next_sequence'); break;
     }
@@ -766,6 +765,7 @@ document.onkeydown = e => {
     case "`": f(play_it, false, true); break;
     case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves :
                 (R.suggest[0] || {}).pv); break;
+    case ";": m('let_me_think_next', R.board_type); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
     case "Backspace": case "Delete": m('explicit_undo'); break;
@@ -836,6 +836,8 @@ function update_showing_until() {
     if (!R.show_endstate || !changed) {return}
     main('set_endstate_diff_from', cur)
 }
+
+function redoable() {return R.move_count < R.history_length}
 
 /////////////////////////////////////////////////
 // drag and drop
