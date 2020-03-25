@@ -1095,7 +1095,7 @@ function score_drawer(w, sr2coord, g) {
     }
     const draw_score = () => {
         const at_r = [50, 60, 70], to_score = r => (r - 50) / scale
-        draw_winrate_graph_scale(at_r, to_score, color(0.6), sr2coord, g)
+        draw_winrate_graph_scale(at_r, to_score, color(0.6), w * 0.995, sr2coord, g)
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
     }
     return command => ({score: draw_score, komi: draw_komi})[command]()
@@ -1157,8 +1157,8 @@ function draw_winrate_graph_score_loss(sr2coord, g) {
               sr2coord(s, to_r(cumulative_score_loss[key])) : [NaN, NaN]
         line(...flatten(R.winrate_history.map(to_xy).map(to_step)), g)
     })
-    const at_r = [90, 80], to_loss = r => (100 - offset - r) / scale
-    draw_winrate_graph_scale(at_r, to_loss, style.w, sr2coord, g)
+    const at_r = [90, 80, 70], to_loss = r => (100 - offset - r) / scale
+    draw_winrate_graph_scale(at_r, to_loss, style.w, null, sr2coord, g)
 }
 
 function draw_winrate_graph_zone(sr2coord, g) {
@@ -1170,11 +1170,11 @@ function draw_winrate_graph_zone(sr2coord, g) {
     })
 }
 
-function draw_winrate_graph_scale(at_r, r2val, color, sr2coord, g) {
+function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
     const unit_r = 10, s0 = clip_handicaps(0)
     const [x0, y0] = sr2coord(s0, 0), [_, y1] = sr2coord(s0, unit_r)
     const maxwidth = x0 * 0.8, fontsize = Math.min((y0 - y1) * 0.9, maxwidth)
-    const to_xy = r => [maxwidth, sr2coord(s0, r)[1]]
+    const to_xy = r => [x_maybe || maxwidth, sr2coord(s0, r)[1]]
     const to_text = r => to_s(Math.round(r2val(r)))
     const draw_at = r => {
         const text = to_text(r), maxw = text.length === 1 ? maxwidth / 2 : maxwidth
