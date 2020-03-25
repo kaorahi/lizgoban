@@ -187,7 +187,7 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     game.set_last_loaded_element()
     game.handicaps = handicaps_from_sabaki_nodes(nodes)
     game.move_count = history_for(nodes_until_index).length
-    const player_name = bw => first_node_ref(bw)
+    const player_name = bw => first_node_ref(bw) || ''
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
     const km = first_node_ref("KM")
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
