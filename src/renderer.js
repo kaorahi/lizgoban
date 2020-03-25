@@ -112,8 +112,7 @@ const render_in_capacity = skip_too_frequent_requests(render_now)
 
 ipc.on('render', (...args) => {
     const [e, h, is_board_changed] = args
-    // for smooth reaction or readable variation display
-    if (truep(showing_until()) && !is_board_changed) {return}
+    // for readable variation display
     keep_selected_variation_maybe(h.suggest)
     // renderer state must be updated before update_ui is called
     merge(R, h)
