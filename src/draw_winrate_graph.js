@@ -43,7 +43,7 @@ function draw_winrate_graph_frame(w, h, sr2coord, g) {
     seq(tics, 1).forEach(i => {
         const y = r2y(100 * i / (tics + 1)); line([0, y], [w, y], g)
     })
-    seq(xtics, 1).forEach(k => {
+    seq(xtics, 0).forEach(k => {
         const x = s2x(k * xtics_delta); line([x, 0], [x, h], g)
     })
     // // frame
