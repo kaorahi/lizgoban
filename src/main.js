@@ -22,9 +22,9 @@ const default_path_for = name =>
       PATH.join(app.isPackaged ? app.getAppPath() : __dirname, '..', 'external', name)
 
 const default_option = {
-    leelaz_command: 'leelaz',
-    leelaz_args: ["-g", "-w", "network.gz"],
-    preset_label: {label: ''},
+    leelaz_command: null,  // obsolete
+    leelaz_args: null,  // obsolete
+    preset_label: null,  // obsolete
     analyze_interval_centisec: 20,
     minimum_suggested_moves: 30,
     engine_log_line_length: 500,
@@ -40,9 +40,9 @@ const default_option = {
     sgf_dir: undefined,
     exercise_dir: 'exercise',
     max_cached_engines: 3,
-    preset: null,
+    preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
 }
-let option = {}
+const option = {}
 
 const default_config_paths = [
     default_path_for('.'), process.env.PORTABLE_EXECUTABLE_DIR,
@@ -50,9 +50,9 @@ const default_config_paths = [
 parse_argv()
 
 function parse_argv() {
-    option = default_option
     const prepended_args = dir => ['-c', PATH.resolve(dir, 'config.json')]
     const argv = [
+        '-j', JSON.stringify(default_option),
         ...flatten(default_config_paths.filter(truep).map(prepended_args)),
         ...process.argv,
     ]
