@@ -904,8 +904,8 @@ function info_text() {
           `<${label}>\n` + JSON.stringify(s) + '\n\n' : ''
     const sa = AI.all_start_args()
     const lz = AI.leelaz_for_white_p() ?
-          (f("leelaz (black)", sa.black) + f("leelaz (white)", sa.white)) :
-          f("leelaz", sa.black)
+          (f("engine (black)", sa.black) + f("engine (white)", sa.white)) :
+          f("engine", sa.black)
     const message = lz +
           f("sgf file", game.sgf_file) +
           f("sgf", game.sgf_str)
