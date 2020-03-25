@@ -519,11 +519,13 @@ function menu_template(win) {
         ...insert_if(option.exercise_dir,
                      item('Store as exercise', '!', store_as_exercise),
                      item('Exercise', '?', () => load_random_exercise(win), true),
+                     item('Recent exercise', 'CmdOrCtrl+?',
+                          () => load_recent_exercise(win), true),
                      menu('Delete exercise', [
                          ...insert_if(is_exercise_file(game.sgf_file),
                                       item('Delete this', 'CmdOrCtrl+!', delete_exercise)),
                      ]),
-                     item('Open exercise', 'CmdOrCtrl+?', open_exercise_dir, true),
+                     item('Open exercise', 'Alt+?', open_exercise_dir, true),
                      sep),
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
@@ -1380,10 +1382,15 @@ function store_as_exercise() {
 }
 function load_random_exercise(win) {
     const random_choice = a => a[Math.floor(Math.random() * a.length)]
-    load_exercise(random_choice, win)
+    load_exercise(random_choice, win, true)
+}
+function load_recent_exercise(win) {
+    const neg_mtime = fn => - fs.statSync(expand_exercise_filename(fn)).mtimeMs
+    const recent = a => sort_by(a, neg_mtime)[0]
+    load_exercise(recent, win)
 }
 let seen_exercises = []
-function load_exercise(selector, win) {
+function load_exercise(selector, win, random_flip_p) {
     const dir = exercise_dir()
     const valid = name =>
           is_exercise_filename(name) && seen_exercises.indexOf(name) < 0 &&
@@ -1391,8 +1398,9 @@ function load_exercise(selector, win) {
     const files = (fs.readdirSync(dir) || []).filter(valid)
     const retry = () => {seen_exercises = []; load_exercise(selector, win)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
-    const fn = selector(files), f = PATH.join(dir, fn); seen_exercises.push(fn)
-    set_board_type('raw', win); load_as_exercise(f); game.random_flip_rotate()
+    const fn = selector(files); seen_exercises.push(fn)
+    set_board_type('raw', win); load_as_exercise(expand_exercise_filename(fn))
+    random_flip_p && game.random_flip_rotate()
 }
 function load_as_exercise(file) {
     load_sgf(file); goto_move_count(exercise_move_count(file))
@@ -1420,6 +1428,7 @@ function is_exercise_filename(filename) {
     const {pre, sep, post} = exercise_format
     return filename.startsWith(pre) && filename.endsWith(post)
 }
+function expand_exercise_filename(filename) {return PATH.join(exercise_dir(), filename)}
 function is_exercise_file(path) {
     const in_dir_p = (f, d) => d && (PATH.resolve(d, PATH.basename(f)) === f)
     const name = PATH.basename(path)

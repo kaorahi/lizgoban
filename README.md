@@ -188,6 +188,7 @@ Incompatibilities:
 * Upgrade libraries (Electron 8, etc.). So you may need to do "npm install" again.
 * "weight_dir" in config.json is obsolete now. (See above.)
 * "Komi" and "Info" are moved from [Tool] to [Edit] menu.
+* The shortcut key `CmdOrCtrl+?` is changed from open_exercise_dir to load_recent_exercise.
 
 ### from 0.2.0
 
