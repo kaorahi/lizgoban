@@ -37,7 +37,7 @@
         "to": "resources/external",
         "filter": [
           "lznetwork.gz",
-          "katanetwork.gz"
+          "katanetwork.bin.gz"
         ]
       }
     ],
