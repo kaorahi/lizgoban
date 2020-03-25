@@ -63,8 +63,9 @@ function each_leelaz(f, for_black_and_white_only) {
      !for_black_and_white_only && leelaz_for_endstate].forEach(z => z && f(z))
 }
 function with_handlers(h) {
-    const ready_handler = () => {backup(); h.ready_handler()}
-    return merge({suggest_handler, unsupported_size_handler}, h, {ready_handler})
+    const more = h.ready_handler ?
+          {ready_handler: () => {backup(); h.ready_handler()}} : {}
+    return merge({suggest_handler, unsupported_size_handler}, h, more)
 }
 
 function katago_p() {return leelaz.is_katago()}

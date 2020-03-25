@@ -174,19 +174,24 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     const first_node = nodes_until_index[0]
     const first_node_ref = (key, missing) => (first_node[key] || [missing])[0]
-    set_board_size(to_i(first_node_ref("SZ", 19))) // before generating history
-    const new_hist = history_from_sabaki_nodes(nodes)
+    const bsize = to_i(first_node_ref("SZ", 19))
+    // need to set board size for history_from_sabaki_nodes
+    // (and recover the old board size immediately so that its change
+    // is correctly detected elsewhere for switching of engine processes)
+    const history_for = given_nodes =>
+          with_board_size(bsize, history_from_sabaki_nodes, given_nodes)
+    const new_hist = history_for(nodes)
     game.set_with_reuse(new_hist)
     game.set_last_loaded_element()
     game.handicaps = handicaps_from_sabaki_nodes(nodes)
-    game.move_count = history_from_sabaki_nodes(nodes_until_index).length
+    game.move_count = history_for(nodes_until_index).length
     const player_name = bw => first_node_ref(bw)
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
     const km = first_node_ref("KM")
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
     const sgf_gorule = first_node_ref("RU") || ''
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
-                 komi, sgf_gorule, board_size: board_size(), trial: false})
+                 komi, sgf_gorule, board_size: bsize, trial: false})
     const comment = first_node_ref("C")
     merge(game.ref(0), comment ? {comment} : {})
     return true

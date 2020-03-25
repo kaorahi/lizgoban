@@ -945,7 +945,8 @@ function update_ponder() {
 function init_from_renderer() {}
 
 function set_board() {
-    game.board_size !== board_size() && toast('Changing board size...')
+    const bsize = game.board_size
+    bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
     AI.set_board(P.set_board(game), game.get_komi(), get_gorule(), R.show_endstate)
     AI.switch_leelaz(); update_let_me_think(true)
 }
@@ -1275,7 +1276,10 @@ function leelaz_start_args(weight_file) {
     const opts = ['analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length', 'preset_label']
     opts.forEach(key => h[key] = option[key])
-    return h
+    return {...h, ...leelaz_start_args_for_board_size(board_size())}
+}
+function leelaz_start_args_for_board_size(given_board_size) {
+    return {dummy_field_for_cheating_engine_cache: given_board_size}
 }
 let tuning_message
 function on_ready(update_only_p) {
