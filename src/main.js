@@ -1330,7 +1330,7 @@ function save_sgf_to(filename, if_success) {
 function read_sgf(sgf_str) {
     const new_games = create_games_from_sgf(sgf_str)
     empty(new_games) ?
-        dialog.showErrorBox("Failed to read SGF", 'SGF text: "' + sgf_str + '"') :
+        dialog.showErrorBox("Failed to read SGF", snip(sgf_str, 200)) :
         new_games.reverse().forEach(backup_and_replace_game)
     // keep sequence_cursor trickily!
     // (see the second argument of backup_and_replace_game)
