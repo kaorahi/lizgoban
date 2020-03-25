@@ -603,7 +603,7 @@ function stone_style_submenu() {
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
     const toggle_it = () => toggle_stored(key)
-    return {label, accelerator, type: 'checkbox', checked: store.get(key),
+    return {label, accelerator, type: 'checkbox', checked: get_stored(key),
             click: (...a) => {(on_click || toggle_it)(...a); update_all()}}
 }
 
