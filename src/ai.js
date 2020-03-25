@@ -239,7 +239,7 @@ function engine_ids() {
 
 const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi', 'is_supported']
 
-require('./give_and_take.js').offer(module, {
+module.exports = {
     // main.js only
     set_board,
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
@@ -253,4 +253,4 @@ require('./give_and_take.js').offer(module, {
     set_handlers, another_leelaz_for_endstate_p, engine_ids,
     // both
     katago_p, support_endstate_p, engine_info, is_gorule_supported,
-}, global)
+}

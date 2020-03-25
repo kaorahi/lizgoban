@@ -348,7 +348,9 @@ function pick_properties(orig, keys) {
 /////////////////////////////////////////////////
 // exports
 
-require('./give_and_take.js').offer(module, {
+AI.set_handlers({suggest_handler, endstate_handler})
+
+module.exports = {
     // basic
     set_board,
     // endstate
@@ -359,4 +361,4 @@ require('./give_and_take.js').offer(module, {
     // util
     stone_for_history_elem, update_info_in_stones, weight_info_text,
     get_initial_b_winrate, add_info_to_stones,
-}, global, () => AI.set_handlers({suggest_handler, endstate_handler}))
+}

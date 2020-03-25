@@ -147,7 +147,7 @@ const default_for_stored_key = {
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
 
-const AI = require('./ai.js').pay({
+globalize({  // for ai.js
     is_bturn: () => R.bturn,
     invalid_weight_for_white: () => {
         show_error('Invalid weights file (for white)')
@@ -156,12 +156,13 @@ const AI = require('./ai.js').pay({
     max_cached_engines: option.max_cached_engines,
     unsupported_size_handler,
 })
+const AI = require('./ai.js')
 function unsupported_size_handler() {
     if (is_pausing()) {return}
     toast('Unsupported board size by this engine.', 2 * 1000)
     pause(); stop_auto(); update_all()
 }
-const P = require('./powered_goban.js').pay({
+globalize({  // for powered_goban.js
     R, AI, on_suggest: try_auto, M: {
         // functions used in powered_goban.js
         render, show_suggest_p, is_pass,
@@ -169,6 +170,7 @@ const P = require('./powered_goban.js').pay({
         tuning_message: () => tuning_message,
     }
 })
+const P = require('./powered_goban.js')
 
 function render(given_R, is_board_changed) {
     renderer('render', given_R, is_board_changed)
