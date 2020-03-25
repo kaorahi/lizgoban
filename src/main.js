@@ -20,7 +20,7 @@ const default_path_for = name =>
       // 3. *.AppImage, *.exe, etc.
       PATH.join(app.isPackaged ? app.getAppPath() : __dirname, '..', 'external', name)
 
-const option = {
+const default_option = {
     leelaz_command: 'leelaz',
     leelaz_args: ["-g", "-w", "network.gz"],
     preset_label: {label: ''},
@@ -41,6 +41,7 @@ const option = {
     max_cached_engines: 1,
     preset: null,
 }
+let option = {}
 
 const default_config_paths = [
     default_path_for('.'), process.env.PORTABLE_EXECUTABLE_DIR,
@@ -48,6 +49,7 @@ const default_config_paths = [
 parse_argv()
 
 function parse_argv() {
+    option = default_option
     const prepended_args = dir => ['-c', PATH.resolve(dir, 'config.json')]
     const argv = [
         ...flatten(default_config_paths.filter(truep).map(prepended_args)),
@@ -552,6 +554,7 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
+        item('parse_argv', null, parse_argv),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
