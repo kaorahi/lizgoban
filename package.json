@@ -28,8 +28,7 @@
         "to": "resources/external",
         "filter": [
           "config.json",
-          "katago_gtp.cfg",
-          "katago_gtp_handicap.cfg"
+          "katago_gtp.cfg"
         ]
       },
       {

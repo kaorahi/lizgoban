@@ -18,8 +18,10 @@
             "label": "KataGo for handicap games",
             "accelerator": "F3",
             "engine": [["built-in", "katago/katago"], "gtp",
+                       "-override-config",
+                       "dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
                        "-model", ["built-in", "katanetwork.bin.gz"],
-                       "-config", ["built-in", "katago_gtp_handicap.cfg"]]
+                       "-config", ["built-in", "katago_gtp.cfg"]]
         }
     ]
 }

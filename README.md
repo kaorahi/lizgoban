@@ -155,13 +155,15 @@ In addition, LizGoban reads external/config.json (and config.json in the "workin
 
 Set KataGo like the above config.json and select it in [Preset] menu. See "KataGo" section in [Help] menu for details.
 
-For high handicap games, you have to prepare another gtp.cfg because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of gtp_handicap.cfg for KataGo v1.3.1.
+For high handicap games, you have to set `playoutDoublingAdvantage` by hand because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of config.json for KataGo v1.3.3.
 
 ~~~~
 ...
-# dynamicPlayoutDoublingAdvantageCapPerOppLead = 0.04
-...
-playoutDoublingAdvantage = 2.0
+            "engine": ["/foo/bar/katago", "gtp",
+                       "-override-config",
+                       "dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
+                       "-model", "/foo/kata_net/g104-b20c256.gz",
+                       "-config", "/foo/bar/gtp.cfg"]
 ...
 ~~~~
 
