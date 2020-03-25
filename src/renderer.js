@@ -106,7 +106,8 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 /////////////////////////////////////////////////
 // from main
 
-let latest_rendering_request = null
+const render_in_capacity = skip_too_frequent_requests(render_now)
+
 ipc.on('render', (...args) => {
     const [e, h, is_board_changed] = args
     // for smooth reaction or readable variation display
@@ -114,13 +115,7 @@ ipc.on('render', (...args) => {
     keep_selected_variation_maybe(h.suggest)
     // renderer state must be updated before update_ui is called
     merge(R, h)
-    // skip too frequent requests so that we can avoid serious lags
-    const render_latest = () => {
-        render_now(...latest_rendering_request); latest_rendering_request = null
-    }
-    const idle = !latest_rendering_request; latest_rendering_request = args
-    idle && setTimeout(render_latest)  // executed in the next event cycle
-    // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout
+    render_in_capacity(...args)
 })
 
 function render_now(e, h, is_board_changed) {
@@ -176,6 +171,16 @@ ipc.on('take_thumbnail', (e, id, stones, trial_p) => take_thumbnail(id, stones, 
 ipc.on('slide_in', (e, direction) => slide_in(direction))
 ipc.on('wink', (e) => wink())
 ipc.on('toast', (e, ...a) => toast(...a))
+
+function skip_too_frequent_requests(f) {
+    let latest_request = null
+    const do_latest = () => {f(...latest_request); latest_request = null}
+    return (...args) => {
+        const idle = !latest_request; latest_request = args
+        idle && setTimeout(do_latest)  // executed in the next event cycle
+        // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout
+    }
+}
 
 let last_title = ''
 function update_title() {
