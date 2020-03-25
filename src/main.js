@@ -1385,7 +1385,7 @@ function load_random_exercise(win) {
 }
 let seen_exercises = []
 function load_exercise(selector, win) {
-    const dir = exercise_dir(), basename = z => PATH.basename(z)
+    const dir = exercise_dir()
     const valid = name =>
           is_exercise_filename(name) && seen_exercises.indexOf(name) < 0 &&
           exercise_board_size(name) === board_size()
