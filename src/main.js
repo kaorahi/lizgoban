@@ -41,7 +41,6 @@ const default_option = {
 }
 const option = {}
 let white_preset = []
-const engine_param = {leelaz_command: null, leelaz_args: null, preset_label: {}}
 
 const default_config_paths = [
     default_path_for('.'), process.env.PORTABLE_EXECUTABLE_DIR,
@@ -191,10 +190,9 @@ app.on('ready', () => {
 app.on('window-all-closed', app.quit)
 app.on('quit', () => {store_session(); kill_all_leelaz()})
 
-function start_leelaz() {
+function start_leelaz(...args) {
     debug_log("option: " + JSON.stringify(option))
-    debug_log("engine_param: " + JSON.stringify(engine_param))
-    AI.start_leelaz(leelaz_start_args, option.endstate_leelaz)
+    AI.start_leelaz(leelaz_start_args(...args), option.endstate_leelaz)
 }
 function kill_all_leelaz() {AI.kill_all_leelaz()}
 
@@ -666,9 +664,8 @@ function expand_preset(preset) {
 
 function restart_leelaz_by_preset(rule) {
     const {leelaz_command, leelaz_args, label} = rule
-    const opts = {leelaz_command, leelaz_args, preset_label: {label: label || ''}}
     unload_leelaz_for_white(); kill_all_leelaz()
-    merge(engine_param, opts); start_leelaz()
+    start_leelaz(leelaz_command, leelaz_args, label)
 }
 
 /////////////////////////////////////////////////
@@ -1261,12 +1258,12 @@ ${log}`
 }
 
 // util
-function leelaz_start_args(weight_file) {
+function leelaz_start_args(given_leelaz_command, given_leelaz_args, label) {
     const {working_dir} = option
-    const leelaz_command = PATH.resolve(option.working_dir, engine_param.leelaz_command)
-    const leelaz_args = engine_param.leelaz_args.slice()
-    const {preset_label} = engine_param
-    const h = {leelaz_command, leelaz_args, preset_label, weight_file, working_dir,
+    const leelaz_command = PATH.resolve(option.working_dir, given_leelaz_command)
+    const leelaz_args = given_leelaz_args.slice()
+    const preset_label = {label: label || ''}
+    const h = {leelaz_command, leelaz_args, preset_label, working_dir,
                tuning_handler: make_tuning_handler(),
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['analyze_interval_centisec', 'wait_for_startup',

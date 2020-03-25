@@ -20,9 +20,9 @@ function set_handlers(h) {({suggest_handler, endstate_handler} = h)}
 /////////////////////////////////////////////////
 // leelaz
 
-function start_leelaz(leelaz_start_args, endstate_option) {
-    leelaz.start(with_handlers(leelaz_start_args()))
-    endstate_option && start_endstate(leelaz_start_args, endstate_option)
+function start_leelaz(start_args, endstate_option) {
+    leelaz.start(with_handlers(start_args))
+    endstate_option && start_endstate(start_args, endstate_option)
 }
 function update_leelaz() {leelaz.update()}
 function restart(h, new_weight_p) {
@@ -74,14 +74,14 @@ function is_gorule_supported() {return leelaz.is_supported('kata-set-rules')}
 /////////////////////////////////////////////////
 // leelaz for endstate
 
-function start_endstate(leelaz_start_args, endstate_option) {
+function start_endstate(given_start_args, endstate_option) {
     const [lz_command, x] = endstate_option, x_type = typeof x
     const weight = (x_type === 'string') && x
     const more = (x_type === 'object') ? {leelaz_args: x} : {}
-    const start_args = {...leelaz_start_args(weight), endstate_handler,
-                        leelaz_command: lz_command, ...more}
+    const start_args = {...given_start_args, weight, endstate_handler,
+                        leelaz_command: lz_command, ready_handler: do_nothing, ...more}
     leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start({...start_args, ready_handler: do_nothing})
+    leelaz_for_endstate.start(start_args)
     leelaz_for_endstate.set_pondering(false)
 }
 function support_endstate_p() {return katago_p() || !!leelaz_for_endstate}
