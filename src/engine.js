@@ -37,7 +37,7 @@ function create_leelaz () {
     const start = h => {
         arg = cook_arg(h); engine_id = hash(JSON.stringify(arg))
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
-               weight_file, working_dir,
+               weight_file, working_dir, default_board_size,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler,
                illegal_handler, tuning_handler, unsupported_size_handler}
@@ -160,9 +160,18 @@ function create_leelaz () {
     // weights file
 
     const cook_arg = h => {
-        if (!h || !h.weight_file) {return h}
+        if (!h) {return h}
+        // weight file
         const leelaz_args = h.leelaz_args.slice()
-        leelaz_args[weight_option_pos_in_leelaz_args(h)] = h.weight_file
+        h.weight_file &&
+            (leelaz_args[weight_option_pos_in_leelaz_args(h)] = h.weight_file)
+        // board size (KataGo)
+        const bsize_pattern = /defaultBoardSize=[0-9]+/
+        const bsize_replaced = `defaultBoardSize=${h.default_board_size}`
+        const bsize_pos = leelaz_args.findIndex(v => v.match(bsize_pattern))
+        h.default_board_size && bsize_pos >= 0 &&
+            (leelaz_args[bsize_pos] =
+             leelaz_args[bsize_pos].replace(bsize_pattern, bsize_replaced))
         return {...h, leelaz_args}
     }
     const start_args_equal = h => {

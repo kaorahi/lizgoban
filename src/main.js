@@ -1286,8 +1286,8 @@ function leelaz_start_args(given_leelaz_command, given_leelaz_args, label) {
     opts.forEach(key => h[key] = option[key])
     return {...h, ...leelaz_start_args_for_board_size(board_size())}
 }
-function leelaz_start_args_for_board_size(given_board_size) {
-    return {dummy_field_for_cheating_engine_cache: given_board_size}
+function leelaz_start_args_for_board_size(default_board_size) {
+    return {default_board_size}
 }
 let tuning_message
 function on_ready(update_only_p) {

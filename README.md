@@ -167,11 +167,27 @@ For high handicap games, you have to set `playoutDoublingAdvantage` by hand beca
 ...
 ~~~~
 
+After KataGo v1.3.4, you can add `defaultBoardSize=19` into you config.json to shorten the initialization of 9x9 and 13x13. ("=19" is ok. It is replaced with 9 or 13 inside LizGoban automatically.)
+
+~~~~
+            "engine": ["/foo/bar/katago", "gtp",
+                       "-override-config", "defaultBoardSize=19",
+                       "-model", "/foo/kata_net/g104-b20c256.gz",
+                       "-config", "/foo/bar/gtp.cfg"]
+~~~
+
+They can be combined as follows.
+
+~~~
+                       "-override-config",
+                       "defaultBoardSize=19, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
+~~~
+
 ## Major changes
 
 ### from 0.3.*
 
-* Support 9x9 and 13x13 in "File" menu.
+* Support 9x9 and 13x13 in "File" menu. (See the above KataGo section to shorten their initialization.)
 * Add "Rule" into "Edit" menu for KataGo v1.3.
 * Add indicators that suggest highlight scenes of the game (big kills, ko fights, etc.).
 * Separate estimations by different engines in winrate graph.
