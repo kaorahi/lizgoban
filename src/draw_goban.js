@@ -430,13 +430,13 @@ function draw_shadow_maybe(h, [x, y], radius, g) {
     if (!h.stone) {return}
     const {stone_image} = stone_color_and_image(h); if (!stone_image) {return}
     const f = (mag, alpha, shift_p) => {
-        const dr = radius * mag, r_in = radius - dr, r_out = radius + dr * 3
+        const dr = radius * mag, r_in = radius - dr, r_out = radius + dr
         const color = `rgba(0,0,0,${alpha})`
         const [cx, cy] = shift_p ? [x + dr, y + dr] : [x, y]
         g.fillStyle = radial_gradation(cx, cy, r_in, r_out, color, TRANSPARENT, g)
         fill_circle([cx, cy], r_out, g)
     }
-    f(0.1, 0.3, true)
+    f(0.3, 0.2, false); f(0.15, 0.2, true)
 }
 
 // suggestions
