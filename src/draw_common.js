@@ -75,6 +75,10 @@ function x_shape_around([x, y], radius, g) {
     line([x - radius, y + radius], [x + radius, y - radius], g)
 }
 
+function draw_square_image(img, [x, y], radius, g) {
+    g.drawImage(img, x - radius, y - radius, radius * 2, radius * 2)
+}
+
 // ref.
 // https://github.com/kaorahi/lizgoban/issues/30
 // https://stackoverflow.com/questions/53958949/createjs-canvas-text-position-changed-after-chrome-version-upgrade-from-70-to-71
@@ -160,7 +164,7 @@ module.exports = {
     square_around, fill_square_around, edged_fill_square_around,
     triangle_around, fill_triangle_around, edged_fill_triangle_around,
     rev_triangle_around, fill_rev_triangle_around, edged_fill_rev_triangle_around,
-    x_shape_around,
+    x_shape_around, draw_square_image,
     fill_text, fill_text_with_modifier, set_font,
     side_gradation, hsla,
     // math

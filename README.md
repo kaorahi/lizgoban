@@ -183,6 +183,10 @@ They can be combined as follows.
                        "defaultBoardSize=19, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
 ~~~
 
+#### To replace images of board and stones (Experimental)
+
+Put your favorite images of board and stones as `external/board.png`, `external/black.png`, and `external/white.png` (before starting LizGoban).
+
 ## Major changes
 
 ### from 0.3.*
@@ -200,6 +204,7 @@ They can be combined as follows.
 * Show coordinates by "c" key.
 * Show start-up log when engine is down.
 * Fix blur in HiDPI display.
+* Experimentally support images of board and stones.
 
 Incompatibilities:
 

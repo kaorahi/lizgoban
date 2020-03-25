@@ -172,6 +172,13 @@ function show_error(message) {
     dialog.showMessageBox({type: "error", buttons: ["OK"], message})
 }
 
+// images
+const image_paths = [
+    ['black_stone', 'black.png'],
+    ['white_stone', 'white.png'],
+    ['board', 'board.png'],
+].map(([key, name]) => [key, PATH.resolve(option.working_dir, name)]).filter(([key, path]) => fs.existsSync(path))
+
 // sabaki
 let attached = false, has_sabaki = true
 fs.access(option.sabaki_command, null,
@@ -1171,7 +1178,8 @@ function update_state(keep_suggest_p) {
     const {player_black, player_white, trial} = game
     P.set_and_render({
         history_length, sequence_cursor, sequence_length, attached,
-        player_black, player_white, trial, sequence_ids, sequence_props, history_tags
+        player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
+        image_paths,
     }, keep_suggest_p ? {} : {suggest: []})
 }
 

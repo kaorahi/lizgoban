@@ -149,13 +149,8 @@ function draw_goban(canvas, stones, opts) {
     const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
     const large_font_p = !main_canvas_p
     const font_unit = Math.min(margin, canvas.height / 20)
-    // clear
-    g.strokeStyle = BLACK; g.fillStyle = goban_bg(pausing_p, trial_p, true)
-    g.lineWidth = 1
-    edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
-    g.fillStyle = goban_bg(pausing_p, trial_p)
-    fill_rect([hm, hm], [canvas.width - hm, canvas.height - hm], g)
     // draw
+    draw_board(hm, pausing_p, trial_p, canvas, g)
     draw_grid(unit, idx2coord, g)
     draw_coordinates_p && draw_coordinates(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
@@ -174,6 +169,27 @@ function draw_goban(canvas, stones, opts) {
     // mouse events
     const mouse_handler = handle_mouse_on_goban || do_nothing
     mouse_handler(canvas, coord2idx, read_only, tag_clickable_p)
+}
+
+function draw_board(hm, pausing_p, trial_p, canvas, g) {
+    const {width, height} = canvas, image_p = !!(R.image || {}).board
+    image_p ? draw_board_by_image(width, height, hm, pausing_p, trial_p, g) :
+        draw_board_by_paint(width, height, hm, pausing_p, trial_p, g)
+}
+
+function draw_board_by_image(w, h, hm, pausing_p, trial_p, g) {
+    g.drawImage(R.image.board, 0, 0, w, h)
+    g.strokeStyle = g.fillStyle = 'rgba(0,0,0,0.3)'; g.lineWidth = 2 * hm
+    pausing_p && fill_rect([0, 0], [w, h], g)
+    trial_p && rect([0, 0], [w, h], g)  // draw border
+}
+
+function draw_board_by_paint(w, h, hm, pausing_p, trial_p, g) {
+    g.strokeStyle = BLACK; g.fillStyle = goban_bg(pausing_p, trial_p, true)
+    g.lineWidth = 1
+    edged_fill_rect([0, 0], [w, h], g)
+    g.fillStyle = goban_bg(pausing_p, trial_p)
+    fill_rect([hm, hm], [w - hm, h - hm], g)
 }
 
 function draw_grid(unit, idx2coord, g) {
@@ -339,10 +355,16 @@ function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
            h.maybe_empty ? [PALE_BLACK, PALE_WHITE] :
            h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
            [BLACK, WHITE])
+    const normal_stone_p = (b_color === BLACK)
     const hide_loss_p = h.suggest || h.future_stone
-    g.lineWidth = 1; g.strokeStyle = b_color
-    g.fillStyle = h.black ? b_color : w_color
-    edged_fill_circle(xy, radius, g)
+    const stone_image = h.black ? R.image.black_stone : R.image.white_stone
+    if (stone_image && normal_stone_p) {
+        draw_square_image(stone_image, xy, radius, g)
+    } else {
+        g.lineWidth = 1; g.strokeStyle = b_color
+        g.fillStyle = h.black ? b_color : w_color
+        edged_fill_circle(xy, radius, g)
+    }
     draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
     draw_last_p && h.last && h.move_count > R.handicaps &&
         draw_last_move(h, xy, radius, g)

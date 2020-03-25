@@ -35,6 +35,7 @@ const R = {
     history_tags: [], endstate_clusters: [], prev_endstate_clusters: null,
     lizzie_style: false,
     window_id: -1,
+    image_paths: null, image: null,
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null
@@ -115,6 +116,7 @@ ipc.on('render', (...args) => {
     keep_selected_variation_maybe(h.suggest)
     // renderer state must be updated before update_ui is called
     merge(R, h)
+    initialize_image_maybe()
     render_in_capacity(...args)
 })
 
@@ -181,6 +183,12 @@ function skip_too_frequent_requests(f) {
         idle && setTimeout(do_latest)  // executed in the next event cycle
         // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout
     }
+}
+
+function initialize_image_maybe() {
+    !image && R.image_paths && (R.image = aa2hash(R.image_paths.map(([key, path]) => {
+        const img = new Image(); img.src = path; return [key, img]
+    })))
 }
 
 let last_title = ''
