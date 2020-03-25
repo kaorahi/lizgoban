@@ -7,10 +7,10 @@ function get_stones_and_set_ko_fight(history) {
     return stones
 }
 
-function put(h, stones, last) {
+function put(h, stones, lastp) {
     const {move, is_black} = h
     const [i, j] = move2idx(move), pass = (i < 0); if (pass) {return}
-    aa_set(stones, i, j, {stone: true, black: is_black, ...(last ? {last} : {})})
+    aa_set(stones, i, j, {stone: true, black: is_black, ...(lastp ? {last: true} : {})})
     const ko_fight = remove_dead_by([i, j], is_black, stones)
     merge(h, {ko_fight})  // side effect!
 }
