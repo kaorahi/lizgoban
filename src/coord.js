@@ -80,15 +80,18 @@ function uv2coord_translator_pair(canvas, u_min_max, v_min_max, xmargin, ymargin
 /////////////////////////////////////////////////
 // sgfpos (<=> idx) <=> move
 
+// https://www.red-bean.com/sgf/go.html
+// A pass move is shown as '[]' or alternatively as '[tt]' (only for boards <= 19x19)
+
 const sgfpos_name = "abcdefghijklmnopqrs"
-const sgfpos_pass = "tt"
+const sgfpos_pass = "tt", sgfpos_pass_FF4 = ""
 
 function idx2sgfpos(i, j) {
     return sgfpos_name[j] + sgfpos_name[i]
 }
 
 function sgfpos2idx(pos) {
-    if (pos === sgfpos_pass) {return idx_pass}
+    if (pos === sgfpos_pass || pos === sgfpos_pass_FF4) {return idx_pass}
     const [j, i] = pos.split('').map(c => sgfpos_name.indexOf(c))
     return [i, j]
 }
