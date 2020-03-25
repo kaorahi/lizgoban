@@ -1,12 +1,14 @@
 Note on design:
 
-We try to avoid a confirmation dialog for any action and enable "undo"
-of it instead.  UI is kept modeless as far as possible.  See "humane
+We try to avoid confirmation dialogs for any actions and enable "undo"
+of them instead.  UI is kept modeless as far as possible.  See "humane
 interface" for these points
 (https://en.wikipedia.org/wiki/The_Humane_Interface).
 
 Preferences are also kept as small as possible because they make
-debugging difficult.
+user-support difficult.  They also cause bugs that appear only in
+specific preferences and such bugs are often overlooked by the
+developers.
 
 Note on implementation:
 
@@ -14,6 +16,10 @@ Leelaz is wrapped as if it is a stateless analyzer for convenience.
 The wrapped leelaz receives the history of moves from the beginning to
 the current board state for every analysis.  Only the difference from
 the previous call is sent to leelaz internally for efficiency.
+
+Handicap stones are treated as usual moves internally and the move
+number is shifted only on the display.  We dare to do this from the
+experience of repeated bugs on handicap games in Lizzie.
 
 Endstate estimation (by ihavnoid's version) tends to oscillate between
 black and white turns.  So we use the average of recent two moves for
