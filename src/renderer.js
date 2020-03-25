@@ -237,7 +237,7 @@ const draw_past_endstate_value =
 function draw_wr_graph(canvas) {
     const endstate_at = showing_endstate_value_p() && R.prev_endstate_clusters &&
           (R.move_count - R.endstate_diff_interval)
-    const until = showing_until() || endstate_at
+    const u = showing_until(), until = truep(u) ? u : endstate_at
     D.draw_winrate_graph(canvas, until, handle_mouse_on_winrate_graph)
 }
 
@@ -436,7 +436,7 @@ function set_hovered_move_count(move) {
     set_hovered_move_count_as(count)
 }
 function set_hovered_move_count_as(count) {
-    hovered_move_count = truep(count) && clip(count, 1, R.history_length)
+    hovered_move_count = truep(count) && clip(count, 0, R.history_length)
     update_showing_until()
 }
 
@@ -807,7 +807,8 @@ function set_showing_endstate_value_p(val) {
     the_showing_endstate_value_p = val; set_showing_something_p(val)
 }
 function showing_until(canvas) {
-    const hovered_mc = (hovered_move_count || R.move_count || Infinity)
+    const hovered_mc = truep(hovered_move_count) ? hovered_move_count :
+          (R.move_count || Infinity)
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||
           (by_hover && showing_something_p() && hovered_mc)
