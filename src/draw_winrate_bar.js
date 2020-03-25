@@ -277,10 +277,11 @@ const winrate_trail_engine_checker = change_detector()
 let winrate_trail = {}, winrate_trail_move_count = 0, winrate_trail_visits = 0
 
 function update_winrate_trail() {
+    if (!truep(R.visits)) {return}
     const total_visits_increase = R.visits - winrate_trail_visits;
     // check visits for detecting restart of leelaz
     (winrate_trail_move_count !== R.move_count ||
-     (R.visits && winrate_trail_visits > R.visits) ||
+     winrate_trail_visits > R.visits ||
      (R.engine_id && winrate_trail_engine_checker.is_changed(R.engine_id))) &&
         (winrate_trail = {});
     [winrate_trail_move_count, winrate_trail_visits] = [R.move_count, R.visits]
