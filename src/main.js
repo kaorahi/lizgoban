@@ -10,7 +10,8 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 // npx electron . -j '{"leelaz_args": ["-g", "-w", "/foo/bar/network.gz"]}'
 // npx electron . -c /foo/bar/config.json
 
-require('./common.js').to(global)
+const {globalize} = require('./globalize.js')
+globalize(require('./util.js'), require('./coord.js'))
 const PATH = require('path'), fs = require('fs')
 const http = require('http'), https = require('https')
 const default_path_for = name =>

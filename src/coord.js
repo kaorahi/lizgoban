@@ -5,8 +5,6 @@
 // move: "A19" = left top, "T19" = right top
 // sgfpos: "aa" = left top, "sa" = right top
 
-Object.assign(global, require('./util.js'))
-
 /////////////////////////////////////////////////
 // board_size
 

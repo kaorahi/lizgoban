@@ -6,7 +6,8 @@
 // util
 function Q(x) {return document.querySelector(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
-require('./common.js').to(global)
+const {globalize} = require('./globalize.js')
+globalize(require('./util.js'), require('./coord.js'))
 const current_window = electron.remote.getCurrentWindow()
 const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
 

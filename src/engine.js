@@ -1,4 +1,3 @@
-require('./common.js').to(global)
 const CRYPTO = require('crypto')
 
 function create_leelaz () {

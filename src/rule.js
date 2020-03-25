@@ -1,5 +1,3 @@
-require('./common.js').to(global)
-
 // illegal moves are not checked (ko, suicide, occupied place, ...)
 
 function get_stones_and_set_ko_fight(history) {

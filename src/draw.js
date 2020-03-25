@@ -3,8 +3,6 @@
 /////////////////////////////////////////////////
 // setup
 
-require('./common.js').to(global)
-
 // color constant
 const BLACK = "#000", WHITE = "#fff"
 const GRAY = "#ccc", DARK_GRAY = "#444"

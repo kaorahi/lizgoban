@@ -1,4 +1,3 @@
-require('./common.js').to(global)
 const {get_stones_and_set_ko_fight} = require('./rule.js')
 const TRANSFORM = require('./random_flip.js')
 const SGF = require('@sabaki/sgf')

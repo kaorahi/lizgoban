@@ -1,5 +1,3 @@
-require('./common.js').to(global)
-
 // frontend
 
 function random_flip_rotation(history) {

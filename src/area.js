@@ -2,8 +2,6 @@
 
 // fix me: inefficient...
 
-require('./common.js').to(global)
-
 const minor_ownership = 0.1
 const too_large_cluster_size = 40
 const narrow_corridor_radius = 3
