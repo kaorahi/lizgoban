@@ -695,6 +695,8 @@ function set_cut_button_position() {
 /////////////////////////////////////////////////
 // keyboard control
 
+const with_skip = skip_too_frequent_requests((proc, ...a) => proc(...a))
+
 document.onkeydown = e => {
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
@@ -713,14 +715,15 @@ document.onkeydown = e => {
     }
     // GROUP 2: allow auto-repeat
     const busy = (...a) => m('busy', ...a)  // stop analysis in auto-repeat
+    const skip_maybe = (...a) => e.repeat ? with_skip(busy, ...a) : busy(...a)
     switch (!R.attached && key) {
     case "ArrowLeft": case "ArrowUp":
         busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
     case "ArrowRight": case "ArrowDown":
         busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
     case ";": busy('let_me_think_next', R.board_type); break;
-    case "[": busy('previous_sequence'); break;
-    case "]": busy('next_sequence'); break;
+    case "[": skip_maybe('previous_sequence'); break;
+    case "]": skip_maybe('next_sequence'); break;
     }
     if (e.repeat) {return}
     // GROUP 3: usable with sabaki
@@ -778,6 +781,7 @@ document.onkeyup = e => {
     case "v" : set_showing_endstate_value_p(false); return
     case "z": case "x": set_temporary_board_type(null); return
     }
+    with_skip(do_nothing)  // cancel deferred proc (necessary!)
     main('unset_busy')
 }
 
