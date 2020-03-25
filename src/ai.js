@@ -35,6 +35,7 @@ function restart(h, new_weight_p) {
 function set_board(hist, komi, gorule, ownership_p) {
     each_leelaz(z => z.set_board(hist, komi, gorule, ownership_p), katago_p())
 }
+function cancel_past_requests() {each_leelaz(z => z.clear_leelaz_board())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 let prev_pondering
 function set_pondering(pausing, busy) {
@@ -243,7 +244,7 @@ const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi', 'is_su
 
 module.exports = {
     // main.js only
-    set_board,
+    set_board, cancel_past_requests,
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_weight_file,

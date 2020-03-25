@@ -190,6 +190,7 @@ function create_leelaz () {
         endstate_command_p(task) && remove(endstate_command_p)
         // obsolete endstate / peek
         changer_command_p(task) && [endstate_command_p, peek_command_p].forEach(remove)
+        clear_command_p(task) && remove(changer_command_p)
         command_queue.push(task); send_from_queue()
     }
 
@@ -233,6 +234,7 @@ function create_leelaz () {
     const endstate_command_p = command_matcher(/^endstate_map/)
     const peek_command_p = command_matcher(/play.*undo/)
     const changer_command_p = command_matcher(/play|undo|clear_board/)
+    const clear_command_p = command_matcher(/clear_board/)
     const dummy_command_p = command_matcher(/lizgoban/)
 
     /////////////////////////////////////////////////
@@ -365,7 +367,7 @@ function create_leelaz () {
     return {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
-        is_supported,
+        is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: () => engine_id,
         // for debug
         send_to_leelaz,

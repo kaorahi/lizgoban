@@ -1100,7 +1100,10 @@ function replace_sequence(new_game) {
     autosave_later()
 }
 
-function switch_to_nth_sequence(n) {game = sequence[sequence_cursor = n]}
+function switch_to_nth_sequence(n) {
+    AI.cancel_past_requests()  // avoid hang-up caused by fast repeated operations
+    game = sequence[sequence_cursor = n]
+}
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
 
