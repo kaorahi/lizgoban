@@ -198,8 +198,8 @@ function draw_winrate_graph_score_loss(sr2coord, g) {
     const worst = Math.max(...R.winrate_history.map(h => h.cumulative_score_loss)
                            .map(csl => csl ? Math.max(csl['b'], csl['w']) : - Infinity))
           + offset
-    const scale =
-          (worst <= 100) ? 1 : (worst <= 200) ? 0.5 : (worst <= 500) ? 0.2 : 0.1
+    const ks = [1, 2, 5, 10, 20, 50, 100], range = 100 - offset
+    const scale = 1 / (ks.find(k => worst <= k * range) || last(ks))
     const to_r = loss => 100 - offset - loss * scale
     const to_step = ([x, y], k, a) => {
         const [x0, y0] = a[k - 1] || [x, y]; return [[x, y0], [x, y]]
