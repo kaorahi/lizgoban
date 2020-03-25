@@ -480,11 +480,11 @@ function take_thumbnail(given_id, given_stones, given_trial_p) {
     const id = truep(given_id) ? given_id : current_sequence_id()
     const stones = given_stones || R.stones
     const trial_p = (given_trial_p === undefined) ? R.trial : given_trial_p
-    take_shumbnail_of_stones(stones, url => store_thumbnail(id, url), trial_p)
+    take_thumbnail_of_stones(stones, url => store_thumbnail(id, url), trial_p)
 }
 
 let reusable_canvas = null
-function take_shumbnail_of_stones(stones, proc, trail_p) {
+function take_thumbnail_of_stones(stones, proc, trail_p) {
     // remember that main_canvas can be rectangular by "x" key
     const [size, _] = get_canvas_size(main_canvas)
     const canvas = reusable_canvas || document.createElement("canvas")
