@@ -146,7 +146,8 @@ function engine_info() {
         const weight_file = lz.get_weight_file()
         const {label, modified_p} = preset_label || {}
         const preset_label_text = `${label || ''}` +
-              (modified_p ? `{${PATH.basename(weight_file || '')}}` : '')
+              (modified_p ?
+               `{${snip_text(PATH.basename(weight_file || ''), 20, 5, '..')}}` : '')
         return {leelaz_command, leelaz_args, is_ready: lz.is_ready(), preset_label_text,
                 weight_file, network_size: lz.network_size()}
     }
