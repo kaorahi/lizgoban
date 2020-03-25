@@ -1277,7 +1277,8 @@ function leelaz_start_args(weight_file) {
     return h
 }
 let tuning_message
-function on_ready() {
+function on_ready(update_only_p) {
+    if (update_only_p) {update_all(); return}
     // fixme: on_ready is called by *every* leelaz
     // (leelaz_for_black and leelaz_for_white).
     // This interferes starting-up sequence of another leelaz in engine.js.

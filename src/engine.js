@@ -125,7 +125,8 @@ function create_leelaz () {
     const change_board_size = (new_size, on_response) => {
         const bsize = board_size(); if (bsize === old_board_size) {return}
         const ng = () => {arg.unsupported_size_handler(); old_board_size = null}
-        leelaz(`boardsize ${bsize}`, ok => !ok && ng()); old_board_size = bsize
+        const f = ok => {is_ready = true; ok || ng(); arg.ready_handler(true)}
+        is_ready = false; leelaz(`boardsize ${bsize}`, f); old_board_size = bsize
     }
 
     // util
