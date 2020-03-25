@@ -78,9 +78,18 @@ function auto_analysis_visits_setting () {
     return to_i(Q('#auto_analysis_visits').value)
 }
 
-function start_auto_play() {
-    main('auto_play', to_f(Q('#auto_play_sec').value)); hide_dialog()
+let on_generic_input_dialog_submit = do_nothing
+function show_generic_input_dialog(label, init_val, submit) {
+    on_generic_input_dialog_submit = submit
+    Q('#generic_input_dialog_label').innerText = label
+    init_val && (Q('#generic_input_dialog_input').value = to_s(init_val))
+    show_dialog('#generic_input_dialog')
 }
+function submit_generic_input_dialog() {
+    on_generic_input_dialog_submit(to_f(Q('#generic_input_dialog_input').value))
+    hide_dialog()
+}
+
 function set_game_info() {
     const keys = ['#player_black', '#player_white', '#komi',
                   '#sgf_rule', '#rule', '#comment_form']
@@ -144,7 +153,9 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     try_thumbnail()
 })
 
-ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog'))
+ipc.on('generic_input_dialog', (e, label, init_val, channel) =>
+       show_generic_input_dialog(label, init_val, val => main(channel, val)))
+
 ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules, asking_komi_p) => {
     // defaults
     Q('#player_black').value = R.player_black
@@ -715,7 +726,7 @@ document.onkeydown = e => {
     escape && hide_dialog()
     switch (key === "Enter" && target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
-    case "auto_play_sec": start_auto_play(); return
+    case "generic_input_dialog_input": submit_generic_input_dialog(); return
     case "player_black": case "player_white": case "komi": case "sgf_rule":
         set_game_info(); return
     }

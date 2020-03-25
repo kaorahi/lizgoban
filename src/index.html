@@ -192,11 +192,13 @@
 <canvas id="graph_overlay"></canvas>
 <canvas id="zone_chart_canvas"></canvas>
 
-<div class='dialog' id='auto_play_sec_dialog'>
+<div class='dialog' id='generic_input_dialog'>
  <p>
-  Auto play seconds:
-  <input type='number' id='auto_play_sec' value='1' min='1' style='width: 4em'>
-  <input type='button' onclick="start_auto_play()" value=" ok ">
+  <span id='generic_input_dialog_label'></span>
+  <input type='number' id='generic_input_dialog_input' value='1' min='1' style='width: 4em'>
+  <input type='button' onclick="submit_generic_input_dialog()" value=" ok ">
+  <!-- <input type='number' id='auto_play_sec' value='1' min='1' style='width: 4em'> -->
+  <!-- <input type='button' onclick="start_auto_play()" value=" ok "> -->
   <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
  </p>
 </div>

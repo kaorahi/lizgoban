@@ -745,8 +745,9 @@ function rewind_maybe() {
 stop_auto_analyze()
 
 // auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
-let last_auto_play_time = 0
+let last_auto_play_time = 0, default_auto_play_sec = 1
 function auto_play(sec, explicitly_playing_best) {
+    sec && (default_auto_play_sec = sec)
     explicitly_playing_best ? (auto_replaying = false) : (auto_play_count = Infinity)
     auto_replaying && rewind_maybe()
     auto_play_sec = sec || -1; stop_auto_analyze()
@@ -772,7 +773,8 @@ function auto_play_progress() {
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000) : -1
 }
 function ask_auto_play_sec(win, replaying) {
-    auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
+    auto_replaying = replaying
+    generic_input_dialog(win, 'Auto play seconds:', default_auto_play_sec, 'auto_play')
 }
 function ask_game_info(win, asking_komi_p) {
     const supported_rules = AI.is_gorule_supported() && katago_supported_rules
@@ -979,6 +981,10 @@ function set_board() {
     bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
     AI.set_board(P.set_board(game), game.get_komi(), get_gorule(), R.show_endstate)
     AI.switch_leelaz(); update_let_me_think(true)
+}
+
+function generic_input_dialog(win, label, init_val, channel) {
+    win.webContents.send('generic_input_dialog', label, init_val, channel)
 }
 
 function wink_if_pass(proc, ...args) {
