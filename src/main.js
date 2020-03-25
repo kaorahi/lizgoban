@@ -22,9 +22,6 @@ const default_path_for = name =>
       PATH.join(app.isPackaged ? app.getAppPath() : __dirname, '..', 'external', name)
 
 const default_option = {
-    leelaz_command: null,  // obsolete
-    leelaz_args: null,  // obsolete
-    preset_label: null,  // obsolete
     analyze_interval_centisec: 20,
     minimum_suggested_moves: 30,
     engine_log_line_length: 500,
@@ -44,6 +41,7 @@ const default_option = {
 }
 const option = {}
 let white_preset = []
+const engine_param = {leelaz_command: null, leelaz_args: null, preset_label: {}}
 
 const default_config_paths = [
     default_path_for('.'), process.env.PORTABLE_EXECUTABLE_DIR,
@@ -65,15 +63,14 @@ function parse_option(cur, succ) {
     const merge_with_preset = orig => {
         // accept obsolete key "shortcut" for backward compatibility
         orig.shortcut && (orig.preset = [...(orig.preset || []), ...orig.shortcut])
-        merge(option, orig); merge(option, from_preset(option))
+        merge(option, orig); from_preset(option)
         update_white_preset(option.preset)
     }
     const from_preset = orig => {
-        const preset = orig.preset; if (!preset) {return {}}
+        const preset = orig.preset; if (!preset) {return}
         expand_preset(preset)
-        const p0 = preset[0], from_first_preset = {...p0, preset_label: {label: p0.label}}
-        const keys = ['leelaz_command', 'leelaz_args', 'preset_label']
-        return aa2hash(keys.map(k => [k, from_first_preset[k] || orig[k]]))
+        const {leelaz_command, leelaz_args, label} = preset[0]
+        merge(engine_param, {leelaz_command, leelaz_args, preset_label: {label}})
     }
     const update_white_preset = preset => {
         const new_white_preset = (preset || []).map(h => {
@@ -199,6 +196,7 @@ app.on('quit', () => {store_session(); kill_all_leelaz()})
 
 function start_leelaz() {
     debug_log("option: " + JSON.stringify(option))
+    debug_log("engine_param: " + JSON.stringify(engine_param))
     AI.start_leelaz(leelaz_start_args, option.endstate_leelaz)
 }
 function kill_all_leelaz() {AI.kill_all_leelaz()}
@@ -673,7 +671,7 @@ function expand_preset(preset) {
 
 function merge_option_and_restart(opts) {
     unload_leelaz_for_white(); kill_all_leelaz()
-    merge(option, opts); start_leelaz()
+    merge(engine_param, opts); start_leelaz()
 }
 
 /////////////////////////////////////////////////
@@ -1268,13 +1266,14 @@ ${log}`
 // util
 function leelaz_start_args(weight_file) {
     const {working_dir} = option
-    const leelaz_command = option_path('leelaz_command')
-    const leelaz_args = option.leelaz_args.slice()
-    const h = {leelaz_command, leelaz_args, weight_file, working_dir,
+    const leelaz_command = PATH.resolve(option.working_dir, engine_param.leelaz_command)
+    const leelaz_args = engine_param.leelaz_args.slice()
+    const {preset_label} = engine_param
+    const h = {leelaz_command, leelaz_args, preset_label, weight_file, working_dir,
                tuning_handler: make_tuning_handler(),
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['analyze_interval_centisec', 'wait_for_startup',
-                  'minimum_suggested_moves', 'engine_log_line_length', 'preset_label']
+                  'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])
     return {...h, ...leelaz_start_args_for_board_size(board_size())}
 }
