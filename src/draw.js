@@ -951,7 +951,7 @@ const zone_indicator_height_percent = 3
 
 function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    const xmargin = w * 0.02, fontsize = to_i(w * 0.04)
+    const xmargin = w * 0.04, fontsize = to_i(w * 0.04)
     const smin = R.handicaps, smax = Math.max(R.history_length, smin + 1)
     const rmin = - zone_indicator_height_percent
     // s = move_count, r = winrate
@@ -1078,7 +1078,7 @@ function score_drawer(w, sr2coord, g) {
     const max_score = Math.max(...scores.filter(truep).map(Math.abs))
     if (max_score === - Infinity) {return do_nothing}
     const color = alpha => `rgba(235,148,0,${alpha})`
-    const scale = max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
+    const scale = max_score < 20 ? 2 : max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
     const to_r = score => 50 + score * scale
     const draw_komi = () => {
         const [dummy, ky] = sr2coord(R.move_count, to_r(R.komi))
@@ -1094,6 +1094,8 @@ function score_drawer(w, sr2coord, g) {
         fill_circle([x, y], radius, g)
     }
     const draw_score = () => {
+        const at_r = [50, 60, 70], to_score = r => (r - 50) / scale
+        draw_winrate_graph_scale(at_r, to_score, color(0.6), sr2coord, g)
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
     }
     return command => ({score: draw_score, komi: draw_komi})[command]()
@@ -1155,6 +1157,8 @@ function draw_winrate_graph_score_loss(sr2coord, g) {
               sr2coord(s, to_r(cumulative_score_loss[key])) : [NaN, NaN]
         line(...flatten(R.winrate_history.map(to_xy).map(to_step)), g)
     })
+    const at_r = [90, 80], to_loss = r => (100 - offset - r) / scale
+    draw_winrate_graph_scale(at_r, to_loss, style.w, sr2coord, g)
 }
 
 function draw_winrate_graph_zone(sr2coord, g) {
@@ -1164,6 +1168,22 @@ function draw_winrate_graph_zone(sr2coord, g) {
         g.fillStyle = zone_color_for_move(z.move)
         fill_rect(sr2coord(s - half, 0), sr2coord(s + half, rmin), g)
     })
+}
+
+function draw_winrate_graph_scale(at_r, r2val, color, sr2coord, g) {
+    const unit_r = 10, s0 = clip_handicaps(0)
+    const [x0, y0] = sr2coord(s0, 0), [_, y1] = sr2coord(s0, unit_r)
+    const maxwidth = x0 * 0.8, fontsize = Math.min((y0 - y1) * 0.9, maxwidth)
+    const to_xy = r => [maxwidth, sr2coord(s0, r)[1]]
+    const to_text = r => to_s(Math.round(r2val(r)))
+    const draw_at = r => {
+        const text = to_text(r), maxw = text.length === 1 ? maxwidth / 2 : maxwidth
+        fill_text(g, fontsize, text, ...to_xy(r), maxw)
+    }
+    g.save()
+    g.textAlign = 'right'; g.textBaseline = 'middle'; g.fillStyle = color
+    at_r.forEach(draw_at)
+    g.restore()
 }
 
 function draw_winrate_graph_history(ary, to_r, plotter, sr2coord, g) {
