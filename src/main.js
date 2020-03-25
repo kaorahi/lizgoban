@@ -554,7 +554,6 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
-        item('parse_argv', null, parse_argv),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
