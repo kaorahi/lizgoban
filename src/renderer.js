@@ -132,6 +132,7 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     R.auto_analyzing = availability.stop_auto
     merge(R, win_prop)
     set_all_canvas_size()
+    if (R.busy) {return}
     ui_only || update_goban()
     update_body_color()
     update_button_etc(availability)
