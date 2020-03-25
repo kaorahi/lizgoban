@@ -158,7 +158,7 @@ globalize({  // for powered_goban.js
     R, AI, on_suggest: try_auto, M: {
         // functions used in powered_goban.js
         render, show_suggest_p, is_pass,
-        auto_progress, is_busy, is_pausing, is_bogoterritory,
+        auto_progress, is_busy, is_long_busy, is_pausing, is_bogoterritory,
         tuning_message: () => tuning_message,
     }
 })
@@ -953,12 +953,20 @@ function tag_or_untag() {
 /////////////////////////////////////////////////
 // utils for actions
 
+let long_busy = false
+const [set_long_busy_later, unset_long_busy] =
+      deferred_procs([() => {long_busy = true}, 1000], [() => {long_busy = false}, 0])
+function is_long_busy() {return long_busy}
+
 function undoable() {return game.move_count > game.handicaps}
 function redoable() {return game.len() > game.move_count}
 function pause() {pausing = true}
 function resume() {pausing = false}
 function toggle_pause() {pausing = !pausing}
-function set_or_unset_busy(bool) {busy = bool}
+function set_or_unset_busy(bool) {
+    xor(bool, busy) && (bool ? set_long_busy_later() : unset_long_busy())
+    busy = bool
+}
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
 function update_ponder() {

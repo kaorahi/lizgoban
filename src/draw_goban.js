@@ -436,11 +436,16 @@ function draw_loss(h, xy, radius, g) {
     draw(xy, radius * size - line_width, g)
 }
 
-function draw_shadow_maybe(h, [x, y], radius, g) {
+function draw_shadow_maybe(h, xy, radius, g) {
     if (!h.stone) {return}
     const {stone_image, style} = stone_style_for(h)
     const shadow_p = stone_image || (style && style !== 'paint')
     if (!shadow_p) {return}
+    R.long_busy ? draw_cheap_shadow(xy, radius, g) :
+        draw_gorgeous_shadow(xy, radius, g)
+}
+
+function draw_gorgeous_shadow([x, y], radius, g) {
     const f = (mag, alpha, shift_p) => {
         const dr = radius * mag, r_in = radius - dr, r_out = radius + dr
         const color = `rgba(0,0,0,${alpha})`
@@ -449,6 +454,11 @@ function draw_shadow_maybe(h, [x, y], radius, g) {
         fill_circle([cx, cy], r_out, g)
     }
     f(0.3, 0.2, false); f(0.15, 0.2, true)
+}
+
+function draw_cheap_shadow([x, y], radius, g) {
+    g.strokeStyle = 'rgba(0,0,0,0.1)'; g.lineWidth = radius * 0.2
+    circle([x, y], radius, g)
 }
 
 // suggestions
