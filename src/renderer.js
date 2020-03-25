@@ -87,8 +87,8 @@ function set_game_info() {
     main('set_game_info', pb, pw, komi, sgf_rule, rule, comment); hide_dialog()
 }
 
-function show_dialog(name) {
-    Q(name).style.visibility = "visible"; Q(`${name} input`).select()
+function show_dialog(name, selected) {
+    Q(name).style.visibility = "visible"; Q(`${name} ${selected || "input"}`).select()
 }
 function hide_dialog() {
     document.querySelectorAll(".dialog").forEach(d => d.style.visibility = "hidden")
@@ -147,7 +147,7 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
 })
 
 ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog'))
-ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules) => {
+ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules, asking_komi_p) => {
     // defaults
     Q('#player_black').value = R.player_black
     Q('#player_white').value = R.player_white
@@ -169,7 +169,7 @@ ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules) 
         new_sgf_rule && (Q('#sgf_rule').value = new_sgf_rule)
     }
     // show it
-    show_dialog('#game_info_dialog')
+    show_dialog('#game_info_dialog', asking_komi_p && '#komi')
 })
 
 ipc.on('take_thumbnail', (e, id, stones) => take_thumbnail(id, stones))

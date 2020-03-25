@@ -487,7 +487,7 @@ function menu_template(win) {
              .map(key => key ? item(key.replace(/_/g, ' '), undefined,
                                     () => game.transform(key)) : sep)
             ),
-        item(`Komi (${game.get_komi()})`, undefined, ask_komi),
+        item(`Komi (${game.get_komi()})`, undefined, () => ask_komi(win)),
         menu(`Rule (${get_gorule()})`, AI.is_gorule_supported() ? gorule_submenu() : []),
         item('Info', 'CmdOrCtrl+I', () => ask_game_info(win)),
     ])
@@ -748,9 +748,10 @@ function auto_play_progress() {
 function ask_auto_play_sec(win, replaying) {
     auto_replaying = replaying; win.webContents.send('ask_auto_play_sec')
 }
-function ask_game_info(win) {
+function ask_game_info(win, asking_komi_p) {
+    const supported_rules = AI.is_gorule_supported() && katago_supported_rules
     win.webContents.send('ask_game_info', info_text(), game.sgf_gorule, get_gorule(),
-                         AI.is_gorule_supported() && katago_supported_rules)
+                         supported_rules, asking_komi_p)
 }
 function increment_auto_play_count(n) {
     auto_playing(true) && stop_auto_play()
@@ -870,9 +871,9 @@ function ask_handicap_stones() {
     const proc = k => {game.is_empty() || new_empty_board(); add_handicap_stones(k)}
     ask_choice("Handicap stones", seq(8, 2), proc)
 }
-function ask_komi() {
-    const values = [-0.5, 0.5, 4.5, 5.5, 6.5, 7.5, 8.5]
-    const proc = k => {game.komi = k}
+function ask_komi(win) {
+    const other = 'other...', values = [0, 5.5, 6.5, 7.5, other]
+    const proc = k => {k === other ? ask_game_info(win, true) : (game.komi = k)}
     ask_choice(`Komi (${game.get_komi()})`, values, proc)
 }
 function ask_choice(message, values, proc) {
