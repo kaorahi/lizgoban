@@ -235,12 +235,12 @@ function new_window(default_board_type) {
     merge(prop, {
         window_id, board_type: board_type || default_board_type, previous_board_type
     })
+    windows.push(win)
+    maximized && win.maximize()
     win.on('close', () => set_stored(conf_key, {
         board_type: prop.board_type, previous_board_type: prop.previous_board_type,
         position: win.getPosition(), size: win.getSize(), maximized: win.isMaximized(),
     }))
-    windows.push(win)
-    maximized && win.maximize()
     win.once('ready-to-show', () => win.show())
 }
 
