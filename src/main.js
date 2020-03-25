@@ -387,15 +387,12 @@ function goto_previous_or_next_something(backwardp) {
     const sign = backwardp ? -1 : 1
     const valid = h => (h.move_count - game.move_count) * sign > 0
     const comment_p = h => h.comment && !h.comment.match(/^{{.*}}$/)
-    const beginning_len = 40
-    const beginning_of =
-          s => s.length > beginning_len ? s.slice(0, beginning_len) + '...' : s
     const check_blunder = h => truep(h.gain) && h.gain <= blunder_threshold &&
           `${h.is_black ? 'B' : 'W'} ${Math.round(h.gain)}`
     let reason = ''
     const interesting = (h, k, ary) => {
         reason = valid(h) && [
-            comment_p(h) && beginning_of(h.comment),
+            comment_p(h) && snip_text(h.comment, 40, 0, '...'),
             h.tag,
             check_blunder(ary[k + sign] || {}),  // show the board BEFORE the blunder
         ].filter(truep).join(' / '); return reason

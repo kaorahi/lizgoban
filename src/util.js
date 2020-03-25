@@ -62,8 +62,13 @@ function do_debug_log(arg, limit_len) {
     console.log(sec + snip(E.to_s(arg), limit_len))
 }
 E.snip = (str, limit_len) => {
-    const HALF = Math.floor((limit_len || Infinity) / 2), over = str.length - HALF * 2
-    return over <= 0 ? str : str.slice(0, HALF) + `{...${over}...}` + str.slice(- HALF)
+    const half = Math.floor((limit_len || Infinity) / 2)
+    return snip_text(str, half, half, over => `{...${over}...}`)
+}
+E.snip_text = (str, head, tail, dots) => {
+    const over = str.length - (head + tail), raw = (typeof dots) === 'string'
+    return over <= 0 ? str :
+        str.slice(0, head) + (raw ? dots : dots(over)) + (tail > 0 ? str.slice(- tail) : '')
 }
 
 E.change_detector = init_val => {
