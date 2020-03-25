@@ -184,7 +184,7 @@ fs.access(option.sabaki_command, null,
 // app
 
 app.on('ready', () => {
-    restart_leelaz_by_preset(option.preset[0]); new_window('double_boards')
+    restart_leelaz_by_preset(option.preset[0], true); new_window('double_boards')
     restore_session()
 })
 app.on('window-all-closed', app.quit)
@@ -662,10 +662,17 @@ function expand_preset(preset) {
     })
 }
 
-function restart_leelaz_by_preset(rule) {
+function restart_leelaz_by_preset(rule, first_p) {
     const {leelaz_command, leelaz_args, label} = rule
+    if (!leelaz_command || !leelaz_args) {no_engine_error(first_p); return}
     unload_leelaz_for_white(); kill_all_leelaz()
     start_leelaz(leelaz_command, leelaz_args, label)
+}
+
+function no_engine_error(quit_p) {
+    const message = 'Engine is not specified in the preset item in the configuration.'
+    dialog.showErrorBox('No engine', message)
+    quit_p && app.quit()
 }
 
 /////////////////////////////////////////////////
