@@ -957,7 +957,8 @@ function wink_if_pass(proc, ...args) {
     const after = rec(), d = after.move_count - before.move_count
     if (Math.abs(d) !== 1) {return}
     const implicit_pass = !!before.is_black === !!after.is_black
-    const pass = implicit_pass || is_pass((d === 1 ? after : before).move)
+    const h = (d === 1 ? after : before)
+    const pass = implicit_pass || is_pass(h.move) || h.illegal
     pass && wink()
 }
 function wink() {renderer('wink')}
@@ -1273,7 +1274,7 @@ function leelaz_start_args(given_leelaz_command, given_leelaz_args, label) {
     const leelaz_command = PATH.resolve(option.working_dir, given_leelaz_command)
     const leelaz_args = given_leelaz_args.slice()
     const preset_label = {label: label || ''}
-    const h = {leelaz_command, leelaz_args, preset_label, working_dir,
+    const h = {leelaz_command, leelaz_args, preset_label, working_dir, illegal_handler,
                // weight_file is set for consistency with set_engine_for_white()
                // so that cached engines are reused correctly
                // (cf. start_args_equal())
@@ -1311,6 +1312,11 @@ function tuning_is_done() {
     const message = 'Finished initial tuning.'
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
     tuning_message = null; resume(); update_all()
+}
+
+function illegal_handler({move, is_black, move_count}) {
+    const message = `Illegal: ${is_black ? 'B' : 'W'}(${move_count - game.handicaps}) ${move}`
+    toast(message, 5000); AI.cancel_past_requests(); update_all()
 }
 
 /////////////////////////////////////////////////

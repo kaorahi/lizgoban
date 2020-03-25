@@ -10,6 +10,7 @@ const SGF = require('@sabaki/sgf')
 //  {move: "Q4", is_black: false, move_count: 2, tag: "b", ko_fight: false, ...},
 //  {move: "Q16", is_black: false, move_count: 3, comment: "chance!" , ...},
 //  {move: "pass", is_black: true, move_count: 4, unsafe_stones: {black: 5.3, white: 8.9}, ambiguity: 9.2, ...}]
+// {move: "Q16", is_black: false, move_count: 5, illegal: true}
 // 
 // Black played pass for the third move and the last move in this example.
 // * move_count = 1 for the first stone, that is history[0]
@@ -42,7 +43,8 @@ function create_game(init_history, init_prop) {
         ref: mc => history[mc - 1] || self.move0,
         ref_current: () => self.ref(self.move_count),
         current_stones: () => self.stones_at(self.move_count),
-        stones_at: mc => get_stones_and_set_ko_fight(self.array_until(mc)),
+        stones_at: mc =>
+            get_stones_and_set_ko_fight(self.array_until(mc).filter(h => !h.illegal)),
         array_until: mc => history.slice(0, mc),
         delete_future: () => history.splice(self.move_count),
         last_move: () => (last(history) || {}).move,

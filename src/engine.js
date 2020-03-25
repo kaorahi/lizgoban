@@ -40,7 +40,7 @@ function create_leelaz () {
                weight_file, working_dir,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler,
-               tuning_handler, unsupported_size_handler}
+               illegal_handler, tuning_handler, unsupported_size_handler}
               = arg || {}
         const opt = {cwd: working_dir}
         is_ready = false; startup_log = []; network_size_text = ''
@@ -119,7 +119,11 @@ function create_leelaz () {
         if (back > 0 || !empty(rest) || update_kata_p) {update_move_count(history)}
         leelaz_previous_history = history.slice()
     }
-    const play1 = ({move, is_black}) => {leelaz('play ' + (is_black ? 'b ' : 'w ') + move)}
+    const play1 = h => {
+        const {move, is_black} = h
+        const f = ok => !ok && !h.illegal && ((h.illegal = true), arg.illegal_handler(h))
+        leelaz('play ' + (is_black ? 'b ' : 'w ') + move, f)
+    }
     const undo1 = () => {leelaz('undo')}
     let old_board_size
     const change_board_size = (new_size, on_response) => {

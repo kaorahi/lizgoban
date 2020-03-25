@@ -21,7 +21,7 @@ function set_board(given_game) {
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
     set_stones(game.current_stones())
-    return hist
+    return hist.filter(h => !h.illegal)
 }
 
 function set_stones(stones) {
@@ -235,7 +235,7 @@ function winrate_from_game(engine_id) {
         const move_eval = move_b_eval && move_b_eval * turn_sign
         const predict = winrate_suggested(s, engine_id)
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
-        const pass = implicit_pass || M.is_pass(h.move)
+        const pass = implicit_pass || M.is_pass(h.move) || h.illegal
         const score_without_komi = score_without_komi_at(s)
         const record_gain_as_side_effect = gain => {
             if (engine_id || s === 0 || !truep(score_without_komi_at(s - 1))) {return}
