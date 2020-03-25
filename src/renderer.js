@@ -172,7 +172,7 @@ ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules, 
     show_dialog('#game_info_dialog', asking_komi_p && '#komi')
 })
 
-ipc.on('take_thumbnail', (e, id, stones) => take_thumbnail(id, stones))
+ipc.on('take_thumbnail', (e, id, stones, trial_p) => take_thumbnail(id, stones, trial_p))
 ipc.on('slide_in', (e, direction) => slide_in(direction))
 ipc.on('wink', (e) => wink())
 ipc.on('toast', (e, ...a) => toast(...a))
@@ -476,19 +476,20 @@ const thumbnail_deferring_millisec = 500
 const [try_thumbnail] =
       deferred_procs([take_thumbnail, thumbnail_deferring_millisec])
 
-function take_thumbnail(given_id, given_stones) {
+function take_thumbnail(given_id, given_stones, given_trial_p) {
     const id = truep(given_id) ? given_id : current_sequence_id()
     const stones = given_stones || R.stones
-    take_shumbnail_of_stones(stones, url => store_thumbnail(id, url))
+    const trial_p = (given_trial_p === undefined) ? R.trial : given_trial_p
+    take_shumbnail_of_stones(stones, url => store_thumbnail(id, url), trial_p)
 }
 
 let reusable_canvas = null
-function take_shumbnail_of_stones(stones, proc) {
+function take_shumbnail_of_stones(stones, proc, trail_p) {
     // remember that main_canvas can be rectangular by "x" key
     const [size, _] = get_canvas_size(main_canvas)
     const canvas = reusable_canvas || document.createElement("canvas")
     reusable_canvas = null
-    set_canvas_square_size(canvas, size); D.draw_thumbnail_goban(canvas, stones)
+    set_canvas_square_size(canvas, size); D.draw_thumbnail_goban(canvas, stones, trail_p)
     let fired = false
     canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???

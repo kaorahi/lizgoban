@@ -1028,7 +1028,8 @@ function backup_and_replace_game(new_game, before) {
     game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game, before)
     const stones = new_game.current_stones()
     P.add_info_to_stones(stones, new_game)
-    renderer('take_thumbnail', new_game.id, stones)
+    // setTimeout for updating of new_game.trial in create_sequence_maybe()
+    setTimeout(() => renderer('take_thumbnail', new_game.id, stones, new_game.trial))
 }
 
 function create_sequence_maybe(force) {

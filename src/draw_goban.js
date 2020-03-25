@@ -129,8 +129,8 @@ function draw_endstate_goban(canvas, options) {
     draw_goban(canvas, displayed_stones, opts)
 }
 
-function draw_thumbnail_goban(canvas, stones) {
-    const opts = {draw_last_p: true, draw_next_p: true}
+function draw_thumbnail_goban(canvas, stones, trial_p) {
+    const opts = {draw_last_p: true, draw_next_p: true, pausing_p: trial_p}
     each_stone(stones, h => (h.displayed_tag = h.tag))
     draw_goban(canvas, stones, opts)
 }
