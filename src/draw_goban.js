@@ -1,0 +1,633 @@
+// -*- coding: utf-8 -*-
+
+/////////////////////////////////////////////////
+// various gobans
+
+function draw_raw_goban(canvas, options) {
+    const u = options.show_until
+    truep(u) ? draw_goban_until(canvas, u, options) : draw_goban(canvas, null, options)
+}
+
+function draw_main_goban(canvas, options) {
+    const opts = {read_only: R.attached, ...options}
+    const u = options.show_until, h = options.selected_suggest
+    target_move = !truep(u) && (h.visits > 0) && h.move
+    // case I: "variation"
+    if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
+    // case II: "suggest" or "until"
+    const mapping_to_winrate_bar = h.move && mapping_text(h, opts)
+    truep(u) ? draw_goban_until(canvas, u, opts)
+        : draw_goban_with_suggest(canvas, {...opts, mapping_to_winrate_bar})
+}
+
+function draw_goban_until(canvas, show_until, opts) {
+    const all_p = [R.move_count, Infinity].includes(show_until)
+    const displayed_stones = stones_until(show_until, all_p)
+    draw_goban(canvas, displayed_stones,
+               {draw_last_p: true, draw_next_p: true, draw_loss_p: true,
+                draw_endstate_diff_p: R.show_endstate, ...opts,
+                draw_visits_p: false, draw_coordinates_p: true})
+}
+
+function stones_until(show_until, all_p, for_endstate) {
+    // fixme: need cleaning (for_endstate)
+    const recent_moves = 3, thick_moves = 7
+    const unnumbered =
+          clip_handicaps(for_endstate ? Infinity : all_p ? 0 : show_until - recent_moves)
+    const highlighted_after = for_endstate ? Infinity :
+          all_p ? clip(show_until, 0, R.history_length) - recent_moves : show_until - 1
+    const thin_before =  for_endstate ? 0 :
+          all_p ? highlighted_after - thick_moves + 1 : 0
+    const displayed_stones = copy_stones_for_display()
+    each_stone(displayed_stones, (h, idx) => {
+        const ss = h.anytime_stones, target = latest_move(ss, show_until)
+        if (target) {
+            h.black = target.is_black
+            h.last = [show_until, thin_before - 1].includes(target.move_count)
+                && show_until > R.handicaps
+            h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
+            h.stone = true
+            const m = target.move_count - unnumbered
+            const variation_last = (target.move_count > highlighted_after)
+            const thin_movenums = (target.move_count < thin_before)
+            // clean me: to_s to avoid highlight of "1"
+            m > 0 && merge(h, {movenums: [to_s(m)], variation_last,
+                               thin_movenums, tag: null})
+        } else {
+            for_endstate && (h.stone = false)
+            h.stone && merge(h, {displayed_colors: [PALER_BLACK, PALER_WHITE],
+                                 last: false, future_stone: true})
+        }
+        h.displayed_tag = h.tag
+        const next_stone = ss && ss.find(z => (z.move_count === show_until + 1))
+        h.next_move = !!next_stone; h.next_is_black = (next_stone || {}).is_black
+    })
+    return displayed_stones
+}
+
+function draw_goban_with_suggest(canvas, opts) {
+    const displayed_stones = copy_stones_for_display()
+    R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
+    each_stone(displayed_stones, (h, idx) => (h.displayed_tag = h.tag && h.stone))
+    const s0 = R.suggest[0]
+    const expected_move = expected_pv()[0]
+    expected_move && !empty(R.suggest) && s0.move !== expected_move &&
+        set_expected_stone(expected_move, s0.move, displayed_stones)
+    draw_goban(canvas, displayed_stones,
+               {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
+                draw_loss_p: true,
+                draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
+                tag_clickable_p: true, mapping_tics_p: !opts.main_canvas_p, ...opts})
+}
+
+function draw_goban_with_variation(canvas, suggest, opts) {
+    const reliable_moves = 7
+    const variation = suggest.pv || []
+    const expected = expected_pv()
+    let mark_unexpected_p = (expected[0] === variation[0]) || opts.force_draw_expected_p
+    const displayed_stones = copy_stones_for_display()
+    variation.forEach((move, k) => {
+        const b = xor(R.bturn, k % 2 === 1), w = !b, expected_move = expected[k]
+        merge_stone_at(move, displayed_stones, {
+            stone: true, black: b, white: w,
+            variation: true, movenums: [k + 1],
+            variation_last: k === variation.length - 1, is_vague: k >= reliable_moves
+        })
+        if (mark_unexpected_p && expected_move && expected_move !== move) {
+            set_expected_stone(expected[k], move, displayed_stones)
+            mark_unexpected_p = false
+        }
+    })
+    const mapping_to_winrate_bar = mapping_text(suggest, opts)
+    draw_goban(canvas, displayed_stones,
+               {draw_last_p: true, draw_expected_p: true,
+                mapping_to_winrate_bar, ...opts})
+}
+
+function draw_goban_with_principal_variation(canvas, options) {
+    const opts = {read_only: true, force_draw_expected_p: true,
+                  mapping_to_winrate_bar: false, ...options}
+    draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
+}
+
+function draw_endstate_goban(canvas, options) {
+    const past_p = past_endstate_p(options.draw_endstate_value_p)
+    const scores = winrate_history_values_of('score_without_komi')
+    const {show_until} = options, mc = R.move_count
+    const past_mc = clip_handicaps((truep(show_until) && show_until !== mc) ?
+                                   show_until : R.move_count - R.endstate_diff_interval)
+    const past_score = scores[past_mc]
+    const past_text = (d_i, es) =>
+          `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
+          (truep(es) ? `  score = ${f2s(es)}` : '')
+    const common = {read_only: true, draw_endstate_p: R.show_endstate,
+                    draw_endstate_diff_p: R.show_endstate}
+    const current = {draw_visits_p: true, draw_next_p: true}
+    const past = {draw_visits_p: past_text(R.move_count - past_mc, past_score)}
+    const opts = {...common, ...(options || {}), ...(past_p ? past : current)}
+    const displayed_stones = past_p ? stones_until(past_mc, false, true) : R.stones
+    draw_goban(canvas, displayed_stones, opts)
+}
+
+function draw_thumbnail_goban(canvas, stones) {
+    const opts = {draw_last_p: true, draw_next_p: true}
+    each_stone(stones, h => (h.displayed_tag = h.tag))
+    draw_goban(canvas, stones, opts)
+}
+
+/////////////////////////////////////////////////
+// generic goban
+
+function draw_goban(canvas, stones, opts) {
+    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
+           pausing_p, trial_p,
+           draw_loss_p, draw_coordinates_p,
+           draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
+           tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
+           hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
+          = opts || {}
+    const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
+    const large_font_p = !main_canvas_p
+    const font_unit = Math.min(margin, canvas.height / 20)
+    // clear
+    g.strokeStyle = BLACK; g.fillStyle = goban_bg(pausing_p, trial_p, true)
+    g.lineWidth = 1
+    edged_fill_rect([0, 0], [canvas.width, canvas.height], g)
+    g.fillStyle = goban_bg(pausing_p, trial_p)
+    fill_rect([hm, hm], [canvas.width - hm, canvas.height - hm], g)
+    // draw
+    draw_grid(unit, idx2coord, g)
+    draw_coordinates_p && draw_coordinates(unit, idx2coord, g)
+    mapping_tics_p && draw_mapping_tics(unit, canvas, g)
+    draw_visits_p && draw_visits(draw_visits_p, font_unit, canvas, g)
+    first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
+    mapping_to_winrate_bar && !(draw_endstate_value_p && draw_endstate_p) &&
+        draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
+    !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
+    const drawp = {
+        draw_last_p, draw_next_p, draw_expected_p, draw_loss_p,
+        draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
+        tag_clickable_p, hovered_move, show_until,
+    }
+    draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
+    draw_endstate_p && draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
+    // mouse events
+    const mouse_handler = handle_mouse_on_goban || do_nothing
+    mouse_handler(canvas, coord2idx, read_only, tag_clickable_p)
+}
+
+function draw_grid(unit, idx2coord, g) {
+    const bsize = board_size()
+    g.strokeStyle = BLACK; g.fillStyle = BLACK; g.lineWidth = 1
+    seq(bsize).forEach(i => {
+        line(idx2coord(i, 0), idx2coord(i, bsize - 1), g)
+        line(idx2coord(0, i), idx2coord(bsize - 1, i), g)
+    })
+    const star_radius = unit * 0.1, ijs = stars[bsize] || []
+    ijs.forEach(ij => fill_circle(idx2coord(...ij), star_radius, g))
+}
+
+function draw_coordinates(unit, idx2coord, g) {
+    const fontsize = unit * 0.4, maxwidth = unit / 2, bsize = board_size()
+    const edges = [-0.75, bsize - 0.25]
+    const draw = (text, i, j) =>
+          fill_text(g, fontsize, text, ...idx2coord(i, j), maxwidth)
+    g.save()
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = BLACK
+    seq(bsize).forEach(i => {
+        const [row, col] = idx2rowcol(i, i)
+        edges.forEach(e => {draw(row, i, e); draw(col, e, i)})
+    })
+    g.restore()
+}
+
+function draw_visits(text_maybe, margin, canvas, g) {
+    if (typeof text_maybe === 'string') {
+        draw_visits_text(text_maybe, margin, canvas, g); return
+    }
+    if (!truep(R.visits)) {return}
+    const maybe = (z, g) => truep(z) ? g(z >= 1000 ? kilo_str(z) : f2s(z)) : ''
+    const vps = maybe(R.visits_per_sec, z => `  (${z} v/s)`)
+    const esum = maybe(R.endstate_sum, z => `  score = ${z}`)
+    const text = `  visits = ${R.visits}${esum}${vps}`
+    draw_visits_text(text, margin, canvas, g)
+}
+
+function draw_visits_text(text, margin, canvas, g) {
+    g.save()
+    g.fillStyle = MAYBE_BLACK
+    g.textAlign = 'left'; g.textBaseline = 'middle'
+    fill_text(g, margin / 2, text, 0, margin / 4)
+    g.restore()
+}
+
+function draw_progress(highlightp, margin, canvas, g) {
+    if (R.progress < 0) {return}
+    g.fillStyle = highlightp ? GREEN : R.bturn ? BLACK : WHITE
+    fill_rect([0, canvas.height - margin / 10],
+              [canvas.width * R.progress, canvas.height], g)
+}
+
+function draw_cursor(hovered_move, unit, idx2coord, g) {
+    const [i, j] = move2idx(hovered_move); if (i < 0) {return}
+    const xy = idx2coord(i, j)
+    g.fillStyle = R.bturn ? PALE_BLACK : PALE_WHITE
+    fill_circle(xy, unit / 4, g)
+}
+
+function draw_on_board(stones, drawp, unit, idx2coord, g) {
+    const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p,
+           draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
+           large_font_p, tag_clickable_p, hovered_move, show_until}
+          = drawp
+    const stone_radius = unit * 0.5
+    const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
+          draw_expected_mark(h, xy, exp_p, stone_radius, g)
+    const each_coord =
+          proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx), idx))
+    if (draw_endstate_value_p && draw_endstate_p) {
+        const past_p = past_endstate_p(draw_endstate_value_p)
+        draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g); return
+    }
+    each_coord((h, xy, idx) => {
+        draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
+        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g) :
+            h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
+        draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
+        draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
+                            draw_exp(h.unexpected_move, false, h, xy))
+        R.lizzie_style && h.suggest && draw_suggest_lizzie(h, xy, stone_radius, g)
+        const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
+        h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
+        if (empty(R.suggest)) {return}
+        draw_endstate_diff_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
+    })
+    !R.lizzie_style && each_coord((h, xy) => h.suggest && (h.data.visits > 0)
+                                  && draw_winrate_mapping_line(h, xy, unit, g))
+}
+
+function draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g) {
+    if (past_p && !R.prev_endstate_clusters) {return}
+    const d = (!truep(show_until) || show_until === R.move_count) ? R.endstate_diff_interval : (R.move_count - show_until)
+    const sign = Math.sign(d)
+    each_coord((h, xy, idx) => {
+        const stone_p = h.stone
+        past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
+        stone_p && draw_stone(h, xy, stone_radius, true, false, g)
+        past_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
+        draw_endstate_value(h, past_p, sign, xy, stone_radius, g)
+    })
+}
+
+function goban_bg(pausing_p, trial_p, border) {
+    return GOBAN_BG_COLOR[(pausing_p ? 'p' : '') + (trial_p && border ? 't' : '')]
+}
+
+function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
+    const style = boundary_p ?
+          {black: 'rgba(0,255,255,0.5)', white: 'rgba(255,0,0,0.5)'} :
+          {black: 'rgba(0,255,0,0.2)', white: 'rgba(255,0,255,0.2)'}
+    const size = {major: 3, minor: 2}
+    const past_p = past_endstate_p(boundary_p)
+    const cs = (past_p ? R.prev_endstate_clusters : R.endstate_clusters) || []
+    cs.forEach(cluster => {
+        const {color, type, ownership_sum, selfstone_sum, center_idx} = cluster
+        const area_count = Math.round(Math.sign(ownership_sum) *
+                                      (ownership_sum - selfstone_sum))
+        if (area_count < 1) {return}
+        boundary_p && draw_endstate_boundary(cluster, unit, idx2coord, g)
+        const text = to_s(area_count), xy = idx2coord(...center_idx)
+        g.save()
+        g.textAlign = 'center'; g.textBaseline = 'middle'
+        g.fillStyle = style[color]; fill_text(g, size[type] * unit, text, ...xy)
+        g.restore()
+    })
+    const selfstone_sum = Math.round(sum(cs.map(cluster => cluster.selfstone_sum)))
+    const ss_text = selfstone_sum === 0 ? '' : `+${to_s(Math.abs(selfstone_sum))}`
+    g.save()
+    g.textAlign = 'right'; g.textBaseline = 'top'
+    g.fillStyle = style[selfstone_sum > 0 ? 'black' : 'white']
+    fill_text(g, size['minor'] * unit, ss_text, ...idx2coord(-1.3, board_size()))
+    g.restore()
+}
+
+function draw_endstate_boundary(cluster, unit, idx2coord, g) {
+    const style = {black: '#080', white: '#c4c'}
+    cluster.boundary.forEach(([ij, direction]) => {
+        const width = unit * 0.1, r = unit / 2
+        const [di, dj] = around_idx_diff[direction]
+        const [qi, qj] = [Math.abs(dj), Math.abs(di)]
+        const mul = (a, coef) => a.map(z => z * coef)
+        // See coord.js for the relation between [i][j] and (x, y).
+        const [dx, dy] = mul([dj, di], r - width / 2), [qx, qy] = mul([qj, qi], r)
+        const [x0, y0] = idx2coord(...ij), [x, y] = [x0 + dx, y0 + dy]
+        g.strokeStyle = style[cluster.color]; g.lineWidth = width
+        line([x - qx, y - qy], [x + qx, y + qy], g)
+    })
+}
+
+function past_endstate_p(flag) {return flag === 'past'}
+
+/////////////////////////////////////////////////
+// on goban grids
+
+// stone
+
+function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
+    const [b_color, w_color] = h.displayed_colors ||
+          (h.maybe ? [MAYBE_BLACK, MAYBE_WHITE] :
+           h.maybe_empty ? [PALE_BLACK, PALE_WHITE] :
+           h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
+           [BLACK, WHITE])
+    const hide_loss_p = h.suggest || h.future_stone
+    g.lineWidth = 1; g.strokeStyle = b_color
+    g.fillStyle = h.black ? b_color : w_color
+    edged_fill_circle(xy, radius, g)
+    draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
+    draw_last_p && h.last && h.move_count > R.handicaps &&
+        draw_last_move(h, xy, radius, g)
+    h.movenums && draw_movenums(h, xy, radius, g)
+}
+
+function draw_movenums(h, xy, radius, g) {
+    const movenums = num_sort(h.movenums)
+    const bw = h.thin_movenums ? ['rgba(0,0,0,0.2)', 'rgba(255,255,255,0.3)'] :
+          h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
+    const color = (movenums[0] === 1) ? GREEN : h.variation_last ? RED :
+          bw[h.black ? 1 : 0]
+    draw_text_on_stone(movenums.join(','), color, xy, radius, g)
+}
+
+function draw_tag(tag, xy, radius, highlight_tag_p, g) {
+    draw_text_on_stone(tag, highlight_tag_p ? GREEN : BLUE, xy, radius, g)
+}
+
+function draw_text_on_stone(text, color, xy, radius, g) {
+    const l = text.length, [x, y] = xy, max_width = radius * 1.5
+    const fontsize = to_i(radius * (l < 3 ? 1.8 : l < 6 ? 1.2 : 0.9))
+    g.save()
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = color; fill_text(g, fontsize, text, x, y, max_width)
+    g.restore()
+}
+
+function draw_last_move(h, xy, radius, g) {
+    g.strokeStyle = h.black ? WHITE : BLACK; g.lineWidth = 2
+    circle(xy, radius * 0.8, g)
+}
+
+function draw_next_move(h, xy, radius, g) {
+    g.strokeStyle = h.next_is_black ? BLACK : WHITE; g.lineWidth = 3; circle(xy, radius, g)
+}
+
+// ref. https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067
+function draw_loss(h, xy, radius, g) {
+    const {gain} = h, NOTHING = []
+    const [color, size, line_width, draw] = !truep(gain) ? NOTHING :
+          (gain <= big_blunder_threshold) ? [RED, 1, 1, rev_triangle_around] :
+          (gain <= blunder_threshold) ? [BLUE, 0.7, 1, rev_triangle_around] :
+          // annoying in auto_analysis with visits = 1
+          // (gain >= 5) ? ['#0c0', 1, 1, triangle_around] :
+          NOTHING
+    if (!draw) {return}
+    g.strokeStyle = color; g.lineWidth = line_width
+    draw(xy, radius * size - line_width, g)
+}
+
+// suggestions
+
+// suggest_as_stone = {suggest: true, data: suggestion_data}
+// See "suggestion reader" section in engine.js for suggestion_data.
+
+function draw_suggest(h, xy, radius, large_font_p, g) {
+    if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
+    const suggest = h.data, {stroke, fill} = suggest_color(suggest)
+    g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
+    edged_fill_circle(xy, radius, g)
+    !R.lizzie_style && draw_suggestion_order(h, xy, radius, stroke, large_font_p, g)
+}
+
+function draw_suggest_lizzie(h, xy, radius, g) {
+    const suggest = h.data; if (suggest.visits === 0) {return}
+    const lizzie_text_color = 'rgba(0,0,0,0.7)'
+    const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
+    const fontsize = to_i(radius * 0.8), half = fontsize / 2
+    const y_upper = y - half, y_lower = y + half
+    const [winrate_text, visits_text] = suggest_texts(suggest)
+    const score_text = score_bar_p() && f2s(suggest.score_without_komi)
+    draw_suggestion_order_lizzie(h, xy, radius, g)
+    g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
+    fill_text(g, fontsize, score_text || winrate_text, x, y_upper, max_width)
+    g.fillStyle = suggest.order === 0 ? champ_color : lizzie_text_color
+    fill_text(g, fontsize, visits_text, x, y_lower, max_width)
+    g.restore()
+}
+
+function draw_suggest_0visits(h, xy, radius, g) {
+    const limit_order = 4, size = (1 + log10(h.data.prior) / limit_order)
+    if (size <= 0) {return}
+    g.lineWidth = 1; g.strokeStyle = 'rgba(255,0,0,0.2)'
+    circle(xy, radius * size, g)
+}
+
+function draw_suggestion_order(h, xy, radius, color, large_font_p, g) {
+    draw_suggestion_order_gen(false, h, xy, radius, color, large_font_p, g)
+}
+function draw_suggestion_order_lizzie(h, xy, radius, g) {
+    draw_suggestion_order_gen(true, h, xy, radius, null, false, g)
+}
+function draw_suggestion_order_gen(lizzie, h, [x, y], radius, color, large_font_p, g) {
+    if (h.data.order >= 9) {return}
+    const both_champ = (h.data.order + h.data.winrate_order === 0)
+    const either_champ = (h.data.order * h.data.winrate_order === 0)
+    const huge = [2, -1], large = [1.5, -0.5], normal = [1, -0.1], small = [0.8, 0.3]
+    const font_modifier = large_font_p && both_champ && 'bold '
+    const either = (champ, other) => both_champ ? champ : other
+    const [fontsize, d] = (lizzie ? small : large_font_p ? huge : either(large, normal))
+          .map(c => c * radius)
+    const w = fontsize, x0 = x + d + w / 2, y0 = y - d - w / 2
+    g.save()
+    g.fillStyle = BLUE
+    lizzie && fill_rect([x + d, y - d - w], [x + d + w, y - d], g)
+    g.fillStyle = lizzie ? WHITE : either_champ ? RED : color
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    fill_text_with_modifier(g, font_modifier, fontsize, h.data.order + 1, x0, y0, w)
+    g.restore()
+}
+
+// misc
+
+function draw_expected_mark(h, [x, y], expected_p, radius, g) {
+    const x1 = x - radius, y1 = y + radius, d = radius / 2
+    g.fillStyle = xor(R.bturn, expected_p) ? BLACK : WHITE  // whose plan?
+    fill_line([x1, y1 - d], [x1, y1], [x1 + d, y1], g)
+    g.strokeStyle = expected_p ? EXPECTED_COLOR : UNEXPECTED_COLOR; g.lineWidth = 2
+    square_around([x, y], radius, g)
+}
+
+function draw_endstate(endstate, xy, radius, g) {
+    if (!truep(endstate)) {return}
+    const c = (endstate >= 0) ? 64 : 255, alpha = Math.abs(endstate) * 0.7
+    g.fillStyle = `rgba(${c},${c},${c},${alpha})`
+    fill_square_around(xy, radius, g)
+}
+
+function draw_endstate_value(h, past_p, sign, xy, radius, g) {
+    const quantized = false, ten = '10', max_width = radius * 1.5
+    const {endstate, endstate_diff} = h
+    if (!truep(endstate) || (past_p && !truep(endstate_diff))) {return}
+    const e = endstate - (past_p ? endstate_diff * sign : 0)
+    const a = Math.abs(e), v = Math.round(a * 10)
+    const c = quantized ? ((v > 6) ? 2 : (v > 3) ? 1 : 0.5) : Math.sqrt(a) * 2
+    g.save()
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = (e >= 0) ? '#080' : '#f0f'
+    fill_text(g, radius * c, v === 10 ? ten : to_s(v), ...xy, max_width)
+    g.restore()
+}
+
+function draw_endstate_diff(diff, xy, radius, g) {
+    if (!diff) {return}
+    const size = 0.2, [c, r, f, thicker] = diff > 0 ?
+          ['#080', 1, square_around, 1.5] : ['#f0f', 1, x_shape_around, 1]
+    const thick = (R.endstate_diff_interval > 5 ? 1.5 : 3) * thicker
+    g.lineWidth = Math.abs(diff * thick); g.strokeStyle = c; f(xy, radius * size * r, g)
+}
+
+/////////////////////////////////////////////////
+// mapping from goban to winrate bar
+
+function draw_winrate_mapping_line(h, xy, unit, g) {
+    const b_winrate = flip_maybe(fake_winrate(h.data))
+    const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
+    g.lineWidth = 1.5 / (order * 2 + 1)
+    g.strokeStyle = RED
+    line(xy, ...mapping_line_coords(b_winrate, unit, g.canvas), g)
+}
+
+function draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g) {
+    const {text, subtext, at} = mapping_to_winrate_bar
+    const y = canvas.height - margin / 6, fontsize = margin / 2
+    // main text
+    g.fillStyle = RED
+    g.textAlign = at < 10 ? 'left' : at < 90 ? 'center' : 'right'
+    fill_text(g, fontsize, text, canvas.width * at / 100, y)
+    // subtext
+    const [sub_at, sub_align] = at > 50 ? [0, 'left'] : [100, 'right']
+    g.fillStyle = 'rgba(255,0,0,0.5)'; g.textAlign = sub_align
+    fill_text(g, fontsize, subtext, canvas.width * sub_at / 100, y)
+}
+
+function draw_mapping_tics(unit, canvas, g) {
+    // mini winrate bar
+    const boundary = b_winrate()
+    const draw = (c, l, r) => {g.fillStyle = c; fill_rect(l, r, g)}
+    if (truep(boundary)) {
+        const [[b0, b1], [m0, m1], [w0, w1]] =
+              [0, boundary, 100].map(wr => mapping_line_coords(wr, unit, canvas))
+        draw(...(R.bturn ? [BLACK, b0, m1] : [WHITE, m0, w1]))
+    }
+    // tics
+    seq(9, 1).forEach(k => {
+        const r = k * 10
+        g.strokeStyle = (R.bturn && r < boundary) ? WHITE : BLACK
+        g.lineWidth = (r === 50 ? 3 : 1)
+        line(...mapping_line_coords(r, unit, canvas), g)
+    })
+}
+
+function mapping_text(suggest) {
+    const [winrate_text, visits_text, prior_text, score_text, score_stdev_text]
+          = suggest_texts(suggest) || []
+    const v = visits_text ? ` (${visits_text})` : ''
+    const text = winrate_text && `${winrate_text}${v}`
+    const pr = ` prior = ${prior_text} `
+    const sc = score_text ? ` score = ${score_text}(±${score_stdev_text}) ` : ''
+    const subtext = text && (pr + sc)
+    const at = flip_maybe(fake_winrate(suggest))
+    return text && {text, subtext, at}
+}
+
+function mapping_line_coords(b_winrate, unit, canvas) {
+    const x1 = canvas.width * b_winrate / 100, y1 = canvas.height, d = unit * 0.3
+    return [[x1, y1 - d], [x1, y1]]
+}
+
+/////////////////////////////////////////////////
+// zone color chart
+
+function draw_zone_color_chart(canvas) {
+    const {g, idx2coord, half_unit} = goban_params(canvas)
+    clear_canvas(canvas, TRANSPARENT, g)
+    seq(board_size()).forEach(i => seq(board_size()).forEach(j => {
+        const xy = idx2coord(i, j)
+        g.fillStyle = zone_color(i, j); fill_square_around(xy, half_unit, g)
+    }))
+}
+
+/////////////////////////////////////////////////
+// utils
+
+// goban
+
+function goban_params(canvas) {
+    const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
+    const margin = Math.min(w, h) / (board_size() + 1), hm = margin / 2
+    const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
+    const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0], half_unit = unit / 2
+    return {w, h, g, margin, hm, idx2coord, coord2idx, unit, half_unit}
+}
+
+// stones
+
+function copy_stones_for_display() {
+    return R.stones.map(row => row.map(s => merge({}, s)))
+}
+
+function each_stone(stones, proc) {
+    stones.forEach((row, i) => row.forEach((h, j) => proc(h, [i, j])))
+}
+
+function merge_stone_at(move, stone_array, stone) {
+    const get_movenums = s => s.movenums || []
+    const ary_or_undef = a => empty(a) ? undefined : a
+    const merge_stone = (stone0, stone1) => stone0 &&
+        merge(stone0, stone1,
+              {movenums: ary_or_undef(flatten([stone0, stone1].map(get_movenums)))})
+    // do nothing if move is pass
+    const [i, j] = move2idx(move)
+    i >= 0 && merge_stone(aa_ref(stone_array, i, j), stone)
+}
+
+// visits & winrate
+
+function suggest_texts(suggest) {
+    const conv = (key, digits) => f2s(suggest[key], digits), prior = conv('prior', 3)
+    const score = conv('score_without_komi', 2), score_stdev = conv('scoreStdev', 2)
+    // need ' ' because '' is falsy
+    return suggest.visits === 0 ? [' ', '', prior] :
+        ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior,
+         score, score_stdev]
+}
+
+// previously expected move
+
+function expected_pv() {return ((R.previous_suggest || {}).pv || []).slice(1)}
+
+function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
+    merge_stone_at(expected_move, displayed_stones, {expected_move: true})
+    merge_stone_at(unexpected_move, displayed_stones, {unexpected_move: true})
+}
+
+/////////////////////////////////////////////////
+// exports
+
+module.exports = {
+    draw_raw_goban,
+    draw_main_goban,
+    draw_goban_with_principal_variation,
+    draw_endstate_goban,
+    draw_thumbnail_goban,
+    draw_zone_color_chart,
+}

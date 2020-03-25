@@ -7,7 +7,7 @@
 function Q(x) {return document.querySelector(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
 const {globalize} = require('./globalize.js')
-globalize(require('./util.js'), require('./coord.js'))
+globalize(require('./util.js'), require('./coord.js'), require('./draw_common.js'))
 const current_window = electron.remote.getCurrentWindow()
 const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
 
@@ -36,6 +36,7 @@ const R = {
     lizzie_style: false,
     window_id: -1,
 }
+globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null
 let keyboard_moves = [], keyboard_tag_move_count = null
 let hovered_move = null, hovered_move_count = null, hovered_board_canvas = null
@@ -43,7 +44,7 @@ let the_showing_movenum_p = false, the_showing_endstate_value_p = false
 let thumbnails = []
 
 // drawer
-const D = require('./draw.js'); D.set_state(R)
+const D = require('./draw.js')
 
 // handler
 window.onload = window.onresize = update
