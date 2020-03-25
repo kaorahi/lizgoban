@@ -39,7 +39,7 @@ const default_option = {
     weight_dir: undefined,
     sgf_dir: undefined,
     exercise_dir: 'exercise',
-    max_cached_engines: 1,
+    max_cached_engines: 3,
     preset: null,
 }
 let option = {}
