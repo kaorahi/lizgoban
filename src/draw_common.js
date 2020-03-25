@@ -99,7 +99,11 @@ function side_gradation(x0, x1, color0, color1, g) {
 }
 
 function radial_gradation(x, y, radius0, radius1, color0, color1, g) {
-    return gradation_gen(g.createRadialGradient(x, y, radius0, x, y, radius1),
+    return skew_radial_gradation(x, y, radius0, x, y, radius1, color0, color1, g)
+}
+
+function skew_radial_gradation(x0, y0, radius0, x1, y1, radius1, color0, color1, g) {
+    return gradation_gen(g.createRadialGradient(x0, y0, radius0, x1, y1, radius1),
                          color0, color1, g)
 }
 
@@ -174,7 +178,7 @@ module.exports = {
     rev_triangle_around, fill_rev_triangle_around, edged_fill_rev_triangle_around,
     x_shape_around, draw_square_image,
     fill_text, fill_text_with_modifier, set_font,
-    side_gradation, radial_gradation, hsla,
+    side_gradation, radial_gradation, skew_radial_gradation, hsla,
     // math
     flip_maybe, tics_until, log10, f2s, kilo_str,
 }

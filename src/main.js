@@ -38,6 +38,7 @@ const default_option = {
     exercise_dir: 'exercise',
     max_cached_engines: 3,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
+    force_shadow: false,
 }
 const option = {}
 let white_preset = []
@@ -133,6 +134,7 @@ let pausing = false, busy = false
 const default_for_stored_key = {
     lizzie_style: true, expand_winrate_bar: false, score_bar: true,
     let_me_think: false, show_endstate: true, gorule: default_gorule,
+    stone_image_p: true, board_image_p: true, stone_style: 'dome',
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
@@ -504,6 +506,7 @@ function menu_template(win) {
         store_toggler_menu_item('Let me think first', 'let_me_think', 'Shift+M',
                                 toggle_let_me_think),
         sep,
+        menu('Stone', stone_style_submenu()),
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
         ...insert_if(AI.katago_p(),
@@ -556,6 +559,8 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
+        store_toggler_menu_item('Stone image', 'stone_image_p'),
+        store_toggler_menu_item('Board image', 'board_image_p'),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
@@ -584,6 +589,16 @@ function get_gorule(stored_p) {
 function set_gorule(new_gorule, set_as_default_p) {
     if (!katago_supported_rules.includes(new_gorule)) {wink(); return}
     game.gorule = new_gorule; set_as_default_p && set_stored('gorule', new_gorule)
+}
+
+function stone_style_submenu() {
+    const label_table = [
+        ['2D', 'paint'], ['2.5D', 'flat'], ['3D', 'dome'],
+    ]
+    return label_table.map(([label, val]) => ({
+        label, type: 'radio', checked: R.stone_style === val,
+        click: () => {set_stored('stone_style', val); update_all()},
+    }))
 }
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {

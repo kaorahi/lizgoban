@@ -35,7 +35,8 @@ const R = {
     history_tags: [], endstate_clusters: [], prev_endstate_clusters: null,
     lizzie_style: false,
     window_id: -1,
-    image_paths: null, image: null,
+    image_paths: null, image: null, stone_image_p: true, board_image_p: true,
+    stone_style: 'paint',
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null

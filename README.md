@@ -191,6 +191,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 
 ### from 0.3.*
 
+* Support better stone images. ("Stone" in "View" menu & experimental stone/board images in the above section)
 * Support 9x9 and 13x13 in "File" menu. (See the above KataGo section to shorten their initialization.)
 * Add "Rule" into "Edit" menu for KataGo v1.3.
 * Add indicators that suggest highlight scenes of the game (big kills, ko fights, etc.).
@@ -204,7 +205,6 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 * Show coordinates by "c" key.
 * Show start-up log when engine is down.
 * Fix blur in HiDPI display.
-* Experimentally support images of board and stones.
 
 Incompatibilities:
 

@@ -172,7 +172,8 @@ function draw_goban(canvas, stones, opts) {
 }
 
 function draw_board(hm, pausing_p, trial_p, canvas, g) {
-    const {width, height} = canvas, image_p = !!(R.image || {}).board
+    const {width, height} = canvas
+    const image_p = R.board_image_p && !!(R.image || {}).board
     image_p ? draw_board_by_image(width, height, hm, pausing_p, trial_p, g) :
         draw_board_by_paint(width, height, hm, pausing_p, trial_p, g)
 }
@@ -354,31 +355,40 @@ function past_endstate_p(flag) {return flag === 'past'}
 // stone
 
 function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
-    const {b_color, w_color, stone_image} = stone_color_and_image(h)
+    const {b_color, w_color, stone_image, style} = stone_style_for(h)
     const hide_loss_p = h.suggest || h.future_stone
     const draw_stone_by_image = () => draw_square_image(stone_image, xy, radius, g)
+    const draw_stone_by_gradation = () => {
+        const [x, y] = xy, d = radius * 0.5
+        g.fillStyle = h.black ?
+            skew_radial_gradation(x - d, y - d, 0, x, y, radius, '#444', '#000', g) :
+            skew_radial_gradation(x - d, y - d, 0, x, y, radius, '#eee', '#ccc', g)
+        fill_circle(xy, radius, g)
+    }
     const draw_stone_by_paint = () => {
         g.lineWidth = 1; g.strokeStyle = b_color
         g.fillStyle = h.black ? b_color : w_color
         edged_fill_circle(xy, radius, g)
     }
-    stone_image ? draw_stone_by_image() : draw_stone_by_paint()
+    stone_image ? draw_stone_by_image() :
+        style === 'dome' ? draw_stone_by_gradation() : draw_stone_by_paint()
     draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
     draw_last_p && h.last && h.move_count > R.handicaps &&
         draw_last_move(h, xy, radius, g)
     h.movenums && draw_movenums(h, xy, radius, g)
 }
 
-function stone_color_and_image(h) {
+function stone_style_for(h) {
     const [b_color, w_color] = h.displayed_colors ||
           (h.maybe ? [MAYBE_BLACK, MAYBE_WHITE] :
            h.maybe_empty ? [PALE_BLACK, PALE_WHITE] :
            h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
            [BLACK, WHITE])
     const normal_stone_p = (b_color === BLACK)
-    const stone_image = normal_stone_p && R.image &&
+    const stone_image = normal_stone_p && R.stone_image_p && R.image &&
           (h.black ? R.image.black_stone : R.image.white_stone)
-    return {b_color, w_color, stone_image}
+    const style = normal_stone_p && R.stone_style
+    return {b_color, w_color, stone_image, style}
 }
 
 function draw_movenums(h, xy, radius, g) {
@@ -428,7 +438,9 @@ function draw_loss(h, xy, radius, g) {
 
 function draw_shadow_maybe(h, [x, y], radius, g) {
     if (!h.stone) {return}
-    const {stone_image} = stone_color_and_image(h); if (!stone_image) {return}
+    const {stone_image, style} = stone_style_for(h)
+    const shadow_p = stone_image || (style && style !== 'paint')
+    if (!shadow_p) {return}
     const f = (mag, alpha, shift_p) => {
         const dr = radius * mag, r_in = radius - dr, r_out = radius + dr
         const color = `rgba(0,0,0,${alpha})`
