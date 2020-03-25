@@ -231,6 +231,7 @@ function with_opts(d, opts) {
         pausing_p: R.pausing, trial_p: R.trial,
         show_until: showing_until(c),
         hovered_move: if_hover_on(c, hovered_move),
+        cheap_shadow_p: R.long_busy,
         handle_mouse_on_goban,
         ...((typeof opts === 'function') ? opts() : opts || {}),
     }))

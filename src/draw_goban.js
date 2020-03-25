@@ -26,6 +26,7 @@ function draw_goban_until(canvas, show_until, opts) {
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_loss_p: true,
                 draw_endstate_diff_p: R.show_endstate, ...opts,
+                cheap_shadow_p: true,
                 draw_visits_p: false, draw_coordinates_p: true})
 }
 
@@ -124,7 +125,8 @@ function draw_endstate_goban(canvas, options) {
                     draw_endstate_diff_p: R.show_endstate}
     const current = {draw_visits_p: true, draw_next_p: true}
     const past = {draw_visits_p: past_text(R.move_count - past_mc, past_score)}
-    const opts = {...common, ...(options || {}), ...(past_p ? past : current)}
+    const opts = {...common, ...(options || {}), ...(past_p ? past : current),
+                  cheap_shadow_p: true}
     const displayed_stones = past_p ? stones_until(past_mc, false, true) : R.stones
     draw_goban(canvas, displayed_stones, opts)
 }
@@ -141,7 +143,7 @@ function draw_thumbnail_goban(canvas, stones, trial_p) {
 function draw_goban(canvas, stones, opts) {
     const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
            pausing_p, trial_p,
-           draw_loss_p, draw_coordinates_p,
+           draw_loss_p, draw_coordinates_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
@@ -160,7 +162,7 @@ function draw_goban(canvas, stones, opts) {
         draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     const drawp = {
-        draw_last_p, draw_next_p, draw_expected_p, draw_loss_p,
+        draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
         tag_clickable_p, hovered_move, show_until,
     }
@@ -253,7 +255,7 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 }
 
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
-    const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p,
+    const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            large_font_p, tag_clickable_p, hovered_move, show_until}
           = drawp
@@ -264,12 +266,14 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
           proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx), idx))
     if (draw_endstate_value_p && draw_endstate_p) {
         const past_p = past_endstate_p(draw_endstate_value_p)
-        draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g); return
+        draw_endstate_stones(each_coord, past_p, cheap_shadow_p, show_until,
+                             stone_radius, g)
+        return
     }
     // (1) ownership, (2) shadow, (3) stone etc. in this order
     draw_endstate_p &&
         each_coord((h, xy, idx) => draw_endstate(h.endstate, xy, stone_radius, g))
-    each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, g))
+    each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
@@ -286,11 +290,12 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                                   && draw_winrate_mapping_line(h, xy, unit, g))
 }
 
-function draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g) {
+function draw_endstate_stones(each_coord, past_p, cheap_shadow_p,
+                              show_until, stone_radius, g) {
     if (past_p && !R.prev_endstate_clusters) {return}
     const d = (!truep(show_until) || show_until === R.move_count) ? R.endstate_diff_interval : (R.move_count - show_until)
     const sign = Math.sign(d)
-    each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, g))
+    each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
         const stone_p = h.stone
         past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
@@ -436,12 +441,12 @@ function draw_loss(h, xy, radius, g) {
     draw(xy, radius * size - line_width, g)
 }
 
-function draw_shadow_maybe(h, xy, radius, g) {
+function draw_shadow_maybe(h, xy, radius, cheap_shadow_p, g) {
     if (!h.stone) {return}
     const {stone_image, style} = stone_style_for(h)
     const shadow_p = stone_image || (style && style !== 'paint')
     if (!shadow_p) {return}
-    R.long_busy ? draw_cheap_shadow(xy, radius, g) :
+    cheap_shadow_p ? draw_cheap_shadow(xy, radius, g) :
         draw_gorgeous_shadow(xy, radius, g)
 }
 
