@@ -690,17 +690,17 @@ document.onkeydown = e => {
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
-    const escape = (key === "Escape" || key === "C-[")
+    const escape = (key === "Escape" || key === "C-["), target = e.target
     escape && hide_dialog()
-    switch (key === "Enter" && e.target.id) {
+    switch (key === "Enter" && target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "auto_play_sec": start_auto_play(); return
     case "player_black": case "player_white": case "komi": case "sgf_rule":
         set_game_info(); return
     }
-    if ((e.target.tagName === "INPUT" && e.target.type !== "button") ||
-        e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") {
-        escape && e.target.blur(); return
+    if ((target.tagName === "INPUT" && target.type !== "button") ||
+        target.tagName === "SELECT" || target.tagName === "TEXTAREA") {
+        escape && target.blur(); return
     }
     // GROUP 2: allow auto-repeat
     const busy = (...a) => m('busy', ...a)  // stop analysis in auto-repeat
