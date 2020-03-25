@@ -448,7 +448,7 @@ function menu_template(win) {
           () => duplicate_sequence(until_current_move_p, true)
     const file_menu = menu('File', [
         item('New empty board', 'CmdOrCtrl+N', () => new_empty_board(), true),
-        item('New handicap game', undefined, ask_handicap_stones, true),
+        item('New handicap game', 'Shift+H', ask_handicap_stones, true),
         ...[19, 13, 9].map(n => item(`New ${n}x${n} board`, undefined,
                                      () => new_empty_board(n), true,
                                      n === 19 || AI.katago_p())),
