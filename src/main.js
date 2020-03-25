@@ -63,14 +63,8 @@ function parse_option(cur, succ) {
     const merge_with_preset = orig => {
         // accept obsolete key "shortcut" for backward compatibility
         orig.shortcut && (orig.preset = [...(orig.preset || []), ...orig.shortcut])
-        merge(option, orig); from_preset(option)
+        merge(option, orig); expand_preset(option.preset)
         update_white_preset(option.preset)
-    }
-    const from_preset = orig => {
-        const preset = orig.preset; if (!preset) {return}
-        expand_preset(preset)
-        const {leelaz_command, leelaz_args, label} = preset[0]
-        merge(engine_param, {leelaz_command, leelaz_args, preset_label: {label}})
     }
     const update_white_preset = preset => {
         const new_white_preset = (preset || []).map(h => {
@@ -190,7 +184,10 @@ fs.access(option.sabaki_command, null,
 
 // app
 
-app.on('ready', () => {start_leelaz(); new_window('double_boards'); restore_session()})
+app.on('ready', () => {
+    restart_leelaz_by_preset(option.preset[0]); new_window('double_boards')
+    restore_session()
+})
 app.on('window-all-closed', app.quit)
 app.on('quit', () => {store_session(); kill_all_leelaz()})
 
@@ -640,15 +637,13 @@ function apply_preset(rule, win) {
     const extended = {...cur, ...rule}
     const {label, empty_board, board_type, weight_file, weight_file_for_white,
            engine_for_white} = rule
-    const {leelaz_command, leelaz_args} = extended
     const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
     const need_restart = cur && (f(cur) !== f(extended))
     const load = (switcher, file) => switcher(() => load_weight_file(file))
     const preset_label = {label: label || ''}
     empty_board && !game.is_empty() && new_empty_board()
     board_type && set_board_type(board_type, win)
-    need_restart &&
-        merge_option_and_restart({leelaz_command, leelaz_args, preset_label})
+    need_restart && restart_leelaz_by_preset(extended)
     // backward compatibility for obsolete "weight_file" and "weight_file_for_white"
     weight_file && load_weight_file(weight_file)
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
@@ -669,7 +664,9 @@ function expand_preset(preset) {
     })
 }
 
-function merge_option_and_restart(opts) {
+function restart_leelaz_by_preset(rule) {
+    const {leelaz_command, leelaz_args, label} = rule
+    const opts = {leelaz_command, leelaz_args, preset_label: {label: label || ''}}
     unload_leelaz_for_white(); kill_all_leelaz()
     merge(engine_param, opts); start_leelaz()
 }
