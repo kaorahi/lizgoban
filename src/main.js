@@ -945,6 +945,7 @@ function update_ponder() {
 function init_from_renderer() {}
 
 function set_board() {
+    game.board_size !== board_size() && toast('Changing board size...')
     AI.set_board(P.set_board(game), game.get_komi(), get_gorule(), R.show_endstate)
     AI.switch_leelaz(); update_let_me_think(true)
 }
