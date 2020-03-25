@@ -1271,7 +1271,10 @@ function leelaz_start_args(given_leelaz_command, given_leelaz_args, label) {
     const leelaz_args = given_leelaz_args.slice()
     const preset_label = {label: label || ''}
     const h = {leelaz_command, leelaz_args, preset_label, working_dir,
-               tuning_handler: make_tuning_handler(),
+               // weight_file is set for consistency with set_engine_for_white()
+               // so that cached engines are reused correctly
+               // (cf. start_args_equal())
+               tuning_handler: make_tuning_handler(), weight_file: null,
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves', 'engine_log_line_length']
