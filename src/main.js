@@ -573,13 +573,16 @@ function board_type_menu_item(label, type, win) {
 function gorule_submenu() {
     return katago_supported_rules.map(label => ({
         label, type: 'radio', checked: get_gorule() === label,
-        click: () => {set_gorule(label); update_all()},
+        click: () => {set_gorule(label, true); update_all()},
     }))
 }
 function get_gorule(stored_p) {
     return (!stored_p && game.gorule) || get_stored('gorule') || default_gorule
 }
-function set_gorule(new_gorule) {set_stored('gorule', (game.gorule = new_gorule))}
+function set_gorule(new_gorule, set_as_default_p) {
+    if (!katago_supported_rules.includes(new_gorule)) {wink(); return}
+    game.gorule = new_gorule; set_as_default_p && set_stored('gorule', new_gorule)
+}
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
     const toggle_it = () => toggle_stored(key)
@@ -913,8 +916,8 @@ function info_text() {
     return message
 }
 function set_game_info(player_black, player_white, komi, sgf_gorule, gorule, comment) {
+    set_gorule(gorule, gorule !== game.gorule)
     merge(game, {player_black, player_white, komi, sgf_gorule})
-    katago_supported_rules.includes(gorule) && merge(game, {gorule})
     merge(game.ref_current(), {comment})
 }
 function endstate_diff_interval_adder(k) {
