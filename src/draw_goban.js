@@ -265,8 +265,11 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         const past_p = past_endstate_p(draw_endstate_value_p)
         draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g); return
     }
+    // (1) ownership, (2) shadow, (3) stone etc. in this order
+    draw_endstate_p &&
+        each_coord((h, xy, idx) => draw_endstate(h.endstate, xy, stone_radius, g))
+    each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => {
-        draw_endstate_p && draw_endstate(h.endstate, xy, stone_radius, g)
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g) :
             h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
@@ -286,6 +289,7 @@ function draw_endstate_stones(each_coord, past_p, show_until, stone_radius, g) {
     if (past_p && !R.prev_endstate_clusters) {return}
     const d = (!truep(show_until) || show_until === R.move_count) ? R.endstate_diff_interval : (R.move_count - show_until)
     const sign = Math.sign(d)
+    each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => {
         const stone_p = h.stone
         past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
@@ -350,25 +354,31 @@ function past_endstate_p(flag) {return flag === 'past'}
 // stone
 
 function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
+    const {b_color, w_color, stone_image} = stone_color_and_image(h)
+    const hide_loss_p = h.suggest || h.future_stone
+    const draw_stone_by_image = () => draw_square_image(stone_image, xy, radius, g)
+    const draw_stone_by_paint = () => {
+        g.lineWidth = 1; g.strokeStyle = b_color
+        g.fillStyle = h.black ? b_color : w_color
+        edged_fill_circle(xy, radius, g)
+    }
+    stone_image ? draw_stone_by_image() : draw_stone_by_paint()
+    draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
+    draw_last_p && h.last && h.move_count > R.handicaps &&
+        draw_last_move(h, xy, radius, g)
+    h.movenums && draw_movenums(h, xy, radius, g)
+}
+
+function stone_color_and_image(h) {
     const [b_color, w_color] = h.displayed_colors ||
           (h.maybe ? [MAYBE_BLACK, MAYBE_WHITE] :
            h.maybe_empty ? [PALE_BLACK, PALE_WHITE] :
            h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
            [BLACK, WHITE])
     const normal_stone_p = (b_color === BLACK)
-    const hide_loss_p = h.suggest || h.future_stone
-    const stone_image = h.black ? R.image.black_stone : R.image.white_stone
-    if (stone_image && normal_stone_p) {
-        draw_square_image(stone_image, xy, radius, g)
-    } else {
-        g.lineWidth = 1; g.strokeStyle = b_color
-        g.fillStyle = h.black ? b_color : w_color
-        edged_fill_circle(xy, radius, g)
-    }
-    draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
-    draw_last_p && h.last && h.move_count > R.handicaps &&
-        draw_last_move(h, xy, radius, g)
-    h.movenums && draw_movenums(h, xy, radius, g)
+    const stone_image = normal_stone_p && R.image &&
+          (h.black ? R.image.black_stone : R.image.white_stone)
+    return {b_color, w_color, stone_image}
 }
 
 function draw_movenums(h, xy, radius, g) {
@@ -414,6 +424,19 @@ function draw_loss(h, xy, radius, g) {
     if (!draw) {return}
     g.strokeStyle = color; g.lineWidth = line_width
     draw(xy, radius * size - line_width, g)
+}
+
+function draw_shadow_maybe(h, [x, y], radius, g) {
+    if (!h.stone) {return}
+    const {stone_image} = stone_color_and_image(h); if (!stone_image) {return}
+    const f = (mag, alpha, shift_p) => {
+        const dr = radius * mag, r_in = radius - dr, r_out = radius + dr * 3
+        const color = `rgba(0,0,0,${alpha})`
+        const [cx, cy] = shift_p ? [x + dr, y + dr] : [x, y]
+        g.fillStyle = radial_gradation(cx, cy, r_in, r_out, color, TRANSPARENT, g)
+        fill_circle([cx, cy], r_out, g)
+    }
+    f(0.1, 0.3, true)
 }
 
 // suggestions

@@ -95,7 +95,15 @@ function fill_text_with_modifier(g, font_modifier, fontsize, text, x, y, max_wid
 function set_font(fontsize, g) {g.font = '' + fontsize + 'px Arial'}
 
 function side_gradation(x0, x1, color0, color1, g) {
-    const grad = g.createLinearGradient(x0, 0, x1, 0)
+    return gradation_gen(g.createLinearGradient(x0, 0, x1, 0), color0, color1, g)
+}
+
+function radial_gradation(x, y, radius0, radius1, color0, color1, g) {
+    return gradation_gen(g.createRadialGradient(x, y, radius0, x, y, radius1),
+                         color0, color1, g)
+}
+
+function gradation_gen(grad, color0, color1, g) {
     grad.addColorStop(0, color0); grad.addColorStop(1, color1)
     return grad
 }
@@ -166,7 +174,7 @@ module.exports = {
     rev_triangle_around, fill_rev_triangle_around, edged_fill_rev_triangle_around,
     x_shape_around, draw_square_image,
     fill_text, fill_text_with_modifier, set_font,
-    side_gradation, hsla,
+    side_gradation, radial_gradation, hsla,
     // math
     flip_maybe, tics_until, log10, f2s, kilo_str,
 }
