@@ -139,15 +139,7 @@ function append_endstate_tag_maybe(h) {
     return h_copy
 }
 function get_endstate_diff_interval() {return endstate_diff_interval}
-function add_endstate_diff_interval(k) {
-    // only allow an even number as the interval in leelaz_for_endstate
-    // since its estimation tends to oscillate with black / white turns
-    const [unit, minimum] =
-          (AI.another_leelaz_for_endstate_p() && !AI.katago_p()) ? [10, 2] : [1, 1]
-    change_endstate_diff_target(() => {
-        endstate_diff_interval = clip(endstate_diff_interval + k * unit, minimum)
-    })
-}
+function set_endstate_diff_interval(k) {endstate_diff_interval = k}
 function set_endstate_diff_from(k) {
     change_endstate_diff_target(() => {endstate_diff_from = k})
 }
@@ -356,7 +348,7 @@ module.exports = {
     set_board,
     // endstate
     append_endstate_tag_maybe,
-    get_endstate_diff_interval, add_endstate_diff_interval, set_endstate_diff_from,
+    get_endstate_diff_interval, set_endstate_diff_interval, set_endstate_diff_from,
     // renderer
     set_and_render,
     // util

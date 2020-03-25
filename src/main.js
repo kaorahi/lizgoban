@@ -280,7 +280,7 @@ function renderer_gen(channel, win_prop_p, ...args) {
 const {set_endstate_diff_from} = P
 const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
-    copy_sgf_to_clipboard, set_endstate_diff_from, update_menu,
+    copy_sgf_to_clipboard, set_endstate_diff_interval, set_endstate_diff_from, update_menu,
 }
 const api = merge({}, simple_api, {
     new_window, init_from_renderer,
@@ -513,11 +513,10 @@ function menu_template(win) {
                      store_toggler_menu_item('Score bar', 'score_bar', 'Shift+C')),
         ...insert_if(AI.support_endstate_p(),
             sep,
-            store_toggler_menu_item(`Ownership (diff: ${P.get_endstate_diff_interval()} moves)`, 'show_endstate', 'Shift+E'),
-            item('...longer diff', '{', endstate_diff_interval_adder(1),
-                 false, R.show_endstate, true),
-            item('...shorter diff', '}', endstate_diff_interval_adder(-1),
-                 false, R.show_endstate, true))
+            store_toggler_menu_item(`Ownership`, 'show_endstate', 'Shift+E'),
+            item(`Ownership diff (${P.get_endstate_diff_interval()} moves)`,
+                 undefined, (this_item, win) => ask_endstate_diff_interval(win),
+                 false, R.show_endstate, true)),
     ])
     const tool_menu = menu('Tool', [
         item('Auto replay', 'Shift+A', ask_sec(true), true),
@@ -944,9 +943,11 @@ function set_game_info(player_black, player_white, komi, sgf_gorule, gorule, com
     merge(game, {player_black, player_white, komi, sgf_gorule})
     merge(game.ref_current(), {comment})
 }
-function endstate_diff_interval_adder(k) {
-    return () => P.add_endstate_diff_interval(k)
+function ask_endstate_diff_interval(win) {
+    generic_input_dialog(win, 'Ownership diff interval (moves):',
+                         P.get_endstate_diff_interval(), 'set_endstate_diff_interval')
 }
+function set_endstate_diff_interval(k) {P.set_endstate_diff_interval(k)}
 function tag_or_untag() {
     if (game.move_count === 0) {wink(); return}
     game.add_or_remove_tag(); P.update_info_in_stones()
