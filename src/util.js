@@ -58,11 +58,12 @@ let debug_log_p = false
 E.debug_log = (arg, limit_len) => (typeof arg === 'boolean') ?
     (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len))
 function do_debug_log(arg, limit_len) {
-    const HALF = Math.floor((limit_len || Infinity) / 2)
-    const s = E.to_s(arg), over = s.length - HALF * 2
-    const snip = str => str.slice(0, HALF) + `{...${over}...}` + str.slice(- HALF)
     const sec = `(${(new Date()).toJSON().replace(/(.*:)|(.Z)/g, '')}) `
-    console.log(sec + (over <= 0 ? s : snip(s)))
+    console.log(sec + snip(E.to_s(arg), limit_len))
+}
+E.snip = (str, limit_len) => {
+    const HALF = Math.floor((limit_len || Infinity) / 2), over = str.length - HALF * 2
+    return over <= 0 ? str : str.slice(0, HALF) + `{...${over}...}` + str.slice(- HALF)
 }
 
 E.change_detector = init_val => {
