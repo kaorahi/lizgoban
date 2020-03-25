@@ -57,6 +57,7 @@ function update_for_mac() {mac_p() && main('update_menu')}  // for board_type_me
 
 function setq(x, val) {Q(x).textContent = val}
 function setdebug(x) {setq('#debug', JSON.stringify(x))}
+globalize(setdebug)
 
 // for debug from Developper Tool
 function send_to_leelaz(cmd) {main('send_to_leelaz', cmd)}
