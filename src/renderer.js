@@ -146,7 +146,7 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     try_thumbnail()
 })
 
-ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog', true))
+ipc.on('ask_auto_play_sec', (e) => show_dialog('#auto_play_sec_dialog'))
 ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules) => {
     // defaults
     Q('#player_black').value = R.player_black
