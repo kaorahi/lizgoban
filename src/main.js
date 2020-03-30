@@ -653,7 +653,10 @@ function preset_menu_for_recent(menu_tools) {
           `${black.preset_label_text}${white ? " / " + white.preset_label_text : ""}` +
           ([' (current)', ' (prev)'][k] || '')
     const accel = k => (k === 1 && 'Shift+T')
-    const item_for = (info, k) => item(label(info, k), accel(k), () => AI.restore(k))
+    const item_for = (info, k) => {
+        const lab = label(info, k), doit = () => {toast(lab); AI.restore(k)}
+        return item(lab, accel(k), doit)
+    }
     const is = AI.info_for_restore().map(item_for)
     return menu('Recent', [is[1], sep, ...is.slice(2), sep, is[0]])
 }
