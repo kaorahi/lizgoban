@@ -77,14 +77,14 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
 function draw_winrate_graph_future(w, fontsize, sr2coord, g) {
     const [x, y] = sr2coord(clip_handicaps(R.move_count), 50)
     const [_, y_base] = sr2coord(R.handicaps, 0)
-    const paint = (partial, l_alpha, r_alpha, y0, y1) => {
+    const paint = (dx, l_alpha, r_alpha, y0, y1) => {
         const c = a => `rgba(255,255,255,${a})`
-        const grad = side_gradation(x, (1 - partial) * x + partial * w,
+        const grad = side_gradation(x, x + dx,
                                     c(l_alpha), c(r_alpha), g)
         g.fillStyle = grad; fill_rect([x, y0], [w, y1], g)
     }
     const alpha = 0.2
-    paint(0.5, alpha, 0, 0, y); paint(1, alpha, alpha, y, y_base)
+    paint(w * 0.05, alpha, 0, 0, y_base)
     // move number
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillStyle = WHITE
@@ -113,7 +113,7 @@ function draw_winrate_graph_curve_for(winrate_history, style, sr2coord, g) {
         g.strokeStyle = thin ? PALE_BLUE : style ? style :
             isNaN(h.move_eval) ? GRAY : h.pass ? PALE_BLUE :
             (h.move_eval < 0) ? "#e00" : (s > 1 && !truep(h.predict)) ? "#ff0" : "#0c2"
-        g.lineWidth = (thin ? 1 : s <= R.move_count ? 3 : 1)
+        g.lineWidth = (thin ? 1 : 3)
         cur = sr2coord(s, h.r); prev && line(prev, cur, g); prev = cur
     })
 }
