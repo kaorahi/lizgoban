@@ -1454,8 +1454,9 @@ function make_tuning_handler() {
 }
 function tuning_is_done() {
     const message = 'Finished initial tuning.'
-    dialog.showMessageBox({type: "info",  buttons: ["OK"], message})
-    tuning_message = null; resume(); update_all()
+    const action = () => {resume(); update_all()}
+    dialog.showMessageBox({type: "info",  buttons: ["OK"], message}).then(action)
+    tuning_message = null; update_all()
 }
 
 function illegal_handler({move, is_black, move_count}) {
