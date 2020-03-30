@@ -28,6 +28,7 @@ const default_option = {
     sabaki_command: default_path_for('sabaki'),
     minimum_auto_restart_millisec: 5000,
     autosave_deleted_boards: 5,
+    autosave_cached_suggestions: 3,
     autosave_sec: 300,
     wait_for_startup: true,
     use_bogoterritory: true,
@@ -208,7 +209,7 @@ app.on('ready', () => {
     restore_session()
 })
 app.on('window-all-closed', app.quit)
-app.on('quit', () => {store_session(); kill_all_leelaz()})
+app.on('quit', () => {store_session(true); kill_all_leelaz()})
 
 function start_leelaz(...args) {
     debug_log("option: " + JSON.stringify(option))
@@ -1167,6 +1168,12 @@ function switch_to_nth_sequence(n) {
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
 
+// deleted_sequences:
+// Each element of deleted_sequences is a game or an SGF string
+// so that create_games_from_sgf() is called not in restore_session()
+// but in until pop_deleted_sequence() lazily.
+// We need this to recover cached suggestions into the "current" engine's
+// record from autosaved games.
 const deleted_sequences = []
 const max_deleted_sequences = 100
 function push_deleted_sequence(sequence) {
@@ -1174,8 +1181,23 @@ function push_deleted_sequence(sequence) {
     const expired = deleted_sequences.length - max_deleted_sequences
     expired > 0 && deleted_sequences.splice(0, expired)
 }
-function pop_deleted_sequence() {return deleted_sequences.pop()}
+function pop_deleted_sequence() {
+    const popped = deleted_sequences.pop()
+    return (typeof popped === 'string') ? create_games_from_sgf(popped)[0] : popped
+}
 function exist_deleted_sequence() {return !empty(deleted_sequences)}
+function empty_deleted_sequence_p(game_or_sgf) {
+    return !(typeof game_or_sgf === 'string') && game_or_sgf.is_empty()
+}
+function sgf_from_deleted_sequence(game_or_sgf, cache_suggestions_p) {
+    const too_large = 20 * 400  // rough bound of letters * moves
+    const remove_cached_suggestons_maybe = sgf =>
+          (cache_suggestions_p || sgf.length < too_large) ?
+          sgf : create_games_from_sgf(sgf)[0].to_sgf()
+    return (typeof game_or_sgf === 'string') ?
+        remove_cached_suggestons_maybe(game_or_sgf) :
+        game_or_sgf.to_sgf(cache_suggestions_p)
+}
 
 function sequence_prop_of(given_game) {
     const pick_tag = h => {
@@ -1191,19 +1213,23 @@ function sequence_prop_of(given_game) {
 // autosave
 
 const stored_session = new ELECTRON_STORE({name: 'lizgoban_session'})
-function store_session() {
+function store_session(cache_suggestions_p) {
     debug_log('store_session start')
+    const nonempty = g => !empty_deleted_sequence_p(g)
     // reverse sequence so that one can recover the same order by repeated ctrl-z
-    const rev_seq = sequence.slice().reverse()
-    const deleted_seq = deleted_sequences.slice(- option.autosave_deleted_boards)
-    const saved_seq = [...deleted_seq, ...rev_seq].filter(g => !g.is_empty())
-    stored_session.set('sequences', saved_seq.map(g => g.to_sgf()))
+    const rev_seq = sequence.slice().reverse().filter(nonempty)
+    const deleted_seq =
+          deleted_sequences.slice(- option.autosave_deleted_boards).filter(nonempty)
+    const saved_seq = [...deleted_seq, ...rev_seq]
+    const cache_lim = Math.max(rev_seq.length, option.autosave_cached_suggestions)
+    const cache_p = k => cache_suggestions_p && (saved_seq.length - k) <= cache_lim
+    const saved_sgf = saved_seq.map((g, k) => sgf_from_deleted_sequence(g, cache_p(k)))
+    stored_session.set('sequences', saved_sgf)
     debug_log('store_session done')
 }
 function restore_session() {
     debug_log('restore_session start')
-    const loaded_seq = flatten(stored_session.get('sequences', []).map(create_games_from_sgf))
-    deleted_sequences.push(...loaded_seq)
+    deleted_sequences.push(...stored_session.get('sequences', []))
     debug_log('restore_session done')
 }
 
