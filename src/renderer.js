@@ -494,6 +494,8 @@ function mouse2move(e, coord2idx) {
 /////////////////////////////////////////////////
 // thmubnails
 
+const max_sequence_length_for_thumbnail = 50  // for safety
+
 // (1) record thumbnail
 
 // To avoid wrong thumbnail recording,
@@ -513,6 +515,7 @@ function take_thumbnail(given_id, given_stones, given_trial_p) {
 
 let reusable_canvas = null
 function take_thumbnail_of_stones(stones, proc, trail_p) {
+    if (R.sequence_length > max_sequence_length_for_thumbnail) {return}
     // note: main_canvas can be rectangular by "x" key
     const [size, _] = get_canvas_size(main_canvas)
     const canvas = reusable_canvas || document.createElement("canvas")
@@ -608,7 +611,8 @@ function update_thumbnail_contents(ids, div, preview, scrollp) {
 
 function discard_unused_thumbnails() {
     const orig = thumbnails; thumbnails = []
-    R.sequence_ids.forEach(id => (thumbnails[id] = orig[id]))
+    R.sequence_ids.slice(0, max_sequence_length_for_thumbnail)
+        .forEach(id => (thumbnails[id] = orig[id]))
 }
 
 function current_sequence_id() {return R.sequence_ids[R.sequence_cursor]}
