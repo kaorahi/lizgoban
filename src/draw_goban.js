@@ -133,8 +133,9 @@ function draw_endstate_goban(canvas, options) {
 
 function draw_thumbnail_goban(canvas, stones, trial_p) {
     const opts = {draw_last_p: true, draw_next_p: true, pausing_p: trial_p}
-    each_stone(stones, h => (h.displayed_tag = h.tag))
-    draw_goban(canvas, stones, opts)
+    const displayed_stones = copy_stones_for_display(stones)
+    each_stone(displayed_stones, h => (h.displayed_tag = h.tag))
+    draw_goban(canvas, displayed_stones, opts)
 }
 
 /////////////////////////////////////////////////
@@ -653,8 +654,8 @@ function goban_params(canvas) {
 
 // stones
 
-function copy_stones_for_display() {
-    return R.stones.map(row => row.map(s => merge({}, s)))
+function copy_stones_for_display(stones) {
+    return (stones || R.stones).map(row => row.map(s => merge({}, s)))
 }
 
 function each_stone(stones, proc) {
