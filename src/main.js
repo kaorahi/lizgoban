@@ -130,7 +130,8 @@ function create_games_from_sgf(sgf_str) {
                       'komi', 'gorule', 'endstate', 'score_without_komi']
         keys.forEach(k => truep(cur[k]) && (cur_by_engine[k] = cur[k]))
     })
-    gs.forEach(g => {set_gorule(g); cook_lizzie_cache(g)}); return gs
+    const f = g => {set_gorule(g); cook_lizzie_cache(g); P.set_ambiguity_etc_in_game(g)}
+    gs.forEach(f); return gs
 }
 
 // state

@@ -273,6 +273,13 @@ function get_ambiguity_etc(stones, endstate, game, move_count) {
     return {ambiguity, unsafe_stones}
 }
 
+function set_ambiguity_etc_in_game(game) {
+    game.forEach(h => {
+        const {endstate, move_count} = h, stones = game.stones_at(move_count)
+        merge(h, get_ambiguity_etc(stones, endstate, game, move_count))
+    })
+}
+
 function make_lagged_aa(max_diff) {
     let aa = [[]]
     const update = (i, j, val) => {
@@ -431,4 +438,5 @@ module.exports = {
     // util
     stone_for_history_elem, update_info_in_stones, weight_info_text,
     get_initial_b_winrate, add_info_to_stones, renew_game,
+    set_ambiguity_etc_in_game,
 }
