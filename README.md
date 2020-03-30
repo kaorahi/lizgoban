@@ -79,7 +79,7 @@ with the file config.json:
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
-Here is a more practical example of config.json:
+Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1.3.4.
 
 ~~~~
 {
@@ -99,14 +99,17 @@ Here is a more practical example of config.json:
             "label": "KataGo",
             "accelerator": "F2",
             "engine": ["/foo/bar/katago", "gtp",
+                       "-override-config", "analysisPVLen=50, defaultBoardSize=19",
                        "-model", "/foo/kata_net/g104-b20c256.gz",
                        "-config", "/foo/bar/gtp.cfg"]
         },
         {
-            "label": "KataGo for handicap games",
+            "label": "KataGo (handicap)",
             "engine": ["/foo/bar/katago", "gtp",
+                       "-override-config",
+                       "analysisPVLen=50, defaultBoardSize=19, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
                        "-model", "/foo/kata_net/g104-b20c256.gz",
-                       "-config", "/foo/bar/gtp_handicap.cfg"]
+                       "-config", "/foo/bar/gtp.cfg"]
         },
         {
             "label": "LZ",
@@ -143,6 +146,9 @@ Here is a more practical example of config.json:
 It is recommended to put all Leela Zero weights into one directory and all KataGo weights into another directory for using [Load network weights] menu conveniently.
 Delete obsolete "weight_dir" in your config.json if you wrote it.
 
+Notes on KataGo:
+For high handicap games, you have to set `playoutDoublingAdvantage` by hand because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. After KataGo 1.3.4, you can add `defaultBoardSize=19` as the above example to shorten the initialization of 9x9 and 13x13. ("=19" is ok. It is replaced with 9 or 13 inside LizGoban automatically.)
+
 For quick experiments, you can also use
 
     npm start -- -j '{"sgf_dir": "/foo/bar/baz/"}'
@@ -152,38 +158,6 @@ For quick experiments, you can also use
 on Mac or Linux. The latter option overwrites the former one in the second example.
 
 In addition, LizGoban reads external/config.json (and config.json in the "working directory" in the above (*1)) beforehand if they exist.
-
-#### To use KataGo and its score/ownership estimations:
-
-Set KataGo like the above config.json and select it in [Preset] menu. See "KataGo" section in [Help] menu for details.
-
-For high handicap games, you have to set `playoutDoublingAdvantage` by hand because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. This is an example of config.json for KataGo v1.3.3.
-
-~~~~
-...
-            "engine": ["/foo/bar/katago", "gtp",
-                       "-override-config",
-                       "dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
-                       "-model", "/foo/kata_net/g104-b20c256.gz",
-                       "-config", "/foo/bar/gtp.cfg"]
-...
-~~~~
-
-After KataGo v1.3.4, you can add `defaultBoardSize=19` into you config.json to shorten the initialization of 9x9 and 13x13. ("=19" is ok. It is replaced with 9 or 13 inside LizGoban automatically.)
-
-~~~~
-            "engine": ["/foo/bar/katago", "gtp",
-                       "-override-config", "defaultBoardSize=19",
-                       "-model", "/foo/kata_net/g104-b20c256.gz",
-                       "-config", "/foo/bar/gtp.cfg"]
-~~~~
-
-They can be combined as follows.
-
-~~~
-                       "-override-config",
-                       "defaultBoardSize=19, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
-~~~
 
 #### To replace images of board and stones (Experimental)
 
@@ -218,6 +192,7 @@ Check "Tool > Experimental > Cache suggestions" in the menu. This is expected to
 Incompatibilities:
 
 * Upgrade libraries (Electron 8, etc.). So you may need to do "npm install" again.
+* Recommended config.json is modified for KataGo 1.3.4. (See above.)
 * "weight_dir" in config.json is obsolete now. (See above.)
 * "Komi" and "Info" are moved from [Tool] to [Edit] menu.
 * "label_for_white" is added to "preset" in config.json.
