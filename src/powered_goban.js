@@ -27,16 +27,21 @@ function set_board(given_game) {
 function set_stones(stones) {
     R.stones = stones; add_info_to_stones(R.stones, game)
     R.prev_endstate_clusters = null
+    set_tentative_endstate_maybe()  // avoid flicker of ownerships
 }
+
+function renew_game() {set_endstate_obsolete()}
 
 /////////////////////////////////////////////////
 // receive analysis from leelaz
 
+// (obsolete comment & variable. but keep conventional code as far as possible here.)
 // This is not equal to R.move_count and game.move_count
 // for repeated (fast) undo/redo since showboard is deferred
 // in this case for efficiency.
 let leelaz_move_count = 0
 
+// (obsolete. but keep conventional code as far as possible here.)
 function endstate_handler(h) {
     if (M.is_pausing()) {return}
     const endstate_setter = update_p => {
@@ -49,6 +54,7 @@ function endstate_handler(h) {
         // because update_endstate_diff depends on game.ref_current().endstate
         leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
         add_endstate_to_stones(R.stones, R.endstate, leelaz_move_count, update_p)
+        set_endstate_uptodate(R.endstate, leelaz_move_count)
     }
     set_renderer_state(h)
     AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
@@ -59,8 +65,7 @@ function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
-    h.ownership &&
-        (cur.endstate = h.endstate = endstate_from_ownership(h.ownership))
+    h.ownership && (cur.endstate = endstate_from_ownership(h.ownership))
     truep(h.score_without_komi) && (cur.score_without_komi = h.score_without_komi)
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
     const keys = ['suggest', 'visits', 'b_winrate']
@@ -69,7 +74,12 @@ function suggest_handler(h) {
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = cur
     R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, mc, true)
-    set_and_render_maybe({...h, score_without_komi}); on_suggest()
+    endstate && set_endstate_uptodate(endstate)
+    // is_endstate_drawable is true if...
+    // (1) ownership is given here, or
+    // (2) endstate_handler() was called already
+    const is_endstate_drawable = is_endstate_uptodate()
+    set_and_render_maybe({...h, is_endstate_drawable, score_without_komi}); on_suggest()
 }
 
 function endstate_from_ownership(ownership) {
@@ -130,6 +140,19 @@ function set_and_render_gen(is_board_changed, ...args) {
 /////////////////////////////////////////////////
 // endstate
 
+let endstate_array, endstate_move_count
+function set_endstate_uptodate(endstate, move_count) {
+    endstate_array = endstate
+    endstate_move_count = truep(move_count) ? move_count : game.move_count
+}
+function set_endstate_obsolete() {[endstate_array, endstate_move_count] = [null, null]}
+function is_endstate_uptodate() {return endstate_move_count === game.move_count}
+function is_endstate_nearly_uptodate(lim) {
+    return Math.abs(endstate_move_count - game.move_count) <= lim
+}
+function recall_endstate() {return endstate_array}
+set_endstate_obsolete()
+
 function append_endstate_tag_maybe(h) {
     const h_copy = merge({}, h)
     AI.support_endstate_p() && R.show_endstate &&
@@ -149,18 +172,37 @@ function change_endstate_diff_target(proc) {
     endstate_diff_move_count() !== old && update_endstate_diff()
 }
 
+function set_tentative_endstate_maybe() {
+    const {endstate} = game.ref_current(), pausing = M.is_pausing()
+    const update_p = endstate && !pausing
+    const reuse_p = !M.is_busy() && is_endstate_nearly_uptodate(pausing ? 0 : 20)
+    update_p ? set_endstate_uptodate(endstate) :
+        reuse_p ? do_nothing() : set_endstate_obsolete()
+    const es = recall_endstate()
+    es && tentatively_add_endstate_to_stones(R.stones, es)
+    R.is_endstate_drawable = !!es
+}
+
 function add_endstate_to_stones(stones, endstate, move_count, update_diff_p) {
     if (!endstate) {return}
-    aa_each(stones, (s, i, j) => (s.endstate = aa_ref(endstate, i, j)))
+    purely_add_endstate_to_stones(stones, endstate)
     update_diff_p && update_endstate_diff()
     merge(game.ref(move_count), get_ambiguity_etc(stones, game, move_count))
 }
-function update_endstate_diff() {
+function tentatively_add_endstate_to_stones(stones, endstate) {
+    purely_add_endstate_to_stones(stones, endstate)
+    update_endstate_diff(true)
+}
+function purely_add_endstate_to_stones(stones, endstate) {
+    aa_each(stones, (s, i, j) => (s.endstate = aa_ref(endstate, i, j)))
+}
+function update_endstate_diff(tentatively) {
     const prev = endstate_diff_move_count(), sign = prev < game.move_count ? 1 : -1
     const prev_endstate = game.ref(prev).endstate
     const ok = prev_endstate && game.ref_current().endstate
+    const tentatively_ok = prev_endstate && tentatively
     aa_each(R.stones, (s, i, j) =>
-            (s.endstate_diff = ok ?
+            (s.endstate_diff = (ok || tentatively_ok) ?
              sign * (s.endstate - aa_ref(prev_endstate, i, j)) : 0))
     R.prev_endstate_clusters = ok && get_endstate_clusters(prev_endstate, prev)
 }
@@ -353,5 +395,5 @@ module.exports = {
     set_and_render,
     // util
     stone_for_history_elem, update_info_in_stones, weight_info_text,
-    get_initial_b_winrate, add_info_to_stones,
+    get_initial_b_winrate, add_info_to_stones, renew_game,
 }

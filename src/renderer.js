@@ -33,6 +33,7 @@ const R = {
     move_history: [],
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [], sequence_props: {},
     history_tags: [], endstate_clusters: [], prev_endstate_clusters: null,
+    is_endstate_drawable: false,
     lizzie_style: false,
     window_id: -1,
     image_paths: null, image: null, stone_image_p: true, board_image_p: true,
@@ -736,7 +737,8 @@ document.onkeydown = e => {
         escape && target.blur(); return
     }
     // GROUP 2: allow auto-repeat
-    const busy = (...a) => m('busy', ...a)  // stop analysis in auto-repeat
+    const busy = (...a) =>
+          e.repeat ? m('busy', ...a) : m(...a)  // stop analysis in auto-repeat
     const skip_maybe = (...a) => e.repeat ? with_skip(busy, ...a) : busy(...a)
     switch (!R.attached && key) {
     case "ArrowLeft": case "ArrowUp":

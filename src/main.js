@@ -981,9 +981,7 @@ function set_or_unset_busy(bool) {
 }
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
-function update_ponder() {
-    AI.set_pondering(pausing, busy); pausing && (R.endstate = null)
-}
+function update_ponder() {AI.set_pondering(pausing, busy)}
 function init_from_renderer() {}
 
 function set_board() {
@@ -1150,6 +1148,7 @@ function replace_sequence(new_game) {
 
 function switch_to_nth_sequence(n) {
     AI.cancel_past_requests()  // avoid hang-up caused by fast repeated operations
+    P.renew_game()
     game = sequence[sequence_cursor = n]
 }
 function next_sequence_effect() {renderer('slide_in', 'next')}

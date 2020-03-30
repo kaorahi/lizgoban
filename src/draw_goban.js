@@ -168,7 +168,8 @@ function draw_goban(canvas, stones, opts) {
         tag_clickable_p, hovered_move, show_until,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
-    draw_endstate_p && draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
+    draw_endstate_p && !hide_endstate_p() &&
+        draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     // mouse events
     const mouse_handler = handle_mouse_on_goban || do_nothing
     mouse_handler(canvas, coord2idx, read_only, tag_clickable_p)
@@ -272,7 +273,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         return
     }
     // (1) ownership, (2) shadow, (3) stone etc. in this order
-    draw_endstate_p &&
+    draw_endstate_p && !hide_endstate_p() &&
         each_coord((h, xy, idx) => draw_endstate(h.endstate, xy, stone_radius, g))
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
@@ -284,8 +285,8 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         R.lizzie_style && h.suggest && draw_suggest_lizzie(h, xy, stone_radius, g)
         const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
-        if (empty(R.suggest)) {return}
-        draw_endstate_diff_p && draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
+        draw_endstate_diff_p && !hide_endstate_p() &&
+            draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
     !R.lizzie_style && each_coord((h, xy) => h.suggest && (h.data.visits > 0)
                                   && draw_winrate_mapping_line(h, xy, unit, g))
@@ -692,6 +693,10 @@ function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
     merge_stone_at(expected_move, displayed_stones, {expected_move: true})
     merge_stone_at(unexpected_move, displayed_stones, {unexpected_move: true})
 }
+
+// endstate
+
+function hide_endstate_p() {return R.busy || !R.is_endstate_drawable}
 
 /////////////////////////////////////////////////
 // exports
