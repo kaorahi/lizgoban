@@ -120,7 +120,7 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
         if (!h.tag) {return}
         const [x, ymax] = sr2coord(s, 0)
         const [yt, yl] = (h.r < 50 ? [0.05, 0.1] : [0.95, 0.9]).map(c => ymax * c)
-        line([x, yl], [x, ymax / 2], g)
+        h.tag !== endstate_diff_tag_letter && line([x, yl], [x, ymax / 2], g)
         fill_text(g, fontsize, h.tag, x, yt)
     })
     g.restore()
