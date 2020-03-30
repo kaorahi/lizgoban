@@ -675,9 +675,7 @@ function apply_preset(rule, win) {
     weight_file && load_weight_file(weight_file)
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
         unload_leelaz_for_white()
-    const [com_w, ...arg_w] = engine_for_white || []
-    engine_for_white && AI.set_engine_for_white([resolve_engine_path(com_w), ...arg_w],
-                                                preset_label_for_white)
+    engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label_for_white)
     AI.backup(); resume()
 }
 
@@ -688,7 +686,8 @@ function expand_preset(preset) {
         // merge rule.option for backward compatibility to 1a88dd40
         merge(rule, rule.option || {})
         const {engine} = rule; if (!engine) {return}
-        const [leelaz_command, ...leelaz_args] = engine.map(expand)
+        const [command, ...leelaz_args] = engine.map(expand)
+        const leelaz_command = resolve_engine_path(command)
         merge(rule, {leelaz_command, leelaz_args})
     })
 }
@@ -1316,9 +1315,8 @@ ${log}`
 }
 
 // util
-function leelaz_start_args(given_leelaz_command, given_leelaz_args, label) {
+function leelaz_start_args(leelaz_command, given_leelaz_args, label) {
     const {working_dir} = option
-    const leelaz_command = resolve_engine_path(given_leelaz_command)
     const leelaz_args = given_leelaz_args.slice()
     const preset_label = {label: label || ''}
     const h = {leelaz_command, leelaz_args, preset_label, working_dir, illegal_handler,
