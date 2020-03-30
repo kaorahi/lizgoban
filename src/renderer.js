@@ -229,6 +229,7 @@ function keep_selected_variation_maybe(suggest) {
     const {move, pv} = sticky, s = suggest.find(z => z.move === move)
     s ? (s.pv = pv) : merge(suggest, sticky)  // can't happen?
 }
+function clear_selected_variation() {R.suggest = []}  // fixme: overkill
 
 /////////////////////////////////////////////////
 // draw parts
@@ -803,6 +804,10 @@ document.onkeyup = e => {
     case "z": case "x": set_temporary_board_type(null); return
     }
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
+    // cancel keep_selected_variation_maybe() by any keyup
+    // (ex.) keeping "2" key down, push and release shift key to update
+    // displayed variation
+    clear_selected_variation()
     main('unset_busy')
 }
 
