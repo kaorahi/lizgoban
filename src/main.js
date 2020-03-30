@@ -561,6 +561,8 @@ function menu_template(win) {
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         menu('Experimental...', [
             store_toggler_menu_item('Cache suggestions', 'use_cached_suggest'),
+            item('...Delete cache', undefined, P.delete_cache, false, R.use_cached_suggest),
+            item('...Undelete cache', undefined, P.undelete_cache, false, R.use_cached_suggest),
         ]),
     ])
     const white_unloader_item =

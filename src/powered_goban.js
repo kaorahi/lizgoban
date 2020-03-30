@@ -99,6 +99,26 @@ function suggest_handler(h) {
     on_suggest()
 }
 
+function delete_cache() {
+    [game.move0, ...game.array_until(Infinity)].forEach(h => {
+        h.deleted_cache || (h.deleted_cache = {});
+        [h.by, h.deleted_cache.by] = [{}, h.by];
+        [...suggest_keys1, ...suggest_keys2].forEach(key => {
+            h.deleted_cache[key] = h[key]; delete h[key]
+        })
+    })
+}
+
+function undelete_cache() {
+    [game.move0, ...game.array_until(Infinity)].forEach(h => {
+        if (!h.deleted_cache) {return}
+        [h.by, h.deleted_cache.by] = [h.deleted_cache.by, h.by];
+        [...suggest_keys1, ...suggest_keys2].forEach(key => {
+            [h[key], h.deleted_cache[key]] = [h.deleted_cache[key], h[key]]
+        })
+    })
+}
+
 /////////////////////////////////////////////////
 // change renderer state and send it to renderer
 
@@ -442,4 +462,5 @@ module.exports = {
     stone_for_history_elem, update_info_in_stones, weight_info_text,
     get_initial_b_winrate, add_info_to_stones, renew_game,
     set_ambiguity_etc_in_game,
+    delete_cache, undelete_cache,
 }
