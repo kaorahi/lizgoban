@@ -24,7 +24,6 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_frame(w, h, sr2coord, g)
     draw_score('komi')
     draw_winrate_graph_ko_fight(sr2coord, g)
-    draw_winrate_graph_unsafe_stones(sr2coord, g)
     draw_winrate_graph_ambiguity(sr2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(sr2coord, g)
     draw_winrate_graph_zone(sr2coord, g)
@@ -227,18 +226,6 @@ function draw_winrate_graph_ko_fight(sr2coord, g) {
     }
     const f = (z, s) => (key, val) => val && plot(z, s, marker_for[key])
     R.move_history.forEach((z, s) => each_key_value(z.ko_state || {}, f(z, s)))
-}
-
-function draw_winrate_graph_unsafe_stones(sr2coord, g) {
-    const radius = 2
-    const plot = ({black, white}, s) => {plot1(black, s, true); plot1(white, s, false)}
-    const plot1 = (count, s, is_black) => {
-        const [x, y] = sr2coord(s, count)
-        const f = is_black ? square_around : fill_square_around
-        f([x, y], radius, g)
-    }
-    g.lineWidth = 1; g.strokeStyle = g.fillStyle = "#666"
-    R.move_history.forEach(({unsafe_stones}, s) => unsafe_stones && plot(unsafe_stones, s))
 }
 
 function draw_winrate_graph_ambiguity(sr2coord, g) {

@@ -37,7 +37,7 @@ And more...
 * Play against weakened engines in several ways
 * Keyboard shortcuts, e.g. "3" key for the third variation
 * Analysis of gains and losses in recent moves by KataGo that reveals overlooked side effects
-* Indicators that suggest highlight scenes of the game (big kills, ko fights, etc.)
+* Indicators that suggest highlight scenes of the game (ko fights, etc.)
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
 * Personal exercise book that can be used like bookmarks in web browsers for random exercise
 
@@ -200,7 +200,7 @@ Check "Tool > Experimental > Cache suggestions" in the menu. This is expected to
 * Support better stone images. ("Stone" in "View" menu & experimental stone/board images in the above section)
 * Support 9x9 and 13x13 in "File" menu. (See the above KataGo section to shorten their initialization.)
 * Add "Rule" into "Edit" menu for KataGo v1.3.
-* Add indicators that suggest highlight scenes of the game (big kills, ko fights, etc.).
+* Add indicators that suggest highlight scenes of the game (ko fights, etc.).
 * Separate estimations by different engines in winrate graph.
 * Plot cumulative score loss.
 * [Show mistakes over stones.](https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067)
