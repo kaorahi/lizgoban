@@ -1382,8 +1382,8 @@ function open_sgf_in(dir, proc) {
     select_files('Select SGF file', dir).forEach(proc || load_sgf)
 }
 function load_sgf(filename) {
-    read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}))
-    game.sgf_file = filename
+    const new_games = read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}))
+    new_games.forEach(g => g.sgf_file = filename)
 }
 
 function save_sgf() {
@@ -1407,6 +1407,7 @@ function read_sgf(sgf_str) {
         new_games.reverse().forEach(backup_and_replace_game)
     // keep sequence_cursor trickily!
     // (see the second argument of backup_and_replace_game)
+    return new_games
 }
 
 function open_url(url) {
