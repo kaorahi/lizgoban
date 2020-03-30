@@ -194,13 +194,13 @@ function set_tentative_endstate_maybe() {
 function add_endstate_to_stones(stones, endstate, move_count, update_diff_p) {
     // if (!endstate) {return}
     purely_add_endstate_to_stones(stones, endstate)
-    update_diff_p && update_endstate_diff()
+    update_diff_p && update_endstate_diff(endstate)
     merge(game.ref(move_count), get_ambiguity_etc(stones, endstate, game, move_count))
 }
 function tentatively_add_endstate_to_stones(stones, endstate) {
     // if (!endstate) {return}
     purely_add_endstate_to_stones(stones, endstate)
-    update_endstate_diff(true)
+    update_endstate_diff(endstate, true)
 }
 const lagged_endstate = make_lagged_aa(0.2)
 function purely_add_endstate_to_stones(stones, endstate) {
@@ -209,14 +209,15 @@ function purely_add_endstate_to_stones(stones, endstate) {
 }
 
 const lagged_endstate_diff = make_lagged_aa(0.2)
-function update_endstate_diff(tentatively) {
+function update_endstate_diff(endstate, tentatively) {
     const prev = endstate_diff_move_count(), sign = prev < game.move_count ? 1 : -1
     const prev_endstate = game.ref(prev).endstate
     const ok = prev_endstate && game.ref_current().endstate
     const tentatively_ok = prev_endstate && tentatively
     aa_each(R.stones, (s, i, j) => {
+        const current = endstate ? aa_ref(endstate, i, j) : s.endstate
         const val = (ok || tentatively_ok) && !M.is_busy() ?
-              sign * (s.endstate - aa_ref(prev_endstate, i, j)) : 0
+              sign * (current - aa_ref(prev_endstate, i, j)) : 0
         s.endstate_diff = lagged_endstate_diff.update(i, j, val)
     })
     R.prev_endstate_clusters = ok && get_endstate_clusters(prev_endstate, prev)
