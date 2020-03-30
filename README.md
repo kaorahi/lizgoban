@@ -176,7 +176,7 @@ After KataGo v1.3.4, you can add `defaultBoardSize=19` into you config.json to s
                        "-override-config", "defaultBoardSize=19",
                        "-model", "/foo/kata_net/g104-b20c256.gz",
                        "-config", "/foo/bar/gtp.cfg"]
-~~~
+~~~~
 
 They can be combined as follows.
 
