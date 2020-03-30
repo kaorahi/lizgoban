@@ -325,7 +325,7 @@ function api_handler(channel, handler, busy) {
     }
 }
 function apply_api(channel, handler, args) {
-    const keep_board = ['toggle_pause', 'unset_busy', 'set_endstate_diff_from']
+    const keep_board = ['toggle_pause', !is_busy() && 'unset_busy', 'set_endstate_diff_from']
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
     handler(...args); update_all(whether(keep_board))
