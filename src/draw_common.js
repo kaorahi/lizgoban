@@ -133,20 +133,6 @@ function log10(z) {return Math.log(z) / Math.log(10)}
 
 function f2s(z, digits) {return truep(z) ? z.toFixed(truep(digits) ? digits : 1) : ''}
 
-// [0,1,2,3,4,5,6,7,8,9,10,11,12].map(k => kilo_str(10**k))  ==>
-// ['1','10','100','1.0K','10K','100K','1.0M','10M','100M','1.0G','10G','100G','1000G']
-function kilo_str(x) {
-    return kilo_str_sub(x, [[1e9, 'G'], [1e6, 'M'], [1e3, 'k']])
-}
-function kilo_str_sub(x, rules) {
-    if (empty(rules)) {return to_s(x)}
-    const [[base, unit], ...rest] = rules
-    if (x < base) {return kilo_str_sub(x, rest)}
-    // +0.1 for "1.0K" instead of "1K"
-    const y = (x + 0.1) / base, z = Math.floor(y)
-    return (y < 10 ? to_s(y).slice(0, 3) : to_s(z)) + unit
-}
-
 ////////////////////////////
 // exports
 
@@ -180,5 +166,5 @@ module.exports = {
     fill_text, fill_text_with_modifier, set_font,
     side_gradation, radial_gradation, skew_radial_gradation, hsla,
     // math
-    flip_maybe, tics_until, log10, f2s, kilo_str,
+    flip_maybe, tics_until, log10, f2s,
 }

@@ -51,6 +51,19 @@ E.around_idx = ([i, j]) => {
     return around_idx_diff.map(neighbor)
 }
 
+// [0,1,2,3,4,5,6,7,8,9,10,11,12].map(k => kilo_str(10**k))  ==>
+// ['1','10','100','1.0K','10K','100K','1.0M','10M','100M','1.0G','10G','100G','1000G']
+E.kilo_str = x => kilo_str_sub(x, [[1e9, 'G'], [1e6, 'M'], [1e3, 'k']])
+
+kilo_str_sub = (x, rules) => {
+    if (empty(rules)) {return to_s(x)}
+    const [[base, unit], ...rest] = rules
+    if (x < base) {return kilo_str_sub(x, rest)}
+    // +0.1 for "1.0K" instead of "1K"
+    const y = (x + 0.1) / base, z = Math.floor(y)
+    return (y < 10 ? to_s(y).slice(0, 3) : to_s(z)) + unit
+}
+
 // str_uniq('zabcacd') = 'zabcd'
 E.str_uniq = str => [...new Set(str.split(''))].join('')
 
