@@ -118,7 +118,16 @@ function create_games_from_sgf(sgf_str) {
         new_game.gorule =
             katago_rule_from_sgf_rule(new_game.sgf_gorule) || get_gorule(true)
     }
-    gs.forEach(set_gorule); return gs
+    const cook_lizzie_cache = new_game => new_game.forEach(cur => {
+        const ids = AI.engine_ids()
+        const engine_id = is_bturn() ? ids[0] : (ids[1] || ids[0])
+        !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
+        const cur_by_engine = cur.by[engine_id]
+        const keys = ['suggest', 'visits', 'b_winrate',
+                      'komi', 'gorule', 'endstate', 'score_without_komi']
+        keys.forEach(k => truep(cur[k]) && (cur_by_engine[k] = cur[k]))
+    })
+    gs.forEach(g => {set_gorule(g); cook_lizzie_cache(g)}); return gs
 }
 
 // state

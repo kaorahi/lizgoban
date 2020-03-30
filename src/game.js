@@ -1,4 +1,5 @@
 const {get_stones_and_set_ko_state} = require('./rule.js')
+const {parse_analyze} = require('./engine.js')
 const TRANSFORM = require('./random_flip.js')
 const SGF = require('@sabaki/sgf')
 
@@ -177,16 +178,7 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     const first_node = nodes_until_index[0]
     const first_node_ref = (key, missing) => (first_node[key] || [missing])[0]
     const bsize = to_i(first_node_ref("SZ", 19))
-    // need to set board size for history_from_sabaki_nodes
-    // (and recover the old board size immediately so that its change
-    // is correctly detected elsewhere for switching of engine processes)
-    const history_for = given_nodes =>
-          with_board_size(bsize, history_from_sabaki_nodes, given_nodes)
-    const new_hist = history_for(nodes)
-    game.set_with_reuse(new_hist)
-    game.set_last_loaded_element()
-    game.handicaps = handicaps_from_sabaki_nodes(nodes)
-    game.move_count = history_for(nodes_until_index).length
+    // [header]
     const player_name = bw => first_node_ref(bw) || ''
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
     const km = first_node_ref("KM")
@@ -196,23 +188,46 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
                  komi, sgf_gorule, board_size: bsize, trial: false})
     const comment = first_node_ref("C")
     merge(game.ref(0), comment ? {comment} : {})
+    // [body]
+    // need to set board size for history_from_sabaki_nodes
+    // (and recover the old board size immediately so that its change
+    // is correctly detected elsewhere for switching of engine processes)
+    const to_history = nodes =>
+          history_from_sabaki_nodes(nodes, truep(komi) ? komi : leelaz_komi)
+    const history_for = given_nodes => with_board_size(bsize, to_history, given_nodes)
+    const new_hist = history_for(nodes)
+    game.set_with_reuse(new_hist)
+    game.set_last_loaded_element()
+    game.handicaps = handicaps_from_sabaki_nodes(nodes)
+    game.move_count = history_for(nodes_until_index).length
     return true
 }
 
-function history_from_sabaki_nodes(nodes) {
+function history_from_sabaki_nodes(nodes, komi) {
     const new_history = []; let move_count = 0
     const f = (h, key, is_black) => {
         (h[key] || []).forEach((pos, k) => {
             const move = sgfpos2move(pos), comment = k === 0 && (h.C || [])[0]
-            const tag = h.branching_tag
+            const tag = h.branching_tag, analysis_for_black = !is_black
+            const cached_suggest_maybe = h.LZ ?
+                  parse_lizzie072_cache(h.LZ[0], analysis_for_black, komi) : {}
             move && ++move_count &&
-                new_history.push({move, is_black, move_count, comment, tag})
+                new_history.push({move, is_black, move_count, comment, tag,
+                                  ...cached_suggest_maybe})
         })
     }
     nodes.forEach(h => {
         f(h, 'AB', true); f(h, 'AW', false); f(h, 'B', true); f(h, 'W', false)
     })
     return new_history
+}
+
+function parse_lizzie072_cache(lizzie_cache, bturn, komi) {
+    const fail = {}
+    const m = lizzie_cache.match(/\n(.*) *info */); if (!m) {return fail}
+    const s = 'info ' + m[1]
+    const ret = safely(parse_analyze, s, bturn, komi); if (!ret) {return fail}
+    return ret
 }
 
 function handicaps_from_sabaki_nodes(nodes) {

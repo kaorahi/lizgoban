@@ -359,7 +359,7 @@ function hash(str) {
 function parse_analyze(s, bturn, komi, katago_p) {
     const [i_str, o_str] = s.split(/\s*ownership\s*/)
     const ownership = ownership_parser(o_str, bturn)
-    const parser = z => suggest_parser(z, bturn, komi, katago_p)
+    const parser = (z, k) => suggest_parser(z, k, bturn, komi, katago_p)
     const unsorted_suggest =
           i_str.split(/info/).slice(1).map(parser).filter(truep)
     const suggest = sort_by_key(unsorted_suggest, 'order')
@@ -368,7 +368,8 @@ function parse_analyze(s, bturn, komi, katago_p) {
           .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
                   [0, 0, 0])
     const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
-    const score_without_komi = katago_p && (scsum / visits)
+    const score_without_komi = truep((suggest[0] || {}).score_without_komi)
+          && (scsum / visits)
     const add_order = (sort_key, order_key) => sort_by_key(suggest, sort_key)
           .reverse().forEach((h, i) => (h[order_key] = i))
     // winrate is NaN if suggest = []
@@ -385,10 +386,13 @@ function parse_analyze(s, bturn, komi, katago_p) {
 // info move D4 visits 171 winrate 4445 prior 1890 lcb 4425 order 0 pv D4 Q16 Q4 D16
 // (sample "kata-analyze interval 10 ownership true")
 // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4 ... pv D17 R16 ownership -0.0261067 -0.0661169 ... 0.203051
-function suggest_parser(s, bturn, komi, katago_p) {
+function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     const to_percent = str => to_f(str) * (katago_p ? 100 : 1/100)
     const [a, b] = s.split(/pv/); if (!b) {return false}
     const h = array2hash(a.trim().split(/\s+/))
+    const if_missing = (key, val) => !truep(h[key]) && (h[key] = val)
+    if_missing('order', fake_order)
+    if_missing('prior', 1000)
     h.pv = b.trim().split(/\s+/); h.lcb = to_percent(h.lcb || h.winrate)
     h.visits = to_i(h.visits); h.order = to_i(h.order)
     h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
@@ -404,4 +408,4 @@ function ownership_parser(s, bturn) {
 /////////////////////////////////////////////////
 // exports
 
-module.exports = {create_leelaz}
+module.exports = {create_leelaz, parse_analyze}
