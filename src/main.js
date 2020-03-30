@@ -1385,7 +1385,7 @@ function resolve_engine_path(given_leelaz_command) {
 /////////////////////////////////////////////////
 // SGF
 
-function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf()); wink()}
+function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf(R.use_cached_suggest)); wink()}
 function paste_sgf_or_url_from_clipboard() {
     const s = clipboard.readText(); s.startsWith('http') ? open_url(s) : read_sgf(s)
 }
@@ -1409,7 +1409,7 @@ function save_sgf() {
 }
 function save_sgf_to(filename, if_success) {
     const callback = err => {if (err) {throw err} else {if_success && if_success()}}
-    fs.writeFile(filename, game.to_sgf(), callback)
+    fs.writeFile(filename, game.to_sgf(R.use_cached_suggest), callback)
 }
 
 function read_sgf(sgf_str, filename) {

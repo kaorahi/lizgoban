@@ -67,7 +67,7 @@ function create_game(init_history, init_prop) {
         transform: command => {
             history.splice(0, Infinity, ...TRANSFORM[command](history))
         },
-        to_sgf: () => game_to_sgf(self),
+        to_sgf: cache_suggestions_p => game_to_sgf(self, cache_suggestions_p),
         load_sabaki_gametree: (gametree, index) =>
             load_sabaki_gametree_to_game(gametree, index, self),
         new_tag_maybe: (new_sequence_p, move_count) =>
@@ -85,10 +85,10 @@ function create_game(init_history, init_prop) {
 /////////////////////////////////////////////////
 // SGF
 
-function game_to_sgf(game) {
-    return with_board_size(game.board_size, game_to_sgf_sub, game)
+function game_to_sgf(game, cache_suggestions_p) {
+    return with_board_size(game.board_size, game_to_sgf_sub, game, cache_suggestions_p)
 }
-function game_to_sgf_sub(game) {
+function game_to_sgf_sub(game, cache_suggestions_p) {
     // util
     const f = (t, p) => p ? `${t}[${SGF.escapeString(p)}]` : ''
     const m2s = move => `[${move2sgfpos(move)}]`
@@ -107,8 +107,19 @@ function game_to_sgf_sub(game) {
           `;${sz}${km}${ru}${f('PW', game.player_white)}${f('PB', game.player_black)}${com0}`
           + handicap_stones(true) + handicap_stones(false)
     // body
-    const move2sgf = ({move, is_black, comment}) =>
-          `;${is_black ? 'B' : 'W'}${m2s(move)}${f('C', comment)}`
+    const lizzie072_cache_for = h => {
+        const {suggest, b_winrate, visits, is_black} = h; if (!suggest) {return ''}
+        const f = z => truep(z) ? z : 0
+        const s1 = `0.7.2 ${f(is_black ? b_winrate : 100 - b_winrate).toFixed(1)} ${kilo_str(f(visits))}`
+        const scoremean_maybe = z => truep(z.scoreMean) ? `scoreMean ${to_s(z.scoreMean)} ` : ''
+        const s2 = sort_by(suggest, z => z.order).map(z => `move ${z.move} visits ${z.visits} winrate ${to_i(z.winrate * 100)} ` + scoremean_maybe(z) + `pv ${z.pv.join(' ')} info `).join('')
+        return `LZ[${s1}\n${s2}]`
+    }
+    const move2sgf = h => {
+        const {move, is_black, comment} = h
+        return `;${is_black ? 'B' : 'W'}${m2s(move)}${f('C', comment)}`
+            + (cache_suggestions_p ? lizzie072_cache_for(h) : '')
+    }
     const body = game.slice(handicaps).map(move2sgf).join('')
     // all
     return `(${header}${body})`
