@@ -162,9 +162,7 @@ function create_leelaz () {
     const cook_arg = h => {
         if (!h) {return h}
         // weight file
-        const leelaz_args = h.leelaz_args.slice()
-        h.weight_file &&
-            (leelaz_args[weight_option_pos_in_leelaz_args(h)] = h.weight_file)
+        const leelaz_args = leelaz_args_with_replaced_weight_file(h)
         // board size (KataGo)
         const bsize_pattern = /defaultBoardSize=[0-9]+/
         const bsize_replaced = `defaultBoardSize=${h.default_board_size}`
@@ -181,11 +179,22 @@ function create_leelaz () {
         //        Object.keys({...a, ...b}).every(k => eq(a[k], b[k])))
         return eq(arg, cook_arg(h))
     }
-    const get_weight_file = () =>
-          arg && arg.leelaz_args[weight_option_pos_in_leelaz_args(arg)]
+    const get_weight_file = () => {
+        const pos = arg && weight_option_pos_in_leelaz_args(arg)
+        return pos && arg.leelaz_args[pos]
+    }
+    const leelaz_args_with_replaced_weight_file = h => {
+        const leelaz_args = h.leelaz_args.slice(), {weight_file} = h
+        const pos = weight_file && weight_option_pos_in_leelaz_args(h)
+        truep(pos) && (leelaz_args[pos] = weight_file)
+        !truep(pos) && weight_file && h.leelaz_command.match(/katago/i) &&  // ad hoc!
+            leelaz_args.push('-model', weight_file)
+        return leelaz_args
+    }
     const weight_option_pos_in_leelaz_args = h => {
         const weight_options = ['-w', '--weights', '-model']  // -model for KataGo
-        return h.leelaz_args.findIndex(z => weight_options.includes(z)) + 1
+        const idx = h.leelaz_args.findIndex(z => weight_options.includes(z))
+        return (idx >= 0) && (idx + 1)
     }
 
     /////////////////////////////////////////////////

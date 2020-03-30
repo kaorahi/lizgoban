@@ -1360,7 +1360,8 @@ function availability() {
 // load weight file
 let previous_weight_file = null
 function load_weight(white_p) {
-    const dir = option_path('weight_dir') || PATH.dirname(AI.leelaz_weight_file(white_p))
+    const dir = option_path('weight_dir') ||
+          PATH.dirname(AI.leelaz_weight_file(white_p) || '')
     const ret = load_weight_file(select_weight_file(dir), white_p)
     AI.backup(); return ret
 }
