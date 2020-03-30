@@ -70,7 +70,8 @@ function parse_option(cur, succ) {
         const new_white_preset = (preset || []).map(h => {
             const {label, leelaz_command, leelaz_args, engine_for_white} = h
             return (leelaz_command && leelaz_args && !engine_for_white) &&
-                {label, engine_for_white: [leelaz_command, ...leelaz_args]}
+                {label, label_for_white: label,
+                 engine_for_white: [leelaz_command, ...leelaz_args]}
         }).filter(truep)
         !empty(new_white_preset) && (white_preset = new_white_preset)
     }
@@ -636,10 +637,14 @@ function preset_menu_for_white(menu_tools) {
 function preset_menu_items(preset, menu_tools, white_p) {
     const {item, win} = menu_tools
     if (!preset || empty(preset)) {return []}
-    const doit = a => {
-        apply_preset(a, win); toast(`${a.label}${white_p ? ' (for white)' : ''}`, 1000)
+    const menu_label = a => {
+        const {label, engine_for_white, label_for_white} = a
+        const w = !white_p && label_for_white ? ` / ${label_for_white}` : ''
+        return `${label}${w}`
     }
-    const item_for = a => item(a.label, a.accelerator, () => doit(a))
+    const toast_label = a => menu_label(a) + (white_p ? ' (for white)' : '')
+    const doit = a => {apply_preset(a, win); toast(toast_label(a), 1000)}
+    const item_for = a => item(menu_label(a), a.accelerator, () => doit(a))
     return preset.map(item_for)
 }
 function preset_menu_for_recent(menu_tools) {
@@ -657,11 +662,12 @@ function apply_preset(rule, win) {
     const cur = AI.engine_info().black
     const extended = {...cur, ...rule}
     const {label, empty_board, board_type, weight_file, weight_file_for_white,
-           engine_for_white} = rule
+           label_for_white, engine_for_white} = rule
     const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
     const need_restart = cur && (f(cur) !== f(extended))
     const load = (switcher, file) => switcher(() => load_weight_file(file))
     const preset_label = {label: label || ''}
+    const preset_label_for_white = {label: label_for_white || preset_label.label + '(W)'}
     empty_board && !game.is_empty() && new_empty_board()
     board_type && set_board_type(board_type, win)
     need_restart && restart_leelaz_by_preset(extended)
@@ -671,7 +677,7 @@ function apply_preset(rule, win) {
         unload_leelaz_for_white()
     const [com_w, ...arg_w] = engine_for_white || []
     engine_for_white && AI.set_engine_for_white([resolve_engine_path(com_w), ...arg_w],
-                                                preset_label)
+                                                preset_label_for_white)
     AI.backup(); resume()
 }
 

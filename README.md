@@ -109,7 +109,8 @@ Here is a more practical example of config.json:
                        "-config", "/foo/bar/gtp_handicap.cfg"]
         },
         {
-            "label": "LZ vs. KATA",
+            "label": "LZ",
+            "label_for_white": "KATA",
             "empty_board": true,
             "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/lz_net/254.gz"],
             "engine_for_white": ["/foo/bar/katago", "gtp",
@@ -133,6 +134,7 @@ Here is a more practical example of config.json:
   * accelerator: Shortcut key like "Shift+F3", "CmdOrCtrl+F4", "Alt+F5", etc. It can be omitted as the above "LZ vs. KATA".
   * engine: Engine command. (*1)
   * engine_for_white: Alternative engine is used for white if this is set. (*1)
+  * label_for_white: Additional item name when engine_for_white is given.
   * empty_board: Set it true for creating new empty board.
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
 
@@ -212,6 +214,7 @@ Incompatibilities:
 * Upgrade libraries (Electron 8, etc.). So you may need to do "npm install" again.
 * "weight_dir" in config.json is obsolete now. (See above.)
 * "Komi" and "Info" are moved from [Tool] to [Edit] menu.
+* "label_for_white" is added to "preset" in config.json.
 * The shortcut key `CmdOrCtrl+?` is changed from open_exercise_dir to load_recent_exercise.
 
 ### from 0.2.0
