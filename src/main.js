@@ -39,6 +39,7 @@ const default_option = {
     max_cached_engines: 3,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     force_shadow: false,
+    repl: false,
 }
 const option = {}
 let white_preset = []
@@ -1649,3 +1650,8 @@ function detach_from_sabaki() {
 function toggle_sabaki() {
     stop_auto(); attached ? detach_from_sabaki() : attach_to_sabaki()
 }
+
+/////////////////////////////////////////////////
+// REPL for debug
+
+option.repl && require('repl').start()
