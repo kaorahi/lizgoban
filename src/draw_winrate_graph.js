@@ -16,7 +16,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     clear_canvas(graph_overlay_canvas)
     truep(show_until) &&
         draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, overlay)
-    !truep(show_until) && draw_winrate_graph_future(w, sr2coord, overlay)
+    !truep(show_until) && draw_winrate_graph_future(w, fontsize, sr2coord, overlay)
     if (R.busy || show_until) {return}
     const draw_score = score_drawer(w, sr2coord, g)
     const score_loss_p = !alternative_engine_for_white_p()
@@ -73,7 +73,7 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
     g.restore()
 }
 
-function draw_winrate_graph_future(w, sr2coord, g) {
+function draw_winrate_graph_future(w, fontsize, sr2coord, g) {
     const [x, y] = sr2coord(clip_handicaps(R.move_count), 50)
     const [_, y_base] = sr2coord(R.handicaps, 0)
     const paint = (partial, l_alpha, r_alpha, y0, y1) => {
@@ -84,6 +84,11 @@ function draw_winrate_graph_future(w, sr2coord, g) {
     }
     const alpha = 0.2
     paint(0.5, alpha, 0, 0, y); paint(1, alpha, alpha, y, y_base)
+    // move number
+    g.save()
+    g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillStyle = WHITE
+    fill_text(g, fontsize, mc2movenum(R.move_count), x, y_base)
+    g.restore()
 }
 
 function draw_winrate_graph_curve(sr2coord, g) {
