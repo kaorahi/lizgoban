@@ -827,9 +827,10 @@ function set_keyboard_tag_maybe(key) {
     const data = tags.find(h => h.tag.includes(key) && h.move_count < R.move_count) ||
           tags.find(h => h.tag.includes(key))
     data && (data.move_count !== old) &&
-        ((keyboard_tag_move_count = data.move_count), update_goban())
+        ((keyboard_tag_move_count = data.move_count),
+         update_showing_until(), update_goban())
 }
-function reset_keyboard_tag() {keyboard_tag_move_count = null; update_goban()}
+function reset_keyboard_tag() {keyboard_tag_move_count = null; update_showing_until()}
 const checker_for_showing_until = change_detector()
 function showing_something_p() {return showing_movenum_p() || showing_endstate_value_p()}
 function showing_movenum_p() {return the_showing_movenum_p}
