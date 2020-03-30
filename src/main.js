@@ -13,7 +13,6 @@ const {dialog, app, clipboard, Menu} = electron, ipc = electron.ipcMain
 const {globalize} = require('./globalize.js')
 globalize(require('./util.js'), require('./coord.js'))
 const PATH = require('path'), fs = require('fs')
-const http = require('http'), https = require('https')
 const default_path_for = name =>
       // suppose three cases:
       // 1. npx electron src (obsolete)
@@ -100,6 +99,7 @@ const ELECTRON_STORE = safely(require, 'electron-store') ||
                    // ... and throw the original error when both fail
                    require('electron-store')
 const store = new ELECTRON_STORE({name: 'lizgoban'})
+const http = require('http'), https = require('https')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 
 // debug log
