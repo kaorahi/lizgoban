@@ -113,16 +113,17 @@ function draw_winrate_graph_curve_for(winrate_history, style, sr2coord, g) {
 }
 
 function draw_winrate_graph_tag(fontsize, sr2coord, g) {
+    g.save()
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.strokeStyle = g.fillStyle = BLUE; g.lineWidth = 1
     R.winrate_history.forEach((h, s) => {
         if (!h.tag) {return}
         const [x, ymax] = sr2coord(s, 0)
         const [yt, yl] = (h.r < 50 ? [0.05, 0.1] : [0.95, 0.9]).map(c => ymax * c)
-        g.save()
-        g.textAlign = 'center'; g.textBaseline = 'middle'
-        g.strokeStyle = BLUE; g.lineWidth = 1; line([x, yl], [x, ymax / 2], g)
-        g.fillStyle = BLUE; fill_text(g, fontsize, h.tag, x, yt)
-        g.restore()
+        line([x, yl], [x, ymax / 2], g)
+        fill_text(g, fontsize, h.tag, x, yt)
     })
+    g.restore()
 }
 
 // additional plots
