@@ -994,9 +994,10 @@ function tag_or_untag() {
 // utils for actions
 
 let long_busy = false
-const [set_long_busy_later, unset_long_busy] =
+const [set_long_busy_later, cancel_long_busy] =
       deferred_procs([() => {long_busy = true}, 1000], [() => {long_busy = false}, 0])
 function is_long_busy() {return long_busy}
+function unset_long_busy() {long_busy = false; cancel_long_busy()}
 
 function undoable() {return game.move_count > game.handicaps}
 function redoable() {return game.len() > game.move_count}
