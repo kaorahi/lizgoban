@@ -296,7 +296,6 @@ const api = merge({}, simple_api, {
     send_to_leelaz: AI.send_to_leelaz,
 })
 
-// let last_channel
 function api_handler(channel, handler, busy) {
     return (e, ...args) => {
         channel === 'toggle_auto_analyze' || stop_auto_analyze()
