@@ -513,7 +513,7 @@ function take_thumbnail(given_id, given_stones, given_trial_p) {
 
 let reusable_canvas = null
 function take_thumbnail_of_stones(stones, proc, trail_p) {
-    // remember that main_canvas can be rectangular by "x" key
+    // note: main_canvas can be rectangular by "x" key
     const [size, _] = get_canvas_size(main_canvas)
     const canvas = reusable_canvas || document.createElement("canvas")
     reusable_canvas = null
