@@ -19,6 +19,7 @@ const category_spec = [
 // main
 
 function endstate_clusters_for(endstate, stones) {
+    if (!size_eq(endstate, stones)) {return []}
     initialize()
     const grid_for = z => ({ownership: z, id: null})
     const grid = aa_map(endstate, grid_for)
@@ -66,6 +67,11 @@ function in_board_checker(grid) {return ([i, j]) => !!aa_ref(grid, i, j)}
 let last_category_id = 0
 function initialize() {last_category_id = 0}
 function new_cluster_id() {return ++last_category_id}
+
+function size_eq(aa1, aa2) {
+    const len = aa => JSON.stringify(aa.map(a => a.length))
+    return len(aa1) === len(aa2)
+}
 
 //////////////////////////////////////
 // clustering
