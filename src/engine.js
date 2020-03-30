@@ -290,7 +290,7 @@ function create_leelaz () {
         add_order('visits', 'visits_order')
         add_order('winrate', 'winrate_order')
         arg.suggest_handler({engine_id, suggest, visits, b_winrate, visits_per_sec,
-                             score_without_komi, ownership})
+                             score_without_komi, ownership, komi, gorule})
     }
 
     // (sample of leelaz output for "lz-analyze 10")

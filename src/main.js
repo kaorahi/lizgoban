@@ -136,6 +136,7 @@ const default_for_stored_key = {
     lizzie_style: true, expand_winrate_bar: false, score_bar: true,
     let_me_think: false, show_endstate: true, gorule: default_gorule,
     stone_image_p: true, board_image_p: true, stone_style: 'dome',
+    use_cached_suggest: false,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
@@ -539,6 +540,9 @@ function menu_template(win) {
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
+        menu('Experimental...', [
+            store_toggler_menu_item('Cache suggestions', 'use_cached_suggest'),
+        ]),
     ])
     const white_unloader_item =
           item('Unload white engine', 'CmdOrCtrl+Shift+U',

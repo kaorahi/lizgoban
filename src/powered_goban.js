@@ -65,21 +65,32 @@ function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
-    h.ownership && (cur.endstate = endstate_from_ownership(h.ownership))
-    truep(h.score_without_komi) && (cur.score_without_komi = h.score_without_komi)
+    h.ownership && (h.endstate = endstate_from_ownership(h.ownership))
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
-    const keys = ['suggest', 'visits', 'b_winrate']
-    keys.forEach(k => cur.by[engine_id][k] = cur[k] = h[k])
+    const merged_h_maybe = (cur_by_engine, h) => {
+        if (!R.use_cached_suggest) {return h}
+        const prefer_cached_p = cur_by_engine.visits > h.visits &&
+              (!AI.katago_p() || cur_by_engine.komi === h.komi) &&
+              (!AI.is_gorule_supported() || !cur_by_engine.gorule || cur_by_engine.gorule === h.gorule)
+        return prefer_cached_p ? {...h, ...cur_by_engine} : h
+    }
+    const cur_by_engine = cur.by[engine_id]
+    const preferred_h = merged_h_maybe(cur_by_engine, h)
+    const keys = ['suggest', 'visits', 'b_winrate',
+                  'komi', 'gorule', 'endstate', 'score_without_komi']
+    keys.forEach(k => truep(preferred_h[k]) &&
+                 (cur_by_engine[k] = cur[k] = preferred_h[k]))
     game.engines[engine_id] = true
     // if current engine is Leela Zero, recall ownerships by KataGo
-    const {endstate, score_without_komi} = cur
+    const {endstate, score_without_komi} = {...cur, ...preferred_h}
     R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, mc, true)
     endstate && set_endstate_uptodate(endstate)
     // is_endstate_drawable is true if...
     // (1) ownership is given here, or
     // (2) endstate_handler() was called already
     const is_endstate_drawable = is_endstate_uptodate()
-    set_and_render_maybe({...h, is_endstate_drawable, score_without_komi}); on_suggest()
+    set_and_render_maybe({...preferred_h, is_endstate_drawable, score_without_komi})
+    on_suggest()
 }
 
 function endstate_from_ownership(ownership) {
