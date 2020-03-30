@@ -189,6 +189,10 @@ They can be combined as follows.
 
 Put your favorite images of board and stones as `external/board.png`, `external/black.png`, and `external/white.png` (before starting LizGoban).
 
+#### To save/load analyses in SGF (Experimental)
+
+Check "Tool > Experimental > Cache suggestions" in the menu. This is expected to be compatible with Lizzie 0.7.2.
+
 ## Major changes
 
 ### from 0.3.*
@@ -208,6 +212,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 * Show start-up log when engine is down.
 * Improve thumbnails (delay, color, etc.).
 * Fix blur in HiDPI display.
+* Experimentally support saving/loading analyses in SGF. (See the above section.)
 
 Incompatibilities:
 
