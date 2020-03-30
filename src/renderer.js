@@ -746,9 +746,11 @@ document.onkeydown = e => {
     const skip_maybe = (...a) => e.repeat ? with_skip(busy, ...a) : busy(...a)
     switch (!R.attached && key) {
     case "ArrowLeft": case "ArrowUp":
-        busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
+        (!undoable() && !e.repeat && !e.shiftKey) ?
+            m('redo_to_end') : busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
     case "ArrowRight": case "ArrowDown":
-        busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
+        (!redoable() && !e.repeat && !e.shiftKey) ?
+            m('undo_to_start') : busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
     case "[": skip_maybe('previous_sequence'); break;
     case "]": skip_maybe('next_sequence'); break;
     }
@@ -869,6 +871,7 @@ function update_showing_until() {
     main('set_endstate_diff_from', cur)
 }
 
+function undoable() {return R.move_count > R.handicaps}
 function redoable() {return R.move_count < R.history_length}
 
 /////////////////////////////////////////////////
