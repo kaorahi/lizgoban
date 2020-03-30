@@ -31,6 +31,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     draw_score('score')
+    draw_winrate_graph_current(w, sr2coord, g)
     // mouse events
     handle_mouse_on_winrate_graph(canvas, coord2sr)
 }
@@ -117,6 +118,32 @@ function draw_winrate_graph_curve_for(winrate_history, style, sr2coord, g) {
     })
 }
 
+let last_winrate_text_s
+function draw_winrate_graph_current(w, sr2coord, g) {
+    // avoid flicker in auto-analyze / auto-play etc.
+    const r_for = given_s => (truep(given_s) && R.winrate_history[given_s] || {}).r
+    R.pausing && (last_winrate_text_s = null)
+    truep(r_for(R.move_count)) && (last_winrate_text_s = R.move_count)
+    const s = last_winrate_text_s, r = r_for(s)
+    truep(r) && draw_winrate_graph_current_sub(w, s, r, sr2coord, g)
+}
+function draw_winrate_graph_current_sub(w, s, r, sr2coord, g) {
+    const [x, y] = sr2coord(s, r), [_, ymax] = sr2coord(s, 0)
+    const radius = dy_for_percent(8, sr2coord), normal = x < w * 0.8
+    const dx = (normal ? 1 : -2) * radius
+    const here = [x + dx, clip(y, radius, ymax - radius)]
+    g.save()
+    g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 3; circle([x, y], radius, g)
+    g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
+    fill_text(g, radius * 2, ` ${Math.round(r)}% `, ...here)
+    g.restore()
+}
+function dy_for_percent(percent, sr2coord) {
+    const s = R.handicaps  // sr2coord(0, 0) is invalid for handicap games
+    const [_0, y0] = sr2coord(s, 0), [_1, y1] = sr2coord(s, percent)
+    return y0 - y1
+}
+
 function draw_winrate_graph_tag(fontsize, sr2coord, g) {
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'middle'
@@ -152,6 +179,7 @@ function score_drawer(w, sr2coord, g) {
         const [radius, alpha] = current_p ? [4, 1] : [2.5, 0.6]
         g.fillStyle = color(alpha)
         fill_circle([x, y], radius, g)
+        current_p && draw_score_text(w, x, y, s, sr2coord, g)
     }
     const draw_score = () => {
         const at_r = [50, 60, 70], to_score = r => (r - 50) / scale
@@ -159,6 +187,20 @@ function score_drawer(w, sr2coord, g) {
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
     }
     return command => ({score: draw_score, komi: draw_komi})[command]()
+}
+
+function draw_score_text(w, x, y, s, sr2coord, g) {
+    const {r, score_without_komi} = R.winrate_history[s] || {}
+    if (!truep(score_without_komi)) {return}
+    const [_, ry] = sr2coord(s, truep(r) ? r : R.komi)
+    const unit = dy_for_percent(10, sr2coord), normal = x < w * 0.9
+    const dx = normal ? 0.5 * unit : -2 * unit, dy = (y > ry ? 1 : -1) * unit
+    const [__, ymax] = sr2coord(s, 0), here = [x + dx, clip(y + dy, unit, ymax - unit)]
+    g.save()
+    g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 1; line([x, y], here, g)
+    g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
+    fill_text(g, unit, ` ${f2s(score_without_komi)}pt `, ...here)
+    g.restore()
 }
 
 function draw_winrate_graph_ko_fight(sr2coord, g) {
