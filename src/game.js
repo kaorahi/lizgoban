@@ -118,7 +118,8 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
     // body
     const lizzie072_cache_for = h => {
         const {is_black, endstate, by} = h
-        const {suggest, b_winrate, visits} = (by || {})[game.current_engine] || {}
+        const by_current = (by || {})[game.current_engine] || {}
+        const {suggest, b_winrate, visits} = {...h, ...by_current}
         if (!suggest) {return ''}
         const f = z => truep(z) ? z : 0
         const s1 = `0.7.2 ${f(is_black ? b_winrate : 100 - b_winrate).toFixed(1)} ${kilo_str(f(visits))}`
