@@ -76,8 +76,9 @@ function suggest_handler(h) {
     }
     const cur_by_engine = cur.by[engine_id]
     const preferred_h = merged_h_maybe(cur_by_engine, h)
-    const keys = ['suggest', 'visits', 'b_winrate',
+    const keys = ['suggest', 'visits', 'background_visits', 'b_winrate',
                   'komi', 'gorule', 'endstate', 'score_without_komi']
+    preferred_h.background_visits = (h !== preferred_h) && h.visits
     keys.forEach(k => truep(preferred_h[k]) &&
                  (cur_by_engine[k] = cur[k] = preferred_h[k]))
     game.engines[engine_id] = true

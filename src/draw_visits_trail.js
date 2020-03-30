@@ -12,6 +12,7 @@ function draw_visits_trail_sub(winrate_trail, canvas) {
     if (!R.visits || !R.max_visits) {return}
     draw_visits_trail_grid(fontsize, w, h, v2x, v2y, g)
     R.suggest.forEach(s => draw_visits_trail_curve(s, winrate_trail, fontsize, h, xy_for, g))
+    draw_visits_trail_background_visits(w, h, v2x, g)
 }
 
 function draw_visits_trail_grid(fontsize, w, h, v2x, v2y, g) {
@@ -52,6 +53,16 @@ function draw_visits_trail_order(s, a, forcep, fontsize, h, xy_for, g) {
     g.textAlign = 'right'; g.textBaseline = low ? 'bottom' : 'top'
     const modified_fontsize = winrate_bar_order_set_style(s, fontsize, g)
     fill_text(g, modified_fontsize, ord === 1 ? '1' : `${ord} `, x, y)
+    g.restore()
+}
+
+function draw_visits_trail_background_visits(w, h, v2x, g) {
+    if (!truep(R.background_visits)) {return}
+    const x = v2x(R.background_visits)
+    g.save()
+    g.strokeStyle = GREEN; g.lineWidth = 3; line([x, 0], [x, h], g)
+    g.fillStyle = '#888'; g.textAlign = 'center'; g.textBaseline = 'middle'
+    fill_text(g, h / 5, 'Cached', w / 2, h / 2)
     g.restore()
 }
 
