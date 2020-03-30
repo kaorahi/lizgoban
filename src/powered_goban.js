@@ -67,20 +67,22 @@ function suggest_handler(h) {
     h.suggest = h.suggest.filter(considerable)
     h.ownership && (h.endstate = endstate_from_ownership(h.ownership))
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
-    const merged_h_maybe = (cur_by_engine, h) => {
-        if (!R.use_cached_suggest) {return h}
-        const prefer_cached_p = cur_by_engine.visits > h.visits &&
-              (!AI.katago_p() || cur_by_engine.komi === h.komi) &&
-              (!AI.is_gorule_supported() || !cur_by_engine.gorule || cur_by_engine.gorule === h.gorule)
-        return prefer_cached_p ? {...h, ...cur_by_engine} : h
-    }
     const cur_by_engine = cur.by[engine_id]
-    const preferred_h = merged_h_maybe(cur_by_engine, h)
-    const keys = ['suggest', 'visits', 'background_visits', 'b_winrate',
-                  'komi', 'gorule', 'endstate', 'score_without_komi']
+    const prefer_cached_p = cur_by_engine.visits > h.visits &&
+          (!AI.katago_p() || cur_by_engine.komi === h.komi) &&
+          (!AI.is_gorule_supported() || !cur_by_engine.gorule || cur_by_engine.gorule === h.gorule)
+    const preferred_h = !R.use_cached_suggest ? h :
+          prefer_cached_p ? {...h, ...cur_by_engine} : h
     preferred_h.background_visits = (h !== preferred_h) && h.visits
-    keys.forEach(k => truep(preferred_h[k]) &&
-                 (cur_by_engine[k] = cur[k] = preferred_h[k]))
+    const copy_vals = (keys, to) =>
+          keys.forEach(k => truep(preferred_h[k]) && (to[k] = preferred_h[k]))
+    // keys1: required. individual plot for each engine.
+    const keys1 = ['suggest', 'visits', 'background_visits', 'b_winrate',
+                   'komi', 'gorule']
+    copy_vals(keys1, cur); copy_vals(keys1, cur_by_engine)
+    // keys2: optional. single global plot.
+    const keys2 = ['endstate', 'score_without_komi']
+    copy_vals(keys2, cur); !prefer_cached_p && copy_vals(keys2, cur_by_engine)
     game.engines[engine_id] = true
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = {...cur, ...preferred_h}
