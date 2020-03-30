@@ -100,6 +100,7 @@ const ELECTRON_STORE = safely(require, 'electron-store') ||
                    require('electron-store')
 const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
+const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 
 // debug log
@@ -1224,12 +1225,12 @@ function store_session(cache_suggestions_p) {
     const cache_lim = Math.max(rev_seq.length, option.autosave_cached_suggestions)
     const cache_p = k => cache_suggestions_p && (saved_seq.length - k) <= cache_lim
     const saved_sgf = saved_seq.map((g, k) => sgf_from_deleted_sequence(g, cache_p(k)))
-    stored_session.set('sequences', saved_sgf)
+    stored_session.set('sequences_gz_b64', saved_sgf.map(compress))
     debug_log('store_session done')
 }
 function restore_session() {
     debug_log('restore_session start')
-    deleted_sequences.push(...stored_session.get('sequences', []))
+    deleted_sequences.push(...stored_session.get('sequences_gz_b64', []).map(uncompress))
     debug_log('restore_session done')
 }
 
@@ -1239,6 +1240,9 @@ function autosave_later() {
     const delay = option.autosave_sec * 1000
     !truep(autosave_timer) && (autosave_timer = setTimeout(f, delay))
 }
+
+function compress(str) {return gzipSync(str).toString('base64')}
+function uncompress(str) {return gunzipSync(Buffer.from(str, 'base64')).toString()}
 
 /////////////////////////////////////////////////
 // utils for updating renderer state
