@@ -121,6 +121,7 @@ function create_games_from_sgf(sgf_str) {
             katago_rule_from_sgf_rule(new_game.sgf_gorule) || get_gorule(true)
     }
     const cook_lizzie_cache = new_game => new_game.forEach(cur => {
+        if (!cur.suggest) {return}
         const ids = AI.engine_ids()
         const engine_id = is_bturn() ? ids[0] : (ids[1] || ids[0])
         !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
@@ -1445,9 +1446,10 @@ function save_sgf_to(filename, if_success) {
 function read_sgf(sgf_str, filename) {
     const too_many_games = 6
     const new_games = create_games_from_sgf(sgf_str), len = new_games.length
+    const open1 = g => {g.merge_common_header(game); backup_and_replace_game(g)}
     const open_games = gs => {
         filename && gs.forEach(g => g.sgf_file = filename)
-        gs.reverse().forEach(backup_and_replace_game)
+        gs.reverse().forEach(open1)
         // keep sequence_cursor trickily!
         // (see the second argument of backup_and_replace_game)
     }

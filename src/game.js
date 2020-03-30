@@ -63,6 +63,15 @@ function create_game(init_history, init_prop) {
             Object.keys(prop).forEach(k => k !== 'id' && (another_game[k] = self[k]))
             another_game.set_with_reuse(history)
         },
+        merge_common_header: another_game => {
+            const another_history = another_game.array_until(Infinity)
+            const com = common_header_length(history, another_history)
+            seq(com).forEach(n => {
+                const me = history[n], you = another_history[n], me_copy = {...me}
+                // merge all your items that I don't have (except for "comment")
+                merge(me, you, {comment: null}, me_copy)
+            })
+        },
         random_flip_rotate: () => {self.transform('random_flip_rotation')},
         transform: command => {
             history.splice(0, Infinity, ...TRANSFORM[command](history))
