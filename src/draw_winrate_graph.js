@@ -179,7 +179,8 @@ function score_drawer(w, sr2coord, g) {
         const [radius, alpha] = current_p ? [4, 1] : [2.5, 0.6]
         g.fillStyle = color(alpha)
         fill_circle([x, y], radius, g)
-        current_p && draw_score_text(w, x, y, s, sr2coord, g)
+        // avoid flicker
+        current_p && !R.hide_suggest && draw_score_text(w, x, y, s, sr2coord, g)
     }
     const draw_score = () => {
         const at_r = [50, 60, 70], to_score = r => (r - 50) / scale
