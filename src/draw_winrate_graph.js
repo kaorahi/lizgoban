@@ -141,10 +141,10 @@ function score_drawer(w, sr2coord, g) {
         line([0, ky], [w, ky], g)
     }
     const plotter = (x, y, s, g) => {
-        const diff_target_p = R.endstate_diff_interval > 5 &&
-              (s === R.move_count - R.endstate_diff_interval)
-        const big_p = (s === R.move_count) || diff_target_p
-        const [radius, alpha] = big_p ? [4, 0.8] : [2.5, 0.6]
+        const current_p = (s === R.move_count)
+        // const diff_target_p = R.endstate_diff_interval > 5 &&
+        //       (s === R.move_count - R.endstate_diff_interval)
+        const [radius, alpha] = current_p ? [4, 1] : [2.5, 0.6]
         g.fillStyle = color(alpha)
         fill_circle([x, y], radius, g)
     }
