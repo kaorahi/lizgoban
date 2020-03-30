@@ -195,7 +195,7 @@ function add_endstate_to_stones(stones, endstate, move_count, update_diff_p) {
     // if (!endstate) {return}
     purely_add_endstate_to_stones(stones, endstate)
     update_diff_p && update_endstate_diff()
-    merge(game.ref(move_count), get_ambiguity_etc(stones, game, move_count))
+    merge(game.ref(move_count), get_ambiguity_etc(stones, endstate, game, move_count))
 }
 function tentatively_add_endstate_to_stones(stones, endstate) {
     // if (!endstate) {return}
@@ -244,13 +244,14 @@ function get_endstate_clusters(endstate, move_count) {
     return endstate_clusters_for(endstate, stones)
 }
 
-function get_ambiguity_etc(stones, game, move_count) {
+function get_ambiguity_etc(stones, endstate, game, move_count) {
     // ambiguity = sum of (1 - |ownership|) for all stones on the board.
     // unsafe_stones.black
     //   = number of captured black stones + sum[1 - f(ownership)]
     //   = number of black moves - sum[f(ownership)],
     // where sum[*] is taken for all black stones on the board
     // and f(x) = x (x > 0), 0 (x <= 0).
+    if (!endstate) {return {}}
     let ambiguity = 0, unsafe_stones = {black: 0, white: 0}
     const add_to_unsafe_stones = (black_p, val) => {
         unsafe_stones[black_p ? 'black' : 'white'] += val
@@ -260,9 +261,10 @@ function get_ambiguity_etc(stones, game, move_count) {
               const pass = move2idx(move)[0] < 0
               !pass && add_to_unsafe_stones(is_black, 1)
           })
-    const check_endstate = h => {
-        const is_target = h.stone && truep(h.endstate); if (!is_target) {return}
-        const es = Math.abs(h.endstate), dead = xor(h.black, h.endstate > 0)
+    const check_endstate = (h, i, j) => {
+        const is_target = h.stone; if (!is_target) {return}
+        const orig_es = aa_ref(endstate, i, j)
+        const es = Math.abs(orig_es), dead = xor(h.black, orig_es > 0)
         ambiguity += 1 - es
         !dead && add_to_unsafe_stones(h.black, - es)
     }
