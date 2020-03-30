@@ -115,6 +115,9 @@ function create_game_with_gorule(gorule) {
     const new_game = GAME.create_game(); merge(new_game, {gorule}); return new_game
 }
 function create_games_from_sgf(sgf_str) {
+    toast('loading...', 1000); return create_games_from_sgf_internal(sgf_str)
+}
+function create_games_from_sgf_internal(sgf_str) {
     const gs = GAME.create_games_from_sgf(sgf_str)
     const set_gorule = new_game => {
         new_game.gorule =
@@ -1199,7 +1202,7 @@ function sgf_from_deleted_sequence(game_or_sgf, cache_suggestions_p) {
     const too_large = 20 * 400  // rough bound of letters * moves
     const remove_cached_suggestons_maybe = sgf =>
           (cache_suggestions_p || sgf.length < too_large) ?
-          sgf : create_games_from_sgf(sgf)[0].to_sgf()
+          sgf : create_games_from_sgf_internal(sgf)[0].to_sgf()
     return (typeof game_or_sgf === 'string') ?
         remove_cached_suggestons_maybe(game_or_sgf) :
         game_or_sgf.to_sgf(cache_suggestions_p)
