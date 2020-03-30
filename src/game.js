@@ -32,7 +32,7 @@ function create_game(init_history, init_prop) {
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
         handicaps: 0, sgf_gorule: "", gorule: null,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
-        trial: false, last_loaded_element: null, engines: {},
+        trial: false, last_loaded_element: null, engines: {}, current_engine: null,
     }
     const update_move_count_after = f => (...args) => {
         const ret = f(...args); self.move_count = self.len(); return ret
@@ -117,7 +117,8 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
           + handicap_stones(true) + handicap_stones(false)
     // body
     const lizzie072_cache_for = h => {
-        const {suggest, b_winrate, visits, is_black, endstate} = h
+        const {is_black, endstate, by} = h
+        const {suggest, b_winrate, visits} = (by || {})[game.current_engine] || {}
         if (!suggest) {return ''}
         const f = z => truep(z) ? z : 0
         const s1 = `0.7.2 ${f(is_black ? b_winrate : 100 - b_winrate).toFixed(1)} ${kilo_str(f(visits))}`

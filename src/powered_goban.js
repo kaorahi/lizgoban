@@ -83,7 +83,7 @@ function suggest_handler(h) {
     // keys2: optional. single global plot.
     const keys2 = ['endstate', 'score_without_komi']
     copy_vals(keys2, cur); !prefer_cached_p && copy_vals(keys2, cur_by_engine)
-    game.engines[engine_id] = true
+    game.engines[engine_id] = true; game.current_engine = engine_id
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = {...cur, ...preferred_h}
     R.show_endstate && add_endstate_to_stones(R.stones, endstate, mc, true)
