@@ -27,8 +27,7 @@
         "from": "build_with",
         "to": "resources/external",
         "filter": [
-          "config.json",
-          "katago_gtp.cfg"
+          "config.json"
         ]
       },
       {
@@ -62,7 +61,7 @@
           "to": "resources/external",
           "filter": [
             "leelaz/{leelaz.exe,*.dll}",
-            "katago/{katago.exe,*.dll}"
+            "katago/{katago.exe,*.dll,default_gtp.cfg}"
           ]
         }
       ]
