@@ -114,11 +114,11 @@ const GAME = require('./game.js')
 function create_game_with_gorule(gorule) {
     const new_game = GAME.create_game(); merge(new_game, {gorule}); return new_game
 }
-function create_games_from_sgf(sgf_str) {
-    toast('loading...', 1000); return create_games_from_sgf_internal(sgf_str)
+function create_games_from_sgf(sgf_str, cache_suggestions_p) {
+    toast('loading...', 1000); return create_games_from_sgf_internal(sgf_str, cache_suggestions_p)
 }
-function create_games_from_sgf_internal(sgf_str) {
-    const gs = GAME.create_games_from_sgf(sgf_str)
+function create_games_from_sgf_internal(sgf_str, cache_suggestions_p) {
+    const gs = GAME.create_games_from_sgf(sgf_str, cache_suggestions_p)
     const set_gorule = new_game => {
         new_game.gorule =
             katago_rule_from_sgf_rule(new_game.sgf_gorule) || get_gorule(true)
@@ -212,7 +212,6 @@ fs.access(option.sabaki_command, null,
 
 app.on('ready', () => {
     restart_leelaz_by_preset(option.preset[0], true); new_window('double_boards')
-    restore_session()
 })
 app.on('window-all-closed', app.quit)
 app.on('quit', () => {store_session(true); kill_all_leelaz()})
@@ -1007,7 +1006,7 @@ function set_or_unset_busy(bool) {
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
 function update_ponder() {AI.set_pondering(pausing, busy)}
-function init_from_renderer() {}
+function init_from_renderer() {setTimeout(restore_session, 100)}
 
 function set_board() {
     const bsize = game.board_size
@@ -1179,37 +1178,6 @@ function switch_to_nth_sequence(n) {
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
 
-// deleted_sequences:
-// Each element of deleted_sequences is a game or an SGF string
-// so that create_games_from_sgf() is called not in restore_session()
-// but in until pop_deleted_sequence() lazily.
-// We need this to recover cached suggestions into the "current" engine's
-// record from autosaved games.
-const deleted_sequences = []
-const max_deleted_sequences = 100
-function push_deleted_sequence(sequence) {
-    deleted_sequences.push(sequence)
-    const expired = deleted_sequences.length - max_deleted_sequences
-    expired > 0 && deleted_sequences.splice(0, expired)
-}
-function pop_deleted_sequence() {
-    const popped = deleted_sequences.pop()
-    return (typeof popped === 'string') ? create_games_from_sgf(popped)[0] : popped
-}
-function exist_deleted_sequence() {return !empty(deleted_sequences)}
-function empty_deleted_sequence_p(game_or_sgf) {
-    return !(typeof game_or_sgf === 'string') && game_or_sgf.is_empty()
-}
-function sgf_from_deleted_sequence(game_or_sgf, cache_suggestions_p) {
-    const too_large = 20 * 400  // rough bound of letters * moves
-    const remove_cached_suggestons_maybe = sgf =>
-          (cache_suggestions_p || sgf.length < too_large) ?
-          sgf : create_games_from_sgf_internal(sgf)[0].to_sgf()
-    return (typeof game_or_sgf === 'string') ?
-        remove_cached_suggestons_maybe(game_or_sgf) :
-        game_or_sgf.to_sgf(cache_suggestions_p)
-}
-
 function sequence_prop_of(given_game) {
     const pick_tag = h => {
         const h_copy = P.append_endstate_tag_maybe(h); return h_copy.tag || ''
@@ -1218,6 +1186,68 @@ function sequence_prop_of(given_game) {
           .replace(endstate_diff_tag_letter, '')
     const {player_black, player_white, handicaps, move_count, trial} = given_game
     return {player_black, player_white, handicaps, move_count, trial, len: given_game.len(), tags}
+}
+
+/////////////////////////////////////////////////
+// deleted_sequences
+
+// deleted_sequences = [pgame, pgame, ...]
+// pgame = game or "packed game"
+
+// "packed game" = compressed SGF.
+// We need to recover cached suggestions into the "current" engine's
+// record from autosaved games.
+// So we want to call create_games_from_sgf() not in restore_session()
+// but in pop_deleted_sequence() lazily.
+// This is the reason why we keep pgame in deleted_sequences.
+// In addition, we also store another version of SGF without cached suggestions
+// into pgame for efficiency.
+
+const deleted_sequences = []
+const max_deleted_sequences = 100
+function push_deleted_sequence(sequence) {
+    deleted_sequences.push(pgame_from_game(sequence))
+    const expired = deleted_sequences.length - max_deleted_sequences
+    expired > 0 && deleted_sequences.splice(0, expired)
+}
+function pop_deleted_sequence() {
+    return game_from_pgame(deleted_sequences.pop(), R.use_cached_suggest)
+}
+function exist_deleted_sequence() {return !empty(deleted_sequences)}
+function empty_deleted_sequence_p(pgame) {
+    return !is_pgame(pgame) && pgame.is_empty()
+}
+
+function make_pgame(longer_stored, shorter_stored) {
+    return {pgame_p: true, longer_stored, shorter_stored}
+}
+function is_pgame(z) {return (z || {}).pgame_p}
+
+function game_from_pgame(pgame, cache_suggestions_p) {
+    return is_pgame(pgame) ?
+        game_from_stored(stored_from_pgame(pgame, cache_suggestions_p), cache_suggestions_p) : pgame
+}
+function pgame_from_game(game) {return game}
+
+function stored_from_pgame(pgame, cache_suggestions_p) {
+    return is_pgame(pgame) ?
+        pgame[cache_suggestions_p ? 'longer_stored' : 'shorter_stored'] :
+    stored_from_game(pgame, cache_suggestions_p)
+}
+function pgame_from_stored(stored) {
+    const too_large = 20 * 400  // rough bound of letters * moves
+    const shorter = (stored.length < too_large) ? stored :
+          stored_from_game(game_from_stored(stored, true, true))
+    return make_pgame(stored, shorter)
+}
+
+// internal
+function game_from_stored(stored, cache_suggestions_p, internal_p) {
+    const f = internal_p ? create_games_from_sgf_internal : create_games_from_sgf
+    return f(uncompress(stored), cache_suggestions_p)[0]
+}
+function stored_from_game(game, cache_suggestions_p) {
+    return compress(game.to_sgf(cache_suggestions_p))
 }
 
 /////////////////////////////////////////////////
@@ -1234,13 +1264,16 @@ function store_session(cache_suggestions_p) {
     const saved_seq = [...deleted_seq, ...rev_seq]
     const cache_lim = Math.max(rev_seq.length, option.autosave_cached_suggestions)
     const cache_p = k => cache_suggestions_p && (saved_seq.length - k) <= cache_lim
-    const saved_sgf = saved_seq.map((g, k) => sgf_from_deleted_sequence(g, cache_p(k)))
-    stored_session.set('sequences_gz_b64', saved_sgf.map(compress))
+    const stored = saved_seq.map((g, k) => stored_from_pgame(g, cache_p(k)))
+    stored_session.set('sequences_gz_b64', stored)
     debug_log('store_session done')
 }
 function restore_session() {
     debug_log('restore_session start')
-    deleted_sequences.push(...stored_session.get('sequences_gz_b64', []).map(uncompress))
+    deleted_sequences.push(...stored_session.get('sequences_gz_b64', []).map((stored, k, all) => {
+        toast(`restoring autosaved games (${k + 1}/${all.length})...`)
+        return pgame_from_stored(stored)
+    }))
     debug_log('restore_session done')
 }
 
@@ -1454,7 +1487,8 @@ function save_sgf_to(filename, if_success) {
 
 function read_sgf(sgf_str, filename) {
     const too_many_games = 6
-    const new_games = create_games_from_sgf(sgf_str), len = new_games.length
+    const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest)
+    const len = new_games.length
     const open1 = g => {g.merge_common_header(game); backup_and_replace_game(g)}
     const open_games = gs => {
         filename && gs.forEach(g => g.sgf_file = filename)

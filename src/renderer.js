@@ -980,11 +980,11 @@ function toast(message, millisec) {
 /////////////////////////////////////////////////
 // init
 
-main('init_from_renderer')
-
 // (ref.)
 // https://teratail.com/questions/8773
 // https://qiita.com/damele0n/items/f4050649de023a948178
 // https://qiita.com/tkdn/items/5be7ee5cc178a62f4f67
 Q('body').offsetLeft  // magic spell to get updated clientWidth value
 set_all_canvas_size()
+
+main('init_from_renderer')

@@ -77,8 +77,8 @@ function create_game(init_history, init_prop) {
             history.splice(0, Infinity, ...TRANSFORM[command](history))
         },
         to_sgf: cache_suggestions_p => game_to_sgf(self, cache_suggestions_p),
-        load_sabaki_gametree: (gametree, index) =>
-            load_sabaki_gametree_to_game(gametree, index, self),
+        load_sabaki_gametree: (gametree, index, cache_suggestions_p) =>
+            load_sabaki_gametree_to_game(gametree, index, self, cache_suggestions_p),
         new_tag_maybe: (new_sequence_p, move_count) =>
             new_tag_maybe_for_game(self, new_sequence_p, move_count),
         add_or_remove_tag: () => add_or_remove_tag_on_game(self),
@@ -138,19 +138,20 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
     return `(${header}${body})`
 }
 
-function create_games_from_sgf(sgf_str) {
+function create_games_from_sgf(sgf_str, cache_suggestions_p) {
     // For robust parsing...
     // (1) drop junk before SGF by searching "(;" (ad hoc!)
     // (2) drop tails repeatedly until we get a valid SGF (brute force!)
     const clipped = clip_sgf(sgf_str)
-    return clipped ? (safely(create_games_from_sgf_unsafe, clipped) ||
+    return clipped ? (safely(create_games_from_sgf_unsafe, clipped, cache_suggestions_p) ||
                       create_games_from_sgf(clipped.slice(0, -1)))
         : []
 }
-function create_games_from_sgf_unsafe(clipped_sgf) {
+function create_games_from_sgf_unsafe(clipped_sgf, cache_suggestions_p) {
     return unify_common_headers(parse_sgf(clipped_sgf).map(gametree => {
         const game = create_game()
-        game.load_sabaki_gametree(gametree); game.sgf_str = clipped_sgf
+        game.load_sabaki_gametree(gametree, undefined, cache_suggestions_p)
+        game.sgf_str = clipped_sgf
         return game
     }))
 }
@@ -193,7 +194,7 @@ function convert_to_sabaki_sgf_v131_maybe(parsed) {
 /////////////////////////////////////////////////
 // Sabaki gameTree
 
-function load_sabaki_gametree_to_game(gametree, index, game) {
+function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p) {
     if (!gametree || !gametree.nodes) {return false}
     const parent_nodes = nodes_from_sabaki_gametree(gametree.parent)
     const nodes = parent_nodes.concat(gametree.nodes)
@@ -217,7 +218,8 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     // (and recover the old board size immediately so that its change
     // is correctly detected elsewhere for switching of engine processes)
     const to_history = nodes =>
-          history_from_sabaki_nodes(nodes, truep(komi) ? komi : leelaz_komi)
+          history_from_sabaki_nodes(nodes, truep(komi) ? komi : leelaz_komi,
+                                    cache_suggestions_p)
     const history_for = given_nodes => with_board_size(bsize, to_history, given_nodes)
     const new_hist = history_for(nodes)
     game.set_with_reuse(new_hist)
@@ -227,13 +229,13 @@ function load_sabaki_gametree_to_game(gametree, index, game) {
     return true
 }
 
-function history_from_sabaki_nodes(nodes, komi) {
+function history_from_sabaki_nodes(nodes, komi, cache_suggestions_p) {
     const new_history = []; let move_count = 0
     const f = (h, key, is_black) => {
         (h[key] || []).forEach((pos, k) => {
             const move = sgfpos2move(pos), comment = k === 0 && (h.C || [])[0]
             const tag = h.branching_tag, analysis_for_black = !is_black
-            const cached_suggest_maybe = h.LZ ?
+            const cached_suggest_maybe = (cache_suggestions_p && h.LZ) ?
                   parse_lizzie072_cache(h.LZ[0], analysis_for_black, komi) : {}
             move && ++move_count &&
                 new_history.push({move, is_black, move_count, comment, tag,
