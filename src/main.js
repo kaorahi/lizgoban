@@ -133,6 +133,9 @@ function create_games_from_sgf_internal(sgf_str, cache_suggestions_p) {
                       'komi', 'gorule', 'endstate', 'score_without_komi']
         keys.forEach(k => truep(cur[k]) && (cur_by_engine[k] = cur[k]))
     })
+    // set 9x9 engine before cooking 9x9 games so that cached suggestions
+    // are loaded correctly
+    !empty(gs) && set_AI_board_size_maybe(gs[0].board_size)
     const f = g => {set_gorule(g); cook_lizzie_cache(g); P.set_ambiguity_etc_in_game(g)}
     gs.forEach(f); return gs
 }
@@ -1010,9 +1013,12 @@ function init_from_renderer() {setTimeout(restore_session, 100)}
 
 function set_board() {
     const bsize = game.board_size
-    bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
+    set_AI_board_size_maybe(bsize)
     AI.set_board(P.set_board(game), game.get_komi(), get_gorule(), R.show_endstate)
     AI.switch_leelaz(); update_let_me_think(true)
+}
+function set_AI_board_size_maybe(bsize) {
+    bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
 }
 
 function generic_input_dialog(win, label, init_val, channel) {
