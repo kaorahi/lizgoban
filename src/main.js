@@ -1382,8 +1382,7 @@ function open_sgf_in(dir, proc) {
     select_files('Select SGF file', dir).forEach(proc || load_sgf)
 }
 function load_sgf(filename) {
-    const new_games = read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}))
-    new_games.forEach(g => g.sgf_file = filename)
+    const new_games = read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename)
 }
 
 function save_sgf() {
@@ -1400,14 +1399,29 @@ function save_sgf_to(filename, if_success) {
     fs.writeFile(filename, game.to_sgf(), callback)
 }
 
-function read_sgf(sgf_str) {
-    const new_games = create_games_from_sgf(sgf_str)
+function read_sgf(sgf_str, filename) {
+    const too_many_games = 6
+    const new_games = create_games_from_sgf(sgf_str), len = new_games.length
+    const open_games = gs => {
+        filename && gs.forEach(g => g.sgf_file = filename)
+        gs.reverse().forEach(backup_and_replace_game)
+        // keep sequence_cursor trickily!
+        // (see the second argument of backup_and_replace_game)
+    }
+    const ask_really_open = gs => {
+        const message = `Really open ${gs.length} games (variations)?`
+        const first_only = 'first one only', values = ['ok', first_only]
+        const proc = v => {
+            if (v === 'cancel') {return}
+            v === first_only && new_games.splice(1)
+            open_games(gs)
+        }
+        ask_choice(message, values, proc)
+    }
     empty(new_games) ?
         dialog.showErrorBox("Failed to read SGF", snip(sgf_str, 200)) :
-        new_games.reverse().forEach(backup_and_replace_game)
-    // keep sequence_cursor trickily!
-    // (see the second argument of backup_and_replace_game)
-    return new_games
+        (len < too_many_games) ? open_games(new_games) :
+        ask_really_open(new_games, len)
 }
 
 function open_url(url) {
