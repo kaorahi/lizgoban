@@ -271,50 +271,11 @@ function create_leelaz () {
     }
 
     const suggest_reader = (s) => {
-        if (!arg.suggest_handler) {return}
-        const [i_str, o_str] = s.split(/\s*ownership\s*/)
-        const ownership = ownership_parser(o_str)
-        const unsorted_suggest =
-              i_str.split(/info/).slice(1).map(suggest_parser).filter(truep)
-        const suggest = sort_by_key(unsorted_suggest, 'order')
-        const [wsum, visits, scsum] =
-              suggest.map(h => [h.winrate, h.visits, h.score_without_komi || 0])
-              .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
-                      [0, 0, 0])
-        const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
-        const visits_per_sec = speedometer.per_sec(visits)
-        const score_without_komi = is_katago() && (scsum / visits)
-        const add_order = (sort_key, order_key) => sort_by_key(suggest, sort_key)
-              .reverse().forEach((h, i) => (h[order_key] = i))
-        // winrate is NaN if suggest = []
-        add_order('visits', 'visits_order')
-        add_order('winrate', 'winrate_order')
-        arg.suggest_handler({engine_id, suggest, visits, b_winrate, visits_per_sec,
-                             score_without_komi, ownership, komi, gorule})
+        const f = arg.suggest_handler; if (!f) {return}
+        const h = parse_analyze(s, bturn, komi, is_katago())
+        merge(h, {engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits)})
+        f(h)
     }
-
-    // (sample of leelaz output for "lz-analyze 10")
-    // info move D16 visits 23 winrate 4668 prior 2171 order 0 pv D16 Q16 D4 Q3 R5 R4 Q5 O3 info move D4 visits 22 winrate 4670 prior 2198 order 1 pv D4 Q4 D16 Q17 R15 R16 Q15 O17 info move Q16 visits 21 winrate 4663 prior 2147 order 2 pv Q16 D16 Q4 D3 C5 C4 D5 F3
-    // (sample with "pass")
-    // info move pass visits 65 winrate 0 prior 340 order 0 pv pass H4 pass H5 pass G3 pass G1 pass
-    // (sample of LCB)
-    // info move D4 visits 171 winrate 4445 prior 1890 lcb 4425 order 0 pv D4 Q16 Q4 D16
-    // (sample "kata-analyze interval 10 ownership true")
-    // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4 ... pv D17 R16 ownership -0.0261067 -0.0661169 ... 0.203051
-    const suggest_parser = (s) => {
-        const to_percent = str => to_f(str) * (is_katago() ? 100 : 1/100)
-        const [a, b] = s.split(/pv/); if (!b) {return false}
-        const h = array2hash(a.trim().split(/\s+/))
-        h.pv = b.trim().split(/\s+/); h.lcb = to_percent(h.lcb || h.winrate)
-        h.visits = to_i(h.visits); h.order = to_i(h.order)
-        h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
-        truep(h.scoreMean) &&
-            (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
-        h.scoreStdev = to_f(h.scoreStdev || 0)
-        return h
-    }
-    const ownership_parser = s => s && s.trim().split(/\s+/)
-          .map(z => to_f(z) * (bturn ? 1 : -1))
 
     /////////////////////////////////////////////////
     // stderr reader
@@ -390,6 +351,54 @@ function create_leelaz () {
 
 function hash(str) {
     return CRYPTO.createHash('sha256').update(str).digest('hex').slice(0, 8)
+}
+
+/////////////////////////////////////////////////
+// parser for {lz,kata}-analyze
+
+function parse_analyze(s, bturn, komi, katago_p) {
+    const [i_str, o_str] = s.split(/\s*ownership\s*/)
+    const ownership = ownership_parser(o_str, bturn)
+    const parser = z => suggest_parser(z, bturn, komi, katago_p)
+    const unsorted_suggest =
+          i_str.split(/info/).slice(1).map(parser).filter(truep)
+    const suggest = sort_by_key(unsorted_suggest, 'order')
+    const [wsum, visits, scsum] =
+          suggest.map(h => [h.winrate, h.visits, h.score_without_komi || 0])
+          .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
+                  [0, 0, 0])
+    const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
+    const score_without_komi = katago_p && (scsum / visits)
+    const add_order = (sort_key, order_key) => sort_by_key(suggest, sort_key)
+          .reverse().forEach((h, i) => (h[order_key] = i))
+    // winrate is NaN if suggest = []
+    add_order('visits', 'visits_order')
+    add_order('winrate', 'winrate_order')
+    return {suggest, visits, b_winrate, score_without_komi, ownership, komi}
+}
+
+// (sample of leelaz output for "lz-analyze 10")
+// info move D16 visits 23 winrate 4668 prior 2171 order 0 pv D16 Q16 D4 Q3 R5 R4 Q5 O3 info move D4 visits 22 winrate 4670 prior 2198 order 1 pv D4 Q4 D16 Q17 R15 R16 Q15 O17 info move Q16 visits 21 winrate 4663 prior 2147 order 2 pv Q16 D16 Q4 D3 C5 C4 D5 F3
+// (sample with "pass")
+// info move pass visits 65 winrate 0 prior 340 order 0 pv pass H4 pass H5 pass G3 pass G1 pass
+// (sample of LCB)
+// info move D4 visits 171 winrate 4445 prior 1890 lcb 4425 order 0 pv D4 Q16 Q4 D16
+// (sample "kata-analyze interval 10 ownership true")
+// info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4 ... pv D17 R16 ownership -0.0261067 -0.0661169 ... 0.203051
+function suggest_parser(s, bturn, komi, katago_p) {
+    const to_percent = str => to_f(str) * (katago_p ? 100 : 1/100)
+    const [a, b] = s.split(/pv/); if (!b) {return false}
+    const h = array2hash(a.trim().split(/\s+/))
+    h.pv = b.trim().split(/\s+/); h.lcb = to_percent(h.lcb || h.winrate)
+    h.visits = to_i(h.visits); h.order = to_i(h.order)
+    h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
+    truep(h.scoreMean) &&
+        (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
+    h.scoreStdev = to_f(h.scoreStdev || 0)
+    return h
+}
+function ownership_parser(s, bturn) {
+    return s && s.trim().split(/\s+/).map(z => to_f(z) * (bturn ? 1 : -1))
 }
 
 /////////////////////////////////////////////////
