@@ -211,6 +211,7 @@ Check "Tool > Experimental > Cache suggestions" in the menu. This is expected to
 * Show coordinates by "c" key.
 * Show start-up log when engine is down.
 * Improve thumbnails (delay, color, etc.).
+* Wrap long press of left/right arrow at the beginning/end of games for convenience.
 * Fix blur in HiDPI display.
 * Experimentally support saving/loading analyses in SGF. (See the above section.)
 

@@ -746,11 +746,13 @@ document.onkeydown = e => {
     const skip_maybe = (...a) => e.repeat ? with_skip(busy, ...a) : busy(...a)
     switch (!R.attached && key) {
     case "ArrowLeft": case "ArrowUp":
-        (!undoable() && !e.repeat && !e.shiftKey) ?
-            m('redo_to_end') : busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
+        (!undoable() && e.repeat && !R.busy && !e.shiftKey) ? m('redo_to_end') :
+            (!redoable() && e.repeat && !e.shiftKey) ? do_nothing :
+            busy('undo_ntimes', e.shiftKey ? 15 : 1); break;
     case "ArrowRight": case "ArrowDown":
-        (!redoable() && !e.repeat && !e.shiftKey) ?
-            m('undo_to_start') : busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
+        (!redoable() && e.repeat && !R.busy && !e.shiftKey) ? m('undo_to_start') :
+            (!undoable() && e.repeat && !e.shiftKey) ? do_nothing :
+            busy('redo_ntimes', e.shiftKey ? 15 : 1); break;
     case "[": skip_maybe('previous_sequence'); break;
     case "]": skip_maybe('next_sequence'); break;
     }
