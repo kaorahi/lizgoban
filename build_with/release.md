@@ -1,9 +1,8 @@
-LizGoban 0.4.0-pre2
+LizGoban 0.4.0-pre2.90
 
-* Upgrade the built-in engine of the all-in-one package to [KataGo 1.3.2](https://github.com/lightvector/KataGo/releases/tag/v1.3.2) (OpenCL) + 15 blocks network (g170e-b15c192-s1672).
-* Upgrade libraries (Electron 8, etc.).
-* Rename "aggressive KataGo" to "KataGo for handicap games" in "Preset" menu.
-* Fix small bugs etc.
+Unofficial test of packaging. (Do not redistribute it, please.)
+
+This release is not for general users. Please try this only if you are willing to help the project by checking and reporting bugs. The next -pre3 will be officially released soon, in a week or so, if this test is passed without problems.
 
 ### Links
 
