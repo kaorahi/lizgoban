@@ -407,9 +407,12 @@ function goto_previous_or_next_something(backwardp) {
           `${h.is_black ? 'B' : 'W'} ${Math.round(h.gain)}`
     let reason = ''
     const interesting = (h, k, ary) => {
+        const {resolved_by_connection, resolved_by_capture} = h.ko_state || {}
         reason = valid(h) && [
             comment_p(h) && snip_text(h.comment, 40, 0, '...'),
             h.tag,
+            (resolved_by_connection || resolved_by_capture) && 'ko',
+            h.illegal && 'illegal',
             check_blunder(ary[k + sign] || {}),  // show the board BEFORE the blunder
         ].filter(truep).join(' / '); return reason
     }
