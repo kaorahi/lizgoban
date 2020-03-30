@@ -47,10 +47,11 @@ function fan_gen([x, y], r, [deg1, deg2], g) {
 function square_around_gen([x, y], radius, g) {
     rect_gen([x - radius, y - radius], [x + radius, y + radius], g)
 }
+function close_line(...args) {line_gen(...args); last(args).closePath()}
 function signed_triangle_around_gen(sign, [x, y], radius, g) {
     const half_width = radius * Math.sqrt(3) / 2
     const y1 = y - radius * sign, y2 = y + radius / 2 * sign
-    line_gen([x, y1], [x - half_width, y2], [x + half_width, y2], g); g.closePath()
+    close_line([x, y1], [x - half_width, y2], [x + half_width, y2], g)
 }
 function triangle_around_gen(xy, radius, g) {
     signed_triangle_around_gen(1, xy, radius, g)
