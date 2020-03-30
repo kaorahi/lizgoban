@@ -128,15 +128,21 @@ function draw_winrate_graph_current(w, sr2coord, g) {
     truep(r) && draw_winrate_graph_current_sub(w, s, r, sr2coord, g)
 }
 function draw_winrate_graph_current_sub(w, s, r, sr2coord, g) {
-    const [x, y] = sr2coord(s, r), [_, ymax] = sr2coord(s, 0)
-    const radius = dy_for_percent(8, sr2coord), normal = x < w * 0.8
-    const dx = (normal ? 1 : -2) * radius
-    const here = [x + dx, clip(y, radius, ymax - radius)]
+    const {x, y, unit, here, normal} = winrate_text_geom(w, s, r, sr2coord)
     g.save()
-    g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 3; circle([x, y], radius, g)
+    g.strokeStyle = g.fillStyle = WHITE; fill_circle([x, y], 5, g)
+    g.lineWidth = 1; line([x, y], here, g)
     g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
-    fill_text(g, radius * 2, ` ${Math.round(r)}% `, ...here)
+    fill_text(g, unit, `${Math.round(r)}%`, ...here)
     g.restore()
+}
+function winrate_text_geom(w, s, r, sr2coord) {
+    const [x, y] = sr2coord(s, r), [_, ymax] = sr2coord(s, 0)
+    const unit = dy_for_percent(20, sr2coord)
+    const normal = x < Math.max(w * 0.5, w - unit * 3.5)
+    const dx = (normal ? 1 : -1.5) * unit
+    const here = [x + dx, clip(y, unit, ymax - unit)]
+    return {x, y, unit, here, normal, ymax}
 }
 function dy_for_percent(percent, sr2coord) {
     const s = R.handicaps  // sr2coord(0, 0) is invalid for handicap games
@@ -179,28 +185,31 @@ function score_drawer(w, sr2coord, g) {
         const [radius, alpha] = current_p ? [4, 1] : [2.5, 0.6]
         g.fillStyle = color(alpha)
         fill_circle([x, y], radius, g)
-        // avoid flicker
-        current_p && !R.hide_suggest && draw_score_text(w, x, y, s, sr2coord, g)
     }
     const draw_score = () => {
         const at_r = [50, 60, 70], to_score = r => (r - 50) / scale
         draw_winrate_graph_scale(at_r, to_score, color(0.6), w * 0.995, sr2coord, g)
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
+        !R.hide_suggest && draw_score_text(w, to_r, sr2coord, g)  // avoid flicker
     }
     return command => ({score: draw_score, komi: draw_komi})[command]()
 }
 
-function draw_score_text(w, x, y, s, sr2coord, g) {
-    const {r, score_without_komi} = R.winrate_history[s] || {}
+function draw_score_text(w, to_r, sr2coord, g) {
+    const s = R.move_count, {r, score_without_komi} = R.winrate_history[s] || {}
     if (!truep(score_without_komi)) {return}
-    const [_, ry] = sr2coord(s, truep(r) ? r : R.komi)
-    const unit = dy_for_percent(10, sr2coord), normal = x < w * 0.9
-    const dx = normal ? 0.5 * unit : -2 * unit, dy = (y > ry ? 1 : -1) * unit
-    const [__, ymax] = sr2coord(s, 0), here = [x + dx, clip(y + dy, unit, ymax - unit)]
+    const wr = winrate_text_geom(w, s, r, sr2coord)
+    const [x0, y0] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
+    const [x, y] = sr2coord(s, to_r(score_without_komi))
+    const dy = (y > wr.y ? 1 : -1) * 1.5 * unit
+    const half = unit * 0.5, needed = wr.unit * 0.5 + half
+    const [y1, y2] = dy > 0 ? [y0 + needed, ymax - half] : [half, y0 - needed]
+    const here = [x0, clip(y + dy, y1, y2)]
     g.save()
     g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 1; line([x, y], here, g)
     g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
-    fill_text(g, unit, ` ${f2s(score_without_komi)}pt `, ...here)
+    const score = score_without_komi - R.komi, bw = score > 0 ? 'B' : 'W'
+    fill_text(g, unit, `${bw}+${f2s(Math.abs(score))}`, ...here)
     g.restore()
 }
 
