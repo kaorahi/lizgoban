@@ -1308,11 +1308,15 @@ function update_state(keep_suggest_p) {
     }
     const history_tags = flatten(game.map(pick_tagged))
     const {player_black, player_white, trial} = game
+    const cur = game.ref_current()
+    const more = keep_suggest_p ? {} :
+          (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
+          {suggest: []}
     P.set_and_render({
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths,
-    }, keep_suggest_p ? {} : {suggest: []})
+    }, more)
 }
 
 function update_ui(ui_only) {
