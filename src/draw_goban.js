@@ -168,7 +168,7 @@ function draw_goban(canvas, stones, opts) {
         tag_clickable_p, hovered_move, show_until,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
-    draw_endstate_p && !hide_endstate_p() &&
+    draw_endstate_p && !hide_endstate_clusters_p() &&
         draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     // mouse events
     const mouse_handler = handle_mouse_on_goban || do_nothing
@@ -697,7 +697,8 @@ function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
 
 // endstate
 
-function hide_endstate_p() {return R.busy || !R.is_endstate_drawable}
+function hide_endstate_p() {return R.long_busy || !R.is_endstate_drawable}
+function hide_endstate_clusters_p() {return R.busy || !R.is_endstate_drawable}
 
 /////////////////////////////////////////////////
 // exports

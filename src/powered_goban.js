@@ -30,7 +30,7 @@ function set_stones(stones) {
     set_tentative_endstate_maybe()  // avoid flicker of ownerships
 }
 
-function renew_game() {set_endstate_obsolete()}
+function renew_game() {set_endstate_obsolete(); clear_endstate()}
 
 /////////////////////////////////////////////////
 // receive analysis from leelaz
@@ -86,7 +86,7 @@ function suggest_handler(h) {
     game.engines[engine_id] = true
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = {...cur, ...preferred_h}
-    R.show_endstate && endstate && add_endstate_to_stones(R.stones, endstate, mc, true)
+    R.show_endstate && add_endstate_to_stones(R.stones, endstate, mc, true)
     endstate && set_endstate_uptodate(endstate)
     // is_endstate_drawable is true if...
     // (1) ownership is given here, or
@@ -187,31 +187,38 @@ function set_tentative_endstate_maybe() {
     update_p ? set_endstate_uptodate(endstate) :
         reuse_p ? do_nothing() : set_endstate_obsolete()
     const es = recall_endstate()
-    es && tentatively_add_endstate_to_stones(R.stones, es)
+    tentatively_add_endstate_to_stones(R.stones, es)
     R.is_endstate_drawable = !!es
 }
 
 function add_endstate_to_stones(stones, endstate, move_count, update_diff_p) {
-    if (!endstate) {return}
+    // if (!endstate) {return}
     purely_add_endstate_to_stones(stones, endstate)
     update_diff_p && update_endstate_diff()
     merge(game.ref(move_count), get_ambiguity_etc(stones, game, move_count))
 }
 function tentatively_add_endstate_to_stones(stones, endstate) {
+    // if (!endstate) {return}
     purely_add_endstate_to_stones(stones, endstate)
     update_endstate_diff(true)
 }
+const lagged_endstate = make_lagged_aa(0.2)
 function purely_add_endstate_to_stones(stones, endstate) {
-    aa_each(stones, (s, i, j) => (s.endstate = aa_ref(endstate, i, j)))
+    const aa = lagged_endstate.update_all(M.is_busy() ? null : endstate)
+    aa_each(stones, (s, i, j) => {s.endstate = aa_ref(aa, i, j)})
 }
+
+const lagged_endstate_diff = make_lagged_aa(0.2)
 function update_endstate_diff(tentatively) {
     const prev = endstate_diff_move_count(), sign = prev < game.move_count ? 1 : -1
     const prev_endstate = game.ref(prev).endstate
     const ok = prev_endstate && game.ref_current().endstate
     const tentatively_ok = prev_endstate && tentatively
-    aa_each(R.stones, (s, i, j) =>
-            (s.endstate_diff = (ok || tentatively_ok) ?
-             sign * (s.endstate - aa_ref(prev_endstate, i, j)) : 0))
+    aa_each(R.stones, (s, i, j) => {
+        const val = (ok || tentatively_ok) && !M.is_busy() ?
+              sign * (s.endstate - aa_ref(prev_endstate, i, j)) : 0
+        s.endstate_diff = lagged_endstate_diff.update(i, j, val)
+    })
     R.prev_endstate_clusters = ok && get_endstate_clusters(prev_endstate, prev)
 }
 function endstate_diff_move_count() {
@@ -228,6 +235,8 @@ function for_current_and_previous_endstate(move_count, key, delta, f) {
     return truep(cur) && truep(prev) && f(cur, prev)
 }
 function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
+
+function clear_endstate() {lagged_endstate.reset(); lagged_endstate_diff.reset()}
 
 function get_endstate_clusters(endstate, move_count) {
     const stones = M.is_bogoterritory() &&
@@ -259,6 +268,21 @@ function get_ambiguity_etc(stones, game, move_count) {
     }
     count_played_stones(); aa_each(stones, check_endstate)
     return {ambiguity, unsafe_stones}
+}
+
+function make_lagged_aa(max_diff) {
+    let aa = [[]]
+    const update = (i, j, val) => {
+        const prev = aa_ref(aa, i, j) || 0, given = val || 0
+        const updated = clip(given, prev - max_diff, prev + max_diff)
+        aa_set(aa, i, j, updated); return updated
+    }
+    const update_all = new_aa => {
+        aa_each(new_aa || aa, (_, i, j) => update(i, j, aa_ref(new_aa || [[]], i, j)))
+        return aa
+    }
+    const reset = () => (aa = [[]])
+    return {update, update_all, reset}
 }
 
 /////////////////////////////////////////////////
