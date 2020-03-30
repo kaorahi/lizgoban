@@ -96,12 +96,6 @@ function suggest_handler(h) {
     on_suggest()
 }
 
-function endstate_from_ownership(ownership) {
-    const endstate = [[]]
-    aa_each(R.stones, (_, i, j) => aa_set(endstate, i, j, ownership.shift()))
-    return endstate
-}
-
 /////////////////////////////////////////////////
 // change renderer state and send it to renderer
 

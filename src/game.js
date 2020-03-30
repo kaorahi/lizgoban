@@ -108,12 +108,15 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
           + handicap_stones(true) + handicap_stones(false)
     // body
     const lizzie072_cache_for = h => {
-        const {suggest, b_winrate, visits, is_black} = h; if (!suggest) {return ''}
+        const {suggest, b_winrate, visits, is_black, endstate} = h
+        if (!suggest) {return ''}
         const f = z => truep(z) ? z : 0
         const s1 = `0.7.2 ${f(is_black ? b_winrate : 100 - b_winrate).toFixed(1)} ${kilo_str(f(visits))}`
         const scoremean_maybe = z => truep(z.scoreMean) ? `scoreMean ${to_s(z.scoreMean)} ` : ''
-        const s2 = sort_by(suggest, z => z.order).map(z => `move ${z.move} visits ${z.visits} winrate ${to_i(z.winrate * 100)} ` + scoremean_maybe(z) + `pv ${z.pv.join(' ')} info `).join('')
-        return `LZ[${s1}\n${s2}]`
+        const s2 = sort_by(suggest, z => z.order).map(z => `move ${z.move} visits ${z.visits} winrate ${to_i(z.winrate * 100)} ` + scoremean_maybe(z) + `pv ${z.pv.join(' ')}`).join(' info ')
+        const analysis_for_black = !is_black
+        const s3 = endstate ? ` ownership ${flatten(endstate).map(o => analysis_for_black ? o : -o).join(' ')}` : ''
+        return `LZ[${s1}\n${s2}${s3} info ]`
     }
     const move2sgf = h => {
         const {move, is_black, comment} = h
@@ -238,6 +241,7 @@ function parse_lizzie072_cache(lizzie_cache, bturn, komi) {
     const m = lizzie_cache.match(/\n(.*) *info */); if (!m) {return fail}
     const s = 'info ' + m[1]
     const ret = safely(parse_analyze, s, bturn, komi); if (!ret) {return fail}
+    ret.ownership && (ret.endstate = endstate_from_ownership(ret.ownership))
     return ret
 }
 

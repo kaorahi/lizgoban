@@ -84,6 +84,12 @@ E.snip_text = (str, head, tail, dots) => {
         str.slice(0, head) + (raw ? dots : dots(over)) + (tail > 0 ? str.slice(- tail) : '')
 }
 
+E.endstate_from_ownership = ownership => {
+    const endstate = [[]]
+    aa_each(R.stones, (_, i, j) => aa_set(endstate, i, j, ownership.shift()))
+    return endstate
+}
+
 E.change_detector = init_val => {
     let prev
     const is_changed = val => {const changed = (val != prev); prev = val; return changed}
