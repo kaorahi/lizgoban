@@ -60,6 +60,12 @@ function endstate_handler(h) {
     AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
 }
 
+// keys1: required. individual plot for each engine.
+const suggest_keys1 = ['suggest', 'visits', 'background_visits', 'b_winrate',
+                       'komi', 'gorule']
+// keys2: optional. single global plot.
+const suggest_keys2 = ['endstate', 'score_without_komi']
+
 const too_small_prior = 1e-3
 function suggest_handler(h) {
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
@@ -76,13 +82,10 @@ function suggest_handler(h) {
     preferred_h.background_visits = (h !== preferred_h) && h.visits
     const copy_vals = (keys, to) =>
           keys.forEach(k => truep(preferred_h[k]) && (to[k] = preferred_h[k]))
-    // keys1: required. individual plot for each engine.
-    const keys1 = ['suggest', 'visits', 'background_visits', 'b_winrate',
-                   'komi', 'gorule']
-    copy_vals(keys1, cur); copy_vals(keys1, cur_by_engine)
-    // keys2: optional. single global plot.
-    const keys2 = ['endstate', 'score_without_komi']
-    copy_vals(keys2, cur); !prefer_cached_p && copy_vals(keys2, cur_by_engine)
+    copy_vals(suggest_keys1, cur)
+    copy_vals(suggest_keys1, cur_by_engine)
+    copy_vals(suggest_keys2, cur)
+    !prefer_cached_p && copy_vals(suggest_keys2, cur_by_engine)
     game.engines[engine_id] = true; game.current_engine = engine_id
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, score_without_komi} = {...cur, ...preferred_h}
