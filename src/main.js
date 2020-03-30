@@ -669,7 +669,9 @@ function apply_preset(rule, win) {
     weight_file && load_weight_file(weight_file)
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
         unload_leelaz_for_white()
-    engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label)
+    const [com_w, ...arg_w] = engine_for_white || []
+    engine_for_white && AI.set_engine_for_white([resolve_engine_path(com_w), ...arg_w],
+                                                preset_label)
     AI.backup(); resume()
 }
 
@@ -1310,7 +1312,7 @@ ${log}`
 // util
 function leelaz_start_args(given_leelaz_command, given_leelaz_args, label) {
     const {working_dir} = option
-    const leelaz_command = PATH.resolve(option.working_dir, given_leelaz_command)
+    const leelaz_command = resolve_engine_path(given_leelaz_command)
     const leelaz_args = given_leelaz_args.slice()
     const preset_label = {label: label || ''}
     const h = {leelaz_command, leelaz_args, preset_label, working_dir, illegal_handler,
@@ -1356,6 +1358,10 @@ function tuning_is_done() {
 function illegal_handler({move, is_black, move_count}) {
     const message = `Illegal: ${is_black ? 'B' : 'W'}(${move_count - game.handicaps}) ${move}`
     toast(message, 5000); AI.cancel_past_requests(); update_all()
+}
+
+function resolve_engine_path(given_leelaz_command) {
+    return PATH.resolve(option.working_dir, given_leelaz_command)
 }
 
 /////////////////////////////////////////////////
