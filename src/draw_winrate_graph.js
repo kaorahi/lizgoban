@@ -184,7 +184,7 @@ function score_drawer(w, sr2coord, g) {
     const to_r = score => 50 + score * scale
     const draw_komi = () => {
         const [dummy, ky] = sr2coord(R.move_count, to_r(R.komi))
-        g.lineWidth = 1; g.strokeStyle = color(0.6)
+        g.lineWidth = 1; g.strokeStyle = color(1)
         line([0, ky], [w, ky], g)
     }
     const plotter = (x, y, s, g) => {
