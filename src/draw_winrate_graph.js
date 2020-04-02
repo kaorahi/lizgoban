@@ -18,8 +18,9 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
         draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, overlay)
     !truep(show_until) && draw_winrate_graph_future(w, fontsize, sr2coord, overlay)
     if (R.busy || show_until) {return}
-    const draw_score = score_drawer(w, sr2coord, coord2sr, g)
+    const draw_score = score_drawer(w, sr2coord, g)
     const score_loss_p = !alternative_engine_for_white_p()
+    update_winrate_text_geom(w, sr2coord, coord2sr)
     clear_canvas(canvas, BLACK, g)
     draw_winrate_graph_frame(w, h, sr2coord, g)
     draw_score('komi')
@@ -30,7 +31,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     draw_score('score')
-    draw_winrate_graph_current(w, sr2coord, coord2sr, g)
+    draw_winrate_graph_current(g)
     // mouse events
     handle_mouse_on_winrate_graph(canvas, coord2sr)
 }
@@ -117,16 +118,9 @@ function draw_winrate_graph_curve_for(winrate_history, style, sr2coord, g) {
     })
 }
 
-let last_winrate_text_s
-function draw_winrate_graph_current(w, sr2coord, coord2sr, g) {
-    // avoid flicker in auto-analyze / auto-play etc.
-    R.pausing && (last_winrate_text_s = null)
-    truep(r_for_s(R.move_count)) && (last_winrate_text_s = R.move_count)
-    const s = last_winrate_text_s, r = r_for_s(s)
-    truep(r) && draw_winrate_graph_current_sub(w, s, r, sr2coord, coord2sr, g)
-}
-function draw_winrate_graph_current_sub(w, s, r, sr2coord, coord2sr, g) {
-    const {x, y, unit, here, normal} = winrate_text_geom(w, s, r, sr2coord, coord2sr)
+function draw_winrate_graph_current(g) {
+    const {x, y, unit, here, normal, r, valid} = winrate_text_geom()
+    if (!truep(r) || (R.pausing && !valid)) {return}
     g.save()
     g.strokeStyle = g.fillStyle = WHITE; fill_circle([x, y], 5, g)
     g.lineWidth = 1; line([x, y], here, g)
@@ -134,21 +128,34 @@ function draw_winrate_graph_current_sub(w, s, r, sr2coord, coord2sr, g) {
     fill_text(g, unit, `${Math.round(r)}%`, ...here)
     g.restore()
 }
-function r_for_s(given_s) {return truep(given_s) && (R.winrate_history[given_s] || {}).r}
-function winrate_text_geom(w, s, r, sr2coord, coord2sr) {
-    const [x, y] = sr2coord(s, r), [_, ymax] = sr2coord(s, 0)
+let last_winrate_text_geom = {}
+function winrate_text_geom() {return last_winrate_text_geom}
+function update_winrate_text_geom(w, sr2coord, coord2sr) {
+    const s = R.move_count, r = r_for_s(s), valid = truep(r)
+    if (!valid) {last_winrate_text_geom.valid = false; return}
+    const [x, y] = sr2coord(s, r), ymax = y_for_r(0, sr2coord)
     const unit = dy_for_percent(20, sr2coord)
     const normal = x < Math.max(w * 0.5, w - unit * 3.5)
     const dx = (normal ? 1 : -1.5) * unit
-    const [s1, __] = coord2sr(x + dx, 0), r1 = r_for_s(Math.round(s1))
-    const dy = (truep(r1) && r1 > r ? 1 : -1) * unit
-    const here = [x + dx, clip(y + dy, unit, ymax - unit)]
-    return {x, y, unit, here, normal, ymax}
+    const y_for_sign = sign => {
+        const dy = sign * unit; return clip(y + dy, unit, ymax - unit)
+    }
+    // to avoid overlap with winrate curve
+    const s1 = Math.round(coord2sr(x + dx, 0)[0]), r1 = r_for_s(s1)
+    const y1 = y_for_r(r1, sr2coord)  // y of winrate curve
+    // to avoid flicker...
+    const prev_dy_sign = last_winrate_text_geom.dy_sign || 1
+    const prev_y = y_for_sign(prev_dy_sign)
+    // ...keep previous sign as far as it is admissible
+    const is_prev_ok = Math.abs(prev_y - y1) > unit * 0.5
+    const dy_sign = is_prev_ok ? prev_dy_sign : (truep(r1) && r1 > r ? 1 : -1)
+    const here = [x + dx, y_for_sign(dy_sign)]
+    last_winrate_text_geom = {x, y, unit, here, normal, ymax, dy_sign, r, valid}
 }
+function r_for_s(given_s) {return truep(given_s) && (R.winrate_history[given_s] || {}).r}
+function y_for_r(r, sr2coord) {return sr2coord(R.handicaps, r)[1]}
 function dy_for_percent(percent, sr2coord) {
-    const s = R.handicaps  // sr2coord(0, 0) is invalid for handicap games
-    const [_0, y0] = sr2coord(s, 0), [_1, y1] = sr2coord(s, percent)
-    return y0 - y1
+    return y_for_r(0, sr2coord) - y_for_r(percent, sr2coord)
 }
 
 function draw_winrate_graph_tag(fontsize, sr2coord, g) {
@@ -167,7 +174,7 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 
 // additional plots
 
-function score_drawer(w, sr2coord, coord2sr, g) {
+function score_drawer(w, sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
     const max_score = Math.max(...scores.filter(truep).map(Math.abs))
     if (max_score === - Infinity) {return do_nothing}
@@ -191,15 +198,15 @@ function score_drawer(w, sr2coord, coord2sr, g) {
         const at_r = [50, 60, 70], to_score = r => (r - 50) / scale
         draw_winrate_graph_scale(at_r, to_score, color(0.6), w * 0.995, sr2coord, g)
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
-        !R.hide_suggest && draw_score_text(w, to_r, sr2coord, coord2sr, g)  // avoid flicker
+        !R.hide_suggest && draw_score_text(w, to_r, sr2coord, g)  // avoid flicker
     }
     return command => ({score: draw_score, komi: draw_komi})[command]()
 }
 
-function draw_score_text(w, to_r, sr2coord, coord2sr, g) {
+function draw_score_text(w, to_r, sr2coord, g) {
     const s = R.move_count, {r, score_without_komi} = R.winrate_history[s] || {}
     if (!truep(score_without_komi)) {return}
-    const wr = winrate_text_geom(w, s, r, sr2coord, coord2sr)
+    const wr = winrate_text_geom()
     const [x0, y0] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
     const [x, y] = sr2coord(s, to_r(score_without_komi))
     const dy = (y > wr.y ? 1 : -1) * 1.5 * unit
