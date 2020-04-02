@@ -165,7 +165,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 
 #### To save/load analyses in SGF (Experimental)
 
-Check "Tool > Experimental > Cache suggestions" in the menu. This is expected to be compatible with Lizzie 0.7.2.
+Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be compatible with Lizzie 0.7.2.
 
 ## Major changes
 

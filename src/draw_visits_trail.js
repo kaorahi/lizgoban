@@ -62,7 +62,7 @@ function draw_visits_trail_background_visits(w, h, v2x, g) {
     g.save()
     g.strokeStyle = GREEN; g.lineWidth = 3; line([x, 0], [x, h], g)
     g.fillStyle = '#888'; g.textAlign = 'center'; g.textBaseline = 'middle'
-    fill_text(g, h / 5, 'Cached', w / 2, h / 2)
+    fill_text(g, h / 5, 'Reused', w / 2, h / 2)
     g.restore()
 }
 

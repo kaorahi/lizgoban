@@ -563,9 +563,9 @@ function menu_template(win) {
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         menu('Experimental...', [
-            store_toggler_menu_item('Cache suggestions', 'use_cached_suggest'),
-            item('...Delete cache', undefined, P.delete_cache, false, R.use_cached_suggest),
-            item('...Undelete cache', undefined, P.undelete_cache, false, R.use_cached_suggest),
+            store_toggler_menu_item('Reuse analysis', 'use_cached_suggest'),
+            item('...Clear analysis', undefined, P.delete_cache, false, R.use_cached_suggest),
+            item('...Restore analysis', undefined, P.undelete_cache, false, R.use_cached_suggest),
         ]),
     ])
     const white_unloader_item =
