@@ -174,18 +174,18 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 * Support better stone images. ("Stone" in "View" menu & experimental stone/board images in the above section)
 * Support 9x9 and 13x13 in "File" menu. (See the above KataGo section to shorten their initialization.)
 * Add "Rule" into "Edit" menu for KataGo v1.3.
-* Add indicators that suggest highlight scenes of the game (ko fights, etc.).
-* Separate estimations by different engines in winrate graph.
+* Enable "Undelete board" in Edit menu across sessions.
 * Plot cumulative score loss.
 * [Show mistakes over stones.](https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067)
 * Add buttons "?<" and ">?" for previous and next something. (comment, tag, mistake, ko resolution, illegal move)
+* Add indicators that suggest highlight scenes of the game (ko fights, etc.).
+* Separate estimations by different engines in winrate graph.
+* Show coordinates by "c" key.
+* Wrap long press of left/right arrow at the beginning/end of games for convenience.
 * Recognize handicap stones.
 * Read variations in SGF.
-* Enable "Undelete board" in Edit menu across sessions.
-* Show coordinates by "c" key.
 * Show start-up log when engine is down.
 * Improve thumbnails (delay, color, etc.).
-* Wrap long press of left/right arrow at the beginning/end of games for convenience.
 * Fix blur in HiDPI display.
 * Experimentally support saving/loading analyses in SGF. (See the above section.)
 
@@ -194,8 +194,8 @@ Incompatibilities:
 * Upgrade libraries (Electron 8, etc.). So you may need to do "npm install" again.
 * Recommended config.json is modified for KataGo 1.3.4. (See above.)
 * "weight_dir" in config.json is obsolete now. (See above.)
-* "Komi" and "Info" are moved from [Tool] to [Edit] menu.
 * "label_for_white" is added to "preset" in config.json.
+* "Komi" and "Info" are moved from [Tool] to [Edit] menu.
 * The shortcut key `CmdOrCtrl+?` is changed from open_exercise_dir to load_recent_exercise.
 
 ### from 0.2.0
