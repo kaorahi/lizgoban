@@ -21,8 +21,9 @@ const katago_supported_rules = name_table.map(a => a[0])
 
 function katago_rule_from_sgf_rule(sgf_rule) {
     if (!sgf_rule) {return null}
-    const target = sgf_rule.toLowerCase()  // for robustness
-    const hit = name_table.find(a => a.map(s => s.toLowerCase()).includes(target))
+    const normalize = s => s.toLowerCase().replace(/[-_ ]/g, '')  // for robustness
+    const target = normalize(sgf_rule)
+    const hit = name_table.find(a => a.map(normalize).includes(target))
     return hit && hit[0]
 }
 
