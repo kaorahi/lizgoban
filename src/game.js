@@ -205,11 +205,11 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
     const first_node_ref = (key, missing) => (first_node[key] || [missing])[0]
     const bsize = to_i(first_node_ref("SZ", 19))
     // [header]
-    const player_name = bw => first_node_ref(bw) || ''
+    const player_name = bw => first_node_ref(bw, '')
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
     const km = first_node_ref("KM")
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
-    const sgf_gorule = first_node_ref("RU") || ''
+    const sgf_gorule = first_node_ref("RU", '')
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
                  komi, sgf_gorule, board_size: bsize, trial: false})
     const comment = first_node_ref("C")
