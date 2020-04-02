@@ -373,13 +373,13 @@ function play(move, force_create, default_tag, comment) {
     pass && wink()
     autosave_later()
 }
-function do_play(move, is_black, tag, comment) {
+function do_play(move, is_black, tag, note) {
     // We drop "double pass" to avoid halt of analysis by Leelaz.
     // B:D16, W:Q4, B:pass ==> ok
     // B:D16, W:Q4, B:pass, W:D4 ==> ok
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
     is_last_move_pass() && is_pass(move) ? game.pop() :
-        game.push({move, is_black, tag, move_count: game.len() + 1, comment})
+        game.push({move, is_black, tag, move_count: game.len() + 1, note})
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
@@ -407,7 +407,7 @@ function goto_previous_something() {goto_previous_or_next_something(true)}
 function goto_previous_or_next_something(backwardp) {
     const sign = backwardp ? -1 : 1
     const valid = h => (h.move_count - game.move_count) * sign > 0
-    const comment_p = h => h.comment && !h.comment.match(/^{{.*}}$/)
+    const comment_p = h => h.comment
     const check_blunder = h => truep(h.gain) && h.gain <= blunder_threshold &&
           `${h.is_black ? 'B' : 'W'} ${Math.round(h.gain)}`
     let reason = ''
@@ -847,7 +847,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     if (empty(R.suggest)) {return}
     // comment
-    const comment = `{{by ${AI.engine_info().current.preset_label_text}}}`
+    const comment = `by ${AI.engine_info().current.preset_label_text}`
     const play_com = m => play(m, false, null, comment)
     // move
     const move = (weaken_method === 'random_candidate' ?

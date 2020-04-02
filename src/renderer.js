@@ -109,7 +109,7 @@ function hide_dialog() {
 
 function play_moves(moves) {
     const tag = k => (k === 0) && start_moves_tag_letter
-    const com = k => `{{by suggestion (${k + 1})}}`
+    const com = k => `by suggestion (${k + 1})`
     const play1 = (move, k) => main('play', move, false, tag(k), com(k))
     moves && moves.forEach(play1)
 }
@@ -135,7 +135,7 @@ function render_now(e, h, is_board_changed) {
     set_board_size(R.bsize)
     setq('#move_count', D.movenum())
     setq('#history_length', ' (' + D.max_movenum() + ')')
-    setq('#comment', R.comment)
+    setq('#comment', R.comment_note)
     D.update_winrate_trail()
     update_goban()
 }
