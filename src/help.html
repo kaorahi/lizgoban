@@ -343,7 +343,7 @@ translucent green / pink numbers on the board.
 They are calculated as follows:
 <ul>
  <li>Only the ownerships on empty grids (and dead stones) are summed up for each cluster.</li>
- <li>Ownerships of living stones are summed up separately and their total difference of black and white is shown as "+n" at the right top corner on the board.</li>
+ <li>Compensation for the estimated total score is shown as "+n" at the right top corner on the board. Ideally, it is equal to the difference of living stones in area-counting or the difference of captured stones in territory counting at the end of the game.</li>
 </ul>
 So they are not the correct "territories" because (1) future stones are
 not considered and (2) neutral points (dame) are also counted.

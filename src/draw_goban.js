@@ -319,19 +319,21 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
     const size = {major: 3, minor: 2}
     const past_p = past_endstate_p(boundary_p)
     const cs = (past_p ? R.prev_endstate_clusters : R.endstate_clusters) || []
-    cs.forEach(cluster => {
+    const area_sum = sum(cs.map(cluster => {
         const {color, type, ownership_sum, selfstone_sum, center_idx} = cluster
-        const area_count = Math.round(Math.sign(ownership_sum) *
-                                      (ownership_sum - selfstone_sum))
-        if (area_count < 1) {return}
+        const signed_area_count = Math.round(ownership_sum - selfstone_sum)
+        const area_count = Math.sign(ownership_sum) * signed_area_count
+        if (area_count < 1) {return 0}
         boundary_p && draw_endstate_boundary(cluster, unit, idx2coord, g)
         const text = to_s(area_count), xy = idx2coord(...center_idx)
         g.save()
         g.textAlign = 'center'; g.textBaseline = 'middle'
         g.fillStyle = style[color]; fill_text(g, size[type] * unit, text, ...xy)
         g.restore()
-    })
-    const selfstone_sum = Math.round(sum(cs.map(cluster => cluster.selfstone_sum)))
+        return signed_area_count
+    }))
+    const selfstone_sum = truep(R.endstate_sum) ?
+          Math.round(R.endstate_sum - area_sum) : 0
     const ss_text = selfstone_sum === 0 ? '' : `+${to_s(Math.abs(selfstone_sum))}`
     g.save()
     g.textAlign = 'right'; g.textBaseline = 'top'
