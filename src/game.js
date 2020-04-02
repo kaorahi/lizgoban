@@ -117,9 +117,15 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
           + handicap_stones(true) + handicap_stones(false)
     // body
     const lizzie072_cache_for = h => {
-        const {is_black, endstate, by} = h
-        const by_current = (by || {})[game.current_engine] || {}
-        const {suggest, b_winrate, visits} = {...h, ...by_current}
+        const {is_black, endstate, by} = h, {current_engine} = game
+        const by_current = current_engine && (by || {})[current_engine] || {}
+        // current_engine is not set until the first call of suggest_handler.
+        // So we use h here in this case to avoid the bug
+        // "cached suggestions were not copied by C-c after C-z during pausing".
+        // But simple "by_current || h" is wrong because
+        // it causes annoying oscillation of winrates in AI vs. AI.
+        // We need to use only by_current as long as current_engine is given.
+        const {suggest, b_winrate, visits} = current_engine ? by_current : h
         if (!suggest) {return ''}
         const f = z => truep(z) ? z : 0
         const s1 = `0.7.2 ${f(is_black ? b_winrate : 100 - b_winrate).toFixed(1)} ${kilo_str(f(visits))}`
