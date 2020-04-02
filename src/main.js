@@ -38,6 +38,7 @@ const default_option = {
     exercise_dir: 'exercise',
     max_cached_engines: 3,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
+    record_note_to_SGF: false,
     repl: false,
 }
 const option = {}
@@ -111,6 +112,7 @@ update_debug_log()
 
 // game
 const GAME = require('./game.js')
+GAME.use_note_property(option.record_note_to_SGF)
 function create_game_with_gorule(gorule) {
     const new_game = GAME.create_game(); merge(new_game, {gorule}); return new_game
 }

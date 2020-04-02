@@ -136,8 +136,10 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
         return `LZ[${s1}\n${s2}${s3} info ]`
     }
     const move2sgf = h => {
-        const {move, is_black, comment} = h
-        return `;${is_black ? 'B' : 'W'}${m2s(move)}${f('C', comment)}`
+        const {move, is_black, comment, note} = h
+        const note_maybe =
+              f(note_property, use_note_property_p() && note && JSON.stringify({note}))
+        return `;${is_black ? 'B' : 'W'}${m2s(move)}${f('C', comment)}${note_maybe}`
             + (cache_suggestions_p ? lizzie072_cache_for(h) : '')
     }
     const body = game.slice(handicaps).map(move2sgf).join('')
@@ -240,12 +242,16 @@ function history_from_sabaki_nodes(nodes, komi, cache_suggestions_p) {
     const new_history = []; let move_count = 0
     const f = (h, key, is_black) => {
         (h[key] || []).forEach((pos, k) => {
-            const move = sgfpos2move(pos), comment = k === 0 && (h.C || [])[0]
+            const move = sgfpos2move(pos)
+            const get_com = key => k === 0 && (h[key] || [])[0]
+            const comment = get_com('C')
+            const private_prop_json = use_note_property_p() && get_com('LG')
+            const note = private_prop_json && JSON.parse(private_prop_json).note
             const tag = h.branching_tag, analysis_for_black = !is_black
             const cached_suggest_maybe = (cache_suggestions_p && h.LZ) ?
                   parse_lizzie072_cache(h.LZ[0], analysis_for_black, komi) : {}
             move && ++move_count &&
-                new_history.push({move, is_black, move_count, comment, tag,
+                new_history.push({move, is_black, move_count, comment, note, tag,
                                   ...cached_suggest_maybe})
         })
     }
@@ -299,6 +305,14 @@ function add_or_remove_tag_on_game(game) {
 }
 
 /////////////////////////////////////////////////
+// privete note property for SGF
+
+const note_property = 'LG'
+let use_note_property_val = false
+function use_note_property_p() {return use_note_property_val}
+function use_note_property(bool) {use_note_property_val = !!bool}
+
+/////////////////////////////////////////////////
 // exports
 
-module.exports = {create_game, create_games_from_sgf}
+module.exports = {create_game, create_games_from_sgf, use_note_property}
