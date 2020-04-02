@@ -127,8 +127,8 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
         // We need to use only by_current as long as current_engine is given.
         const {suggest, b_winrate, visits} = current_engine ? by_current : h
         if (!suggest) {return ''}
-        const f = z => truep(z) ? z : 0
-        const s1 = `0.7.2 ${f(is_black ? b_winrate : 100 - b_winrate).toFixed(1)} ${kilo_str(f(visits))}`
+        const num = z => truep(z) ? z : 0
+        const s1 = `0.7.2 ${num(is_black ? b_winrate : 100 - b_winrate).toFixed(1)} ${kilo_str(num(visits))}`
         const scoremean_maybe = z => truep(z.scoreMean) ? `scoreMean ${to_s(z.scoreMean)} ` : ''
         const s2 = sort_by(suggest, z => z.order).map(z => `move ${z.move} visits ${z.visits} winrate ${to_i(z.winrate * 100)} ` + scoremean_maybe(z) + `pv ${z.pv.join(' ')}`).join(' info ')
         const analysis_for_black = !is_black
