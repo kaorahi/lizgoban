@@ -203,7 +203,7 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
     const nodes_until_index = parent_nodes.concat(gametree.nodes.slice(0, idx + 1))
     const first_node = nodes_until_index[0]
     const first_node_ref = (key, missing) => (first_node[key] || [missing])[0]
-    const bsize = to_i(first_node_ref("SZ", 19))
+    const bsize = to_i(first_node_ref("SZ")) || 19  // to_i('9:13') is 0
     // [header]
     const player_name = bw => first_node_ref(bw, '')
     const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
