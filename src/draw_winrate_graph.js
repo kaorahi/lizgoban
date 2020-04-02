@@ -68,7 +68,8 @@ function draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, g) 
     const [x, y] = sr2coord(show_until, 0), margin = fontsize * 2
     const left_limit = (delta < 0 ? w - margin : margin)
     g.save()
-    g.textAlign = x < left_limit ? 'left' : 'right'; g.textBaseline = 'bottom'
+    g.textAlign = delta === 0 ? 'center' : x < left_limit ? 'left' : 'right'
+    g.textBaseline = 'bottom'
     g.fillStyle = 'rgba(255,255,0,0.7)'
     fill_text(g, fontsize, ' ' + mc2movenum(show_until) + ' ', x, y)
     g.restore()
