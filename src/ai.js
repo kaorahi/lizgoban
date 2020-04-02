@@ -65,7 +65,7 @@ function each_leelaz(f, for_black_and_white_only) {
 }
 function with_handlers(h) {
     const more = h.ready_handler ?
-          {ready_handler: () => {backup(); h.ready_handler()}} : {}
+          {ready_handler: (...a) => {backup(); h.ready_handler(...a)}} : {}
     return merge({suggest_handler, unsupported_size_handler}, h, more)
 }
 

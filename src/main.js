@@ -1434,7 +1434,7 @@ function leelaz_start_args_for_board_size(default_board_size) {
 }
 let tuning_message
 function on_ready(update_only_p) {
-    if (update_only_p) {update_all(); return}
+    if (update_only_p) {update_all(true); return}
     // fixme: on_ready is called by *every* leelaz
     // (leelaz_for_black and leelaz_for_white).
     // This interferes starting-up sequence of another leelaz in engine.js.
