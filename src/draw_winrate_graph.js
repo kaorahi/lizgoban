@@ -14,9 +14,9 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const sr2coord = (s, r) => s < R.handicaps ? [NaN, NaN] : sr2coord_raw(s, r)
     const overlay = graph_overlay_canvas.getContext("2d")
     clear_canvas(graph_overlay_canvas)
-    truep(show_until) &&
-        draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, overlay)
-    !truep(show_until) && draw_winrate_graph_future(w, fontsize, sr2coord, overlay)
+    truep(show_until) ?
+        draw_winrate_graph_show_until(show_until, w, h, fontsize, sr2coord, overlay) :
+        draw_winrate_graph_future(w, fontsize, sr2coord, overlay)
     if (R.busy || show_until) {return}
     const draw_score = score_drawer(w, sr2coord, g)
     const score_loss_p = !alternative_engine_for_white_p()
