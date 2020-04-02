@@ -337,10 +337,11 @@ function winrate_from_game(engine_id) {
             // (B) gain > 0: Your move is good or the opponent's last move was bad.
             // The case (B) never happens if the engine is perfectly accurate.
             // So we cannot trust positive gains literally.
-            const responsibility_of_opponent = 0.5
-            const transferred = clip(gain, 0) * responsibility_of_opponent
-            const loss = - (gain - transferred)
-            score_loss[turn_letter] += loss
+            // Here, we accept positive gains as long as cumulative gains are
+            // kept negative.
+            const accepted = clip(gain, - Infinity, score_loss[turn_letter])
+            const transferred = gain - accepted
+            score_loss[turn_letter] -= accepted
             score_loss[opponent_letter] += transferred
             record_gain_as_side_effect(gain)  // clean me
         }

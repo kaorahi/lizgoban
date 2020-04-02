@@ -254,12 +254,11 @@ function draw_winrate_graph_score_loss(sr2coord, g) {
           R.winrate_history.map(h => h.score_without_komi).filter(truep).length > 1
     if (!ready) {return}
     const style = {b: "rgba(0,255,0,0.7)", w: "rgba(255,0,255,0.7)"}
-    const offset = 10, turn = R.bturn ? 'b' : 'w'
+    const offset = 0, turn = R.bturn ? 'b' : 'w'
     const current = (R.winrate_history[R.move_count].cumulative_score_loss || {})[turn]
     const worst = Math.max(...R.winrate_history.map(h => h.cumulative_score_loss)
                            .map(csl => csl ? Math.max(csl['b'], csl['w']) : - Infinity))
-          + offset
-    const ks = [1, 2, 5, 10, 20, 50, 100], range = 100 - offset
+    const ks = [0.2, 0.5, 1, 2, 5, 10, 20, 50, 100], range = 100 - offset
     const scale = 1 / (ks.find(k => worst <= k * range) || last(ks))
     const to_r = loss => 100 - offset - loss * scale
     const to_step = ([x, y], k, a) => {
@@ -272,7 +271,7 @@ function draw_winrate_graph_score_loss(sr2coord, g) {
               sr2coord(s, to_r(cumulative_score_loss[key])) : [NaN, NaN]
         line(...flatten(R.winrate_history.map(to_xy).map(to_step)), g)
     })
-    const at_r = [90, 80, 70], to_loss = r => (100 - offset - r) / scale
+    const at_r = [90, 80, 0], to_loss = r => (100 - offset - r) / scale
     draw_winrate_graph_scale(at_r, to_loss, style.w, null, sr2coord, g)
 }
 
@@ -292,11 +291,12 @@ function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
     const to_xy = r => [x_maybe || maxwidth, sr2coord(s0, r)[1]]
     const to_text = r => to_s(Math.round(r2val(r)))
     const draw_at = r => {
+        g.textBaseline = r === 0 ? 'bottom' : r === 100 ? 'top' : 'middle'
         const text = to_text(r), maxw = text.length === 1 ? maxwidth / 2 : maxwidth
         fill_text(g, fontsize, text, ...to_xy(r), maxw)
     }
     g.save()
-    g.textAlign = 'right'; g.textBaseline = 'middle'; g.fillStyle = color
+    g.textAlign = 'right'; g.fillStyle = color
     at_r.forEach(draw_at)
     g.restore()
 }
