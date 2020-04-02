@@ -332,13 +332,13 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
         g.restore()
         return signed_area_count
     }))
-    const selfstone_sum = truep(R.endstate_sum) ?
+    const compensation = truep(R.endstate_sum) ?
           Math.round(R.endstate_sum - area_sum) : 0
-    const ss_text = selfstone_sum === 0 ? '' : `+${to_s(Math.abs(selfstone_sum))}`
+    const cmp_text = compensation === 0 ? '' : `+${to_s(Math.abs(compensation))}`
     g.save()
     g.textAlign = 'right'; g.textBaseline = 'top'
-    g.fillStyle = style[selfstone_sum > 0 ? 'black' : 'white']
-    fill_text(g, size['minor'] * unit, ss_text, ...idx2coord(-1.3, board_size()))
+    g.fillStyle = style[compensation > 0 ? 'black' : 'white']
+    fill_text(g, size['minor'] * unit, cmp_text, ...idx2coord(-1.3, board_size()))
     g.restore()
 }
 
