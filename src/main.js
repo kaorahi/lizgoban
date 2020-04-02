@@ -38,7 +38,6 @@ const default_option = {
     exercise_dir: 'exercise',
     max_cached_engines: 3,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
-    force_shadow: false,
     repl: false,
 }
 const option = {}
