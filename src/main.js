@@ -1661,4 +1661,7 @@ function toggle_sabaki() {
 /////////////////////////////////////////////////
 // REPL for debug
 
+function debug_get() {return {game, sequence, sequence_cursor}}
+globalize({debug_get})
+
 option.repl && require('repl').start()
