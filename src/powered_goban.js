@@ -226,7 +226,8 @@ function tentatively_add_endstate_to_stones(stones, endstate, immediately) {
     purely_add_endstate_to_stones(stones, endstate, immediately)
     update_endstate_diff(endstate, true, immediately)
 }
-const lagged_endstate = make_lagged_aa(0.2)
+const endstate_lag_max_diff = 0.2
+const lagged_endstate = make_lagged_aa(endstate_lag_max_diff)
 function purely_add_endstate_to_stones(stones, endstate, immediately) {
     const aa = lagged_endstate.update_all(M.is_busy() ? null : endstate)
     aa_each(stones, (s, i, j) => {
@@ -234,7 +235,7 @@ function purely_add_endstate_to_stones(stones, endstate, immediately) {
     })
 }
 
-const lagged_endstate_diff = make_lagged_aa(0.2)
+const lagged_endstate_diff = make_lagged_aa(endstate_lag_max_diff)
 function update_endstate_diff(endstate, tentatively, immediately) {
     const prev = endstate_diff_move_count(), sign = prev < game.move_count ? 1 : -1
     const prev_endstate = game.ref(prev).endstate
