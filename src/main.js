@@ -1487,7 +1487,17 @@ function resolve_engine_path(given_leelaz_command) {
 
 function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf(R.use_cached_suggest)); wink()}
 function paste_sgf_or_url_from_clipboard() {
-    const s = clipboard.readText(); s.startsWith('http') ? open_url(s) : read_sgf(s)
+    const path = clipboard_file_path(), s = clipboard.readText()
+    path ? load_sgf(path) : s.startsWith('http') ? open_url(s) : read_sgf(s)
+}
+function clipboard_file_path() {
+    // https://github.com/electron/electron/issues/9035#issuecomment-306933488
+    const work_around = [
+        ['FileNameW', /\u0000/g],  // win
+        ['public.file-url', /^file:\/\//],  // mac
+    ]
+    const try_it = ([format, remove]) => clipboard.read(format).replace(remove, '')
+    return work_around.map(try_it).find(truep)
 }
 
 function open_sgf() {open_sgf_in(option_path('sgf_dir'))}
