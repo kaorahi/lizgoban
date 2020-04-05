@@ -1517,11 +1517,16 @@ function read_sgf(sgf_str, filename, internally) {
     const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest)
     const len = new_games.length
     const open1 = (g, k) => {
-        g.merge_common_header(game); backup_and_replace_game(g, k > 0)
+        // "k > 1" to sort games as (game0 game3 game2 game1) for
+        // game0: A B C D
+        // game1: A B C D'
+        // game2: A B C'
+        // game3: A B'
+        g.merge_common_header(game); backup_and_replace_game(g, k > 1)
     }
     const open_games = gs => {
         filename && gs.forEach(g => g.sgf_file = filename)
-        gs.reverse().forEach(open1)
+        gs.forEach(open1); gs.length > 1 && previous_sequence()
         interactive && option.auto_overview && !AI.leelaz_for_white_p() &&
             start_quick_overview()
     }
