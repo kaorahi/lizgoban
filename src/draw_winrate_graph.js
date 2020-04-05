@@ -33,7 +33,7 @@ function draw_winrate_graph(canvas, additional_canvas,
     update_winrate_text_geom(w, sr2coord, coord2sr)
     draw_winrate_graph_frame(w, sr2coord, g)
     draw_winrate_graph_frame(w, sq2coord, g)
-    draw_winrate_graph_ko_fight(sq2coord, g)
+    draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_ambiguity(sq2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_zone(w, sr2coord, g)
