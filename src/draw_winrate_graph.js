@@ -33,7 +33,6 @@ function draw_winrate_graph(canvas, additional_canvas,
     update_winrate_text_geom(w, sr2coord, coord2sr)
     draw_winrate_graph_frame(w, sr2coord, g)
     draw_winrate_graph_frame(w, sq2coord, g)
-    draw_score('komi')
     draw_winrate_graph_ko_fight(sq2coord, g)
     draw_winrate_graph_ambiguity(sq2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
@@ -198,16 +197,13 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 
 function score_drawer(w, sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
+          .map(z => truep(z) && (z - R.komi))
     const max_score = Math.max(...scores.filter(truep).map(Math.abs))
     if (max_score === - Infinity) {return do_nothing}
     const color = "rgba(235,148,0,1)"
-    const scale = max_score < 20 ? 2 : max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
+    const scale = max_score < 10 ? 5 :
+          max_score < 20 ? 2 : max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
     const to_r = score => 50 + score * scale
-    const draw_komi = () => {
-        const [dummy, ky] = sr2coord(R.move_count, to_r(R.komi))
-        g.lineWidth = 1; g.strokeStyle = color
-        line([0, ky], [w, ky], g)
-    }
     const plotter = (x, y, s, g) => {g.fillStyle = color; fill_circle([x, y], 2.5, g)}
     const draw_score = () => {
         const at_r = [10, 30, 50, 70, 90], to_score = r => (r - 50) / scale
@@ -215,22 +211,23 @@ function score_drawer(w, sr2coord, g) {
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
         !R.hide_suggest && draw_score_text(w, to_r, sr2coord, g)  // avoid flicker
     }
-    return command => ({score: draw_score, komi: draw_komi})[command]()
+    return command => ({score: draw_score})[command]()
 }
 
 function draw_score_text(w, to_r, sr2coord, g) {
     const s = R.move_count, {r, score_without_komi} = R.winrate_history[s] || {}
     if (!truep(score_without_komi)) {return}
+    const score = score_without_komi - R.komi
     const wr = winrate_text_geom()
     const [x0, _] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
-    const [x, y] = sr2coord(s, to_r(score_without_komi))
+    const [x, y] = sr2coord(s, to_r(score))
     const my_ymax = (ymax < sr2coord(s, 100)[1]) ? sr2coord(s, 0)[1] : ymax
     const here = [x0, clip(y + 2 * unit, unit, my_ymax - unit)]
     g.save()
     g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 1
     fill_circle([x, y], 4, g); line([x, y], here, g)
     g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
-    const score = score_without_komi - R.komi, bw = score > 0 ? 'B' : 'W'
+    const bw = score > 0 ? 'B' : 'W'
     fill_text(g, unit * 2, `${bw}+${f2s(Math.abs(score))}`, ...here)
     g.restore()
 }

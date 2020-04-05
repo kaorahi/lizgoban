@@ -120,7 +120,7 @@ function draw_endstate_goban(canvas, options) {
     const past_score = scores[past_mc]
     const past_text = (d_i, es) =>
           `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
-          (truep(es) ? `  score = ${f2s(es)}` : '')
+          (truep(es) ? `  score = ${f2s(es - R.komi)}` : '')
     const common = {read_only: true, draw_endstate_p: R.show_endstate,
                     draw_endstate_diff_p: R.show_endstate}
     const current = {draw_visits_p: true, draw_next_p: true}
@@ -230,7 +230,7 @@ function draw_visits(text_maybe, margin, canvas, g) {
     const maybe = (z, g) => truep(z) ? g(z >= 1000 ? kilo_str(z) : f2s(z)) : ''
     const bg = truep(R.background_visits) ? `${R.background_visits}/` : ''
     const vps = maybe(R.visits_per_sec, z => `  (${z} v/s)`)
-    const esum = maybe(R.endstate_sum, z => `  score = ${z}`)
+    const esum = maybe(R.endstate_sum - R.komi, z => `  score = ${z}`)
     const text = `  visits = ${bg}${R.visits}${esum}${vps}`
     draw_visits_text(text, margin, canvas, g)
 }
@@ -491,7 +491,7 @@ function draw_suggest_lizzie(h, xy, radius, g) {
     const fontsize = to_i(radius * 0.8), half = fontsize / 2
     const y_upper = y - half, y_lower = y + half
     const [winrate_text, visits_text] = suggest_texts(suggest)
-    const score_text = score_bar_p() && f2s(suggest.score_without_komi)
+    const score_text = score_bar_p() && f2s(suggest.score_without_komi - R.komi)
     draw_suggestion_order_lizzie(h, xy, radius, g)
     g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'
     g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
@@ -680,8 +680,9 @@ function merge_stone_at(move, stone_array, stone) {
 // visits & winrate
 
 function suggest_texts(suggest) {
-    const conv = (key, digits) => f2s(suggest[key], digits), prior = conv('prior', 3)
-    const score = conv('score_without_komi', 2), score_stdev = conv('scoreStdev', 2)
+    const conv = (key, digits, offset) => f2s(suggest[key] + (offset || 0), digits)
+    const score = conv('score_without_komi', 2, - R.komi)
+    const score_stdev = conv('scoreStdev', 2), prior = conv('prior', 3)
     // need ' ' because '' is falsy
     return suggest.visits === 0 ? [' ', '', prior] :
         ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior,

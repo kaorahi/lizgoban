@@ -42,9 +42,10 @@ function fake_winrate(suggest, bturn) {
 }
 function fake_winrate_for(winrate, score_without_komi, bturn) {
     if (!score_bar_p()) {return winrate}
-    score_bar_fitter.update_center(R.score_without_komi)
+    score_bar_fitter.update_center(R.score_without_komi - R.komi)
     const {lower, upper} = score_bar_fitter.range()
-    const fake_b_wr = 100 * (score_without_komi - lower) / (upper - lower)
+    const score = score_without_komi - R.komi
+    const fake_b_wr = 100 * (score - lower) / (upper - lower)
     return clip(flip_maybe(fake_b_wr, bturn), 0, 100)
 }
 
