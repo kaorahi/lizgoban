@@ -20,12 +20,12 @@ function set_board(given_game) {
     R.move_count = game.move_count = hist.length
     R.bturn = !(hist[hist.length - 1] || {}).is_black
     R.visits = null
-    set_stones(game.current_stones())
+    set_stones(game.stones_and_hama_at(game.move_count))
     return hist.filter(h => !h.illegal)
 }
 
-function set_stones(stones) {
-    R.stones = stones; add_info_to_stones(R.stones, game)
+function set_stones(stones_and_hama) {
+    merge(R, stones_and_hama); add_info_to_stones(R.stones, game)
     R.prev_endstate_clusters = null
     set_tentative_endstate_maybe()  // avoid flicker of ownerships
 }

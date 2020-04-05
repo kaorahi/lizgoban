@@ -21,7 +21,7 @@ let canvas_scale = 1
 
 // renderer state
 const R = {
-    stones: [], move_count: 0, handicaps: 0, bturn: true,
+    stones: [], black_hama: 0, white_hama: 0, move_count: 0, handicaps: 0, bturn: true,
     history_length: 0, suggest: [], visits: 1,
     visits_per_sec: 0,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
@@ -134,6 +134,8 @@ ipc.on('render', (...args) => {
 function render_now(e, h, is_board_changed) {
     set_board_size(R.bsize)
     setq('#move_count', D.movenum())
+    setq('#black_hama', R.black_hama)
+    setq('#white_hama', R.white_hama)
     setq('#history_length', ' (' + D.max_movenum() + ')')
     setq('#comment', R.comment_note)
     D.update_winrate_trail()

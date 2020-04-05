@@ -6,34 +6,35 @@
 function get_stones_and_set_ko_state(history) {
     // set "ko_state" of each element in history as side effect
     const stones = aa_new(board_size(), board_size(), () => ({}))
-    const ko_pool = []
-    history.forEach((h, k) => put(h, stones, ko_pool, k === history.length - 1))
-    return stones
+    const hama = {true: 0, false: 0}, ko_pool = []
+    history.forEach((h, k) => put(h, stones, hama, ko_pool, k === history.length - 1))
+    return {stones, black_hama: hama[true], white_hama: hama[false]}
 }
 
-function put(h, stones, ko_pool, lastp) {
+function put(h, stones, hama, ko_pool, lastp) {
     const {move, is_black} = h
     const [i, j] = move2idx(move), pass = (i < 0); if (pass) {return}
     aa_set(stones, i, j, {stone: true, black: is_black, ...(lastp ? {last: true} : {})})
-    const ko_state = capture_stones_and_check_ko([i, j], is_black, stones, ko_pool)
+    const ko_state = capture_stones_and_check_ko([i, j], is_black, stones, hama, ko_pool)
     merge(h, {ko_state})  // side effect!
 }
 
-function capture_stones_and_check_ko(ij, is_black, stones, ko_pool) {
+function capture_stones_and_check_ko(ij, is_black, stones, hama, ko_pool) {
     const surrounded = is_surrounded_by_opponent(ij, is_black, stones)
-    const captured_opponents = capture(ij, is_black, stones)
+    const captured_opponents = capture(ij, is_black, stones, hama)
     return check_ko(ij, is_black, surrounded, captured_opponents, stones, ko_pool)
 }
 
 ///////////////////////////////////////
 // capture
 
-function capture(ij, is_black, stones) {
+function capture(ij, is_black, stones, hama) {
     let captured_opponents = []
     around_idx(ij).forEach(idx => {
         const r = remove_dead(idx, !is_black, stones); captured_opponents.push(...r)
+        hama[!is_black] += r.length
     })
-    remove_dead(ij, is_black, stones)
+    hama[!!is_black] += remove_dead(ij, is_black, stones).length
     return captured_opponents
 }
 
