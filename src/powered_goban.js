@@ -249,6 +249,7 @@ function update_endstate_diff(endstate, tentatively, immediately) {
         s.endstate_diff = immediately ? val : lagged
     })
     R.prev_endstate_clusters = ok && get_endstate_clusters(prev_endstate, prev)
+    R.prev_endstate_sum = game.ref(prev).score_without_komi
 }
 function endstate_diff_move_count() {
     const edf = endstate_diff_from, mc = game.move_count

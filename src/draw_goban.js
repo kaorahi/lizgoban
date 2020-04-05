@@ -332,8 +332,8 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
         g.restore()
         return signed_area_count
     }))
-    const compensation = truep(R.endstate_sum) ?
-          Math.round(R.endstate_sum - area_sum) : 0
+    const es = past_p ? R.prev_endstate_sum : R.endstate_sum
+    const compensation = truep(es) ? Math.round(es - area_sum) : 0
     const cmp_text = compensation === 0 ? '' : `+${to_s(Math.abs(compensation))}`
     g.save()
     g.textAlign = 'right'; g.textBaseline = 'top'
