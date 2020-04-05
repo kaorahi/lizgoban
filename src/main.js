@@ -39,6 +39,7 @@ const default_option = {
     max_cached_engines: 3,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     record_note_to_SGF: false,
+    auto_preview: false,
     repl: false,
 }
 const option = {}
@@ -1517,6 +1518,7 @@ function read_sgf(sgf_str, filename) {
         gs.reverse().forEach(open1)
         // keep sequence_cursor trickily!
         // (see the second argument of backup_and_replace_game)
+        option.auto_preview && !AI.leelaz_for_white_p() && start_quick_preview()
     }
     const ask_really_open = gs => {
         const message = `Really open ${gs.length} games (variations)?`
