@@ -1,8 +1,8 @@
-LizGoban 0.4.0-pre2.90
+LizGoban 0.4.0-pre2.91
 
-Unofficial test of packaging. (Do not redistribute it, please.)
+preview of "-pre3" :p (not tested well)
 
-This release is not for general users. Please try this only if you are willing to help the project by checking and reporting bugs. The next -pre3 will be officially released soon, in a week or so, if this test is passed without problems.
+Is the halo around the best move annoying?
 
 ### Links
 
