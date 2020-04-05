@@ -36,7 +36,7 @@ function draw_winrate_graph(canvas, additional_canvas,
     draw_score('komi')
     draw_winrate_graph_ko_fight(sq2coord, g)
     draw_winrate_graph_ambiguity(sq2coord, g)
-    score_loss_p && draw_winrate_graph_score_loss(sq2coord, true, g)
+    score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_zone(w, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
@@ -211,7 +211,7 @@ function score_drawer(w, sr2coord, g) {
     const plotter = (x, y, s, g) => {g.fillStyle = color; fill_circle([x, y], 2.5, g)}
     const draw_score = () => {
         const at_r = [10, 30, 50, 70, 90], to_score = r => (r - 50) / scale
-        draw_winrate_graph_scale(at_r, to_score, color, w * 0.995, sr2coord, g)
+        draw_winrate_graph_scale(at_r, to_score, color, null, sr2coord, g)
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
         !R.hide_suggest && draw_score_text(w, to_r, sr2coord, g)  // avoid flicker
     }
@@ -262,7 +262,7 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
     R.move_history.forEach((z, s) => plot(z.ambiguity, s))
 }
 
-function draw_winrate_graph_score_loss(sr2coord, large_graph, g) {
+function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
     const ready = R.winrate_history && R.history_length > 0 &&
           R.winrate_history.map(h => h.score_without_komi).filter(truep).length > 1
     if (!ready) {return}
@@ -307,7 +307,7 @@ function draw_winrate_graph_score_loss(sr2coord, large_graph, g) {
     })
     // scale
     const at_r = [80, 60, 40, 20], to_loss = r => (100 - offset - r) / scale
-    draw_winrate_graph_scale(at_r, to_loss, style.w, null, sr2coord, g)
+    draw_winrate_graph_scale(at_r, to_loss, style.w, w * 0.995, sr2coord, g)
 }
 
 function draw_winrate_graph_zone(w, sr2coord, g) {
