@@ -228,15 +228,11 @@ function score_drawer(w, sr2coord, g) {
 function draw_score_text(w, to_r, sr2coord, g) {
     const s = R.move_count, {r, score_without_komi} = R.winrate_history[s] || {}
     if (!truep(score_without_komi)) {return}
-    // clean me: winrate_text_geom() is needless for separeted plots now
     const wr = winrate_text_geom()
-    const [x0, y0] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
+    const [x0, _] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
     const [x, y] = sr2coord(s, to_r(score_without_komi))
     const my_ymax = (ymax < sr2coord(s, 100)[1]) ? sr2coord(s, 0)[1] : ymax
-    const dy = (y > wr.y ? 1 : -1) * 1.5 * unit
-    const needed = unit * 2
-    const [y1, y2] = dy > 0 ? [y0 + needed, my_ymax - unit] : [unit, y0 - needed]
-    const here = [x0, clip(y + dy, y1, y2)]
+    const here = [x0, clip(y + 1.5 * unit, unit, my_ymax - unit)]
     g.save()
     g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 1; line([x, y], here, g)
     g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
