@@ -3,7 +3,7 @@
 
 const zone_indicator_height_percent = 3
 
-function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
+function draw_winrate_graph(canvas, show_until, large_graph, handle_mouse_on_winrate_graph) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const xmargin = w * 0.04, fontsize = to_i(w * 0.04)
     const smin = R.handicaps, smax = Math.max(R.history_length, smin + 1)
@@ -26,7 +26,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_score('komi')
     draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_ambiguity(sr2coord, g)
-    score_loss_p && draw_winrate_graph_score_loss(sr2coord, g)
+    score_loss_p && draw_winrate_graph_score_loss(sr2coord, large_graph, g)
     draw_winrate_graph_zone(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
@@ -249,13 +249,14 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
     R.move_history.forEach((z, s) => plot(z.ambiguity, s))
 }
 
-function draw_winrate_graph_score_loss(sr2coord, g) {
+function draw_winrate_graph_score_loss(sr2coord, large_graph, g) {
     const ready = R.winrate_history && R.history_length > 0 &&
           R.winrate_history.map(h => h.score_without_komi).filter(truep).length > 1
     if (!ready) {return}
-    const style = {b: "rgba(0,192,0,0.5)", w: "rgba(255,0,255,0.5)"}
-    const blunder_style = {b: "rgba(0,192,0,1)", w: "rgba(255,0,255,1)"}
-    const line_width = 1, blunder_width = 1
+    const alpha = large_graph ? 1 : 0.5
+    const style = {b: `rgba(0,192,0,${alpha})`, w: `rgba(255,0,255,${alpha})`}
+    const blunder_style = {b: `rgba(0,192,0,1)`, w: `rgba(255,0,255,1)`}
+    const line_width = 1, blunder_width = large_graph ? 4 : 1
     const offset = 0, turn = R.bturn ? 'b' : 'w'
     const current = (R.winrate_history[R.move_count].cumulative_score_loss || {})[turn]
     const worst = Math.max(...R.winrate_history.map(h => h.cumulative_score_loss)

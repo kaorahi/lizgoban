@@ -270,7 +270,8 @@ function draw_wr_graph(canvas) {
     const endstate_at = showing_endstate_value_p() && R.prev_endstate_clusters &&
           (R.move_count - R.endstate_diff_interval)
     const u = showing_until(), until = truep(u) ? u : endstate_at
-    D.draw_winrate_graph(canvas, until, handle_mouse_on_winrate_graph)
+    const large_graph = (canvas === main_canvas)
+    D.draw_winrate_graph(canvas, until, large_graph, handle_mouse_on_winrate_graph)
 }
 
 function draw_wr_bar(canvas) {
