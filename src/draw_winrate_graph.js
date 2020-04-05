@@ -307,7 +307,7 @@ function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
     })
     // scale
     const at_r = [80, 60, 40, 20], to_loss = r => (100 - offset - r) / scale
-    draw_winrate_graph_scale(at_r, to_loss, style.w, w * 0.995, sr2coord, g)
+    draw_winrate_graph_scale(at_r, to_loss, style.b, w * 0.995, sr2coord, g)
 }
 
 function draw_winrate_graph_zone(w, sr2coord, g) {
