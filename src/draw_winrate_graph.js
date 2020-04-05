@@ -181,10 +181,11 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'middle'
     g.strokeStyle = g.fillStyle = BLUE; g.lineWidth = 1
+    const half = fontsize / 2
     R.winrate_history.forEach((h, s) => {
         if (!h.tag) {return}
         const [x, ymax] = sr2coord(s, 0)
-        const [yt, yl] = (h.r < 50 ? [0.05, 0.1] : [0.95, 0.9]).map(c => ymax * c)
+        const [yt, yl] = (h.r < 50) ? [half, fontsize] : [ymax - half, ymax - fontsize]
         h.tag !== endstate_diff_tag_letter && line([x, yl], [x, ymax / 2], g)
         fill_text(g, fontsize, h.tag, x, yt)
     })
