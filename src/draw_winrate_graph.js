@@ -253,10 +253,11 @@ function draw_winrate_graph_score_loss(sr2coord, large_graph, g) {
     const ready = R.winrate_history && R.history_length > 0 &&
           R.winrate_history.map(h => h.score_without_komi).filter(truep).length > 1
     if (!ready) {return}
-    const alpha = large_graph ? 1 : 0.5
-    const style = {b: `rgba(0,192,0,${alpha})`, w: `rgba(255,0,255,${alpha})`}
-    const blunder_style = {b: `rgba(0,192,0,1)`, w: `rgba(255,0,255,1)`}
-    const line_width = 1, blunder_width = large_graph ? 4 : 1
+    const style_with = alpha =>
+          ({b: `rgba(0,192,0,${alpha})`, w: `rgba(255,0,255,${alpha})`})
+    const style = style_with(large_graph ? 1 : 0.7)
+    const blunder_style = style_with(1)
+    const line_width = 1, blunder_width = large_graph ? 4 : 2
     const offset = 0, turn = R.bturn ? 'b' : 'w'
     const current = (R.winrate_history[R.move_count].cumulative_score_loss || {})[turn]
     const worst = Math.max(...R.winrate_history.map(h => h.cumulative_score_loss)
