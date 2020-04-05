@@ -153,7 +153,7 @@ function update_winrate_text_geom(w, sr2coord, coord2sr) {
     const s = R.move_count, r = r_for_s(s), valid = truep(r)
     if (!valid) {last_winrate_text_geom.valid = false; return}
     const [x, y] = sr2coord(s, r), ymax = y_for_r(0, sr2coord)
-    const unit = dy_for_percent(20, sr2coord)
+    const unit = Math.min(dy_for_percent(20, sr2coord), w * 0.05)
     const normal = x < w * 0.5
     const dx = (normal ? 3 : -3) * unit
     const y_for_sign = sign => {
