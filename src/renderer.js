@@ -13,6 +13,7 @@ const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
 
 // canvas
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
+const additional_graph_canvas = Q('#additional_graph')
 const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate_graph')
 const graph_overlay_canvas = Q('#graph_overlay')
 const visits_trail_canvas = Q('#visits_trail_canvas')
@@ -271,7 +272,8 @@ function draw_wr_graph(canvas) {
           (R.move_count - R.endstate_diff_interval)
     const u = showing_until(), until = truep(u) ? u : endstate_at
     const large_graph = (canvas === main_canvas)
-    D.draw_winrate_graph(canvas, until, large_graph, handle_mouse_on_winrate_graph)
+    D.draw_winrate_graph(canvas, additional_graph_canvas,
+                         until, large_graph, handle_mouse_on_winrate_graph)
 }
 
 function draw_wr_bar(canvas) {
@@ -634,16 +636,21 @@ function set_all_canvas_size() {
     const main_board_max_size = main_size * main_board_ratio
     const main_board_size = main_board_max_size *
           (R.expand_winrate_bar && !wr_only ? 0.85 : 1)
-    const main_board_height = wr_only ? main_board_max_size * 0.7 : main_board_size
+    const main_board_height = wr_only ? main_board_max_size * 0.85 : main_board_size
+    const additional_graph_height = 0
+    // const additional_graph_height = wr_only ? main_board_height : 0
+    const winrate_bar_height = main_size - main_board_height - additional_graph_height
     const sub_board_size = Math.min(main_board_max_size * 0.65, rest_size * 0.85)
     // use main_board_ratio in winrate_graph_width for portrait layout
     const winrate_graph_height = main_board_max_size * 0.25
     const winrate_graph_width = (wr_only && !double_boards_p()) ?
           winrate_graph_height : rest_size * main_board_ratio
     const zone_chart_canvas_size = rest_size * 0.05
+    Q('#additional_graph_div').style.display = "none"
+    // Q('#additional_graph_div').style.display = (wr_only ? "block" : "none")
     set_canvas_size(main_canvas, main_board_size, main_board_height)
-    set_canvas_size(winrate_bar_canvas,
-                    main_board_size, main_size - main_board_height)
+    set_canvas_size(additional_graph_canvas, main_board_size, additional_graph_height)
+    set_canvas_size(winrate_bar_canvas, main_board_size, winrate_bar_height)
     set_canvas_square_size(sub_canvas, sub_board_size)
     set_canvas_size(winrate_graph_canvas, winrate_graph_width, winrate_graph_height)
     set_overlay(graph_overlay_canvas, wr_only ? main_canvas: winrate_graph_canvas)

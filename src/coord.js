@@ -107,5 +107,6 @@ function sgfpos2move(pos) {
 module.exports = {
     idx2rowcol,
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
+    translator_pair,
     board_size, set_board_size, with_board_size, sgfpos2move, move2sgfpos, stars,
 }
