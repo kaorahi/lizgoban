@@ -201,8 +201,8 @@ function score_drawer(w, sr2coord, g) {
     const max_score = Math.max(...scores.filter(truep).map(Math.abs))
     if (max_score === - Infinity) {return do_nothing}
     const color = "rgba(235,148,0,1)"
-    const scale = max_score < 10 ? 5 :
-          max_score < 20 ? 2 : max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
+    const margin = 3, scale_list = [5, 2, 1, 0.5, 0.2, 0.1]
+    const scale = scale_list.find(z => max_score * z < 50 - margin) || last(scale_list)
     const to_r = score => 50 + score * scale
     const plotter = (x, y, s, g) => {g.fillStyle = color; fill_circle([x, y], 2.5, g)}
     const draw_score = () => {
