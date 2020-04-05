@@ -754,9 +754,10 @@ function stop_auto() {stop_auto_analyze(); stop_auto_play()}
 function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing()}
 
 // auto-analyze (redo after given visits)
+let on_auto_analyze_finished = pause
 function try_auto_analyze(force_next) {
     const done = force_next || (auto_analysis_progress() >= 1)
-    const finish = () => (pause(), stop_auto_analyze())
+    const finish = () => (on_auto_analyze_finished(), stop_auto_analyze())
     const next = (pred, proc) => {
         pred() ? proc(auto_analysis_steps) : finish(); update_all()
     }
@@ -769,11 +770,14 @@ function toggle_auto_analyze(visits) {
         stop_auto_analyze() :
         start_auto_analyze(visits)
 }
-function start_auto_analyze(visits, steps) {
+function start_auto_analyze(visits, steps, on_finish) {
     auto_analysis_signed_visits = visits; auto_analysis_steps = steps || 1
+    on_auto_analyze_finished = on_finish || pause
     rewind_maybe(); resume()
 }
-function start_quick_preview() {start_auto_analyze(1, 15)}
+function start_quick_preview() {
+    start_auto_analyze(1, 15, is_pausing() ? pause : do_nothing)
+}
 function stop_auto_analyze() {auto_analysis_signed_visits = Infinity}
 function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
 function auto_analysis_progress() {
