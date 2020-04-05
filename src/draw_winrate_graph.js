@@ -144,7 +144,7 @@ function draw_winrate_graph_current(g) {
     g.strokeStyle = g.fillStyle = WHITE; fill_circle([x, y], 5, g)
     g.lineWidth = 1; line([x, y], here, g)
     g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
-    fill_text(g, unit, `${Math.round(r)}%`, ...here)
+    fill_text(g, unit * 2, `${Math.round(r)}%`, ...here)
     g.restore()
 }
 let last_winrate_text_geom = {}
@@ -154,20 +154,22 @@ function update_winrate_text_geom(w, sr2coord, coord2sr) {
     if (!valid) {last_winrate_text_geom.valid = false; return}
     const [x, y] = sr2coord(s, r), ymax = y_for_r(0, sr2coord)
     const unit = dy_for_percent(20, sr2coord)
-    const normal = x < Math.max(w * 0.5, w - unit * 3.5)
-    const dx = (normal ? 1 : -1.5) * unit
+    const normal = x < w * 0.5
+    const dx = (normal ? 3 : -3) * unit
     const y_for_sign = sign => {
-        const dy = sign * unit; return clip(y + dy, unit, ymax - unit)
+        const dy = sign * 2 * unit; return clip(y + dy, unit, ymax - unit)
     }
     // to avoid overlap with winrate curve
     const s1 = Math.round(coord2sr(x + dx, 0)[0]), r1 = r_for_s(s1)
     const y1 = y_for_r(r1, sr2coord)  // y of winrate curve
+    const diff = y => Math.abs(y - y1)
     // to avoid flicker...
     const prev_dy_sign = last_winrate_text_geom.dy_sign || 1
     const prev_y = y_for_sign(prev_dy_sign)
     // ...keep previous sign as far as it is admissible
-    const is_prev_ok = Math.abs(prev_y - y1) > unit * 0.5
-    const dy_sign = is_prev_ok ? prev_dy_sign : (truep(r1) && r1 > r ? 1 : -1)
+    const is_prev_ok = diff(prev_y) > unit * 1
+    const dy_sign = is_prev_ok ? prev_dy_sign :
+          diff(y_for_sign(+1)) > diff(y_for_sign(-1)) ? +1 : -1
     const here = [x + dx, y_for_sign(dy_sign)]
     last_winrate_text_geom = {x, y, unit, here, normal, ymax, dy_sign, r, valid}
 }
@@ -226,19 +228,20 @@ function score_drawer(w, sr2coord, g) {
 function draw_score_text(w, to_r, sr2coord, g) {
     const s = R.move_count, {r, score_without_komi} = R.winrate_history[s] || {}
     if (!truep(score_without_komi)) {return}
+    // clean me: winrate_text_geom() is needless for separeted plots now
     const wr = winrate_text_geom()
     const [x0, y0] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
     const [x, y] = sr2coord(s, to_r(score_without_komi))
     const my_ymax = (ymax < sr2coord(s, 100)[1]) ? sr2coord(s, 0)[1] : ymax
     const dy = (y > wr.y ? 1 : -1) * 1.5 * unit
-    const half = unit * 0.5, needed = wr.unit * 0.5 + half
-    const [y1, y2] = dy > 0 ? [y0 + needed, my_ymax - half] : [half, y0 - needed]
+    const needed = unit * 2
+    const [y1, y2] = dy > 0 ? [y0 + needed, my_ymax - unit] : [unit, y0 - needed]
     const here = [x0, clip(y + dy, y1, y2)]
     g.save()
     g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 1; line([x, y], here, g)
     g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
     const score = score_without_komi - R.komi, bw = score > 0 ? 'B' : 'W'
-    fill_text(g, unit, `${bw}+${f2s(Math.abs(score))}`, ...here)
+    fill_text(g, unit * 2, `${bw}+${f2s(Math.abs(score))}`, ...here)
     g.restore()
 }
 
