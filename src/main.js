@@ -1494,8 +1494,8 @@ function open_sgf() {open_sgf_in(option_path('sgf_dir'))}
 function open_sgf_in(dir, proc) {
     select_files('Select SGF file', dir).forEach(proc || load_sgf)
 }
-function load_sgf(filename) {
-    read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename)
+function load_sgf(filename, internally) {
+    read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename, internally)
 }
 
 function save_sgf() {
@@ -1512,8 +1512,8 @@ function save_sgf_to(filename, if_success) {
     fs.writeFile(filename, game.to_sgf(R.use_cached_suggest), callback)
 }
 
-function read_sgf(sgf_str, filename) {
-    const too_many_games = 6
+function read_sgf(sgf_str, filename, internally) {
+    const too_many_games = 6, interactive = !internally
     const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest)
     const len = new_games.length
     const open1 = g => {g.merge_common_header(game); backup_and_replace_game(g)}
@@ -1522,7 +1522,8 @@ function read_sgf(sgf_str, filename) {
         gs.reverse().forEach(open1)
         // keep sequence_cursor trickily!
         // (see the second argument of backup_and_replace_game)
-        option.auto_overview && !AI.leelaz_for_white_p() && start_quick_overview()
+        interactive && option.auto_overview && !AI.leelaz_for_white_p() &&
+            start_quick_overview()
     }
     const ask_really_open = gs => {
         const message = `Really open ${gs.length} games (variations)?`
@@ -1536,8 +1537,8 @@ function read_sgf(sgf_str, filename) {
     }
     empty(new_games) ?
         dialog.showErrorBox("Failed to read SGF", snip(sgf_str, 200)) :
-        (len < too_many_games) ? open_games(new_games) :
-        ask_really_open(new_games, len)
+        (interactive && (len >= too_many_games)) ? ask_really_open(new_games, len) :
+        open_games(new_games)
 }
 
 function open_url(url) {
@@ -1583,7 +1584,7 @@ function load_exercise(selector, win, random_flip_p) {
     random_flip_p && game.random_flip_rotate()
 }
 function load_as_exercise(file) {
-    load_sgf(file); goto_move_count(exercise_move_count(file))
+    load_sgf(file, true); goto_move_count(exercise_move_count(file))
 }
 function open_exercise_dir() {open_sgf_in(exercise_dir(), load_as_exercise)}
 function delete_exercise() {
