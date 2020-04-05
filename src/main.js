@@ -1516,12 +1516,12 @@ function read_sgf(sgf_str, filename, internally) {
     const too_many_games = 6, interactive = !internally
     const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest)
     const len = new_games.length
-    const open1 = g => {g.merge_common_header(game); backup_and_replace_game(g)}
+    const open1 = (g, k) => {
+        g.merge_common_header(game); backup_and_replace_game(g, k > 0)
+    }
     const open_games = gs => {
         filename && gs.forEach(g => g.sgf_file = filename)
         gs.reverse().forEach(open1)
-        // keep sequence_cursor trickily!
-        // (see the second argument of backup_and_replace_game)
         interactive && option.auto_overview && !AI.leelaz_for_white_p() &&
             start_quick_overview()
     }
