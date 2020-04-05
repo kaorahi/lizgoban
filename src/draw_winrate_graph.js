@@ -253,7 +253,9 @@ function draw_winrate_graph_score_loss(sr2coord, g) {
     const ready = R.winrate_history && R.history_length > 0 &&
           R.winrate_history.map(h => h.score_without_komi).filter(truep).length > 1
     if (!ready) {return}
-    const style = {b: "rgba(0,255,0,0.7)", w: "rgba(255,0,255,0.7)"}
+    const style = {b: "rgba(0,192,0,0.5)", w: "rgba(255,0,255,0.5)"}
+    const blunder_style = {b: "rgba(0,192,0,1)", w: "rgba(255,0,255,1)"}
+    const line_width = 1, blunder_width = 1
     const offset = 0, turn = R.bturn ? 'b' : 'w'
     const current = (R.winrate_history[R.move_count].cumulative_score_loss || {})[turn]
     const worst = Math.max(...R.winrate_history.map(h => h.cumulative_score_loss)
@@ -264,13 +266,31 @@ function draw_winrate_graph_score_loss(sr2coord, g) {
     const to_step = ([x, y], k, a) => {
         const [x0, y0] = a[k - 1] || [x, y]; return [[x, y0], [x, y]]
     }
-    g.lineWidth = 1
+    // step chart of cumulative score loss
+    g.lineWidth = line_width
     each_key_value(style, (key, style_for_key) => {
         g.strokeStyle = style_for_key
         const to_xy = ({cumulative_score_loss}, s) => cumulative_score_loss ?
               sr2coord(s, to_r(cumulative_score_loss[key])) : [NaN, NaN]
         line(...flatten(R.winrate_history.map(to_xy).map(to_step)), g)
     })
+    // emphasize blunders
+    g.lineWidth = blunder_width
+    each_key_value(blunder_style, (key, style_for_key) => {
+        g.strokeStyle = style_for_key
+        R.winrate_history.forEach(({cumulative_score_loss}, s, a) => {
+            const prev_wrh = (a[s - 1] || {}).cumulative_score_loss
+            const current = (cumulative_score_loss || {})[key]
+            const prev = (prev_wrh || {})[key]
+            const blunder_p = truep(current) && truep(prev) &&
+                  (current - prev > - blunder_threshold)
+            if (!blunder_p) {return}
+            const [x0, y0] = sr2coord(s - 1, to_r(prev))
+            const [x, y] = sr2coord(s, to_r(current))
+            line([x, y0], [x, y], g)
+        })
+    })
+    // scale
     const at_r = [90, 80, 0], to_loss = r => (100 - offset - r) / scale
     draw_winrate_graph_scale(at_r, to_loss, style.w, null, sr2coord, g)
 }
