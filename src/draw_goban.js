@@ -273,9 +273,11 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                              stone_radius, g)
         return
     }
-    // (1) ownership, (2) shadow, (3) stone etc. in this order
+    // (1) ownership, (2) halo, (3) shadow, (4) stone etc. in this order
     draw_endstate_p && !hide_endstate_p() &&
         each_coord((h, xy, idx) => draw_endstate(h.endstate, xy, stone_radius, g))
+    R.lizzie_style &&
+        each_coord((h, xy, idx) => draw_halo_lizzie(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
         h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g) :
@@ -428,8 +430,10 @@ function draw_last_move(h, xy, radius, g) {
     circle(xy, radius * 0.8, g)
 }
 
+const next_move_line_width = 3
 function draw_next_move(h, xy, radius, g) {
-    g.strokeStyle = h.next_is_black ? BLACK : WHITE; g.lineWidth = 3; circle(xy, radius, g)
+    g.strokeStyle = h.next_is_black ? BLACK : WHITE
+    g.lineWidth = next_move_line_width; circle(xy, radius, g)
 }
 
 // ref. https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067
@@ -499,6 +503,16 @@ function draw_suggest_lizzie(h, xy, radius, g) {
     g.fillStyle = suggest.order === 0 ? champ_color : lizzie_text_color
     fill_text(g, fontsize, visits_text, x, y_lower, max_width)
     g.restore()
+}
+
+function draw_halo_lizzie(h, xy, stone_radius, g) {
+    const suggest = h.data || {}; if (suggest.order !== 0) {return}
+    const color_in = 'rgba(0,255,255,1)', color_out = 'rgba(0,255,255,0)'
+    const width = next_move_line_width * 6
+    const r_in = stone_radius, r_out = stone_radius + width
+    const radius = (r_in + r_out) / 2
+    g.strokeStyle = radial_gradation(...xy, r_in, r_out, color_in, color_out, g)
+    g.lineWidth = width; circle(xy, radius, g)
 }
 
 function draw_suggest_0visits(h, xy, radius, g) {
