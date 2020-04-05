@@ -200,25 +200,18 @@ function score_drawer(w, sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
     const max_score = Math.max(...scores.filter(truep).map(Math.abs))
     if (max_score === - Infinity) {return do_nothing}
-    const color = alpha => `rgba(235,148,0,${alpha})`
+    const color = "rgba(235,148,0,1)"
     const scale = max_score < 20 ? 2 : max_score < 45 ? 1 : max_score < 95 ? 0.5 : 0.2
     const to_r = score => 50 + score * scale
     const draw_komi = () => {
         const [dummy, ky] = sr2coord(R.move_count, to_r(R.komi))
-        g.lineWidth = 1; g.strokeStyle = color(1)
+        g.lineWidth = 1; g.strokeStyle = color
         line([0, ky], [w, ky], g)
     }
-    const plotter = (x, y, s, g) => {
-        const current_p = (s === R.move_count)
-        // const diff_target_p = R.endstate_diff_interval > 5 &&
-        //       (s === R.move_count - R.endstate_diff_interval)
-        const [radius, alpha] = current_p ? [4, 1] : [2.5, 0.6]
-        g.fillStyle = color(alpha)
-        fill_circle([x, y], radius, g)
-    }
+    const plotter = (x, y, s, g) => {g.fillStyle = color; fill_circle([x, y], 2.5, g)}
     const draw_score = () => {
         const at_r = [10, 30, 50, 70, 90], to_score = r => (r - 50) / scale
-        draw_winrate_graph_scale(at_r, to_score, color(1), w * 0.995, sr2coord, g)
+        draw_winrate_graph_scale(at_r, to_score, color, w * 0.995, sr2coord, g)
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
         !R.hide_suggest && draw_score_text(w, to_r, sr2coord, g)  // avoid flicker
     }
@@ -232,9 +225,10 @@ function draw_score_text(w, to_r, sr2coord, g) {
     const [x0, _] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
     const [x, y] = sr2coord(s, to_r(score_without_komi))
     const my_ymax = (ymax < sr2coord(s, 100)[1]) ? sr2coord(s, 0)[1] : ymax
-    const here = [x0, clip(y + 1.5 * unit, unit, my_ymax - unit)]
+    const here = [x0, clip(y + 2 * unit, unit, my_ymax - unit)]
     g.save()
-    g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 1; line([x, y], here, g)
+    g.strokeStyle = g.fillStyle = WHITE; g.lineWidth = 1
+    fill_circle([x, y], 4, g); line([x, y], here, g)
     g.textAlign = normal ? 'left' : 'right'; g.textBaseline = 'middle'
     const score = score_without_komi - R.komi, bw = score > 0 ? 'B' : 'W'
     fill_text(g, unit * 2, `${bw}+${f2s(Math.abs(score))}`, ...here)
@@ -259,7 +253,7 @@ function draw_winrate_graph_ko_fight(sr2coord, g) {
 
 function draw_winrate_graph_ambiguity(sr2coord, g) {
     const radius = 2
-    g.fillStyle = "rgba(255,0,0,0.3)"
+    g.fillStyle = "#800"
     const plot = (ambiguity, s) => {
         if (!truep(ambiguity)) {return}
         const [x, y] = sr2coord(s, ambiguity)
