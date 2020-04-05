@@ -39,7 +39,7 @@ const default_option = {
     max_cached_engines: 3,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     record_note_to_SGF: false,
-    auto_preview: false,
+    auto_overview: false,
     repl: false,
 }
 const option = {}
@@ -545,7 +545,7 @@ function menu_template(win) {
                  false, R.show_endstate, true)),
     ])
     const tool_menu = menu('Tool', [
-        item('Quick preview', 'Shift+V', start_quick_preview, true),
+        item('Quick overview', 'Shift+V', start_quick_overview, true),
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('AI vs. AI', 'Shift+P', ask_sec(false), true),
         sep,
@@ -775,7 +775,7 @@ function start_auto_analyze(visits, steps, on_finish) {
     on_auto_analyze_finished = on_finish || pause
     rewind_maybe(); resume()
 }
-function start_quick_preview() {
+function start_quick_overview() {
     start_auto_analyze(1, 15, is_pausing() ? pause : do_nothing)
 }
 function stop_auto_analyze() {auto_analysis_signed_visits = Infinity}
@@ -1522,7 +1522,7 @@ function read_sgf(sgf_str, filename) {
         gs.reverse().forEach(open1)
         // keep sequence_cursor trickily!
         // (see the second argument of backup_and_replace_game)
-        option.auto_preview && !AI.leelaz_for_white_p() && start_quick_preview()
+        option.auto_overview && !AI.leelaz_for_white_p() && start_quick_overview()
     }
     const ask_really_open = gs => {
         const message = `Really open ${gs.length} games (variations)?`
