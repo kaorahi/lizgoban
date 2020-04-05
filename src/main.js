@@ -1483,7 +1483,7 @@ function open_sgf_in(dir, proc) {
     select_files('Select SGF file', dir).forEach(proc || load_sgf)
 }
 function load_sgf(filename) {
-    const new_games = read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename)
+    read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename)
 }
 
 function save_sgf() {
