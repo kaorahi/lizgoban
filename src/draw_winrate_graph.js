@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////
 // winrate graph
 
-const zone_indicator_height_percent = 3
+const zone_indicator_height_percent = 6
 const upper_graph_rate = 0.5 + (zone_indicator_height_percent * 0.01) / 2
 
 function draw_winrate_graph(canvas, additional_canvas,
-                            show_until, large_graph, handle_mouse_on_winrate_graph) {
+                            show_until, handle_mouse_on_winrate_graph) {
     const w = canvas.width, g = canvas.getContext("2d")
     const xmargin = w * 0.04, fontsize = to_i(w * 0.04)
     // s = move_count, r = winrate
@@ -19,9 +19,8 @@ function draw_winrate_graph(canvas, additional_canvas,
         return [sz2coord, coord2sz]
     }
     const [sr2coord, coord2sr] = get_trans(100, - zone_indicator_height_percent,
-                                           0, large_graph ? upper_graph_rate : 1)
-    const [sq2coord, coord2sq] =
-          large_graph ? get_trans(100, 0, upper_graph_rate, 1) : [sr2coord, coord2sr]
+                                           0, upper_graph_rate)
+    const [sq2coord, coord2sq] = get_trans(100, 0, upper_graph_rate, 1)
     const overlay = graph_overlay_canvas.getContext("2d")
     clear_canvas(graph_overlay_canvas)
     truep(show_until) ?
@@ -33,11 +32,11 @@ function draw_winrate_graph(canvas, additional_canvas,
     const score_loss_p = !alternative_engine_for_white_p()
     update_winrate_text_geom(w, sr2coord, coord2sr)
     draw_winrate_graph_frame(w, sr2coord, g)
-    large_graph && draw_winrate_graph_frame(w, sq2coord, g)
+    draw_winrate_graph_frame(w, sq2coord, g)
     draw_score('komi')
     draw_winrate_graph_ko_fight(sq2coord, g)
     draw_winrate_graph_ambiguity(sq2coord, g)
-    score_loss_p && draw_winrate_graph_score_loss(sq2coord, large_graph, g)
+    score_loss_p && draw_winrate_graph_score_loss(sq2coord, true, g)
     draw_winrate_graph_zone(w, sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
@@ -215,8 +214,8 @@ function score_drawer(w, sr2coord, g) {
         fill_circle([x, y], radius, g)
     }
     const draw_score = () => {
-        const at_r = [50, 60, 70], to_score = r => (r - 50) / scale
-        draw_winrate_graph_scale(at_r, to_score, color(0.6), w * 0.995, sr2coord, g)
+        const at_r = [10, 30, 50, 70, 90], to_score = r => (r - 50) / scale
+        draw_winrate_graph_scale(at_r, to_score, color(1), w * 0.995, sr2coord, g)
         draw_winrate_graph_history(scores, to_r, plotter, sr2coord, g)
         !R.hide_suggest && draw_score_text(w, to_r, sr2coord, g)  // avoid flicker
     }
@@ -313,7 +312,7 @@ function draw_winrate_graph_score_loss(sr2coord, large_graph, g) {
         })
     })
     // scale
-    const at_r = [90, 80, 0], to_loss = r => (100 - offset - r) / scale
+    const at_r = [80, 60, 40, 20], to_loss = r => (100 - offset - r) / scale
     draw_winrate_graph_scale(at_r, to_loss, style.w, null, sr2coord, g)
 }
 
@@ -332,7 +331,7 @@ function draw_winrate_graph_zone(w, sr2coord, g) {
 function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
     const unit_r = 10, s0 = clip_handicaps(0)
     const [x0, y0] = sr2coord(s0, 0), [_, y1] = sr2coord(s0, unit_r)
-    const maxwidth = x0 * 0.8, fontsize = Math.min((y0 - y1) * 0.9, maxwidth)
+    const maxwidth = x0 * 0.8, fontsize = Math.min((y0 - y1) * 1.7, maxwidth)
     const to_xy = r => [x_maybe || maxwidth, sr2coord(s0, r)[1]]
     const to_text = r => to_s(Math.round(r2val(r)))
     const draw_at = r => {
