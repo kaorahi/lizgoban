@@ -59,10 +59,12 @@ function create_game(init_history, init_prop) {
             const com = common_header_length(history, new_history)
             // keep old history for keeping winrate
             history.splice(com, Infinity, ...new_history.slice(com))
+            return com
         },
         copy_with_reuse_to: another_game => {
             Object.keys(prop).forEach(k => k !== 'id' && (another_game[k] = self[k]))
-            another_game.set_with_reuse(history)
+            const com = another_game.set_with_reuse(history)
+            another_game.move_count = com
         },
         merge_common_header: another_game => {
             const another_history = another_game.array_until(Infinity)
