@@ -358,6 +358,7 @@ function winrate_from_game(engine_id) {
         // drop "pass" to save data size for IPC
         return merge({
             r, move_b_eval, move_eval, tag, score_without_komi, cumulative_score_loss,
+            turn_letter,
         }, pass ? {pass} : {predict})
     })
 }

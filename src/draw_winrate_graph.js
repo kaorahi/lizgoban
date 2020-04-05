@@ -280,11 +280,11 @@ function draw_winrate_graph_score_loss(sr2coord, large_graph, g) {
     g.lineWidth = blunder_width
     each_key_value(blunder_style, (key, style_for_key) => {
         g.strokeStyle = style_for_key
-        R.winrate_history.forEach(({cumulative_score_loss}, s, a) => {
+        R.winrate_history.forEach(({cumulative_score_loss, turn_letter}, s, a) => {
             const prev_wrh = (a[s - 1] || {}).cumulative_score_loss
             const current = (cumulative_score_loss || {})[key]
             const prev = (prev_wrh || {})[key]
-            const blunder_p = truep(current) && truep(prev) &&
+            const blunder_p = truep(current) && truep(prev) && (key === turn_letter) &&
                   (current - prev > - blunder_threshold)
             if (!blunder_p) {return}
             const [x0, y0] = sr2coord(s - 1, to_r(prev))
