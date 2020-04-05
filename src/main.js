@@ -146,6 +146,7 @@ function create_games_from_sgf_internal(sgf_str, cache_suggestions_p) {
 let game = create_game_with_gorule(store.get('gorule', default_gorule))
 let sequence = [game], sequence_cursor = 0
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
+let auto_analysis_steps = 1
 const simple_ui = false
 let auto_play_sec = 0, auto_replaying = false
 let pausing = false, busy = false
@@ -543,6 +544,7 @@ function menu_template(win) {
                  false, R.show_endstate, true)),
     ])
     const tool_menu = menu('Tool', [
+        item('Quick preview', 'Shift+V', start_quick_preview, true),
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('AI vs. AI', 'Shift+P', ask_sec(false), true),
         sep,
@@ -754,8 +756,11 @@ function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing()}
 function try_auto_analyze(force_next) {
     const done = force_next || (auto_analysis_progress() >= 1)
     const finish = () => (pause(), stop_auto_analyze())
-    const next = (pred, proc) => {pred() ? proc() : finish(); update_all()}
-    done && next(...(backward_auto_analysis_p() ? [undoable, undo] : [redoable, redo]))
+    const next = (pred, proc) => {
+        pred() ? proc(auto_analysis_steps) : finish(); update_all()
+    }
+    done && next(...(backward_auto_analysis_p() ?
+                     [undoable, undo_ntimes] : [redoable, redo_ntimes]))
 }
 function toggle_auto_analyze(visits) {
     if (game.is_empty()) {wink(); return}
@@ -763,9 +768,11 @@ function toggle_auto_analyze(visits) {
         stop_auto_analyze() :
         start_auto_analyze(visits)
 }
-function start_auto_analyze(visits) {
-    auto_analysis_signed_visits = visits; rewind_maybe(); resume()
+function start_auto_analyze(visits, steps) {
+    auto_analysis_signed_visits = visits; auto_analysis_steps = steps || 1
+    rewind_maybe(); resume()
 }
+function start_quick_preview() {start_auto_analyze(1, 15)}
 function stop_auto_analyze() {auto_analysis_signed_visits = Infinity}
 function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
 function auto_analysis_progress() {
