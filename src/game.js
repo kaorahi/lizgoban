@@ -189,18 +189,16 @@ function convert_to_sabaki_sgf_v131_maybe(parsed) {
     // convert v3.0.0-style to v1.3.1-style for the result of parse() of @sabaki/sgf
     // (ref.) incompatible change in @sabaki/sgf v3.0.0
     // https://github.com/SabakiHQ/sgf/commit/a57dfe36634190ca995755bd83f677375d543b80
-    return flatten(parsed.map(item => {
-        const is_v131 = item.nodes; if (is_v131) {return [item]}
-        const minimum_v131_gametree = nodes => ({nodes, parent: null})
-        const recur = (nodes, {data, children}) => {
-            const k = children.length
-            nodes.push({...data, branching_tag: k > 1 && unused_tag()})
-            return k === 0 ? [minimum_v131_gametree(nodes)] :
+    const is_v131 = item => !!item.nodes
+    const minimum_v131_gametree = nodes => ({nodes, parent: null})
+    const recur = (nodes, {data, children}) => {
+        const k = children.length
+        nodes.push({...data, branching_tag: k > 1 && unused_tag()})
+        return k === 0 ? [minimum_v131_gametree(nodes)] :
             k === 1 ? recur(nodes, children[0]) :
             flatten(children.map(c => recur(nodes.slice(), c)))
-        }
-        return recur([], item)
-    }))
+    }
+    return flatten(parsed.map(item => is_v131(item) ? [item] : recur([], item)))
 }
 
 /////////////////////////////////////////////////
