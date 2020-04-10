@@ -473,7 +473,7 @@ function menu_template(win) {
           ({label, submenu: submenu.filter(truep), enabled: !empty(submenu)})
     const exec = (...fs) => ((...a) => fs.forEach(f => f && f(...a)))
     const update = () => update_all()
-    const ask_sec = redoing => ((this_item, win) => ask_auto_play_sec(win, redoing))
+    const ask_sec = replaying => ((this_item, win) => ask_auto_play_sec(win, replaying))
     const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
           !(standalone_only && attached) && {
               label, accelerator,
