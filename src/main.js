@@ -1583,6 +1583,7 @@ function load_exercise(selector, win, random_flip_p) {
     const fn = selector(files); seen_exercises.push(fn)
     set_board_type('raw', win); load_as_exercise(expand_exercise_filename(fn))
     random_flip_p && game.random_flip_rotate()
+    game.set_last_loaded_element(); tag_or_untag()
 }
 function load_as_exercise(file) {
     load_sgf(file, true); goto_move_count(exercise_move_count(file))
