@@ -311,7 +311,8 @@ const api = merge({}, simple_api, {
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     let_me_think_next, goto_next_something, goto_previous_something,
-    goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
+    goto_move_count, toggle_auto_analyze, play_best, play_weak, stop_auto,
+    submit_auto_play, submit_auto_replay, auto_play_in_match,
     stop_match, set_match_param,
     new_empty_board, add_handicap_stones,
     paste_sgf_or_url_from_clipboard,
@@ -805,14 +806,14 @@ stop_auto_analyze()
 
 // auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
 let last_auto_play_time = 0, default_auto_play_sec = 1
-function auto_play(sec, explicitly_playing_best, count) {
-    sec && (default_auto_play_sec = sec)
-    if (explicitly_playing_best || truep(count)) {auto_replaying = false}
-    if (!explicitly_playing_best) {auto_play_count = truep(count) ? count : Infinity}
+function start_auto_play(replaying, sec, count) {
+    // var
+    auto_replaying = replaying
+    auto_play_sec = truep(sec) ? sec : -1
+    truep(count) && (auto_play_count = count)
+    // proc
     auto_replaying && rewind_maybe()
-    auto_play_sec = sec || -1; stop_auto_analyze()
-    update_auto_play_time()
-    update_let_me_think(); resume()
+    stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
 }
 function try_auto_play(force_next) {
     force_next && (last_auto_play_time = - Infinity)
@@ -834,9 +835,14 @@ function auto_play_progress() {
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000) : -1
 }
 function ask_auto_play_sec(win, replaying) {
-    auto_replaying = replaying
-    generic_input_dialog(win, 'Auto play seconds:', default_auto_play_sec, 'auto_play')
+    const cannel = replaying ? 'submit_auto_replay' : 'submit_auto_play'
+    generic_input_dialog(win, 'Auto play seconds:', default_auto_play_sec, cannel)
 }
+function submit_auto_play_or_replay(sec, replaying) {
+    default_auto_play_sec = sec; start_auto_play(replaying, sec, Infinity)
+}
+function submit_auto_play(sec) {submit_auto_play_or_replay(sec, false)}
+function submit_auto_replay(sec) {submit_auto_play_or_replay(sec, true)}
 function ask_game_info(win, asking_komi_p) {
     const supported_rules = AI.is_gorule_supported() && katago_supported_rules
     win.webContents.send('ask_game_info', info_text(), game.sgf_gorule, get_gorule(),
@@ -869,12 +875,13 @@ function set_match_param(weaken) {
           aa2hash(seq(9, 1).map(k => [k, ['random_candidate', k * 10]]))
     auto_play_weaken = weaken_mathod_args[weaken] || []
 }
+function auto_play_in_match(sec) {start_auto_play(false, sec, 1)}
 
 /////////////////////////////////////////////////
 // play against leelaz
 
 function play_best(n, weaken_method, ...weaken_args) {
-    auto_play(null, true); increment_auto_play_count(n)
+    start_auto_play(false); increment_auto_play_count(n)
     try_play_best(weaken_method, ...weaken_args)
 }
 function play_weak(percent) {

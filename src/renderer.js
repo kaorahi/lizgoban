@@ -404,9 +404,7 @@ function play_here(e, coord2idx, tag_clickable_p) {
         (pass && main('pass'), main('play', move, !!another_board),
          in_match_p() && auto_play_in_match())
 }
-function auto_play_in_match() {
-    main('auto_play', to_f(Q('#match_sec').value), false, 1)
-}
+function auto_play_in_match() {main('auto_play_in_match', to_f(Q('#match_sec').value))}
 function hover_here(e, coord2idx, canvas) {
     set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
 }
