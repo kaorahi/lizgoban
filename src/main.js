@@ -493,7 +493,10 @@ function menu_template(win) {
              (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
                                             'variation' : 'suggest')),
         sep,
-        item('Match vs. AI', undefined, (this_item, win) => start_match(win), true),
+        R.in_match ?
+            item('Stop match', undefined,
+                 (this_item, win) => stop_match(window_prop(win).window_id), true) :
+            item('Match vs. AI', undefined, (this_item, win) => start_match(win), true),
         sep,
         item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
