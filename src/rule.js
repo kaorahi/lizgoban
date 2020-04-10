@@ -32,9 +32,9 @@ function capture(ij, is_black, stones, hama) {
     let captured_opponents = []
     around_idx(ij).forEach(idx => {
         const r = remove_dead(idx, !is_black, stones); captured_opponents.push(...r)
-        hama[!is_black] += r.length
+        hama[!!is_black] += r.length
     })
-    hama[!!is_black] += remove_dead(ij, is_black, stones).length
+    hama[!is_black] += remove_dead(ij, is_black, stones).length
     return captured_opponents
 }
 
