@@ -7,7 +7,7 @@ It is an implementation of
 [Lizzie](https://github.com/featurecat/lizzie)-style real-time UI
 on [Electron](https://electronjs.org/).
 
-<img src="screen.gif" width="50%">
+<img src="screen.gif" width="45%"> <img src="match.png" width="50%">
 
 ## Highlights
 

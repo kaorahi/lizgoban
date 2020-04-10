@@ -4,10 +4,11 @@ SAMPLE = extra/sample
 README = $(DOC)/README.html
 REL_NOTE = $(DOC)/release.html
 SCR_IMG = $(DOC)/screen.gif
+MTCH_IMG = $(DOC)/match.png
 LG_CONF = $(SAMPLE)/config.json
 PD_HEADER = pandoc_header
 
-TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(LG_CONF)
+TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(LG_CONF)
 
 PANDOC = pandoc -H $(PD_HEADER)
 
@@ -27,3 +28,6 @@ $(LG_CONF): config.json
 
 $(SCR_IMG): ../screen.gif
 	convert '../screen.gif[0]' $(SCR_IMG)
+
+$(MTCH_IMG): ../match.png
+	cp -f ../match.png $(MTCH_IMG)
