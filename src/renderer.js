@@ -401,10 +401,12 @@ function play_here(e, coord2idx, tag_clickable_p) {
     const goto_p = showing_movenum_p()
     if (goto_p) {goto_idx_maybe(idx, another_board); return}
     (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
-        (pass && main('pass'), main('play', move, !!another_board),
-         in_match_p() && auto_play_in_match())
+        (pass && main('pass'), main('play', move, !!another_board), auto_play_in_match())
 }
-function auto_play_in_match() {main('auto_play_in_match', to_f(Q('#match_sec').value))}
+function play_pass() {main('pass'); auto_play_in_match()}
+function auto_play_in_match() {
+    in_match_p() && main('auto_play_in_match', to_f(Q('#match_sec').value))
+}
 function hover_here(e, coord2idx, canvas) {
     set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
 }
