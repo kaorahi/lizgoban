@@ -312,6 +312,7 @@ const api = merge({}, simple_api, {
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     let_me_think_next, goto_next_something, goto_previous_something,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
+    stop_match, set_match_param,
     paste_sgf_or_url_from_clipboard,
     read_sgf, open_url, set_game_info,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
@@ -491,6 +492,8 @@ function menu_template(win) {
         item('New window', 'CmdOrCtrl+Shift+N',
              (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
                                             'variation' : 'suggest')),
+        sep,
+        item('Match vs. AI', undefined, (this_item, win) => start_match(win), true),
         sep,
         item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
@@ -796,9 +799,10 @@ stop_auto_analyze()
 
 // auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
 let last_auto_play_time = 0, default_auto_play_sec = 1
-function auto_play(sec, explicitly_playing_best) {
+function auto_play(sec, explicitly_playing_best, count) {
     sec && (default_auto_play_sec = sec)
-    explicitly_playing_best ? (auto_replaying = false) : (auto_play_count = Infinity)
+    if (explicitly_playing_best || truep(count)) {auto_replaying = false}
+    if (!explicitly_playing_best) {auto_play_count = truep(count) ? count : Infinity}
     auto_replaying && rewind_maybe()
     auto_play_sec = sec || -1; stop_auto_analyze()
     update_auto_play_time()
@@ -806,7 +810,8 @@ function auto_play(sec, explicitly_playing_best) {
 }
 function try_auto_play(force_next) {
     force_next && (last_auto_play_time = - Infinity)
-    auto_play_ready() && (auto_replaying ? try_auto_replay() : try_play_best())
+    auto_play_ready() &&
+        (auto_replaying ? try_auto_replay() : try_play_best(...auto_play_weaken))
     update_let_me_think(true)
 }
 function try_auto_replay() {do_as_auto_play(redoable(), redo)}
@@ -819,7 +824,7 @@ function do_as_auto_play(playable, proc) {
 }
 function update_auto_play_time() {last_auto_play_time = Date.now()}
 function auto_play_progress() {
-    return auto_playing(true) ?
+    return auto_playing() ?
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000) : -1
 }
 function ask_auto_play_sec(win, replaying) {
@@ -841,6 +846,21 @@ function stop_auto_play() {
 }
 function auto_playing(forever) {
     return auto_play_count >= (forever ? Infinity : 1)
+}
+
+// match
+let auto_play_weaken = []
+function start_match(win) {
+    set_board_type('raw', win); R.in_match = true
+}
+function stop_match(window_id) {
+    R.in_match = false; auto_play_weaken = []
+    truep(window_id) && toggle_board_type(window_id, null, "raw")
+}
+function set_match_param(weaken) {
+    const weaken_mathod_args =
+          aa2hash(seq(9, 1).map(k => [k, ['random_candidate', k * 10]]))
+    auto_play_weaken = weaken_mathod_args[weaken] || []
 }
 
 /////////////////////////////////////////////////
@@ -915,10 +935,11 @@ function winrate_after(move_count) {
 // other actions
 
 // board type
-function toggle_board_type(window_id, type) {
+function toggle_board_type(window_id, type, if_type) {
     if (let_me_think_p() && !type) {toggle_board_type_in_let_me_think(); return}
     const win = window_for_id(window_id)
     const {board_type, previous_board_type} = window_prop(win)
+    if (truep(if_type) && (board_type !== if_type)) {return}
     const new_type = (type && board_type !== type) ? type : previous_board_type
     set_board_type(new_type, win, !type)
 }
@@ -1066,7 +1087,7 @@ const let_me_think_board_type =
 let let_me_think_previous_stage = null
 
 function update_let_me_think(only_when_stage_is_changed) {
-    if (!let_me_think_p()) {let_me_think_previous_stage = null; return}
+    if (!let_me_think_p() || R.in_match) {let_me_think_previous_stage = null; return}
     let_me_think_switch_board_type(only_when_stage_is_changed)
 }
 function let_me_think_switch_board_type(only_when_stage_is_changed) {
@@ -1672,7 +1693,7 @@ function detach_from_sabaki() {
 }
 
 function toggle_sabaki() {
-    stop_auto(); attached ? detach_from_sabaki() : attach_to_sabaki()
+    stop_auto(); stop_match(); attached ? detach_from_sabaki() : attach_to_sabaki()
 }
 
 /////////////////////////////////////////////////

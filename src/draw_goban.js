@@ -230,8 +230,8 @@ function draw_visits(text_maybe, margin, canvas, g) {
     const maybe = (z, g) => truep(z) ? g(z >= 1000 ? kilo_str(z) : f2s(z)) : ''
     const bg = truep(R.background_visits) ? `${R.background_visits}/` : ''
     const vps = maybe(R.visits_per_sec, z => `  (${z} v/s)`)
-    const esum = maybe(truep(R.endstate_sum) && (R.endstate_sum - R.komi),
-                       z => `  score = ${z}`)
+    const score = truep(R.endstate_sum) && !R.in_match && (R.endstate_sum - R.komi)
+    const esum = maybe(score, z => `  score = ${z}`)
     const text = `  visits = ${bg}${R.visits}${esum}${vps}`
     draw_visits_text(text, margin, canvas, g)
 }

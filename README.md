@@ -174,6 +174,7 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 * Support better stone images. ("Stone" in "View" menu & experimental stone/board images in the above section)
 * Support 9x9 and 13x13 in "File" menu. (See the above KataGo section to shorten their initialization.)
 * Add "Rule" into "Edit" menu for KataGo v1.3.
+* Add "Match vs. AI" into "File" menu.
 * Add "Quick overview" into "Tool" menu.
 * Enable "Undelete board" in Edit menu across sessions.
 * Plot cumulative score loss.

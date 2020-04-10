@@ -114,7 +114,7 @@
  <canvas id="goban"></canvas>
 <div id="additional_graph_div"><canvas id="additional_graph"></canvas></div>
 </div>
-<div><canvas id="winrate_bar"></canvas></div>
+<div class="hide_in_serious_match"><canvas id="winrate_bar"></canvas></div>
 </div>
 
 <div id='trial' style="position: absolute;">
@@ -125,10 +125,31 @@
 <!-------- begin rest_div ----------->
 <div id="rest_div">
 
+<div class="hide_in_serious_match">
 <div id="sub_goban_container" style="text-align: center;"><canvas id="sub_goban"></canvas></div>
 <div><canvas id="winrate_graph"></canvas></div>
+</div>
 
 <div>
+
+<div id="in_match" class="controller_row">
+vs.
+<select id="weaken" value="best" onchange="main('set_match_param', this.options[this.selectedIndex].value)">
+ <option value="best">best</option>
+ <option value="1">weak 1</option>
+ <option value="2">weak 2</option>
+ <option value="3">weak 3</option>
+ <option value="4">weak 4</option>
+ <option value="5">weak 5</option>
+ <option value="6">weak 6</option>
+ <option value="7">weak 7</option>
+ <option value="8">weak 8</option>
+ <option value="9">weak 9</option>
+</select>
+(<input type='number' id='match_sec' value='1' min='1' style='width: 3em'>sec)
+<input type='button' onclick="auto_play_in_match()" value="AI's turn">
+<input type='button' style='color: red' onclick="stop_match()" value="stop match">
+</div>
 
 <div class="controller_row hide_when_attached">
 <input type='button' id='undo_to_start' onclick="main('undo_to_start')" value="|&lt;">
@@ -160,7 +181,7 @@
 <input type='button' onclick="main('toggle_pause')" value="resume" style="color: red;">
 </span>
 <!-------- begin hide_when_attached2 ----------->
-<span class="hide_when_attached">
+<span class="hide_when_attached hide_in_match">
 <span id='start_auto_analyze'>
 <input type='button' id='auto_analyze' onclick="toggle_auto_analyze()" value="auto">
 </span>
@@ -187,13 +208,17 @@
 <pre id="debug" style='clear: both'></pre>
 </div>
 
+<span class="hide_in_serious_match">
 <canvas id="visits_trail_canvas"></canvas>
+</span>
 
 </div>
 <!-------- end rest_div ----------->
 
+<span class="hide_in_serious_match">
 <canvas id="graph_overlay"></canvas>
 <canvas id="zone_chart_canvas"></canvas>
+</span>
 
 <div class='dialog' id='generic_input_dialog'>
  <p>

@@ -28,6 +28,7 @@ const R = {
     visits_per_sec: 0,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
+    in_match: false,
     hide_suggest: false,
     expand_winrate_bar: false, let_me_think: false, score_bar: false,
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',
@@ -115,6 +116,8 @@ function play_moves(moves) {
     const play1 = (move, k) => main('play', move, false, tag(k), com(k))
     moves && moves.forEach(play1)
 }
+
+function stop_match() {main('stop_match', R.window_id)}
 
 function alert_comment() {
     const comment = Q('#comment').textContent; comment ? alert(comment) : wink()
@@ -231,6 +234,7 @@ function current_tag_letters() {
 function update_body_color() {
     [Q('#body').style.color, Q('#body').style.backgroundColor] =
         R.attached ? ['white', '#111'] :
+        R.in_match ? ['white', '#232'] :
         R.let_me_think ? ['white', '#223'] : ['white', '#444']
 }
 
@@ -397,7 +401,11 @@ function play_here(e, coord2idx, tag_clickable_p) {
     const goto_p = showing_movenum_p()
     if (goto_p) {goto_idx_maybe(idx, another_board); return}
     (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
-        (pass && main('pass'), main('play', move, !!another_board))
+        (pass && main('pass'), main('play', move, !!another_board),
+         R.in_match && auto_play_in_match())
+}
+function auto_play_in_match() {
+    main('auto_play', to_f(Q('#match_sec').value), false, 1)
 }
 function hover_here(e, coord2idx, canvas) {
     set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
@@ -940,6 +948,10 @@ function update_button_etc(availability) {
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_visits')
     f('stop_auto')
     f('normal_ui'); f('simple_ui'); f('trial')
+    update_ui_element('#in_match', R.in_match)
+    update_ui_element('.hide_in_match', !R.in_match)
+    const serious_match_p = R.in_match && R.board_type === 'raw'
+    update_ui_element('.hide_in_serious_match', !serious_match_p)
 }
 
 /////////////////////////////////////////////////
