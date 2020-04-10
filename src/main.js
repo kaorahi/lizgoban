@@ -315,6 +315,7 @@ const api = merge({}, simple_api, {
     paste_sgf_or_url_from_clipboard,
     read_sgf, open_url, set_game_info,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
+    detach_from_sabaki,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
 })
