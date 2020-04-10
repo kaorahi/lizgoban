@@ -350,7 +350,8 @@ function winrate_from_game(engine_id) {
         }
         const update_score_loss_maybe = () => {
             const gain = (score_without_komi - prev_score) * turn_sign
-            const valid = !pass || s === 0; valid && update_score_loss(gain)
+            const valid = !pass || (s === 0 && game.handicaps === 0)
+            valid && update_score_loss(gain)
             prev_score = score_without_komi
         }
         truep(score_without_komi) && update_score_loss_maybe()
