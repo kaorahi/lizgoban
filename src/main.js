@@ -1093,7 +1093,7 @@ const let_me_think_board_type =
 let let_me_think_previous_stage = null
 
 function update_let_me_think(only_when_stage_is_changed) {
-    if (!let_me_think_p() || R.in_match) {let_me_think_previous_stage = null; return}
+    if (!let_me_think_p(true)) {let_me_think_previous_stage = null; return}
     let_me_think_switch_board_type(only_when_stage_is_changed)
 }
 function let_me_think_switch_board_type(only_when_stage_is_changed) {
@@ -1122,7 +1122,9 @@ function stop_let_me_think() {set_let_me_think(false)}
 function set_let_me_think(val) {
     set_stored('let_me_think', val); update_let_me_think()
 }
-function let_me_think_p() {return store.get('let_me_think')}
+function let_me_think_p(strictly) {
+    return store.get('let_me_think') && !(strictly && R.in_match)
+}
 
 function let_me_think_next(board_type) {
     const stay = (board_type === let_me_think_board_type.first_half)
