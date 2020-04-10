@@ -115,6 +115,10 @@ function play_moves(moves) {
     moves && moves.forEach(play1)
 }
 
+function alert_comment() {
+    const comment = Q('#comment').textContent; comment ? alert(comment) : wink()
+}
+
 function main(channel, ...args) {ipc.send(channel, ...args)}
 
 /////////////////////////////////////////////////
@@ -786,6 +790,7 @@ document.onkeydown = e => {
     case "Tab": f(toggle_board_type); return
     case "0": challenging ? m('play_best', null, 'pass_maybe') :
             f(set_keyboard_moves_for_next_move); return
+    case "#": f(alert_comment); return
     // (for safe_menu)
     case "B": m('toggle_stored', 'expand_winrate_bar'); return
     case "E": m('toggle_stored', 'show_endstate'); return
