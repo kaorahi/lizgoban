@@ -848,7 +848,8 @@ function increment_auto_play_count(n) {
 }
 function decrement_auto_play_count() {auto_play_count--}
 function stop_auto_play() {
-    auto_playing() && ((auto_play_count = 0), let_me_think_exit_autoplay())
+    if (!auto_playing()) {return}
+    auto_play_count = 0; let_me_think_p(true) && let_me_think_exit_autoplay()
 }
 function auto_playing(forever) {
     return auto_play_count >= (forever ? Infinity : 1)
