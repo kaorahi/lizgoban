@@ -155,28 +155,23 @@ function create_games_from_sgf(sgf_str, cache_suggestions_p) {
     // (1) drop junk before SGF by searching "(;" (ad hoc!)
     // (2) drop tails repeatedly until we get a valid SGF (brute force!)
     const clipped = clip_sgf(sgf_str)
+    // const safely = (f, ...a) => f(...a)  // for debug
     return clipped ? (safely(create_games_from_sgf_unsafe, clipped, cache_suggestions_p) ||
                       create_games_from_sgf(clipped.slice(0, -1)))
         : []
 }
 function create_games_from_sgf_unsafe(clipped_sgf, cache_suggestions_p) {
-    return unify_common_headers(parse_sgf(clipped_sgf).map(gametree => {
+    const to_game = gametree => {
         const game = create_game()
         game.load_sabaki_gametree(gametree, undefined, cache_suggestions_p)
         game.sgf_str = clipped_sgf
         return game
-    }))
+    }
+    return parse_sgf(clipped_sgf, to_game)
 }
 
-function unify_common_headers(gs) {
-    let game = gs[0]
-    return gs.map(new_game => {
-        game = game.shallow_copy(); new_game.copy_with_reuse_to(game); return game
-    })
-}
-
-function parse_sgf(sgf_str) {
-    return convert_to_sabaki_sgf_v131_maybe(SGF.parse(sgf_str))
+function parse_sgf(sgf_str, to_game) {
+    return games_from_parsed_sgf(SGF.parse(sgf_str), to_game)
 }
 
 // pick "(; ... ... ])...)"
@@ -185,20 +180,39 @@ function clip_sgf(sgf_str) {
     const m = sgf_str.match(/\(\s*;[^]*\][;\s\)]*\)/); return m && m[0]
 }
 
-function convert_to_sabaki_sgf_v131_maybe(parsed) {
+function games_from_parsed_sgf(parsed, to_game) {
     // convert v3.0.0-style to v1.3.1-style for the result of parse() of @sabaki/sgf
     // (ref.) incompatible change in @sabaki/sgf v3.0.0
     // https://github.com/SabakiHQ/sgf/commit/a57dfe36634190ca995755bd83f677375d543b80
     const is_v131 = item => !!item.nodes
     const minimum_v131_gametree = nodes => ({nodes, parent: null})
+    // sort variations so that they are convenietly readable
+    // [[[game0, game1], game2], game3] ==> [game0, game3, game2, game1]
+    // game0: A B C D
+    // game1: A B C D'
+    // game2: A B C'
+    // game3: A B'
+    // sample
+    // (;B[aa](;W[ba](;B[ca](;W[da])(;W[cb]))(;B[bb]))(;W[ab](;B[bb])(;B[ac])))
+    const readably_flatten = ([[main, ...rest], ...variations]) =>
+          [main, ...flatten(variations), ...rest]
+    // unify common headers
+    let game
+    const to_game_with_reuse = gametree => {
+        const new_game = to_game(gametree); if (!game) {return (game = new_game)}
+        game = game.shallow_copy(); new_game.copy_with_reuse_to(game); return game
+    }
+    // for v3.0.0-style
     const recur = (nodes, {data, children}) => {
         const k = children.length
         nodes.push({...data, branching_tag: k > 1 && unused_tag()})
-        return k === 0 ? [minimum_v131_gametree(nodes)] :
+        return k === 0 ? [to_game_with_reuse(minimum_v131_gametree(nodes))] :
             k === 1 ? recur(nodes, children[0]) :
-            flatten(children.map(c => recur(nodes.slice(), c)))
+            readably_flatten(children.map(c => recur(nodes.slice(), c)))
     }
-    return flatten(parsed.map(item => is_v131(item) ? [item] : recur([], item)))
+    // main
+    const conv = item => is_v131(item) ? [to_game_with_reuse(item)] : recur([], item)
+    return flatten(parsed.map(conv))
 }
 
 /////////////////////////////////////////////////
