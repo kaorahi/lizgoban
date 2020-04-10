@@ -105,6 +105,7 @@ Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1
         },
         {
             "label": "KataGo (handicap)",
+            "match": true,
             "engine": ["/foo/bar/katago", "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
@@ -139,6 +140,7 @@ Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1
   * engine_for_white: Alternative engine is used for white if this is set. (*1)
   * label_for_white: Additional item name when engine_for_white is given.
   * empty_board: Set it true for creating new empty board.
+  * match: Set it true for match vs. AI.
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
 
 (*1) In these items, you can use relative paths from the "working directory", that is the folder of `LizGoban*.exe` itself in the all-in-one package or `external/` otherwise. For example, you can simply write "leelaz" for `external/leelaz`.
