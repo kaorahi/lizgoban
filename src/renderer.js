@@ -234,7 +234,7 @@ function current_tag_letters() {
 function update_body_color() {
     [Q('#body').style.color, Q('#body').style.backgroundColor] =
         R.attached ? ['white', '#111'] :
-        R.in_match ? ['white', '#232'] :
+        in_match_p() ? ['white', '#232'] :
         R.let_me_think ? ['white', '#223'] : ['white', '#444']
 }
 
@@ -402,7 +402,7 @@ function play_here(e, coord2idx, tag_clickable_p) {
     if (goto_p) {goto_idx_maybe(idx, another_board); return}
     (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
         (pass && main('pass'), main('play', move, !!another_board),
-         R.in_match && auto_play_in_match())
+         in_match_p() && auto_play_in_match())
 }
 function auto_play_in_match() {
     main('auto_play', to_f(Q('#match_sec').value), false, 1)
@@ -948,13 +948,15 @@ function update_button_etc(availability) {
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_visits')
     f('stop_auto')
     f('normal_ui'); f('simple_ui'); f('trial')
-    update_ui_element('.show_in_match', R.in_match)
-    update_ui_element('.hide_in_match', !R.in_match)
-    const serious_match_p = R.in_match && R.board_type === 'raw'
-    update_ui_element('.show_in_serious_match', serious_match_p)
-    update_ui_element('.hide_in_serious_match', !serious_match_p)
+    const in_match = in_match_p(), serious = in_match_p(true)
+    update_ui_element('.show_in_match', in_match)
+    update_ui_element('.hide_in_match', !in_match)
+    update_ui_element('.show_in_serious_match', serious)
+    update_ui_element('.hide_in_serious_match', !serious)
     update_ui_element('.katago_only', R.is_katago)
 }
+
+function in_match_p(serious) {return R.in_match && (!serious || R.board_type === 'raw')}
 
 /////////////////////////////////////////////////
 // DOM
