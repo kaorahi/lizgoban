@@ -1606,7 +1606,7 @@ function load_exercise(selector, win, random_flip_p) {
     const retry = () => {seen_exercises = []; load_exercise(selector, win)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files); seen_exercises.push(fn)
-    set_board_type('raw', win); load_as_exercise(expand_exercise_filename(fn))
+    start_match(win); load_as_exercise(expand_exercise_filename(fn))
     random_flip_p && game.random_flip_rotate()
     game.set_last_loaded_element(); tag_or_untag()
 }
