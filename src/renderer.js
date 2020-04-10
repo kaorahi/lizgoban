@@ -5,6 +5,7 @@
 
 // util
 function Q(x) {return document.querySelector(x)}
+function Q_all(x) {return document.querySelectorAll(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
 const {globalize} = require('./globalize.js')
 globalize(require('./util.js'), require('./coord.js'), require('./draw_common.js'))
@@ -932,7 +933,7 @@ function update_button_etc(availability) {
           (ids || key).split(/ /).forEach(x => update_ui_element('#' + x, availability[key]))
     f('undo', 'undo undo_ntimes undo_to_start explicit_undo')
     f('redo', 'redo redo_ntimes redo_to_end')
-    f('attach', 'hide_when_attached1 hide_when_attached2 hide_when_attached3')
+    update_ui_element('.hide_when_attached', availability.attach)
     f('detach')
     f('pause', 'pause play_best play_best_x5'); f('resume')
     f('bturn'); f('wturn'); f('auto_analyze')
@@ -945,8 +946,10 @@ function update_button_etc(availability) {
 // DOM
 
 function update_ui_element(query_string, val) {
-    const elem = Q(query_string), tag = elem.tagName
-    switch (tag) {
+    Q_all(query_string).forEach(elem => update_ui_element_sub(elem, val))
+}
+function update_ui_element_sub(elem, val) {
+    switch (elem.tagName) {
     case "INPUT": elem.disabled = !val; break
     case "DIV": elem.style.display = (val ? "block" : "none"); break
     case "SPAN": elem.style.display = (val ? "inline" : "none"); break
