@@ -507,12 +507,9 @@ function draw_suggest_lizzie(h, xy, radius, g) {
 
 function draw_halo_lizzie(h, xy, stone_radius, g) {
     const suggest = h.data || {}; if (suggest.order !== 0) {return}
-    const color_in = 'rgba(0,255,255,1)', color_out = 'rgba(0,255,255,0)'
-    const width = next_move_line_width * 6
-    const r_in = stone_radius, r_out = stone_radius + width
-    const radius = (r_in + r_out) / 2
-    g.strokeStyle = radial_gradation(...xy, r_in, r_out, color_in, color_out, g)
-    g.lineWidth = width; circle(xy, radius, g)
+    const width = next_move_line_width * 1.5
+    const radius = stone_radius + width / 2
+    g.strokeStyle = '#0f0'; g.lineWidth = width; circle(xy, radius, g)
 }
 
 function draw_suggest_0visits(h, xy, radius, g) {
