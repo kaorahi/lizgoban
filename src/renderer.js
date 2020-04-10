@@ -957,6 +957,7 @@ function update_button_etc(availability) {
 }
 
 function in_match_p(serious) {return R.in_match && (!serious || R.board_type === 'raw')}
+globalize({in_match_p})
 
 /////////////////////////////////////////////////
 // DOM
