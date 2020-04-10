@@ -11,6 +11,9 @@
  body {white-space: nowrap; font-family: Arial, sans-serif; user-select: none;}
  input, select, textarea {font-size: 100%;}
  .controller_row {margin-top: 2%; white-space: normal; text-align: left;}
+ .controller_row.show_in_serious_match {margin-top: 0%; margin-bottom: 8%;}
+ .controller_row.show_in_match {margin-bottom: 3%;}
+ .controller_row.show_in_match span {border: solid 1px white; padding: 2%;}
  .small {font-size: 70%;}
  #main_div {position: relative;}
  #goban, #sub_goban {background: #f9ca91;}
@@ -132,7 +135,26 @@
 
 <div>
 
-<div id="in_match" class="controller_row">
+<div class="controller_row show_in_serious_match">
+<input type='button' onclick="main('new_empty_board')" value="new">
+(
+<input type='button' onclick="main('new_empty_board', 19)" value="19x19">
+<input type='button' class="katago_only" onclick="main('new_empty_board', 13)" value="13x13">
+<input type='button' class="katago_only" onclick="main('new_empty_board', 9)" value="9x9">
+)
+handicap
+<input type='button' onclick="main('add_handicap_stones', 2)" value="2">
+<input type='button' onclick="main('add_handicap_stones', 3)" value="3">
+<input type='button' onclick="main('add_handicap_stones', 4)" value="4">
+<input type='button' onclick="main('add_handicap_stones', 5)" value="5">
+<input type='button' onclick="main('add_handicap_stones', 6)" value="6">
+<input type='button' onclick="main('add_handicap_stones', 7)" value="7">
+<input type='button' onclick="main('add_handicap_stones', 8)" value="8">
+<input type='button' onclick="main('add_handicap_stones', 9)" value="9">
+</div>
+
+<div class="controller_row show_in_match">
+<span>
 vs.
 <select id="weaken" value="best" onchange="main('set_match_param', this.options[this.selectedIndex].value)">
  <option value="best">best</option>
@@ -149,7 +171,10 @@ vs.
 (<input type='number' id='match_sec' value='1' min='1' style='width: 3em'>sec)
 <input type='button' onclick="auto_play_in_match()" value="AI's turn">
 <input type='button' style='color: red' onclick="stop_match()" value="stop match">
+</span>
 </div>
+
+<div class="controller_row show_in_serious_match"></div>
 
 <div class="controller_row hide_when_attached">
 <input type='button' id='undo_to_start' onclick="main('undo_to_start')" value="|&lt;">

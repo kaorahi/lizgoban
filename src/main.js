@@ -313,6 +313,7 @@ const api = merge({}, simple_api, {
     let_me_think_next, goto_next_something, goto_previous_something,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, auto_play, stop_auto,
     stop_match, set_match_param,
+    new_empty_board, add_handicap_stones,
     paste_sgf_or_url_from_clipboard,
     read_sgf, open_url, set_game_info,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
@@ -955,6 +956,7 @@ function set_board_type(type, win, keep_let_me_think) {
 
 // handicap stones & komi
 function add_handicap_stones(k) {
+    game.is_empty() || new_empty_board()
     merge(game, {handicaps: k, komi: handicap_komi})
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
@@ -970,8 +972,7 @@ function add_handicap_stones(k) {
     moves.forEach(m => do_play(m, true))
 }
 function ask_handicap_stones() {
-    const proc = k => {game.is_empty() || new_empty_board(); add_handicap_stones(k)}
-    ask_choice("Handicap stones", seq(8, 2), proc)
+    ask_choice("Handicap stones", seq(8, 2), add_handicap_stones)
 }
 function ask_komi(win) {
     const other = 'other...', values = [0, 5.5, 6.5, 7.5, other]

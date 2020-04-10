@@ -948,10 +948,12 @@ function update_button_etc(availability) {
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_visits')
     f('stop_auto')
     f('normal_ui'); f('simple_ui'); f('trial')
-    update_ui_element('#in_match', R.in_match)
+    update_ui_element('.show_in_match', R.in_match)
     update_ui_element('.hide_in_match', !R.in_match)
     const serious_match_p = R.in_match && R.board_type === 'raw'
+    update_ui_element('.show_in_serious_match', serious_match_p)
     update_ui_element('.hide_in_serious_match', !serious_match_p)
+    update_ui_element('.katago_only', R.is_katago)
 }
 
 /////////////////////////////////////////////////
