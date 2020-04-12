@@ -133,8 +133,6 @@
 <div><canvas id="winrate_graph"></canvas></div>
 </div>
 
-<div>
-
 <div class="controller_row show_in_serious_match">
 <input type='button' onclick="main('new_empty_board')" value="new">
 (
@@ -237,13 +235,12 @@ vs.
 <canvas id="visits_trail_canvas"></canvas>
 </span>
 
-</div>
-<!-------- end rest_div ----------->
-
 <span class="hide_in_serious_match">
 <canvas id="graph_overlay"></canvas>
 <canvas id="zone_chart_canvas"></canvas>
 </span>
+
+<!-- dialog etc. are placed inside rest_div for common font size -->
 
 <div class='dialog' id='generic_input_dialog'>
  <p>
@@ -280,6 +277,9 @@ vs.
 </div>
 
 <div id='toast'><p id='toast_message'></p></div>
+
+</div>
+<!-------- end rest_div ----------->
 
 </body>
 </html>
