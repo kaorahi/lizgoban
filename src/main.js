@@ -518,7 +518,7 @@ function menu_template(win) {
         item('Duplicate board', 'CmdOrCtrl+D', dup(false), true),
         item('Duplicate until current move', 'CmdOrCtrl+K', dup(true), true),
         {label: 'Trial board', type: 'checkbox', checked: game.trial,
-         click: exec(toggle_trial, update)},
+         accelerator: 'Shift+I', click: exec(toggle_trial, update)},
         sep,
         menu('Flip / rotate',
              ['half_turn', false, 'horizontal_flip', 'vertical_flip', false,
