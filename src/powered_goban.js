@@ -27,7 +27,8 @@ function set_board(given_game) {
 function set_stones(stones_and_hama) {
     merge(R, stones_and_hama); add_info_to_stones(R.stones, game)
     R.prev_endstate_clusters = null
-    set_tentative_endstate_maybe()  // avoid flicker of ownerships
+    // avoid flicker of ownerships
+    AI.support_endstate_p() && set_tentative_endstate_maybe()
 }
 
 function renew_game() {set_endstate_obsolete(); clear_endstate()}
