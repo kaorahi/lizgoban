@@ -6,5 +6,7 @@ function for_class(name, proc) {
 }
 window.onload = () => {
   for_class('ver', z => z.textContent = version)
-  for_class('ext', z => {z.onclick = () => open_ext(z.dataset.url)})
+  for_class('ext', z => {
+      z.title = z.dataset.url; z.onclick = () => open_ext(z.dataset.url)
+  })
 }
