@@ -1672,7 +1672,7 @@ function load_exercise(selector, win, random_flip_p) {
     game.set_last_loaded_element(); tag_or_untag()
 }
 function load_as_exercise(file) {
-    load_sgf(file, true); goto_move_count(exercise_move_count(file))
+    load_sgf(file, true); goto_move_count(exercise_move_count(file)); game.trial = true
 }
 function open_exercise_dir() {open_sgf_in(exercise_dir(), load_as_exercise)}
 function delete_exercise() {
