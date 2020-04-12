@@ -132,7 +132,7 @@ function winrate_history_set_from_game() {
 
 function set_renderer_state(...args) {
     merge(R, ...args)  // use updated R in below lines
-    const {move_count, handicaps} = game
+    const {move_count, handicaps, trial_from} = game
     const busy = M.is_busy(), long_busy = M.is_long_busy()
     const winrate_history = busy ? [] : winrate_from_game()
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
@@ -155,7 +155,7 @@ function set_renderer_state(...args) {
         move: z.move, is_black: z.is_black, ko_state: z.ko_state,
         ambiguity: z.ambiguity
     }))]
-    merge(R, {move_count, handicaps, busy, long_busy,
+    merge(R, {move_count, handicaps, trial_from, busy, long_busy,
               winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,

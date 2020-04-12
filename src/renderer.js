@@ -25,6 +25,7 @@ let canvas_scale = 1
 const R = {
     stones: [], black_hama: 0, white_hama: 0, move_count: 0, handicaps: 0, bturn: true,
     history_length: 0, suggest: [], visits: 1,
+    trial_from: null,
     visits_per_sec: 0,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,

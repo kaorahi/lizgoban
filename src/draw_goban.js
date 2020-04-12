@@ -69,8 +69,20 @@ function stones_until(show_until, all_p, for_endstate) {
 
 function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
+    const add_movenum_to_stone = h => {
+        const target = R.trial && h.stone && latest_move(h.anytime_stones, R.move_count)
+        const target_move_count = (target || {}).move_count || 0
+        const m = target_move_count - R.trial_from; if (m <= 0) {return}
+        const d = R.move_count - target_move_count
+        const movenums = [m], thin_movenums = (d > 10), variation_last = (d === 0)
+        const displayed_tag = false
+        merge(h, {movenums, thin_movenums, variation_last, displayed_tag})
+    }
     R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
-    each_stone(displayed_stones, (h, idx) => (h.displayed_tag = h.tag && h.stone))
+    each_stone(displayed_stones, h => {
+        h.displayed_tag = h.tag && h.stone
+        truep(R.trial_from) && add_movenum_to_stone(h)
+    })
     const s0 = R.suggest[0]
     const expected_move = expected_pv()[0]
     expected_move && !empty(R.suggest) && s0.move !== expected_move &&

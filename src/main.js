@@ -40,6 +40,7 @@ const default_option = {
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     record_note_to_SGF: false,
     auto_overview: false,
+    movenum_for_trial: false,
     repl: false,
 }
 const option = {}
@@ -1213,7 +1214,7 @@ function create_sequence_maybe(force) {
     const empty_now = game.move_count === 0
     return !create_p ? false : empty_now ? (new_empty_board(), true) :
         (backup_game(), game.delete_future(),
-         merge(game, {trial: true, sgf_file: "", sgf_str: ""}), true)
+         merge(game, {trial: true, trial_from: game.move_count, sgf_file: "", sgf_str: ""}), true)
 }
 
 function next_sequence() {previous_or_next_sequence(1)}
@@ -1409,6 +1410,7 @@ function update_state(keep_suggest_p) {
     const more = keep_suggest_p ? {} :
           (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           {suggest: []}
+    !option.movenum_for_trial && (game.trial_from = null)
     P.set_and_render({
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
