@@ -86,7 +86,7 @@ The top number is replaced with the score if you use KataGo and check "Score bar
  <li>green/red rectangle: change of winrate by the last move (green = good, red = bad)</li>
  <li>triangles: evaluations of suggested next moves (height = visits, size = prior probability, blue = next move)</li>
  <li>empty triangle of opposite direction: evaluation of the last move (before it was played)
- <li>gray number: visits of the best suggestion (= top of winrate bar)</li>
+ <li>gray number: visits of the most visited suggestion (= top of winrate bar)</li>
  <li>gray curves: trails of evaluations through the progress of the search process</li>
 </ul>
 
@@ -115,7 +115,7 @@ Additional plots [K = KataGo only]:
  <li>green / pink steps: cumulative score loss [K]</li>
  <li>red dots: ambiguity of stones (low for 100% alive or 100% dead) [K]</li>
  <li>alternating circles at the top: ko fights (o/x = resolved by connection/capture)</li>
- <li>rainbow bar at the bottom: played zones (left = purple, center = white, etc.)</li>
+ <li>rainbow bar at the middle: played zones (left = purple, center = white, etc.)</li>
  <li>rainbow square beside the graph: zone color map</li>
 </ul>
 
@@ -222,7 +222,8 @@ let-me-think-first style without autoplay.
 <h3>Personal exercise book</h3>
 
 In [Tool] menu, use [Store as exercise] to remember the current board and [Exercise] to show one of the stored boards randomly.
-Hit Tab or Z key to show its analysis.
+Push "stop match" button to exit from match mode.
+(Hit Tab or Z key after it if analysis are not shown.)
 
 <!--
 <h3>Backward scan in auto-analysis</h3>
@@ -330,13 +331,9 @@ At the first (last) move, long press of up/left (down/right) arrow also works as
 <h2><a name="Katago">KataGo</a></h2>
 
 <p>
-When you are using KataGo, you will find "Komi" in "Tool" menu and "Score bar" in "View" menu.
-</p>
-
-<p>
-You will also find "Ownership" in "View" menu.
+When you are using KataGo, you will find "Score bar" and "Ownership" in "View" menu.
 Estimated ownership of each grid is shown as translucent black / white backgrounds
-if this menu is turned on.
+if "Ownership" is turned on.
 </p>
 
 <p>
@@ -362,11 +359,11 @@ Small green squares and pink Xs on the board denote increase of black and white 
 </p>
 
 <p>
-Push "v" key (keep holding down) to peek the boundary of each cluster and the ownership (10=100%, 9=90%, ...) on each grid. Use "v" + mouse hover (on the board or on the winrate graph) to compare them with the past ones at a specified move if available.
+Push "v" key (keep holding down) to peek the boundary of each cluster and the ownership (10=100%, 9=90%, ...) on each grid. Use "v" + mouse hover (on the main board or on the winrate graph) to compare them with the past ones at a specified move if available.
 </p>
 
 <p>
-The estimated score is plotted by orange dots in the winrate graph. The start of "recent moves" is shown as the larger orange dot there. Use "c" key (keep holding down) + mouse hover to view the change of ownerships from a specified move.
+The estimated score is plotted by orange dots in the winrate graph. The start of "recent moves" is shown by "/" tag there. Use "c" key (keep holding down) + mouse hover to view the change of ownerships from a specified move.
 </p>
 
 <hr>
