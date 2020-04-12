@@ -1081,6 +1081,7 @@ function ask_endstate_diff_interval(win) {
 function set_endstate_diff_interval(k) {P.set_endstate_diff_interval(k)}
 function tag_or_untag() {
     if (game.move_count === 0) {wink(); return}
+    game.trial_from = game.move_count - 1
     game.add_or_remove_tag(); P.update_info_in_stones()
 }
 
