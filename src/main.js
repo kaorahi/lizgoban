@@ -313,6 +313,7 @@ const api = merge({}, simple_api, {
     let_me_think_next, goto_next_something, goto_previous_something,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, stop_auto,
     submit_auto_play, submit_auto_replay, auto_play_in_match,
+    start_auto_redo,
     stop_match, set_match_param,
     new_empty_board, add_handicap_stones,
     paste_sgf_or_url_from_clipboard,
@@ -327,6 +328,7 @@ function api_handler(channel, handler, busy) {
     return (e, ...args) => {
         channel === 'toggle_auto_analyze' || stop_auto_analyze()
         channel === 'play_best' || stop_auto_play()
+        stop_auto_redo()
         set_or_unset_busy(busy)
         apply_api(channel, handler, args)
     }
@@ -579,6 +581,9 @@ function menu_template(win) {
             store_toggler_menu_item('Reuse analysis', 'use_cached_suggest'),
             item('...Clear analysis', undefined, P.delete_cache, false, R.use_cached_suggest),
             item('...Restore analysis', undefined, P.undelete_cache, false, R.use_cached_suggest),
+            sep,
+            item('Replay analysis', undefined,
+                 (this_item, win) => ask_auto_redo_sec(win), true),
         ]),
     ])
     const white_unloader_item =
@@ -751,18 +756,22 @@ function no_engine_error(quit_p) {
 }
 
 /////////////////////////////////////////////////
-// another source of change: auto-analyze / auto-play
+// another source of change: auto-analyze / auto-play (match) / auto-redo
 
 // common
 function try_auto(force_next) {
-    auto_playing() ? try_auto_play(force_next) :
-        auto_analyzing() ? try_auto_analyze(force_next) : do_nothing()}
-function skip_auto() {try_auto(true)}
-function auto_progress() {
-    return Math.max(auto_analysis_progress(), auto_play_progress())
+    const prog = [[auto_playing, try_auto_play],
+                  [auto_analyzing, try_auto_analyze],
+                  [auto_redoing, try_auto_redo]]
+    prog.find(([pred, proc]) => pred() && (proc(force_next), true))
 }
-function stop_auto() {stop_auto_analyze(); stop_auto_play()}
-function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing()}
+function skip_auto() {try_auto(true)}
+function auto_progress(time_only_p) {
+    return Math.max(time_only_p ? -1 : auto_analysis_progress(),
+                    auto_play_progress(), auto_redo_progress())
+}
+function stop_auto() {stop_auto_analyze(); stop_auto_play(); stop_auto_redo()}
+function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing() || auto_redoing()}
 
 // auto-analyze (redo after given visits)
 let on_auto_analyze_finished = pause
@@ -855,7 +864,7 @@ function increment_auto_play_count(n) {
 function decrement_auto_play_count() {auto_play_count--}
 function stop_auto_play() {
     if (!auto_playing()) {return}
-    auto_play_count = 0; let_me_think_p(true) && let_me_think_exit_autoplay()
+    auto_play_count = 0; let_me_think_exit_autoplay()
 }
 function auto_playing(forever) {
     return auto_play_count >= (forever ? Infinity : 1)
@@ -876,6 +885,40 @@ function set_match_param(weaken) {
     auto_play_weaken = weaken_mathod_args[weaken] || []
 }
 function auto_play_in_match(sec) {start_auto_play(false, sec, 1)}
+
+// auto-redo (without additional analysis)
+let the_auto_redo_progress = 0, auto_redo_millisec = 0, auto_redo_timer = null
+let auto_redo_progress_by = 0
+function auto_redoing() {return truep(auto_redo_timer)}
+function try_auto_redo(force) {
+    const epsilon = 1e-10
+    if (!redoable()) {stop_auto_redo(); update_all(); return}
+    the_auto_redo_progress += auto_redo_progress_by
+    force && (the_auto_redo_progress = 1)
+    the_auto_redo_progress > 1 - epsilon && (redo(), (the_auto_redo_progress = 0))
+    update_all(); try_auto_redo_later()
+}
+function try_auto_redo_later() {
+    clear_auto_redo_timer()  // avoid duplicated timers by try_auto_redo(true)
+    const min_interval_millisec = 2000, n_unit = let_me_think_p() ? 2 : 1
+    const n = Math.floor(auto_redo_millisec / n_unit / min_interval_millisec) * n_unit
+    const interval = auto_redo_millisec / clip(n, n_unit)
+    auto_redo_progress_by = interval / auto_redo_millisec
+    auto_redo_timer = setTimeout(try_auto_redo, interval)
+}
+function clear_auto_redo_timer() {clearTimeout(auto_redo_timer); auto_redo_timer = null}
+function stop_auto_redo() {clear_auto_redo_timer(); let_me_think_exit_autoplay()}
+
+function auto_redo_progress() {return auto_redoing() ? the_auto_redo_progress : -1}
+function ask_auto_redo_sec(win) {
+    generic_input_dialog(win, 'Auto redo seconds:', default_auto_play_sec,
+                         'start_auto_redo')
+}
+function start_auto_redo(sec) {
+    default_auto_play_sec = sec
+    the_auto_redo_progress = 0, auto_redo_millisec = Math.abs(sec) * 1000
+    stop_auto(); pause(); rewind_maybe(); update_let_me_think(); try_auto_redo_later()
+}
 
 /////////////////////////////////////////////////
 // play against leelaz
@@ -1105,7 +1148,7 @@ function update_let_me_think(only_when_stage_is_changed) {
     let_me_think_switch_board_type(only_when_stage_is_changed)
 }
 function let_me_think_switch_board_type(only_when_stage_is_changed) {
-    const progress = auto_play_progress(); if (progress < 0) {return}
+    const progress = auto_progress(true); if (progress < 0) {return}
     const stage = progress < 0.5 ? 'first_half' : 'latter_half'
     if (only_when_stage_is_changed && stage === let_me_think_previous_stage) {return}
     let_me_think_set_board_type_for(stage)
@@ -1123,7 +1166,9 @@ function toggle_board_type_in_let_me_think() {
     const other_type = all_types.find(type => type != current_type)
     set_board_type(other_type, win, true)
 }
-function let_me_think_exit_autoplay() {let_me_think_set_board_type_for('latter_half')}
+function let_me_think_exit_autoplay() {
+    let_me_think_p(true) && let_me_think_set_board_type_for('latter_half')
+}
 
 function toggle_let_me_think() {set_let_me_think(!let_me_think_p())}
 function stop_let_me_think() {set_let_me_think(false)}
