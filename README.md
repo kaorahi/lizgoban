@@ -190,6 +190,7 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 * Read variations in SGF.
 * Show start-up log when engine is down.
 * Improve thumbnails (delay, color, etc.).
+* Add Japanese help.
 * Fix blur in HiDPI display.
 * Experimentally support saving/loading analyses in SGF. (See the above section.)
 

@@ -1,3 +1,5 @@
+// -*- coding: utf-8 -*-
+
 /////////////////////////////////////////////////
 // electron
 const electron = require('electron')
@@ -610,7 +612,8 @@ function menu_template(win) {
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
-        item('Help', undefined, help),
+        item('en (English)', undefined, help),
+        item('ja (日本語)', undefined, () => open_help('help_ja.html')),
     ])
     return [file_menu, edit_menu, view_menu, tool_menu, engine_menu,
             ...preset_menu_maybe({menu, item, sep, white_unloader_item, win}),
@@ -1049,14 +1052,15 @@ function close_window_or_cut_sequence(win) {
         attached ? null :
         (sequence.length <= 1 && game.is_empty()) ? win.close() : cut_sequence()
 }
-function help() {
+function help() {open_help('help.html')}
+function open_help(file_name) {
     const menu = [
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]}
     ]
     const opt = {webPreferences: {nodeIntegration: true}}
-    get_new_window('help.html', opt).setMenu(Menu.buildFromTemplate(menu))
+    get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
 }
 function info_text() {
     const f = (label, s) => s ?
