@@ -4,24 +4,8 @@
  <meta charset="UTF-8" />
  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'">
  <title>LizGoban Help</title>
- <style type="text/css">
- body, .nav {color: black; background-color: #eee; margin-bottom: 0;}
- .ext {color: blue; text-decoration: underline; cursor: pointer;}
- .nav {position: -webkit-sticky; position: sticky; z-index: 1; bottom: 0;}
- .nav a {color: red;}
- </style>
- <script>
- const electron = require('electron')
- const version = electron.remote.app.getVersion()
- function open_ext(url) {electron.shell.openExternal(url)}
- function for_class(name, proc) {
-   Array.prototype.forEach.call(document.getElementsByClassName(name), proc)
- }
- window.onload = () => {
-   for_class('ver', z => z.textContent = version)
-   for_class('ext', z => {z.onclick = () => open_ext(z.dataset.url)})
- }
- </script>
+ <link rel="stylesheet" href="help.css">
+ <script src="help.js"></script>
 </head>
 
 <body>
