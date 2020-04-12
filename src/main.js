@@ -614,6 +614,8 @@ function menu_template(win) {
     const help_menu = menu('Help', [
         item('en (English)', undefined, help),
         item('ja (日本語)', undefined, () => open_help('help_ja.html')),
+        sep,
+        item('Contributors', undefined, () => open_help('contributors.html')),
     ])
     return [file_menu, edit_menu, view_menu, tool_menu, engine_menu,
             ...preset_menu_maybe({menu, item, sep, white_unloader_item, win}),
