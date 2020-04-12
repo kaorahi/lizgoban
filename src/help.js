@@ -1,6 +1,6 @@
-const electron = require('electron')
-const version = electron.remote.app.getVersion()
-function open_ext(url) {electron.shell.openExternal(url)}
+let electron; try {electron = require('electron')} catch {}
+const version = electron ? electron.remote.app.getVersion() : ''
+const open_ext = electron ? electron.shell.openExternal : window.open
 function for_class(name, proc) {
   Array.prototype.forEach.call(document.getElementsByClassName(name), proc)
 }
