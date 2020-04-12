@@ -816,6 +816,7 @@ stop_auto_analyze()
 // auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
 let last_auto_play_time = 0, default_auto_play_sec = 1
 function start_auto_play(replaying, sec, count) {
+    if (replaying && sec < 0) {start_auto_redo(sec); return}
     // var
     auto_replaying = replaying
     auto_play_sec = truep(sec) ? sec : -1
