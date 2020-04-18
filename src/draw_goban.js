@@ -26,7 +26,7 @@ function draw_goban_until(canvas, show_until, opts) {
     const serious = in_match_p(true)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: !serious, draw_loss_p: !serious,
-                draw_endstate_diff_p: R.show_endstate, ...opts,
+                draw_endstate_diff_p: R.show_endstate && !serious, ...opts,
                 cheap_shadow_p: true,
                 draw_visits_p: false, draw_coordinates_p: true})
 }
