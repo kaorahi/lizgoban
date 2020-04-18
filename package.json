@@ -20,7 +20,7 @@
   },
   "build": {
     "files": [
-      "src/{*.js,*.html,*.png}"
+      "src/{*.js,*.html,*.css,*.png}"
     ],
     "extraFiles": [
       {
