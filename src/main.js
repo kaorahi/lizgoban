@@ -1057,9 +1057,11 @@ function close_window_or_cut_sequence(win) {
 function help() {open_help('help.html')}
 function open_help(file_name) {
     const menu = [
+        {label: '←', click: (it, win) => win.webContents.goBack()},
+        {label: '→', click: (it, win) => win.webContents.goForward()},
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
-         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]}
+         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
     ]
     const opt = {webPreferences: {nodeIntegration: true}}
     get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
