@@ -275,7 +275,7 @@ const draw_es_gen = options => with_opts(D.draw_endstate_goban, options)
 const draw_current_endstate_value = draw_es_gen({draw_endstate_value_p: true})
 const draw_past_endstate_value =
       draw_es_gen(() => ({draw_endstate_value_p: 'past',
-                          show_until: showing_until(main_canvas)}))
+                          show_until: showing_until(main_canvas), ...ignore_mouse}))
 
 function draw_wr_graph(canvas) {
     const endstate_at = showing_endstate_value_p() && R.prev_endstate_clusters &&
