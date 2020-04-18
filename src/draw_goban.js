@@ -69,20 +69,10 @@ function stones_until(show_until, all_p, for_endstate) {
 
 function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
-    const add_movenum_to_stone = h => {
-        const target = R.trial && h.stone && latest_move(h.anytime_stones, R.move_count)
-        const target_move_count = (target || {}).move_count || 0
-        const m = target_move_count - R.trial_from; if (m <= 0) {return}
-        const d = R.move_count - target_move_count
-        const movenums = [m], thin_movenums = (d > 10), variation_last = (d === 0)
-        const displayed_tag = false
-        merge(h, {movenums, thin_movenums, variation_last, displayed_tag})
-    }
     R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
-    each_stone(displayed_stones, h => {
-        h.displayed_tag = h.tag && h.stone
-        truep(R.trial_from) && add_movenum_to_stone(h)
-    })
+    each_stone(displayed_stones, h => {h.displayed_tag = h.tag && h.stone})
+    R.trial && truep(R.trial_from) &&
+        add_movenum_to_stones(displayed_stones, R.trial_from)
     const s0 = R.suggest[0]
     const expected_move = expected_pv()[0]
     expected_move && !empty(R.suggest) && s0.move !== expected_move &&
@@ -92,6 +82,18 @@ function draw_goban_with_suggest(canvas, opts) {
                 draw_loss_p: true,
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
                 tag_clickable_p: true, mapping_tics_p: !opts.main_canvas_p, ...opts})
+}
+
+function add_movenum_to_stones(stones, from) {
+    each_stone(stones, h => {
+        const target = h.stone && latest_move(h.anytime_stones, R.move_count)
+        const target_move_count = (target || {}).move_count || 0
+        const m = target_move_count - from; if (m <= 0) {return}
+        const d = R.move_count - target_move_count
+        const movenums = [m], thin_movenums = (d > 10), variation_last = (d === 0)
+        const displayed_tag = false
+        merge(h, {movenums, thin_movenums, variation_last, displayed_tag})
+    })
 }
 
 function draw_goban_with_variation(canvas, suggest, opts) {
