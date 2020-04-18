@@ -56,7 +56,7 @@ function draw_winrate_graph_frame(w, sr2coord, g) {
         const y = r2y(100 * i / (tics + 1)); line([0, y], [w, y], g)
     })
     seq(xtics, 0).forEach(k => {
-        const x = s2x(k * xtics_delta); line([x, y0], [x, y100], g)
+        const x = s2x(k * xtics_delta + R.handicaps); line([x, y0], [x, y100], g)
     })
     // // frame
     // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
