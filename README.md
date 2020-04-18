@@ -11,35 +11,46 @@ on [Electron](https://electronjs.org/).
 
 ## Highlights
 
-1. Leela Zero does not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can use any number of trial boards in parallel, discard a needless one by a single action, and restore the deleted one if necessary.
-2. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis.
-3. Flexibility of JavaScript also enables quick experiments of fun features, e.g. watching Leela Zero vs. [ELF](https://facebook.ai/developers/tools/elf) with real-time detection of the difference between their plans before they play the move actually.
-4. Leela Zero's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose. We can notice the case when we should wait for a little more analysis, and will never miss a new rising candidate like the one in the above screenshot.
-5. Additionally, various small ideas are implemented, e.g. translucent stones for too long variations, different colors for good/bad/unexpected moves in the win-rate graph, etc.
+1. Engines do not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can use any number of trial boards in parallel, discard a needless one by a single action, and restore the deleted one if necessary.
+2. Engine's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose. We can notice the case when we should wait for a little more analysis, and will never miss a new rising candidate like the one in the above screenshot.
+3. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis. The all-in-one package of LizGoban works immediately out of the box without installation, configuration, additional downloads, and so on.
+4. Flexibility of JavaScript also enables quick experiments of fun ideas that bring various original features as follows.
 
 ## Features
 
-Like Lizzie...
+### Common features
 
 * Colored suggestions / Variation by mouse hover
+* Plots of winrate and estimated score
 * Subboard that always shows the principal variation
-* Clickable & draggable win-rate graph with autoanalysis
-* Multiple engines that can be switched quickly
+* Blunder marks on stones
+* Auto-replay / Auto-analysis
+* Quick switching of multiple engines
 * Open URL (by drag & drop or clipboard)
+* [Experimental] Save/load analyses to/from SGF in Lizzie-compatible format
+* [Experimental] Use your favorite images for the board and the stones
 
-And more...
+### Original features
 
-* Visualization of search progress via plots of visits, winrate, score, prior, ...
-* Real-time display of area counts by KataGo
 * Trial boards that can be used like tabs in web browsers
-* Detection of inconsistency between analyses before/after a move
-* Watch Leela Zero vs. KataGo etc. with real-time comparison of their plans
 * Play against weakened engines in several ways
-* Keyboard shortcuts, e.g. "3" key for the third variation
-* Analysis of gains and losses in recent moves by KataGo that reveals overlooked side effects
-* Indicators that suggest highlight scenes of the game (ko fights, etc.)
-* Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
+* Watch Leela Zero vs. KataGo etc. with real-time comparison of their plans
 * Personal exercise book that can be used like bookmarks in web browsers for random exercise
+* Quick comparison of stones, ownerships, and areas of the current and past boards
+* Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
+
+### Original visualizations
+
+* Visualization of search progress via plots of visits, winrate, score, prior, ... for each suggested move
+* Real-time display of area counts by KataGo
+* Analysis of gains and losses in recent moves that reveals overlooked side effects
+* Highlighting of unexpected good moves that are overlooked by engines
+* Detection of inconsistency between analyses before/after a move as a check of their reliability
+* Additional plots
+  * cumulative score-losses by black and white that indicate mistakes of each player separately
+  * ambiguity of life & death that indicates big fights, game stages (opening / middlegame / endgame), etc.
+* Indicators that suggest highlight scenes of the game (ko fights, played zones)
+* Translucent stones for too long variations as the above screenshot
 
 ## Usage
 
