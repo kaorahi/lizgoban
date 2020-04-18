@@ -455,7 +455,7 @@ module.exports = {
     // renderer
     set_and_render,
     // util
-    stone_for_history_elem, update_info_in_stones, weight_info_text,
+    update_info_in_stones,
     get_initial_b_winrate, add_info_to_stones, renew_game,
     set_ambiguity_etc_in_game,
     delete_cache, undelete_cache,
