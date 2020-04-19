@@ -887,8 +887,9 @@ function stop_match(window_id) {
     truep(window_id) && toggle_board_type(window_id, null, "raw")
 }
 function set_match_param(weaken) {
-    const weaken_mathod_args =
-          aa2hash(seq(9, 1).map(k => [k, ['random_candidate', k * 10]]))
+    const random_candidate = seq(9, 1).map(k => [k, ['random_candidate', k * 10]])
+    const lose_score = [0.1, 0.2, 0.5, 1, 2, 5].map(z => [`-${z}pt`, ['lose_score', z]])
+    const weaken_mathod_args = aa2hash([...random_candidate, ...lose_score])
     auto_play_weaken = weaken_mathod_args[weaken] || []
 }
 function auto_play_in_match(sec) {start_auto_play(false, sec, 1)}
@@ -943,14 +944,17 @@ function try_play_best(weaken_method, ...weaken_args) {
     // try_play_best('pass_maybe')
     // try_play_best('random_candidate', 30)
     // try_play_best('random_leelaz', 30)
+    // try_play_best('lose_score', 0.1)
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     if (empty(R.suggest)) {return}
     // comment
     const comment = `by ${AI.engine_info().current.preset_label_text}`
     const play_com = m => play(m, false, null, comment)
     // move
-    const move = (weaken_method === 'random_candidate' ?
-                  weak_move(...weaken_args) : best_move())
+    const move =
+          weaken_method === 'random_candidate' ? weak_move(...weaken_args) :
+          weaken_method === 'lose_score' ? weak_move_by_score(...weaken_args) :
+          best_move()
     const pass_maybe =
           () => AI.peek_value('pass', value => {
               play_com(value < 0.9 ? 'pass' : move); update_all()
@@ -990,6 +994,18 @@ function winrate_after(move_count) {
     return move_count < 0 ? NaN :
         move_count === 0 ? P.get_initial_b_winrate() :
         or_NaN(game.ref(move_count).b_winrate)
+}
+function weak_move_by_score(losing_points) {
+    if (!AI.katago_p()) {return best_move()}
+    const current_score = game.ref_current().score_without_komi || 0
+    const target_score = current_score - losing_points * (is_bturn() ? 1 : -1)
+    const selected =
+          min_by(R.suggest, s => Math.abs(s.score_without_komi - target_score))
+    debug_log(`weak_move_by_score: target_score=${target_score} ` +
+              `move=${selected.move} score=${selected.score_without_komi} ` +
+              `visits=${selected.visits} order=${selected.order} ` +
+              `winrate_order=${selected.winrate_order}`)
+    return selected.move
 }
 
 /////////////////////////////////////////////////

@@ -971,6 +971,8 @@ function update_ui_element_sub(elem, val) {
     case "INPUT": elem.disabled = !val; break
     case "DIV": elem.style.display = (val ? "block" : "none"); break
     case "SPAN": elem.style.display = (val ? "inline" : "none"); break
+    case "OPTION":
+        val ? elem.removeAttribute('disabled') : (elem.disabled = true); break
     case "SELECT": set_selection(elem, val); break
     }
 }
