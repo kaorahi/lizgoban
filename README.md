@@ -43,7 +43,7 @@ on [Electron](https://electronjs.org/).
 
 * Visualization of search progress via plots of visits, winrate, score, prior, ... for each suggested move
 * Real-time display of area counts by KataGo
-* Analysis of gains and losses in recent moves that reveals overlooked side effects
+* Analysis of gains and losses in recent moves on the board that reveals overlooked side effects
 * Highlighting of unexpected good moves that are overlooked by engines
 * Detection of inconsistency between analyses before/after a move as a check of their reliability
 * Additional plots
