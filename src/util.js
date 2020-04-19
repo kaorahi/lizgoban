@@ -20,6 +20,7 @@ E.flatten = a => [].concat(...a)
 E.sort_by = (a, f) => a.slice().sort((x, y) => f(x) - f(y))
 E.sort_by_key = (a, key) => sort_by(a, h => h[key])
 E.num_sort = a => sort_by(a, E.identity)
+E.min_by = (a, f) => {const b = a.map(f), m = Math.min(...b); return a[b.indexOf(m)]}
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 E.each_value = (h, f) => each_key_value(h, (_, v) => f(v))  // for non-array
 E.array2hash = a => {

@@ -976,12 +976,9 @@ function weak_move(weaken_percent) {
     return nearest_move_to_winrate(next_target)
 }
 function nearest_move_to_winrate(target_winrate) {
-    const min_by = (f, a) => {
-        const b = a.map(f), m = Math.min(...b); return a[b.indexOf(m)]
-    }
     const not_too_bad = R.suggest.filter(s => s.winrate >= target_winrate)
-    const selected = min_by(s => Math.abs(s.winrate - target_winrate),
-                  empty(not_too_bad) ? R.suggest : not_too_bad)
+    const selected = min_by(empty(not_too_bad) ? R.suggest : not_too_bad,
+                            s => Math.abs(s.winrate - target_winrate))
     debug_log(`weak_move: target_winrate=${target_winrate} ` +
               `move=${selected.move} winrate=${selected.winrate} ` +
               `visits=${selected.visits} order=${selected.order} ` +
