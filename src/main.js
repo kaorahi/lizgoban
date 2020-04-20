@@ -995,13 +995,15 @@ function winrate_after(move_count) {
         move_count === 0 ? P.get_initial_b_winrate() :
         or_NaN(game.ref(move_count).b_winrate)
 }
-function weak_move_by_score(losing_points) {
+function weak_move_by_score(average_losing_points) {
     if (!AI.katago_p()) {return best_move()}
     const current_score = game.ref_current().score_without_komi || 0
+    const losing_points = Math.random() * average_losing_points * 2
     const target_score = current_score - losing_points * (is_bturn() ? 1 : -1)
     const selected =
           min_by(R.suggest, s => Math.abs(s.score_without_komi - target_score))
-    debug_log(`weak_move_by_score: target_score=${target_score} ` +
+    debug_log(`weak_move_by_score: current_score=${current_score} ` +
+              `target_score=${target_score} ` +
               `move=${selected.move} score=${selected.score_without_komi} ` +
               `visits=${selected.visits} order=${selected.order} ` +
               `winrate_order=${selected.winrate_order}`)
