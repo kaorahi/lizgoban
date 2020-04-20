@@ -980,8 +980,9 @@ function weak_move(weaken_percent) {
     return nearest_move_to_winrate(next_target)
 }
 function nearest_move_to_winrate(target_winrate) {
-    const not_too_bad = R.suggest.filter(s => s.winrate >= target_winrate)
-    const selected = min_by(empty(not_too_bad) ? R.suggest : not_too_bad,
+    const suggest = R.suggest.filter(s => s.visits > 0)
+    const not_too_bad = suggest.filter(s => s.winrate >= target_winrate)
+    const selected = min_by(empty(not_too_bad) ? suggest : not_too_bad,
                             s => Math.abs(s.winrate - target_winrate))
     debug_log(`weak_move: target_winrate=${target_winrate} ` +
               `move=${selected.move} winrate=${selected.winrate} ` +
@@ -997,11 +998,12 @@ function winrate_after(move_count) {
 }
 function weak_move_by_score(average_losing_points) {
     if (!AI.katago_p()) {return best_move()}
+    const suggest = R.suggest.filter(s => s.visits > 0)
     const current_score = game.ref_current().score_without_komi || 0
     const losing_points = Math.random() * average_losing_points * 2
     const target_score = current_score - losing_points * (is_bturn() ? 1 : -1)
     const selected =
-          min_by(R.suggest, s => Math.abs(s.score_without_komi - target_score))
+          min_by(suggest, s => Math.abs(s.score_without_komi - target_score))
     debug_log(`weak_move_by_score: current_score=${current_score} ` +
               `target_score=${target_score} ` +
               `move=${selected.move} score=${selected.score_without_komi} ` +
