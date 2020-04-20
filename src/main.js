@@ -887,10 +887,11 @@ function stop_match(window_id) {
     truep(window_id) && toggle_board_type(window_id, null, "raw")
 }
 function set_match_param(weaken) {
-    const random_candidate = seq(9, 1).map(k => [k, ['random_candidate', k * 10]])
-    const lose_score = [0.1, 0.2, 0.5, 1, 2, 5].map(z => [`-${z}pt`, ['lose_score', z]])
-    const weaken_mathod_args = aa2hash([...random_candidate, ...lose_score])
-    auto_play_weaken = weaken_mathod_args[weaken] || []
+    let m
+    auto_play_weaken =
+        (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
+        (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
+        []
 }
 function auto_play_in_match(sec) {start_auto_play(false, sec, 1)}
 
