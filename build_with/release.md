@@ -2,6 +2,17 @@
 
 # Release notes
 
+## LizGoban 0.4.1
+
+Fix and improve match vs. weakened AI.
+
+### Links
+
+[Project Home](https://github.com/kaorahi/lizgoban) /
+[License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
+
+# (Previous versions)
+
 ## LizGoban 0.4.0
 
 ### To use it on 64bit Windows immediately
@@ -58,14 +69,3 @@ Incompatibilities:
 ### Experimental features (not tested well)
 
 You can put your favorite images of board and stones as `board.png`, `black.png`, and `white.png` into the same folder as `LizGoban *.exe` in the all-in-one package (before starting LizGoban). See also "To save/load analyses in SGF" in README.
-
-### Links
-
-[Project Home](https://github.com/kaorahi/lizgoban) /
-[License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
-
-# (Previous versions)
-
-## LizGoban 0.3.1
-
-Fix bugs in 0.3.0. (store_as_exercise in Windows, open_url for HTTP, etc.)
