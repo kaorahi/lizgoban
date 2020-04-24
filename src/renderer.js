@@ -400,14 +400,17 @@ function play_here(e, coord2idx, tag_clickable_p) {
     const idx = move2idx(move)
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
     const goto_p = showing_movenum_p()
+    const match_sec = in_match_p() && auto_play_in_match_sec()
     if (goto_p) {goto_idx_maybe(idx, another_board); return}
     (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
-        (pass && main('pass'), main('play', move, !!another_board), auto_play_in_match())
+        (pass && main('pass'),  // right click = pass and play
+         main('play', move, !!another_board, null, null, match_sec))
 }
 function play_pass() {main('pass'); auto_play_in_match()}
 function auto_play_in_match() {
-    in_match_p() && main('auto_play_in_match', to_f(Q('#match_sec').value))
+    in_match_p() && main('auto_play_in_match', auto_play_in_match_sec())
 }
+function auto_play_in_match_sec() {return to_f(Q('#match_sec').value)}
 function hover_here(e, coord2idx, canvas) {
     set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
 }

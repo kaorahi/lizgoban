@@ -377,13 +377,14 @@ function update_all(keep_board) {
 /////////////////////////////////////////////////
 // main flow (2) change game state and send it to powered_goban
 
-function play(move, force_create, default_tag, comment) {
+function play(move, force_create, default_tag, comment, auto_play_in_match_sec) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     do_play(move, R.bturn, tag || default_tag || undefined, comment)
     pass && wink()
+    truep(auto_play_in_match_sec) && auto_play_in_match(auto_play_in_match_sec)
     autosave_later()
 }
 function do_play(move, is_black, tag, note) {
