@@ -175,13 +175,14 @@ function add_next_played_move_as_fake_suggest() {
     const next_mc = game.move_count + 1; if (next_mc > game.len()) {return}
     const next = (game.ref(next_mc) || {})
     const {move, is_black, suggest, visits, b_winrate, score_without_komi} = next
-    if (R.suggest.find(h => (h.move === move))) {return}
+    const orig_n = R.suggest.findIndex(h => (h.move === move)), orig = R.suggest[orig_n]
+    if (orig && orig.visits > 0) {return}; orig && R.suggest.splice(orig_n, 1)
     const order0 = (suggest || []).find(h => h.order === 0); if (!order0) {return}
     const pv = [move, ...order0.pv]
     const fake_suggest_elem = {
         move, visits, score_without_komi, pv,
         winrate: is_black ? b_winrate : 100 - b_winrate,
-        order: -1, prior: null, scoreStdev: null,
+        order: -1, scoreStdev: null, prior: orig && orig.prior,
     }
     R.suggest.push(fake_suggest_elem)
 }
