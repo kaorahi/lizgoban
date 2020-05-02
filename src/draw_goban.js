@@ -646,8 +646,9 @@ function mapping_text(suggest) {
           = suggest_texts(suggest) || []
     const v = visits_text ? ` (${visits_text})` : ''
     const text = winrate_text && `${winrate_text}${v}`
-    const pr = ` prior = ${prior_text} `
-    const sc = score_text ? ` score = ${score_text}(±${score_stdev_text}) ` : ''
+    const pr = prior_text ? ` prior = ${prior_text} ` : ''
+    const dev = score_stdev_text ? `(±${score_stdev_text})` : ''
+    const sc = score_text ? ` score = ${score_text}${dev} ` : ''
     const subtext = text && (pr + sc)
     const at = flip_maybe(fake_winrate(suggest))
     return text && {text, subtext, at}
@@ -708,8 +709,9 @@ function merge_stone_at(move, stone_array, stone) {
 
 function suggest_texts(suggest) {
     const conv = (key, digits, offset) => f2s(suggest[key] + (offset || 0), digits)
+    const conv_maybe = (key, digits, offset) => truep(suggest[key]) && conv(key, digits, offset)
     const score = conv('score_without_komi', 2, - R.komi)
-    const score_stdev = conv('scoreStdev', 2), prior = conv('prior', 3)
+    const score_stdev = conv_maybe('scoreStdev', 2), prior = conv_maybe('prior', 3)
     // need ' ' because '' is falsy
     return suggest.visits === 0 ? [' ', '', prior] :
         ['' + to_i(suggest.winrate) + '%', kilo_str(suggest.visits), prior,

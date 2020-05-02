@@ -160,6 +160,7 @@ function set_renderer_state(...args) {
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               previous_suggest, winrate_trail}, endstate_d_i)
+    add_next_played_move_as_fake_suggest()
 }
 function set_and_render(...args) {set_and_render_gen(true, ...args)}
 function set_and_render_maybe(...args) {set_and_render_gen(false, ...args)}
@@ -168,6 +169,21 @@ function set_and_render_gen(is_board_changed, ...args) {
     const mask = M.show_suggest_p() ? {hide_suggest: false} :
           {suggest: [], visits: null, show_endstate: false, hide_suggest: true}
     M.render({...R, ...mask}, is_board_changed)
+}
+
+function add_next_played_move_as_fake_suggest() {
+    const next_mc = game.move_count + 1; if (next_mc > game.len()) {return}
+    const next = (game.ref(next_mc) || {})
+    const {move, is_black, suggest, visits, b_winrate, score_without_komi} = next
+    if (R.suggest.find(h => (h.move === move))) {return}
+    const order0 = (suggest || []).find(h => h.order === 0); if (!order0) {return}
+    const pv = [move, ...order0.pv]
+    const fake_suggest_elem = {
+        move, visits, score_without_komi, pv,
+        winrate: is_black ? b_winrate : 100 - b_winrate,
+        order: -1, prior: null, scoreStdev: null,
+    }
+    R.suggest.push(fake_suggest_elem)
 }
 
 /////////////////////////////////////////////////
