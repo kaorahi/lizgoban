@@ -144,12 +144,13 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g) {
     R.suggest.filter(s => s.visits > 0).forEach(s => {
         const {edge_color, fan_color, vline_color, aura_color,
                target_p, draw_order_p, winrate} = winrate_bar_suggest_prop(s)
-        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, aura_color,
-                             target_p, large_bar, g)
-        draw_order_p && large_bar && draw_winrate_bar_order(s, w, h, g)
         if (vline_color) {
             g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
         }
+        if (!orig_suggest_p(s)) {return}
+        draw_winrate_bar_fan(s, w, h, edge_color, fan_color, aura_color,
+                             target_p, large_bar, g)
+        draw_order_p && large_bar && draw_winrate_bar_order(s, w, h, g)
     })
     R.previous_suggest &&
         draw_winrate_bar_fan(R.previous_suggest, w, h,

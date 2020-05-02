@@ -85,6 +85,8 @@ E.snip_text = (str, head, tail, dots) => {
         str.slice(0, head) + (raw ? dots : dots(over)) + (tail > 0 ? str.slice(- tail) : '')
 }
 
+E.orig_suggest_p = s => s.order >= 0
+
 E.endstate_from_ownership = ownership => {
     const endstate = [[]]
     aa_each(R.stones, (_, i, j) => aa_set(endstate, i, j, ownership.shift()))

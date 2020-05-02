@@ -82,7 +82,7 @@ function winrate_bar_suggest_prop(s) {
 function suggest_color(suggest, alpha) {
     const hue = winrate_color_hue(suggest.winrate, suggest.score_without_komi)
     const alpha_emphasis = emph => {
-        const max_alpha = 0.5, visits_ratio = suggest.visits / (R.visits + 1)
+        const max_alpha = 0.5, visits_ratio = clip(suggest.visits / (R.visits + 1), 0, 1)
         return max_alpha * visits_ratio ** (1 - emph)
     }
     const hsl_e = (h, s, l, emph) => hsla(h, s, l, alpha || alpha_emphasis(emph))

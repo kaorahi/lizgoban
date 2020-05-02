@@ -137,7 +137,7 @@ function set_renderer_state(...args) {
     const winrate_history = busy ? [] : winrate_from_game()
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
     const previous_suggest = get_previous_suggest()
-    const max_visits = clip(Math.max(...(R.suggest || []).map(h => h.visits)), 1)
+    const max_visits = clip(Math.max(...(R.suggest || []).filter(orig_suggest_p).map(h => h.visits)), 1)
     const progress = M.auto_progress()
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
