@@ -512,12 +512,13 @@ function draw_suggest_lizzie(h, xy, radius, g) {
     const y_upper = y - half, y_lower = y + half
     const [winrate_text, visits_text] = suggest_texts(suggest)
     const score_text = score_bar_p() && f2s(suggest.score_without_komi - R.komi)
-    draw_suggestion_order_lizzie(h, xy, radius, g)
+    const orig_p = orig_suggest_p(suggest)
+    orig_p && draw_suggestion_order_lizzie(h, xy, radius, g)
     g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'
     g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
     fill_text(g, fontsize, score_text || winrate_text, x, y_upper, max_width)
     g.fillStyle = suggest.order === 0 ? champ_color : lizzie_text_color
-    fill_text(g, fontsize, visits_text, x, y_lower, max_width)
+    orig_p && fill_text(g, fontsize, visits_text, x, y_lower, max_width)
     g.restore()
 }
 
