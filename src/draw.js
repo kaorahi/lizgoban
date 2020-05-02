@@ -179,5 +179,5 @@ module.exports = {
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
     update_winrate_trail, clear_canvas, is_next_move, latest_move,
-    target_move: () => target_move,
+    target_move: () => target_move, set_target_move: move => (target_move = move),
 }

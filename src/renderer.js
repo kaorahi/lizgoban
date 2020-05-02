@@ -325,7 +325,8 @@ const double_boards_rule = {
 function update_goban() {
     reset_first_board_canvas()
     const btype = current_board_type()
-    const f = (m, w, s) => (m(main_canvas),
+    const f = (m, w, s) => (update_target_move(m, s),
+                            m(main_canvas),
                             (w || draw_wr_graph)(winrate_graph_canvas),
                             do_on_sub_canvas_when_idle(s),
                             draw_wr_bar(winrate_bar_canvas))
@@ -352,6 +353,13 @@ function update_goban() {
     const c = visits_trail_canvas, wro = btype === "winrate_only"
     wro ? D.draw_zone_color_chart(c) : (!showing_until() && D.draw_visits_trail(c))
     zone_chart_canvas.style.visibility = wro ? 'hidden' : 'visible'
+}
+
+function update_target_move(m, s) {
+    const c = (m === draw_main) ? main_canvas : (s === draw_main) ? sub_canvas : null
+    if (!c) {return}
+    const u = showing_until(c), h = selected_suggest(c)
+    D.set_target_move(!truep(u) && (h.visits > 0) && h.move)
 }
 
 function any_selected_suggest() {

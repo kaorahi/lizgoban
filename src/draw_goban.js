@@ -11,7 +11,6 @@ function draw_raw_goban(canvas, options) {
 function draw_main_goban(canvas, options) {
     const opts = {read_only: R.attached, ...options}
     const u = options.show_until, h = options.selected_suggest
-    target_move = !truep(u) && (h.visits > 0) && h.move
     // case I: "variation"
     if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
