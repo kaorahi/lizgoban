@@ -308,6 +308,7 @@ const {set_endstate_diff_from} = P
 const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_endstate_diff_from, update_menu,
+    set_match_param,
 }
 const api = merge({}, simple_api, {
     new_window, init_from_renderer,
@@ -317,7 +318,7 @@ const api = merge({}, simple_api, {
     goto_move_count, toggle_auto_analyze, play_best, play_weak, stop_auto,
     submit_auto_play, submit_auto_replay, auto_play_in_match,
     start_auto_redo,
-    stop_match, set_match_param,
+    stop_match,
     new_empty_board, add_handicap_stones,
     paste_sgf_or_url_from_clipboard,
     read_sgf, open_url, set_game_info,
