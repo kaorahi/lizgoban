@@ -853,8 +853,11 @@ function auto_play_progress() {
         (Date.now() - last_auto_play_time) / (auto_play_sec * 1000) : -1
 }
 function ask_auto_play_sec(win, replaying) {
+    const mismatched_komi = !replaying && AI.different_komi_for_black_and_white()
+    const warning = mismatched_komi ? '(Different komi for black & white) ' : ''
+    const label = 'Auto play seconds:'
     const cannel = replaying ? 'submit_auto_replay' : 'submit_auto_play'
-    generic_input_dialog(win, 'Auto play seconds:', default_auto_play_sec, cannel)
+    generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
 }
 function submit_auto_play_or_replay(sec, replaying) {
     default_auto_play_sec = sec; start_auto_play(replaying, sec, Infinity)
@@ -1146,8 +1149,8 @@ function set_AI_board_size_maybe(bsize) {
     bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
 }
 
-function generic_input_dialog(win, label, init_val, channel) {
-    win.webContents.send('generic_input_dialog', label, init_val, channel)
+function generic_input_dialog(win, label, init_val, channel, warning) {
+    win.webContents.send('generic_input_dialog', label, init_val, channel, warning || '')
 }
 
 function wink_if_pass(proc, ...args) {

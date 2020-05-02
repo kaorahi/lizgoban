@@ -85,8 +85,9 @@ function auto_analysis_visits_setting () {
 }
 
 let on_generic_input_dialog_submit = do_nothing
-function show_generic_input_dialog(label, init_val, submit) {
+function show_generic_input_dialog(warning, label, init_val, submit) {
     on_generic_input_dialog_submit = submit
+    Q('#generic_input_dialog_warning').innerText = warning
     Q('#generic_input_dialog_label').innerText = label
     init_val && (Q('#generic_input_dialog_input').value = to_s(init_val))
     show_dialog('#generic_input_dialog')
@@ -167,8 +168,8 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     try_thumbnail()
 })
 
-ipc.on('generic_input_dialog', (e, label, init_val, channel) =>
-       show_generic_input_dialog(label, init_val, val => main(channel, val)))
+ipc.on('generic_input_dialog', (e, label, init_val, channel, warning) =>
+       show_generic_input_dialog(warning, label, init_val, val => main(channel, val)))
 
 ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules, asking_komi_p) => {
     // defaults
