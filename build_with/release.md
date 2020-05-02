@@ -2,9 +2,9 @@
 
 # Release notes
 
-## LizGoban 0.4.1
+## LizGoban 0.4.2
 
-Fix and improve match vs. weakened AI.
+Fix another bug on match vs. weakened AI.
 
 ### Links
 
@@ -12,6 +12,10 @@ Fix and improve match vs. weakened AI.
 [License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
 
 # (Previous versions)
+
+## LizGoban 0.4.1
+
+Fix and improve match vs. weakened AI.
 
 ## LizGoban 0.4.0
 
