@@ -207,7 +207,8 @@ function games_from_parsed_sgf(parsed, to_game) {
     // for v3.0.0-style
     const recur = (nodes, {data, children}) => {
         const k = children.length
-        nodes.push({...data, branching_tag: k > 1 && unused_tag()})
+        const branching_tag = k > 1 && (data.B || data.W) && unused_tag()
+        nodes.push({...data, branching_tag})
         return k === 0 ? [to_game_with_reuse(minimum_v131_gametree(nodes))] :
             k === 1 ? recur(nodes, children[0]) :
             readably_flatten(children.map(c => recur(nodes.slice(), c)))
