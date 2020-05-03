@@ -1648,7 +1648,7 @@ function read_sgf(sgf_str, filename, internally) {
         const first_only = 'first one only', values = ['ok', first_only]
         const proc = v => {
             if (v === 'cancel') {return}
-            v === first_only && new_games.splice(1)
+            v === first_only && (gs.splice(1), gs.map(g => g.remove_all_tags()))
             open_games(gs)
         }
         ask_choice(message, values, proc)
