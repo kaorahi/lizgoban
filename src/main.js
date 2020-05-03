@@ -107,6 +107,7 @@ const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
+const {tsumego_frame} = require('./tsumego_frame.js')
 
 // debug log
 const debug_log_key = 'debug_log'
@@ -611,6 +612,10 @@ function menu_template(win) {
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
+        item("Tsumego frame", 'Shift+f', () => add_tsumego_frame(),
+             true, game.move_count > 0),
+        item("Tsumego frame'", 'CmdOrCtrl+Shift+f', () => add_tsumego_frame(true),
+             true, game.move_count > 0),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
@@ -836,7 +841,8 @@ function start_auto_play(replaying, sec, count) {
 function try_auto_play(force_next) {
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() &&
-        (auto_replaying ? try_auto_replay() : try_play_best(...auto_play_weaken))
+        (auto_replaying ? try_auto_replay() :
+         (try_fill_tsumego_frame_gap() || try_play_best(...auto_play_weaken)))
     update_let_me_think(true)
 }
 function try_auto_replay() {do_as_auto_play(redoable(), redo)}
@@ -1114,6 +1120,49 @@ function tag_or_untag() {
     if (game.move_count === 0) {wink(); return}
     game.trial_from = game.move_count - 1
     game.add_or_remove_tag(); P.update_info_in_stones()
+}
+
+/////////////////////////////////////////////////
+// tsumego frame
+
+let tsumego_frame_gap = null
+let tsumego_frame_bturn = true
+
+function add_tsumego_frame(try_balance_p) {
+    if (game.move_count === 0) {return}
+    const play1 = ([i, j, is_black]) => do_play(idx2move(i, j), is_black)
+    tsumego_frame_bturn = is_bturn()
+    duplicate_sequence(true, true)
+    const {fill, gap} = tsumego_frame(game.current_stones())
+    fill.forEach(play1)
+    if (try_balance_p) {
+        toast('Balancing...')
+        const sec = 0; tsumego_frame_gap = gap; start_auto_play(false, sec, Infinity)
+    } else {
+        const [i0, j0, is_black0] = last(fill) || []
+        !empty(fill) && tsumego_frame_restore_turn(is_black0)
+    }
+}
+
+function try_fill_tsumego_frame_gap() {
+    if (!tsumego_frame_gap) {return false}
+    const balanced_winrate = 50, balance_margin = 0
+    const winrate = winrate_after(game.move_count)
+    const playable = !empty(tsumego_frame_gap) &&
+          Math.abs(winrate - balanced_winrate) > balance_margin
+    const proc = () => {
+        const [i, j] = tsumego_frame_gap.pop()
+        const is_black = winrate < balanced_winrate
+        do_play(idx2move(i, j), is_black)
+        tsumego_frame_restore_turn(is_black)
+    }
+    do_as_auto_play(playable, proc)
+    !playable && ((tsumego_frame_gap = null), resume(), update_all(), toast('...Done.'))
+    return true
+}
+
+function tsumego_frame_restore_turn(is_last_black) {
+    !!is_last_black === !!tsumego_frame_bturn && do_play('pass', !is_last_black)
 }
 
 /////////////////////////////////////////////////
