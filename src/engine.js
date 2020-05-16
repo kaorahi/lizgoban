@@ -14,7 +14,7 @@ function create_leelaz () {
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
-    let startup_log = []
+    let startup_log = [], is_in_startup = true
 
     // game state
     let move_count = 0, bturn = true
@@ -24,7 +24,7 @@ function create_leelaz () {
         const t2s = task => (task.protect_p ? '!' : '') +
               (with_response_p(task) ? '*' : '') + task.command
         const message = `[${(leelaz_process || {}).pid}] ${header} ${s}`
-        !is_ready && (header !== queue_log_header) && startup_log.push(message)
+        is_in_startup && (header !== queue_log_header) && startup_log.push(message)
         debug_log(message +
                   (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
                   arg && arg.engine_log_line_length || 500)
@@ -90,7 +90,7 @@ function create_leelaz () {
         // komi may be changed tentatively in set_board before check of engine type
         const after_all_checks = () => {
             clear_leelaz_board(); is_katago() || (komi = leelaz_komi)
-            arg.ready_handler()
+            arg.ready_handler(); is_in_startup = false
         }
         leelaz('lizgoban_after_all_checks', after_all_checks)
     }
