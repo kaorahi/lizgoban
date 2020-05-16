@@ -352,6 +352,7 @@ function create_leelaz () {
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: () => engine_id,
+        startup_log: () => startup_log,
         // for debug
         send_to_leelaz,
     }

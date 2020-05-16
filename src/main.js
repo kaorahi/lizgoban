@@ -1102,7 +1102,8 @@ function info_text() {
     const lz = AI.leelaz_for_white_p() ?
           (f("engine (black)", sa.black) + f("engine (white)", sa.white)) :
           f("engine", sa.black)
-    const message = f("sgf file", game.sgf_file) + lz + f("sgf", game.sgf_str)
+    const slog = `<startup log>\n${AI.startup_log().join("\n")}`
+    const message = f("sgf file", game.sgf_file) + lz + f("sgf", game.sgf_str) + slog
     return message
 }
 function set_game_info(player_black, player_white, komi, sgf_gorule, gorule, comment) {

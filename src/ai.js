@@ -158,6 +158,8 @@ function engine_info() {
             black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
 
+function startup_log() {return leelaz.startup_log()}
+
 function different_komi_for_black_and_white() {
     return leelaz_for_white &&
         (leelaz_for_black.get_komi() !== leelaz_for_white.get_komi())
@@ -255,7 +257,7 @@ module.exports = {
     switch_to_random_leelaz, load_weight_file,
     unload_leelaz_for_white, leelaz_weight_file, restart,
     set_engine_for_white, restore, info_for_restore, backup,
-    different_komi_for_black_and_white,
+    different_komi_for_black_and_white, startup_log,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
