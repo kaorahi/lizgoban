@@ -2,9 +2,10 @@
 
 # Release notes
 
-## LizGoban 0.4.2
+## LizGoban 0.4.3
 
-Fix another bug on match vs. weakened AI.
+* Upgrade the built-in engine of the all-in-one package to [KataGo 1.4.2](https://github.com/lightvector/KataGo/releases/tag/v1.4.2) (OpenCL).
+* Fix minor bugs etc.
 
 ### Links
 
@@ -12,6 +13,10 @@ Fix another bug on match vs. weakened AI.
 [License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
 
 # (Previous versions)
+
+## LizGoban 0.4.2
+
+Fix another bug on match vs. weakened AI.
 
 ## LizGoban 0.4.1
 
