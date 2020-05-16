@@ -18,16 +18,16 @@ clean:
 	rm -f $(TARGETS)
 
 $(REL_NOTE): release.md $(PD_HEADER)
-	$(PANDOC) -M pagetitle='Release Note' release.md > $(REL_NOTE)
+	$(PANDOC) $< -M pagetitle='Release Note' -o $@
 
 $(README): ../README.md $(PD_HEADER)
-	 $(PANDOC) -M pagetitle='README' ../README.md > $(README)
+	 $(PANDOC) $< -M pagetitle='README' -o $@
 
 $(LG_CONF): config.json
-	cp -f config.json $(LG_CONF)
+	cp -f $< $@
 
 $(SCR_IMG): ../screen.gif
-	convert '../screen.gif[0]' $(SCR_IMG)
+	convert $<'[0]' $@
 
 $(MTCH_IMG): ../match.png
-	cp -f ../match.png $(MTCH_IMG)
+	cp -f $< $@
