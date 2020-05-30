@@ -89,8 +89,9 @@ function create_leelaz () {
         // clear_leelaz_board for restart
         // komi may be changed tentatively in set_board before check of engine type
         const after_all_checks = () => {
+            is_in_startup = false
             clear_leelaz_board(); is_katago() || (komi = leelaz_komi)
-            arg.ready_handler(); is_in_startup = false
+            arg.ready_handler()
         }
         leelaz('lizgoban_after_all_checks', after_all_checks)
     }
@@ -100,6 +101,7 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history, new_komi, new_gorule, new_ownership_p) => {
+        if (is_in_startup) {return}
         change_board_size(board_size())
         let update_kata_p = false
         const update_kata = (val, new_val, command) => {
