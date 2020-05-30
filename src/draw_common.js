@@ -77,7 +77,9 @@ function x_shape_around([x, y], radius, g) {
 }
 
 function draw_square_image(img, [x, y], radius, g) {
-    g.drawImage(img, x - radius, y - radius, radius * 2, radius * 2)
+    const shorter = Math.min(img.width, img.height), mag = radius / shorter
+    const xrad = mag * img.width, yrad = mag * img.height
+    g.drawImage(img, x - xrad, y - yrad, xrad * 2, yrad * 2)
 }
 
 // ref.

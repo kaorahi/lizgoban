@@ -413,11 +413,26 @@ function stone_style_for(h) {
            h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
            [BLACK, WHITE])
     const normal_stone_p = (b_color === BLACK)
-    const stone_image = normal_stone_p && R.stone_image_p && R.image &&
-          (h.black ? R.image.black_stone : R.image.white_stone)
+    const stone_image_p = normal_stone_p && R.stone_image_p && R.image
+    const stone_image = (stone_image_p && stone_image_for(h)) ||
+          (face_image_p() && face_image_for(h))
     const style = normal_stone_p && R.stone_style
     return {b_color, w_color, stone_image, style}
 }
+
+function face_image_p() {return R.face_image_rule && (R.stone_style === 'face')}
+
+function stone_image_for(h) {return stone_image_for_key(h, 'black_stone', 'white_stone')}
+function face_image_for(h) {
+    if (h.movenums) {return null}
+    const {endstate, black} = h, es = (black ? 1 : -1) * (endstate || 0)
+    // const wr = ((R.winrate_history[R.move_count] || {}).r || 50) / 50 - 1
+    // const es = (black ? 1 : -1) * (truep(endstate) ? endstate : wr)
+    const [_, b, w] = R.face_image_rule.find(([threshold, _b, _w]) => es < threshold)
+          || last(R.face_image_rule)
+    return stone_image_for_key(h, b, w)
+}
+function stone_image_for_key(h, b_key, w_key) {return R.image[h.black ? b_key : w_key]}
 
 function draw_movenums(h, xy, radius, g) {
     const movenums = num_sort(h.movenums)
@@ -442,8 +457,10 @@ function draw_text_on_stone(text, color, xy, radius, g) {
 }
 
 function draw_last_move(h, xy, radius, g) {
-    g.strokeStyle = h.black ? WHITE : BLACK; g.lineWidth = 2
-    circle(xy, radius * 0.8, g)
+    const facep = face_image_p() && !h.movenums
+    const bturn = xor(h.black, facep), size = facep ? 1 : 0.8
+    g.strokeStyle = bturn ? WHITE : BLACK; g.lineWidth = 2
+    circle(xy, radius * size, g)
 }
 
 const next_move_line_width = 3
@@ -461,7 +478,7 @@ function draw_loss(h, xy, radius, g) {
           // annoying in auto_analysis with visits = 1
           // (gain >= 5) ? ['#0c0', 1, 1, triangle_around] :
           NOTHING
-    if (!draw) {return}
+    if (!draw || face_image_p()) {return}
     g.strokeStyle = color; g.lineWidth = line_width
     draw(xy, radius * size - line_width, g)
 }
@@ -604,7 +621,7 @@ function draw_endstate_value(h, past_p, sign, xy, radius, g) {
 }
 
 function draw_endstate_diff(diff, xy, radius, g) {
-    if (!diff) {return}
+    if (!diff || face_image_p()) {return}
     const size = 0.2, [c, r, f, thicker] = diff > 0 ?
           ['#080', 1, square_around, 1.5] : ['#f0f', 1, x_shape_around, 1]
     const thick = (R.endstate_diff_interval > 5 ? 1.5 : 3) * thicker

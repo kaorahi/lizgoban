@@ -1,5 +1,17 @@
 {
     "max_cached_engines": 3,
+    "face_image_rule": [
+        [-0.8, "goisi_k4.png", "goisi_s4.png"],
+        [-0.6, "goisi_k15.png", "goisi_s15.png"],
+        [-0.4, "goisi_k8.png", "goisi_s8.png"],
+        [-0.2, "goisi_k9.png", "goisi_s9.png"],
+        [0.00, "goisi_k7.png", "goisi_s7.png"],
+        [0.30, "goisi_k11.png", "goisi_s11.png"],
+        [0.60, "goisi_k5.png", "goisi_s5.png"],
+        [0.90, "goisi_k10.png", "goisi_s10.png"],
+        [0.95, "goisi_k14.png", "goisi_s14.png"],
+        [1.00, "goisi_k16.png", "goisi_s16.png"]
+    ],
     "preset": [
         {
             "label": "Leela Zero",

@@ -32,6 +32,13 @@
         ]
       },
       {
+        "from": "build_with/img",
+        "to": "resources/external",
+        "filter": [
+          "goisi_*.png"
+        ]
+      },
+      {
         "from": "build_with/bin/common",
         "to": "resources/external",
         "filter": [

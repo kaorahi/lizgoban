@@ -39,6 +39,7 @@ const default_option = {
     sgf_dir: undefined,
     exercise_dir: 'exercise',
     max_cached_engines: 3,
+    face_image_rule: null,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     record_note_to_SGF: false,
     auto_overview: false,
@@ -204,11 +205,14 @@ function show_error(message) {
 }
 
 // images
+const face_image_paths =
+      flatten((option.face_image_rule || []).map(([_, b, w]) => [[b, b], [w, w]]))
 const image_paths = [
-    ['black_stone', 'black.png'],
-    ['white_stone', 'white.png'],
-    ['board', 'board.png'],
-].map(([key, name]) => [key, PATH.resolve(option.working_dir, name)]).filter(([key, path]) => fs.existsSync(path))
+    ['black_stone', 'black.png', true],
+    ['white_stone', 'white.png', true],
+    ['board', 'board.png', true],
+    ...face_image_paths,
+].map(([key, name, working_dir_p]) => [key, working_dir_p ? PATH.resolve(option.working_dir, name) : default_path_for(name)]).filter(([key, path]) => fs.existsSync(path))
 
 // sabaki
 let attached = false, has_sabaki = true
@@ -652,6 +656,7 @@ function set_gorule(new_gorule, set_as_default_p) {
 function stone_style_submenu() {
     const label_table = [
         ['2D', 'paint'], ['2.5D', 'flat'], ['3D', 'dome'],
+        ...(option.face_image_rule ? [['Face', 'face']] : []),
     ]
     return label_table.map(([label, val]) => ({
         label, type: 'radio', checked: R.stone_style === val,
@@ -1498,10 +1503,11 @@ function update_state(keep_suggest_p) {
           (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           {suggest: []}
     !option.movenum_for_trial && (game.trial_from = null)
+    const {face_image_rule} = option
     P.set_and_render({
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
-        image_paths,
+        image_paths, face_image_rule,
     }, more)
 }
 

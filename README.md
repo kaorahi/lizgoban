@@ -51,6 +51,7 @@ on [Electron](https://electronjs.org/).
   * ambiguity of life & death that indicates big fights, game stages (opening / middlegame / endgame), etc.
 * Indicators that suggest highlight scenes of the game (ko fights, played zones)
 * Translucent stones for too long variations as the above screenshot
+* Ownerships of stones by facial expressions
 
 ## Usage
 
@@ -172,6 +173,41 @@ on Mac or Linux. The latter option overwrites the former one in the second examp
 
 In addition, LizGoban reads external/config.json (and config.json in the "working directory" in the above (*1)) beforehand if they exist.
 
+#### To show ownerships of stones by facial expressions:
+
+Prepare stone images and put them into `external/` directory.
+For example, images in [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html) are used in the all-in-one package.
+
+Then add "face_image_rule" into config.json like this.
+
+~~~~
+{
+    ...
+    "face_image_rule": [
+        [-0.8, "goisi_k4.png", "goisi_s4.png"],
+        [-0.6, "goisi_k15.png", "goisi_s15.png"],
+        [-0.4, "goisi_k8.png", "goisi_s8.png"],
+        [-0.2, "goisi_k9.png", "goisi_s9.png"],
+        [0.00, "goisi_k7.png", "goisi_s7.png"],
+        [0.30, "goisi_k11.png", "goisi_s11.png"],
+        [0.60, "goisi_k5.png", "goisi_s5.png"],
+        [0.90, "goisi_k10.png", "goisi_s10.png"],
+        [0.95, "goisi_k14.png", "goisi_s14.png"],
+        [1.00, "goisi_k16.png", "goisi_s16.png"]
+    ],
+    ...
+}
+~~~~
+
+It means
+
+* goisi_k4.png or goisi_s4.png for ownership <= -0.8 (dead).
+* goisi_k15.png or goisi_s15.png for ownership <= -0.6.
+* ...
+* goisi_k16.png or goisi_s16.png for ownership <= 1.00 (alive).
+
+Set KataGo as the engine and select View > Stone > Face. You need to enable View > Ownership if you have disabled it.
+
 #### To replace images of board and stones (Experimental)
 
 Put your favorite images of board and stones as `external/board.png`, `external/black.png`, and `external/white.png` (before starting LizGoban).
@@ -184,6 +220,7 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 
 ### (unreleased)
 
+* Support ownerships of stones by facial expressions.
 * Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`. (You may need to do "npm install" again.)
 * Omit marks for too minor suggestions on the board.
 
