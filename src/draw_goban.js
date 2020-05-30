@@ -497,6 +497,7 @@ function draw_cheap_shadow([x, y], radius, g) {
 
 function draw_suggest(h, xy, radius, large_font_p, g) {
     if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
+    if (minor_suggest_p(h)) {draw_minor_suggest(h, xy, radius, g); return}
     const suggest = h.data, {stroke, fill} = suggest_color(suggest)
     g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_circle(xy, radius, g)
@@ -504,7 +505,7 @@ function draw_suggest(h, xy, radius, large_font_p, g) {
 }
 
 function draw_suggest_lizzie(h, xy, radius, g) {
-    const suggest = h.data; if (suggest.visits === 0) {return}
+    const suggest = h.data; if (suggest.visits === 0 || minor_suggest_p(h)) {return}
     const lizzie_text_color = 'rgba(0,0,0,0.7)'
     const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
     const fontsize = to_i(radius * 0.8), half = fontsize / 2
@@ -521,11 +522,21 @@ function draw_suggest_lizzie(h, xy, radius, g) {
     g.restore()
 }
 
+function minor_suggest_p(h) {return minor_suggest_p_gen(h, 20)}
+function too_minor_suggest_p(h) {return minor_suggest_p_gen(h, 50)}
+function minor_suggest_p_gen(h, order) {return h.data.order >= order && !h.next_move}
+
 function draw_halo_lizzie(h, xy, stone_radius, g) {
     const suggest = h.data || {}; if (suggest.order !== 0) {return}
     const width = next_move_line_width * 1.5
     const radius = stone_radius + width / 2
     g.strokeStyle = '#0f0'; g.lineWidth = width; circle(xy, radius, g)
+}
+
+function draw_minor_suggest(h, xy, radius, g) {
+    if (too_minor_suggest_p(h)) {return}
+    g.lineWidth = 1; g.strokeStyle = 'rgba(0,0,0,0.2)'
+    triangle_around(xy, radius * 0.5, g)
 }
 
 function draw_suggest_0visits(h, xy, radius, g) {
@@ -603,6 +614,7 @@ function draw_endstate_diff(diff, xy, radius, g) {
 // mapping from goban to winrate bar
 
 function draw_winrate_mapping_line(h, xy, unit, g) {
+    if (minor_suggest_p(h)) {return}
     const b_winrate = flip_maybe(fake_winrate(h.data))
     const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
     g.lineWidth = 1.5 / (order * 2 + 1)
