@@ -594,6 +594,11 @@ function menu_template(win) {
             sep,
             item('Replay analysis', undefined,
                  (this_item, win) => ask_auto_redo_sec(win), true),
+            sep,
+            item("Tsumego frame1", 'Shift+f', () => add_tsumego_frame(),
+                 true, game.move_count > 0),
+            item("Tsumego frame2", 'CmdOrCtrl+Shift+f', () => add_tsumego_frame(true),
+                 true, game.move_count > 0),
         ]),
     ])
     const white_unloader_item =
@@ -616,10 +621,6 @@ function menu_template(win) {
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
-        item("Tsumego frame", 'Shift+f', () => add_tsumego_frame(),
-             true, game.move_count > 0),
-        item("Tsumego frame'", 'CmdOrCtrl+Shift+f', () => add_tsumego_frame(true),
-             true, game.move_count > 0),
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [

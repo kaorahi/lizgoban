@@ -226,6 +226,7 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 * Support ownerships of stones by facial expressions.
 * Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`. (You may need to do "npm install" again.)
 * Omit marks for too minor suggestions on the board.
+* Experimentally add "Tool > Experimental > Tsumego frame1&2" for solving life & death problems. (See "Tips" section in "Help" menu.)
 
 ### 0.4.0
 
