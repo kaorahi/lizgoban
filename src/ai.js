@@ -69,8 +69,10 @@ function with_handlers(h) {
     return merge({suggest_handler, unsupported_size_handler}, h, more)
 }
 
-function katago_p() {return leelaz.is_katago()}
-function is_gorule_supported() {return leelaz.is_supported('kata-set-rules')}
+function katago_p() {return leelaz_for_this_turn().is_katago()}
+function is_gorule_supported() {
+    return leelaz_for_this_turn().is_supported('kata-set-rules')
+}
 
 /////////////////////////////////////////////////
 // leelaz for endstate
@@ -116,8 +118,13 @@ function unload_leelaz_for_white() {
     leelaz_for_white && leelaz_for_white.kill(); leelaz_for_white = null
 }
 function switch_leelaz(bturn) {
-    return switch_to_another_leelaz((bturn === undefined ? is_bturn() : bturn) ?
-                                    leelaz_for_black : leelaz_for_white)
+    return switch_to_another_leelaz(leelaz_for_this_turn(bturn))
+}
+// We need to use "leelaz_for_this_turn()" instead of "leelaz"
+// between P.set_board() and AI.switch_leelaz() in set_board() in main.js.
+function leelaz_for_this_turn(bturn) {
+    return (bturn === undefined ? is_bturn() : bturn) ?
+        leelaz_for_black : (leelaz_for_white || leelaz)
 }
 function load_weight_file(weight_file, white_p) {
     set_pondering(false)
@@ -153,12 +160,13 @@ function engine_info() {
         return {leelaz_command, leelaz_args, is_ready: lz.is_ready(), preset_label_text,
                 weight_file, network_size: lz.network_size()}
     }
-    return {engine_komi: leelaz.get_komi(),
-            leelaz_for_white_p: leelaz_for_white_p(), current: f(leelaz),
+    const cur_lz = leelaz_for_this_turn()
+    return {engine_komi: cur_lz.get_komi(),
+            leelaz_for_white_p: leelaz_for_white_p(), current: f(cur_lz),
             black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
 
-function startup_log() {return leelaz.startup_log()}
+function startup_log() {return leelaz_for_this_turn().startup_log()}
 
 function different_komi_for_black_and_white() {
     return leelaz_for_white &&
