@@ -1050,8 +1050,10 @@ function add_handicap_stones(k) {
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
     // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
+    // [2020-05-12] ref.
+    // http://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html#sec:fixed-handicap-placement
     const size = board_size(), exceptional_ks = [5, 7]
-    const i1 = size > 9 ? 3 : 2, i2 = Math.floor(size / 2), i3 = size - 1 - i1
+    const i1 = size > 12 ? 3 : 2, i2 = Math.floor(size / 2), i3 = size - 1 - i1
     const corners = [[i1, i3], [i3, i1], [i3, i3], [i1, i1]]
     const edges = [[i2, i3], [i2, i1], [i1, i2], [i3, i2]]
     const center = [i2, i2]
