@@ -9,6 +9,9 @@ on [Electron](https://electronjs.org/).
 
 <img src="screen.gif" width="45%"> <img src="match.png" width="50%">
 
+<img src="faces.png" width="40%">
+(Facial stone images from [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html))
+
 ## Highlights
 
 1. Engines do not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can use any number of trial boards in parallel, discard a needless one by a single action, and restore the deleted one if necessary.
@@ -176,7 +179,7 @@ In addition, LizGoban reads external/config.json (and config.json in the "workin
 #### To show ownerships of stones by facial expressions:
 
 Prepare stone images and put them into `external/` directory.
-For example, images in [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html) are used in the all-in-one package.
+For example, images in [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html) are used in the above screenshot.
 
 Then add "face_image_rule" into config.json like this.
 

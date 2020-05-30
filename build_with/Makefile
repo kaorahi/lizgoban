@@ -5,10 +5,11 @@ README = $(DOC)/README.html
 REL_NOTE = $(DOC)/release.html
 SCR_IMG = $(DOC)/screen.gif
 MTCH_IMG = $(DOC)/match.png
+FACE_IMG = $(DOC)/faces.png
 LG_CONF = $(SAMPLE)/config.json
 PD_HEADER = pandoc_header
 
-TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(LG_CONF)
+TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF)
 
 PANDOC = pandoc -H $(PD_HEADER)
 
@@ -30,4 +31,7 @@ $(SCR_IMG): ../screen.gif
 	convert $<'[0]' $@
 
 $(MTCH_IMG): ../match.png
+	cp -f $< $@
+
+$(FACE_IMG): ../faces.png
 	cp -f $< $@
