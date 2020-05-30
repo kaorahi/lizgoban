@@ -369,6 +369,8 @@ function hash(str) {
 /////////////////////////////////////////////////
 // parser for {lz,kata}-analyze
 
+const top_suggestions = 5
+
 function parse_analyze(s, bturn, komi, katago_p) {
     const [i_str, o_str] = s.split(/\s*ownership\s*/)
     const ownership = ownership_parser(o_str, bturn)
@@ -376,13 +378,15 @@ function parse_analyze(s, bturn, komi, katago_p) {
     const unsorted_suggest =
           i_str.split(/info/).slice(1).map(parser).filter(truep)
     const suggest = sort_by_key(unsorted_suggest, 'order')
-    const [wsum, visits, scsum] =
-          suggest.map(h => [h.winrate, h.visits, h.score_without_komi || 0])
+    const top_suggest = suggest.slice(0, top_suggestions)
+    const visits = sum(suggest.map(h => h.visits))
+    const [wsum, top_visits, scsum] =
+          top_suggest.map(h => [h.winrate, h.visits, h.score_without_komi || 0])
           .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
                   [0, 0, 0])
-    const winrate = wsum / visits, b_winrate = bturn ? winrate : 100 - winrate
+    const winrate = wsum / top_visits, b_winrate = bturn ? winrate : 100 - winrate
     const score_without_komi = truep((suggest[0] || {}).score_without_komi)
-          && (scsum / visits)
+          && (scsum / top_visits)
     const add_order = (sort_key, order_key) => sort_by_key(suggest, sort_key)
           .reverse().forEach((h, i) => (h[order_key] = i))
     // winrate is NaN if suggest = []
