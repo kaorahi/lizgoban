@@ -1674,9 +1674,9 @@ function save_sgf() {
     const if_success = () => (game.sgf_file = filename)
     save_sgf_to(filename, if_success)
 }
-function save_sgf_to(filename, if_success) {
+function save_sgf_to(filename, if_success, force_short_p) {
     const callback = err => {if (err) {throw err} else {if_success && if_success()}}
-    fs.writeFile(filename, game.to_sgf(R.use_cached_suggest), callback)
+    fs.writeFile(filename, game.to_sgf(R.use_cached_suggest && !force_short_p), callback)
 }
 
 function read_sgf(sgf_str, filename, internally) {
@@ -1726,7 +1726,7 @@ function open_url(url) {
 
 function store_as_exercise() {
     const path = PATH.join(exercise_dir(), exercise_filename())
-    save_sgf_to(path); toast('stored as exercise')
+    save_sgf_to(path, null, true); toast('stored as exercise')
 }
 function load_random_exercise(win) {
     const random_choice = a => a[Math.floor(Math.random() * a.length)]
