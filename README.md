@@ -182,6 +182,10 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 
 ## Major changes
 
+### (unreleased)
+
+* Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`. (You may need to do "npm install" again.)
+
 ### 0.4.0
 
 * Support better stone images. ("Stone" in "View" menu & experimental stone/board images in the above section)
