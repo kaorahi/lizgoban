@@ -43,7 +43,7 @@ function create_leelaz () {
                illegal_handler, tuning_handler, unsupported_size_handler}
               = arg || {}
         const opt = {cwd: working_dir}
-        is_ready = false; startup_log = []; network_size_text = ''
+        is_ready = false; is_in_startup = true; startup_log = []; network_size_text = ''
         log('start engine:', JSON.stringify(arg && [leelaz_command, ...leelaz_args]))
         leelaz_process = require('child_process').spawn(leelaz_command, leelaz_args, opt)
         leelaz_process.stdout.on('data', each_line(stdout_reader))
