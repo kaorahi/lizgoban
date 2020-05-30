@@ -508,7 +508,7 @@ function menu_template(win) {
                  (this_item, win) => stop_match(window_prop(win).window_id), true) :
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
         sep,
-        item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf, true),
+        item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
@@ -1657,8 +1657,8 @@ function paste_sgf_or_url_from_clipboard() {
     const s = clipboard.readText(); s.startsWith('http') ? open_url(s) : read_sgf(s)
 }
 
-function open_sgf() {open_sgf_in(option_path('sgf_dir'))}
-function open_sgf_in(dir, proc) {
+function open_sgf_etc() {open_sgf_etc_in(option_path('sgf_dir'))}
+function open_sgf_etc_in(dir, proc) {
     select_files('Select SGF etc.', dir).forEach(proc || load_sgf_etc)
 }
 function load_sgf_etc(filename) {
@@ -1765,7 +1765,7 @@ function load_exercise(selector, win, random_flip_p) {
 function load_as_exercise(file) {
     load_sgf(file, true); goto_move_count(exercise_move_count(file)); game.trial = true
 }
-function open_exercise_dir() {open_sgf_in(exercise_dir(), load_as_exercise)}
+function open_exercise_dir() {open_sgf_etc_in(exercise_dir(), load_as_exercise)}
 function delete_exercise() {
     const dir = exercise_dir(), file = game.sgf_file, name = PATH.basename(file)
     if (!is_exercise_file(file)) {wink(); return}
