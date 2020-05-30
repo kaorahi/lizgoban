@@ -97,7 +97,7 @@ function option_path(key) {
 // setup
 
 // util
-const TMP = require('tmp')
+const TMP = require('tmp'), XYZ2SGF = require('xyz2sgf')
 const ELECTRON_STORE = safely(require, 'electron-store') ||
                    // try old name for backward compatibility
                    safely(require, 'electron-config') ||
@@ -508,7 +508,7 @@ function menu_template(win) {
                  (this_item, win) => stop_match(window_prop(win).window_id), true) :
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
         sep,
-        item('Open SGF...', 'CmdOrCtrl+O', open_sgf, true),
+        item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf, true),
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
@@ -1659,7 +1659,18 @@ function paste_sgf_or_url_from_clipboard() {
 
 function open_sgf() {open_sgf_in(option_path('sgf_dir'))}
 function open_sgf_in(dir, proc) {
-    select_files('Select SGF file', dir).forEach(proc || load_sgf)
+    select_files('Select SGF etc.', dir).forEach(proc || load_sgf_etc)
+}
+function load_sgf_etc(filename) {
+    const res = sgf_str => {read_sgf(sgf_str, filename); update_all()}
+    const rej = () => {load_sgf(filename); update_all()}
+    // We check the file extension before trying xyz2sgf to avoid
+    // the console output "Couldn't detect file type...".
+    // If https://github.com/y-ich/xyz2sgf/pull/1 is merged,
+    // the rest of this function can be simplied to a single line:
+    // XYZ2SGF.fileToConvertedString(filename).then(res, rej)
+    const xyz_p = filename.match(/[.](gib|ngf|ugf|ugi)$/i)
+    xyz_p ? XYZ2SGF.fileToConvertedString(filename).then(res, rej) : load_sgf(filename)
 }
 function load_sgf(filename, internally) {
     read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename, internally)

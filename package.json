@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@sabaki/sgf": "^3.4.7",
+    "xyz2sgf": "^0.0.2",
     "electron-store": "^5.1.1",
     "tmp": "^0.1.0"
   },
