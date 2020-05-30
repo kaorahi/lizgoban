@@ -24,7 +24,8 @@ function draw_goban_until(canvas, show_until, opts) {
     const displayed_stones = stones_until(show_until, all_p)
     const serious = in_match_p(true)
     draw_goban(canvas, displayed_stones,
-               {draw_last_p: true, draw_next_p: !serious, draw_loss_p: !serious,
+               {draw_last_p: true, draw_next_p: !serious,
+                draw_loss_p: !serious && R.show_endstate,
                 draw_endstate_diff_p: R.show_endstate && !serious, ...opts,
                 cheap_shadow_p: true,
                 draw_visits_p: false, draw_coordinates_p: true})
@@ -78,7 +79,7 @@ function draw_goban_with_suggest(canvas, opts) {
         set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
-                draw_loss_p: true,
+                draw_loss_p: R.show_endstate,
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
                 tag_clickable_p: true, mapping_tics_p: !opts.main_canvas_p, ...opts})
 }
