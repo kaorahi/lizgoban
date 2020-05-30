@@ -10,7 +10,7 @@ on [Electron](https://electronjs.org/).
 <img src="screen.gif" width="45%"> <img src="match.png" width="50%">
 
 <img src="faces.png" width="40%">
-(Facial stone images from [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html))
+Facial stone images from [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html)
 
 ## Highlights
 
