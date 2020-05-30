@@ -182,7 +182,7 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 
 ## Major changes
 
-### from 0.3.*
+### 0.4.0
 
 * Support better stone images. ("Stone" in "View" menu & experimental stone/board images in the above section)
 * Support 9x9 and 13x13 in "File" menu. (See the above KataGo section to shorten their initialization.)
@@ -214,13 +214,13 @@ Incompatibilities:
 * "Komi" and "Info" are moved from [Tool] to [Edit] menu.
 * The shortcut key `CmdOrCtrl+?` is changed from open_exercise_dir to load_recent_exercise.
 
-### from 0.2.0
+### 0.3.*
 
 * Open URL by drag & drop or clipboard.
 * Count stones separately in area counts. (See "KataGo" section in "Help" menu.)
 * Flip & rotate the board randomly in exercise.
 
-### from 0.1.0
+### 0.2.0
 
 * Add "preset" to switch engines inside LizGoban.
 * Add "max_cached_engines" for quicker switch of engines / weights.
@@ -230,7 +230,7 @@ Incompatibilities:
 * The format of config.json is modified. (The obsolete format also works at present.)
 * Some items are moved to [Engine] menu.
 
-### from unreleased versions
+### 0.1.0
 
 * The all-in-one package (*.exe) is offered for Windows.
 * The launcher command is changed from "npx electron src" to "npm start".
