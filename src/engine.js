@@ -105,7 +105,8 @@ function create_leelaz () {
         change_board_size(board_size())
         let update_kata_p = false
         const update_kata = (val, new_val, command) => {
-            const update_p = is_katago(true) && truep(new_val) && new_val !== val
+            const valid_p = truep(new_val) || !command
+            const update_p = is_katago(true) && valid_p && new_val !== val
             if (!update_p) {return val}
             command && leelaz(`${command} ${new_val}`)
             update_kata_p = true; return new_val
