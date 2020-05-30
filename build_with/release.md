@@ -2,16 +2,39 @@
 
 # Release notes
 
-## LizGoban 0.4.4
+## LizGoban 0.5.0-pre1
 
-* Fix minor bugs etc.
+Thanks to [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html) by Tororo, a new stone style is available in the all-in-one package `LizGoban-*_win_*.zip` for 64bit Windows. The ownerships of stones are indicated by their facial expressions in this style. To try it...
+
+1. Select View > Stone > Face.
+2. Select Preset > KataGo. The first run of KataGo may take a long time (1 hour or more, for example) for its initial tuning.
+3. (Enable View > Ownership if you have disabled it.)
+
+See README if you want to use this style without the all-in-one package.
+
+### Major changes
+
+* Add "KataGo for wider search" into Preset menu in the all-in-one package.
+* Support ownerships of stones by facial expressions.
+* Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`. (You may need to do "npm install" again.)
+* Omit marks for too minor suggestions on the board.
+* Experimentally add "Tool > Experimental > Tsumego frame1&2" for solving life & death problems. (See "Tips" section in "Help" menu.)
 
 ### Links
 
 [Project Home](https://github.com/kaorahi/lizgoban) /
 [License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
 
+Note that some external resources are also packaged into *.exe together with LizGoban itself. The license of LizGoban is not applied to them, of course.
+
+* engines and neural networks: [Leela Zero](https://github.com/leela-zero/leela-zero/releases/tag/v0.17), [KataGo](https://github.com/lightvector/KataGo/)
+* facial stone images: [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html)
+
 # (Previous versions)
+
+## LizGoban 0.4.4
+
+* Fix minor bugs etc.
 
 ## LizGoban 0.4.3
 

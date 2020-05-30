@@ -221,7 +221,7 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 
 ## Major changes
 
-### (unreleased)
+### 0.5.0-pre*
 
 * Support ownerships of stones by facial expressions.
 * Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`. (You may need to do "npm install" again.)
