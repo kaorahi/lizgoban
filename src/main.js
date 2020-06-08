@@ -165,9 +165,11 @@ const default_for_stored_key = {
     let_me_think: false, show_endstate: true, gorule: default_gorule,
     stone_image_p: true, board_image_p: true, stone_style: 'dome',
     use_cached_suggest: false,
+    komi_for_new_game: leelaz_komi, komi_for_new_handicap_game: handicap_komi,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
+game.komi = get_stored('komi_for_new_game')
 
 globalize({  // for ai.js
     is_bturn: () => R.bturn,
@@ -1056,7 +1058,7 @@ function set_board_type(type, win, keep_let_me_think) {
 // handicap stones & komi
 function add_handicap_stones(k) {
     game.is_empty() || new_empty_board()
-    merge(game, {handicaps: k, komi: handicap_komi})
+    merge(game, {handicaps: k, komi: get_stored('komi_for_new_handicap_game')})
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
     // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
@@ -1077,8 +1079,15 @@ function ask_handicap_stones() {
 }
 function ask_komi(win) {
     const other = 'other...', values = [0, 5.5, 6.5, 7.5, other]
-    const proc = k => {k === other ? ask_game_info(win, true) : (game.komi = k)}
+    const proc = k => {k === other ? ask_game_info(win, true) : set_komi(k)}
     ask_choice(`Komi (${game.get_komi()})`, values, proc)
+}
+function set_komi(k) {
+    const fresh_game_p = (game.len() === game.handicaps)
+    const update_default_p = fresh_game_p, handicap_p = game.handicaps > 0
+    game.komi = k
+    update_default_p &&
+        set_stored(handicap_p ? 'komi_for_new_handicap_game' : 'komi_for_new_game', k)
 }
 function ask_choice(message, values, proc) {
     const buttons = [...values.map(to_s), 'cancel']
@@ -1119,8 +1128,8 @@ function info_text() {
     return message
 }
 function set_game_info(player_black, player_white, komi, sgf_gorule, gorule, comment) {
-    set_gorule(gorule, gorule !== game.gorule)
-    merge(game, {player_black, player_white, komi, sgf_gorule})
+    set_gorule(gorule, gorule !== game.gorule); set_komi(komi)
+    merge(game, {player_black, player_white, sgf_gorule})
     merge(game.ref_current(), {comment})
 }
 function ask_endstate_diff_interval(win) {
@@ -1290,6 +1299,7 @@ function create_game() {
 function new_empty_board(given_board_size) {
     const new_game = create_game()
     new_game.board_size = given_board_size || board_size()
+    new_game.komi = get_stored('komi_for_new_game')
     insert_sequence(new_game)
 }
 
