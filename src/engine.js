@@ -92,6 +92,8 @@ function create_leelaz () {
         const after_all_checks = () => {
             is_in_startup = false
             clear_leelaz_board(); is_katago() || (komi = leelaz_komi)
+            // KataGo's default komi can be 6.5 etc. depending on "rules" in gtp.cfg.
+            leelaz(`komi ${komi}`)  // force KataGo to use our komi
             arg.ready_handler()
         }
         leelaz('lizgoban_after_all_checks', after_all_checks)
