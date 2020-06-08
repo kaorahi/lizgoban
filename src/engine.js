@@ -24,7 +24,8 @@ function create_leelaz () {
         const t2s = task => (task.protect_p ? '!' : '') +
               (with_response_p(task) ? '*' : '') + task.command
         const message = `[${(leelaz_process || {}).pid}] ${header} ${s}`
-        is_in_startup && (header !== queue_log_header) && startup_log.push(message)
+        is_in_startup && (header !== queue_log_header) &&
+            startup_log.push(snip(message, 300))
         debug_log(message +
                   (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
                   arg && arg.engine_log_line_length || 500)
