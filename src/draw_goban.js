@@ -413,9 +413,9 @@ function stone_style_for(h) {
            h.is_vague ? [VAGUE_BLACK, VAGUE_WHITE] :
            [BLACK, WHITE])
     const normal_stone_p = (b_color === BLACK)
-    const stone_image_p = normal_stone_p && R.stone_image_p && R.image
-    const stone_image = (stone_image_p && stone_image_for(h)) ||
-          (face_image_p() && face_image_for(h))
+    const stone_image_p = R.stone_image_p && R.image
+    const stone_image = normal_stone_p && ((stone_image_p && stone_image_for(h)) ||
+                                           (face_image_p() && face_image_for(h)))
     const style = normal_stone_p && R.stone_style
     return {b_color, w_color, stone_image, style}
 }
