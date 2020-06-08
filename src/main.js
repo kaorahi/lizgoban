@@ -1677,13 +1677,7 @@ function open_sgf_etc_in(dir, proc) {
 function load_sgf_etc(filename) {
     const res = sgf_str => {read_sgf(sgf_str, filename); update_all()}
     const rej = () => {load_sgf(filename); update_all()}
-    // We check the file extension before trying xyz2sgf to avoid
-    // the console output "Couldn't detect file type...".
-    // If https://github.com/y-ich/xyz2sgf/pull/1 is merged,
-    // the rest of this function can be simplied to a single line:
-    // XYZ2SGF.fileToConvertedString(filename).then(res, rej)
-    const xyz_p = filename.match(/[.](gib|ngf|ugf|ugi)$/i)
-    xyz_p ? XYZ2SGF.fileToConvertedString(filename).then(res, rej) : load_sgf(filename)
+    XYZ2SGF.fileToConvertedString(filename).then(res, rej)
 }
 function load_sgf(filename, internally) {
     read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename, internally)
