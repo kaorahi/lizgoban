@@ -731,7 +731,7 @@ function apply_preset(rule, win) {
     const cur = AI.engine_info().black
     const extended = {...cur, ...rule}
     const {label, empty_board, board_type, weight_file, weight_file_for_white,
-           match,
+           match, rules, handicap, komi,
            label_for_white, engine_for_white} = rule
     const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
     const need_restart = cur && (f(cur) !== f(extended))
@@ -739,6 +739,9 @@ function apply_preset(rule, win) {
     const preset_label = {label: label || ''}
     const preset_label_for_white = {label: label_for_white || preset_label.label + '(W)'}
     empty_board && !game.is_empty() && new_empty_board()
+    handicap && add_handicap_stones(handicap)
+    rules && set_gorule(rules)
+    truep(komi) && (game.komi = komi)
     board_type && set_board_type(board_type, win)
     match && start_match(win)
     need_restart && restart_leelaz_by_preset(extended)

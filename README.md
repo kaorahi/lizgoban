@@ -121,7 +121,7 @@ Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1
         },
         {
             "label": "KataGo (handicap)",
-            "match": true,
+            "match": true, "rules": "tromp-taylor", "komi": 0, "handicap": 5,
             "engine": ["/foo/bar/katago", "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
@@ -156,6 +156,9 @@ Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1
   * engine_for_white: Alternative engine is used for white if this is set. (*1)
   * label_for_white: Additional item name when engine_for_white is given.
   * empty_board: Set it true for creating new empty board.
+  * rules: See the comments for "rules" in gtp_example.cfg of KataGo.
+  * komi: 7.5, 6.5, 0, -0.5, etc. (for KataGo)
+  * handicap: Number of handicap stones.
   * match: Set it true for match vs. AI.
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
 
