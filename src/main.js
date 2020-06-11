@@ -500,6 +500,7 @@ function menu_template(win) {
     const dup = until_current_move_p =>
           () => duplicate_sequence(until_current_move_p, true)
     const file_menu = menu('File', [
+        item('New game', undefined, (this_item, win) => ask_new_game(win), true),
         item('New empty board', 'CmdOrCtrl+N', () => new_empty_board(), true),
         item('New handicap game', 'Shift+H', ask_handicap_stones, true),
         ...[19, 13, 9].map(n => item(`New ${n}x${n} board`, undefined,
@@ -1124,15 +1125,21 @@ function info_text() {
     const message = f("sgf file", game.sgf_file) + lz + f("sgf", game.sgf_str) + slog
     return message
 }
-function ask_game_info(win, asking_komi_p) {
+function ask_new_game(win) {ask_game_info(win, false, true)}
+function ask_game_info(win, asking_komi_p, initial_p) {
+    const {board_size, handicaps} = game
     const params = {
         info_text: info_text(), sgf_rule: game.sgf_gorule, current_rule: get_gorule(),
         supported_rules: AI.is_gorule_supported() && katago_supported_rules,
-        asking_komi_p,
+        asking_komi_p, initial_p,
     }
     win.webContents.send('ask_game_info', params)
 }
-function set_game_info(player_black, player_white, komi, sgf_gorule, gorule, comment) {
+function set_game_info(player_black, player_white, size, handicaps,
+                       komi, sgf_gorule, gorule, comment, initial_p) {
+    initial_p && new_empty_board(2 <= size && size <= 19 && size)
+    initial_p && handicaps > 0 && 2 <= handicaps && handicaps <= 9 &&
+        add_handicap_stones(handicaps)
     set_gorule(gorule, gorule !== game.gorule); set_komi(komi)
     merge(game, {player_black, player_white, sgf_gorule})
     merge(game.ref_current(), {comment})

@@ -43,7 +43,8 @@
  .dialog p, .dialog div {
   color: white; background-color: #444; padding: 3em; z-index: 9; position: relative;
  }
- .dialog td:not(:first-child) {padding-left: 1em;}
+ .dialog td:nth-child(2n) {padding-left: 0.3em;}
+ .dialog td:nth-child(2n+3) {padding-left: 2em;}
  .dialog td {padding-bottom: 1em;}
  .dialog textarea {width: 50vw;}
  #toast {
@@ -276,18 +277,29 @@ vs.
 <div class='dialog' id='game_info_dialog'>
  <div>
   <table>
-   <tr><td>Player <u>B</u>lack</td><td><input id='player_black' accesskey='b'></td></tr>
-   <tr><td>Player <u>W</u>hite</td><td><input id='player_white' accesskey='w'></td></tr>
+   <tr>
+    <td>Player <u>B</u>lack</td><td><input id='player_black' accesskey='b'></td>
+    <td>Player <u>W</u>hite</td><td><input id='player_white' accesskey='w'></td>
+   </tr>
+   <tr>
+    <td><u>S</u>ize</td>
+    <td><input id='board_size' class='game_info_dialog_initial' accesskey='s'></td>
+    <td><u>H</u>andicap</td>
+    <td><input id='handicap' class='game_info_dialog_initial' accesskey='h'></td>
+   </tr>
    <tr><td><u>K</u>omi</td><td><input id='komi' accesskey='k'></td></tr>
    <tr>
     <td>Engine <u>R</u>ule</td><td><select id='rule' accesskey='r'></select></td>
     <td><u>G</u>ame Rule</td><td><input id='sgf_rule' accesskey='g'></td>
    </tr>
   </table>
+  <span class='game_info_dialog_non_initial'>
   Move <u>C</u>omment<br>
   <textarea id='comment_form' rows="5" accesskey='c'></textarea><br>
   <u>I</u>nfo<br>
   <textarea id='info_form' style="height: 20vh;" readonly accesskey='i'></textarea>
+  </span>
+  <input id='initial_p' style='display: none'>
   <div style='text-align: center; padding: 1em 0em 0em 0em;'>
    <input type='button' onclick="set_game_info()" value=" ok " accesskey='o'>
    (<u>O</u>)

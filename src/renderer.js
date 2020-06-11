@@ -98,11 +98,15 @@ function submit_generic_input_dialog() {
 }
 
 function set_game_info() {
-    const keys = ['#player_black', '#player_white', '#komi',
-                  '#sgf_rule', '#rule', '#comment_form']
-    const [pb, pw, komi_text, sgf_rule, rule, comment] = keys.map(key => Q(key).value)
+    const keys = ['#player_black', '#player_white', '#board_size', '#handicap',
+                  '#komi', '#sgf_rule', '#rule', '#comment_form', '#initial_p']
+    const [pb, pw, sz_text, hc_test, komi_text, sgf_rule, rule, comment, ip_text] =
+          keys.map(key => Q(key).value)
+    const sz = to_i(sz_text), hc = to_i(hc_test)
     const komi = Math.round(to_f(komi_text) * 2) / 2  // int or half-int
-    main('set_game_info', pb, pw, komi, sgf_rule, rule, comment); hide_dialog()
+    const initial_p = (ip_text === 'yes')
+    main('set_game_info', pb, pw, sz, hc, komi, sgf_rule, rule, comment, initial_p)
+    hide_dialog()
 }
 
 function show_dialog(name, selected) {
@@ -172,14 +176,19 @@ ipc.on('generic_input_dialog', (e, label, init_val, channel, warning) =>
        show_generic_input_dialog(warning, label, init_val, val => main(channel, val)))
 
 ipc.on('ask_game_info', (e, params) => {
-    const {info_text, sgf_rule, current_rule, supported_rules, asking_komi_p} = params
+    const {info_text, sgf_rule, current_rule, supported_rules,
+           asking_komi_p, initial_p} = params
+    const unless_initial = text => initial_p ? '' : text
     // defaults
-    Q('#player_black').value = R.player_black
-    Q('#player_white').value = R.player_white
+    Q('#player_black').value = unless_initial(R.player_black)
+    Q('#player_white').value = unless_initial(R.player_white)
+    Q('#board_size').value = board_size()
+    Q('#handicap').value = R.handicaps
     Q('#komi').value = R.komi
     Q('#sgf_rule').value = sgf_rule
     Q('#comment_form').value = R.comment
     Q('#info_form').value = info_text
+    Q('#initial_p').value = initial_p ? "yes" : "no"
     // rule selection
     const sel = Q('#rule'), rules = supported_rules || ['unsupported']
     while (sel.firstChild) {sel.removeChild(sel.firstChild)}
@@ -193,6 +202,9 @@ ipc.on('ask_game_info', (e, params) => {
         const new_sgf_rule = sgf_rule_from_katago_rule(sel.value)
         new_sgf_rule && (Q('#sgf_rule').value = new_sgf_rule)
     }
+    // hide parts
+    update_ui_element('.game_info_dialog_initial', initial_p)
+    update_ui_element('.game_info_dialog_non_initial', !initial_p)
     // show it
     show_dialog('#game_info_dialog', asking_komi_p && '#komi')
 })
