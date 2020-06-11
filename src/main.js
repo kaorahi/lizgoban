@@ -881,11 +881,6 @@ function submit_auto_play_or_replay(sec, replaying) {
 }
 function submit_auto_play(sec) {submit_auto_play_or_replay(sec, false)}
 function submit_auto_replay(sec) {submit_auto_play_or_replay(sec, true)}
-function ask_game_info(win, asking_komi_p) {
-    const supported_rules = AI.is_gorule_supported() && katago_supported_rules
-    win.webContents.send('ask_game_info', info_text(), game.sgf_gorule, get_gorule(),
-                         supported_rules, asking_komi_p)
-}
 function increment_auto_play_count(n) {
     auto_playing(true) && stop_auto_play()
     auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
@@ -1129,6 +1124,11 @@ function info_text() {
     const slog = `<startup log>\n${AI.startup_log().join("\n")}`
     const message = f("sgf file", game.sgf_file) + lz + f("sgf", game.sgf_str) + slog
     return message
+}
+function ask_game_info(win, asking_komi_p) {
+    const supported_rules = AI.is_gorule_supported() && katago_supported_rules
+    win.webContents.send('ask_game_info', info_text(), game.sgf_gorule, get_gorule(),
+                         supported_rules, asking_komi_p)
 }
 function set_game_info(player_black, player_white, komi, sgf_gorule, gorule, comment) {
     set_gorule(gorule, gorule !== game.gorule); set_komi(komi)
