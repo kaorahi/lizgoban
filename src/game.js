@@ -42,6 +42,7 @@ function create_game(init_history, init_prop) {
         // mc = move_count (0: empty board, 1: first move, ...)
         len: () => history.length,
         is_empty: () => empty(history),
+        is_fresh: () => self.len() === self.handicaps,
         ref: mc => history[mc - 1] || self.move0,
         ref_current: () => self.ref(self.move_count),
         current_stones: () => self.stones_at(self.move_count),

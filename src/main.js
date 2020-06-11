@@ -1081,8 +1081,7 @@ function ask_komi(win) {
     ask_choice(`Komi (${game.get_komi()})`, values, proc)
 }
 function set_komi(k) {
-    const fresh_game_p = (game.len() === game.handicaps)
-    const update_default_p = fresh_game_p, handicap_p = game.handicaps > 0
+    const update_default_p = game.is_fresh(), handicap_p = game.handicaps > 0
     game.komi = k
     update_default_p &&
         set_stored(handicap_p ? 'komi_for_new_handicap_game' : 'komi_for_new_game', k)
