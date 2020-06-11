@@ -373,6 +373,12 @@ ipc.on('close_window_or_cut_sequence',
                                  close_window_or_cut_sequence(win))
        }, []))
 
+ipc.on('ask_new_game',
+       e => apply_api('close_window_or_cut_sequence', () => {
+           get_windows().forEach(win => (win.webContents === e.sender) &&
+                                 ask_new_game(win))
+       }, []))
+
 // update after every command
 
 function update_all(keep_board) {
