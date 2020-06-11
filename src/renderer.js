@@ -171,7 +171,8 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
 ipc.on('generic_input_dialog', (e, label, init_val, channel, warning) =>
        show_generic_input_dialog(warning, label, init_val, val => main(channel, val)))
 
-ipc.on('ask_game_info', (e, info_text, sgf_rule, current_rule, supported_rules, asking_komi_p) => {
+ipc.on('ask_game_info', (e, params) => {
+    const {info_text, sgf_rule, current_rule, supported_rules, asking_komi_p} = params
     // defaults
     Q('#player_black').value = R.player_black
     Q('#player_white').value = R.player_white

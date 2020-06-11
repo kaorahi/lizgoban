@@ -1126,9 +1126,12 @@ function info_text() {
     return message
 }
 function ask_game_info(win, asking_komi_p) {
-    const supported_rules = AI.is_gorule_supported() && katago_supported_rules
-    win.webContents.send('ask_game_info', info_text(), game.sgf_gorule, get_gorule(),
-                         supported_rules, asking_komi_p)
+    const params = {
+        info_text: info_text(), sgf_rule: game.sgf_gorule, current_rule: get_gorule(),
+        supported_rules: AI.is_gorule_supported() && katago_supported_rules,
+        asking_komi_p,
+    }
+    win.webContents.send('ask_game_info', params)
 }
 function set_game_info(player_black, player_white, komi, sgf_gorule, gorule, comment) {
     set_gorule(gorule, gorule !== game.gorule); set_komi(komi)
