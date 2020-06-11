@@ -506,16 +506,7 @@ function menu_template(win) {
     const dup = until_current_move_p =>
           () => duplicate_sequence(until_current_move_p, true)
     const file_menu = menu('File', [
-        item('New game', undefined, (this_item, win) => ask_new_game(win), true),
-        item('New empty board', 'CmdOrCtrl+N', () => new_empty_board(), true),
-        item('New handicap game', 'Shift+H', ask_handicap_stones, true),
-        ...[19, 13, 9].map(n => item(`New ${n}x${n} board`, undefined,
-                                     () => new_empty_board(n), true,
-                                     n === 19 || AI.katago_p())),
-        item('New window', 'CmdOrCtrl+Shift+N',
-             (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
-                                            'variation' : 'suggest')),
-        sep,
+        item('New game', 'CmdOrCtrl+N', (this_item, win) => ask_new_game(win), true),
         R.in_match ?
             item('Stop match', 'Shift+G',
                  (this_item, win) => stop_match(window_prop(win).window_id), true) :
@@ -523,6 +514,15 @@ function menu_template(win) {
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
         item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
+        sep,
+        item('New empty board', 'Shift+N', () => new_empty_board(), true),
+        item('New handicap game', 'Shift+H', ask_handicap_stones, true),
+        ...[19, 13, 9].map(n => item(`New ${n}x${n} board`, undefined,
+                                     () => new_empty_board(n), true,
+                                     n === 19 || AI.katago_p())),
+        item('New window', 'CmdOrCtrl+Shift+N',
+             (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
+                                            'variation' : 'suggest')),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
