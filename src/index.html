@@ -283,11 +283,11 @@ vs.
    </tr>
    <tr>
     <td><u>S</u>ize</td>
-    <td><input id='board_size' class='game_info_dialog_initial' accesskey='s'></td>
+    <td><input type='number' id='board_size' min='2' max='19' class='game_info_dialog_initial' accesskey='s'></td>
     <td><u>H</u>andicap</td>
-    <td><input id='handicap' class='game_info_dialog_initial' accesskey='h'></td>
+    <td><input type='number' id='handicap' min='0' max='9' class='game_info_dialog_initial' accesskey='h'></td>
    </tr>
-   <tr><td><u>K</u>omi</td><td><input id='komi' accesskey='k'></td></tr>
+   <tr><td><u>K</u>omi</td><td><input type='number' id='komi' step='0.5' accesskey='k'></td></tr>
    <tr>
     <td>Engine <u>R</u>ule</td><td><select id='rule' accesskey='r'></select></td>
     <td><u>G</u>ame Rule</td><td><input id='sgf_rule' accesskey='g'></td>
