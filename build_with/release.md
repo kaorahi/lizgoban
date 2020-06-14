@@ -2,6 +2,26 @@
 
 # Release notes
 
+## LizGoban 0.5.0-pre1.90
+
+Unofficial test of packaging. (Do not redistribute it, please.)
+
+This release is not for general users. Please try this only if you are willing to help the project by checking and reporting bugs. The next version will be officially released soon, in a week or so, if this test is passed without problems.
+
+* Test of [KataGo 1.4.3](https://github.com/lightvector/KataGo/releases/tag/v1.4.3) (OpenCL) for [lizgoban#53](https://github.com/kaorahi/lizgoban/issues/53) and [katago#238](https://github.com/lightvector/KataGo/issues/238).
+
+### Links
+
+[Project Home](https://github.com/kaorahi/lizgoban) /
+[License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
+
+Note that some external resources are also packaged into *.exe together with LizGoban itself. The license of LizGoban is not applied to them, of course.
+
+* engines and neural networks: [Leela Zero](https://github.com/leela-zero/leela-zero/releases/tag/v0.17), [KataGo](https://github.com/lightvector/KataGo/)
+* facial stone images: [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html)
+
+# (Previous versions)
+
 ## LizGoban 0.5.0-pre1
 
 Thanks to [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html) by Tororo, a new stone style is available in the all-in-one package `LizGoban-*_win_*.zip` for 64bit Windows. The ownerships of stones are indicated by their facial expressions in this style. To try it...
@@ -19,18 +39,6 @@ See README if you want to use this style without the all-in-one package.
 * Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`. (You may need to do "npm install" again.)
 * Omit marks for too minor suggestions on the board.
 * Experimentally add "Tool > Experimental > Tsumego frame1&2" for solving life & death problems. (See "Tips" section in "Help" menu.)
-
-### Links
-
-[Project Home](https://github.com/kaorahi/lizgoban) /
-[License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
-
-Note that some external resources are also packaged into *.exe together with LizGoban itself. The license of LizGoban is not applied to them, of course.
-
-* engines and neural networks: [Leela Zero](https://github.com/leela-zero/leela-zero/releases/tag/v0.17), [KataGo](https://github.com/lightvector/KataGo/)
-* facial stone images: [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html)
-
-# (Previous versions)
 
 ## LizGoban 0.4.4
 
