@@ -411,9 +411,9 @@ function double_boards_p() {return R.board_type.match(/^double_boards/)}
 
 // on goban
 
-function handle_mouse_on_goban(canvas, coord2idx, read_only, tag_clickable_p) {
+function handle_mouse_on_goban(canvas, coord2idx, read_only) {
     const onmousedown = e => !read_only && !R.attached &&
-          play_here(e, coord2idx, canvas, tag_clickable_p) &&
+          play_here(e, coord2idx, canvas) &&
           (set_showing_movenum_p(false), hover_off(canvas))
     const onmousemove = e => {unset_stone_is_clicked(); hover_here(e, coord2idx, canvas)}
     const onmouseenter = onmousemove
@@ -426,7 +426,7 @@ function ignore_mouse_on_goban(canvas) {
     ks.forEach(k => canvas[k] = do_nothing)
 }
 
-function play_here(e, coord2idx, canvas, tag_clickable_p) {
+function play_here(e, coord2idx, canvas) {
     const move = mouse2move(e, coord2idx); if (!move) {return true}
     const idx = move2idx(move)
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
@@ -438,9 +438,8 @@ function play_here(e, coord2idx, canvas, tag_clickable_p) {
         set_showing_movenum_p(true); hover_here(e, coord2idx, canvas)
         set_stone_is_clicked(); return false
     }
-    (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
-        (pass && main('pass'),  // right click = pass and play
-         main('play', move, !!another_board, null, null, match_sec))
+    pass && main('pass')  // right click = pass and play
+    main('play', move, !!another_board, null, null, match_sec)
     return true
 }
 function play_pass() {main('pass'); auto_play_in_match()}

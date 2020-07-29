@@ -81,7 +81,7 @@ function draw_goban_with_suggest(canvas, opts) {
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
                 draw_loss_p: R.show_endstate,
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
-                tag_clickable_p: true, mapping_tics_p: !opts.main_canvas_p, ...opts})
+                mapping_tics_p: !opts.main_canvas_p, ...opts})
 }
 
 function add_movenum_to_stones(stones, from) {
@@ -168,7 +168,7 @@ function draw_goban(canvas, stones, opts) {
            pausing_p, trial_p,
            draw_loss_p, draw_coordinates_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
-           tag_clickable_p, read_only, mapping_tics_p, mapping_to_winrate_bar,
+           read_only, mapping_tics_p, mapping_to_winrate_bar,
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
           = opts || {}
     const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
@@ -187,14 +187,14 @@ function draw_goban(canvas, stones, opts) {
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
-        tag_clickable_p, hovered_move, show_until,
+        hovered_move, show_until,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     draw_endstate_p && !hide_endstate_clusters_p() &&
         draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     // mouse events
     const mouse_handler = handle_mouse_on_goban || do_nothing
-    mouse_handler(canvas, coord2idx, read_only, tag_clickable_p)
+    mouse_handler(canvas, coord2idx, read_only)
 }
 
 function draw_board(hm, pausing_p, trial_p, canvas, g) {
@@ -283,7 +283,7 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
-           large_font_p, tag_clickable_p, hovered_move, show_until}
+           large_font_p, hovered_move, show_until}
           = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
@@ -310,8 +310,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
         R.lizzie_style && h.suggest && draw_suggest_lizzie(h, xy, stone_radius, g)
-        const highlight_tag_p = tag_clickable_p && idx2move(...idx) === hovered_move
-        h.displayed_tag && draw_tag(h.tag, xy, stone_radius, highlight_tag_p, g)
+        h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
         draw_endstate_diff_p && !hide_endstate_p() &&
             draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
@@ -452,9 +451,7 @@ function draw_movenums(h, xy, radius, g) {
     draw_text_on_stone(movenums.join(','), color, xy, radius, g)
 }
 
-function draw_tag(tag, xy, radius, highlight_tag_p, g) {
-    draw_text_on_stone(tag, highlight_tag_p ? GREEN : BLUE, xy, radius, g)
-}
+function draw_tag(tag, xy, radius, g) {draw_text_on_stone(tag, BLUE, xy, radius, g)}
 
 function draw_text_on_stone(text, color, xy, radius, g) {
     const l = text.length, [x, y] = xy, max_width = radius * 1.5
