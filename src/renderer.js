@@ -567,7 +567,8 @@ function take_thumbnail_of_stones(stones, proc, trail_p) {
     const [size, _] = get_canvas_size(main_canvas)
     const canvas = reusable_canvas || document.createElement("canvas")
     reusable_canvas = null
-    set_canvas_square_size(canvas, size); D.draw_thumbnail_goban(canvas, stones, trail_p)
+    set_canvas_square_size(canvas, size)
+    with_board_size(stones.length, D.draw_thumbnail_goban, canvas, stones, trail_p)
     let fired = false
     canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???

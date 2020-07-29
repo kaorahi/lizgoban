@@ -48,7 +48,8 @@ function create_game(init_history, init_prop) {
         current_stones: () => self.stones_at(self.move_count),
         stones_at: mc => self.stones_and_hama_at(mc).stones,
         stones_and_hama_at: mc =>
-            get_stones_and_set_ko_state(self.array_until(mc).filter(h => !h.illegal)),
+            with_board_size(self.board_size, get_stones_and_set_ko_state,
+                            self.array_until(mc).filter(h => !h.illegal)),
         array_until: mc => history.slice(0, mc),
         delete_future: () => history.splice(self.move_count),
         last_move: () => (last(history) || {}).move,
