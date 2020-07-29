@@ -265,16 +265,19 @@ function clear_selected_variation() {R.suggest = []}  // fixme: overkill
 
 // set option "main_canvas_p" etc. for d(canvas, opts)
 function with_opts(d, opts) {
-    return c => (update_first_board_canvas(c), d(c, {
-        main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
-        first_board_p: is_first_board_canvas(c), draw_visits_p: is_first_board_canvas(c),
-        pausing_p: R.pausing, trial_p: R.trial,
-        show_until: showing_until(c),
-        hovered_move: if_hover_on(c, hovered_move),
-        cheap_shadow_p: R.long_busy,
-        handle_mouse_on_goban,
-        ...((typeof opts === 'function') ? opts() : opts || {}),
-    }))
+    return c => {
+        update_first_board_canvas(c); const firstp = is_first_board_canvas(c)
+        d(c, {
+            main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
+            first_board_p: firstp, draw_visits_p: firstp,
+            pausing_p: R.pausing, trial_p: R.trial,
+            show_until: showing_until(c),
+            hovered_move: if_hover_on(c, hovered_move),
+            cheap_shadow_p: R.long_busy,
+            handle_mouse_on_goban,
+            ...((typeof opts === 'function') ? opts() : opts || {}),
+        })
+    }
 }
 
 const ignore_mouse = {handle_mouse_on_goban: ignore_mouse_on_goban}
