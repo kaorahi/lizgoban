@@ -160,7 +160,7 @@ function max_movenum() {return mc2movenum(R.history_length)}
 
 function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
 function winrate_history_ref(key, nth_prev) {
-    const su = showing_until(), mc = truep(su) ? su : R.move_count
+    const mc = finite_or(showing_until(), R.move_count)
     const [whs, rest] = R.winrate_history_set
     const winrate_history = !truep(nth_prev) ? R.winrate_history :
           (alternative_engine_for_white_p() && !R.bturn) ? whs[1] : whs[0]

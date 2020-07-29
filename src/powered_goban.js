@@ -68,7 +68,7 @@ const suggest_keys2 = ['endstate', 'score_without_komi']
 
 const too_small_prior = 1e-3
 function suggest_handler(h) {
-    if (get_showing_until()) {return}
+    if (finitep(get_showing_until())) {return}
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
@@ -136,7 +136,7 @@ function set_renderer_state(...args) {
     const busy = M.is_busy(), long_busy = M.is_long_busy()
     const winrate_history = busy ? [] : winrate_from_game()
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
-    const su_p = truep(get_showing_until())
+    const su_p = finitep(get_showing_until())
     const previous_suggest = !su_p && get_previous_suggest()
     const winrate_trail = !su_p
     const max_visits = clip(Math.max(...(R.suggest || []).filter(orig_suggest_p).map(h => h.visits)), 1)
