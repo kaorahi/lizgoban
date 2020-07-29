@@ -458,7 +458,7 @@ function hover_off(canvas) {set_hovered(null, null, null)}
 function goto_idx_maybe(idx, another_board) {
     const mc = latest_move_count_for_idx(idx)
     return mc &&
-        (duplicate_if(another_board), main('goto_move_count', mc), wink(), true)
+        (duplicate_if(another_board), main('goto_move_count', mc - 1), wink(), true)
 }
 function duplicate_if(x) {x && main('duplicate_sequence')}
 
