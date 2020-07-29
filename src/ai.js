@@ -177,9 +177,11 @@ function different_komi_for_black_and_white() {
 // engine cache
 
 // note:
-// We need max_cached_engines = 2 if we want to use Leela Zero and KataGo
-// alternately because leelaz.kill() is called before leelaz.start().
-// kill() pushes KataGo to cache before start() pulls LZ from cache.
+// When we use Leela Zero and KataGo alternately,
+// leelaz.kill() pushes KataGo to cache before leelaz.start() pulls LZ from cache.
+// Hence we postpone calling truncate_cached_engines() until start()
+// so that max_cached_engines = 1 works in this situation.
+// (Otherwise, we need max_cached_engines = 2 wastefully.)
 
 function create_leelaz_proxy() {
     let lz; const proxy = {}
@@ -189,7 +191,8 @@ function create_leelaz_proxy() {
         merge(proxy, {...lz, start, restart, kill, force_restart, instance_eq})
     }
     const start_gen = (h, command) => {
-        const c = pull_cached_engine(h); renew_lz(c); c || lz[command](h)
+        const c = pull_cached_engine(h)
+        truncate_cached_engines(); renew_lz(c); c || lz[command](h)
     }
     // override original methods
     const start = h => start_gen(h, 'start')
@@ -211,11 +214,16 @@ function cache_disused_engine(lz) {
     if (!lz.start_args() || !lz.is_ready()) {lz.kill(); return}
     pull_cached_engine(lz.start_args())  // avoid duplication
     lz.set_pondering(false)
-    remember(lz, cached_engines, max_cached_engines, lz => lz.kill())
+    cached_engines.unshift(lz)
+}
+function truncate_cached_engines() {
+    truncate(cached_engines, max_cached_engines, lz => lz.kill())
 }
 
 function remember(element, array, max_length, destroy) {
-    array.unshift(element)
+    array.unshift(element); truncate(array, max_length, destroy)
+}
+function truncate(array, max_length, destroy) {
     array.splice(max_length, Infinity).forEach(destroy || do_nothing)
 }
 

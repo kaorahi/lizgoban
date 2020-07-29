@@ -1,5 +1,5 @@
 {
-    "max_cached_engines": 3,
+    "max_cached_engines": 2,
     "face_image_rule": [
         [-0.8, "goisi_k4.png", "goisi_s4.png"],
         [-0.6, "goisi_k15.png", "goisi_s15.png"],
