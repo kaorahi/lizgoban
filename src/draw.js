@@ -20,6 +20,7 @@ globalize({
 
 const {
     draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
+    draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban, draw_thumbnail_goban, draw_zone_color_chart,
 } = require('./draw_goban.js')
 
@@ -180,6 +181,7 @@ module.exports = {
     movenum: () => mc2movenum(R.move_count), max_movenum, clip_handicaps,
     draw_thumbnail_goban,
     draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
+    draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
     update_winrate_trail, clear_canvas, is_next_move, latest_move,

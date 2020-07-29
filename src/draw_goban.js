@@ -101,9 +101,10 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const variation = suggest.pv || []
     const expected = expected_pv()
     let mark_unexpected_p = (expected[0] === variation[0]) || opts.force_draw_expected_p
-    const displayed_stones = copy_stones_for_display()
+    const displayed_stones = copy_stones_for_display(opts.stones)
+    const bturn = opts.stones ? opts.bturn : R.bturn
     variation.forEach((move, k) => {
-        const b = xor(R.bturn, k % 2 === 1), w = !b, expected_move = expected[k]
+        const b = xor(bturn, k % 2 === 1), w = !b, expected_move = expected[k]
         merge_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
             variation: true, movenums: [k + 1],
@@ -124,6 +125,12 @@ function draw_goban_with_principal_variation(canvas, options) {
     const opts = {read_only: true, force_draw_expected_p: true,
                   mapping_to_winrate_bar: false, ...options}
     draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
+}
+
+function draw_goban_with_subboard_stones_suggest(canvas, options) {
+    const {stones, suggest, bturn} = R.subboard_stones_suggest
+    const opts = {stones, bturn, mapping_to_winrate_bar: false, ...options}
+    draw_goban_with_variation(canvas, suggest, opts)
 }
 
 function draw_endstate_goban(canvas, options) {
@@ -772,6 +779,7 @@ module.exports = {
     draw_raw_goban,
     draw_main_goban,
     draw_goban_with_principal_variation,
+    draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban,
     draw_thumbnail_goban,
     draw_zone_color_chart,

@@ -284,7 +284,8 @@ function with_opts(d, opts) {
 const ignore_mouse = {handle_mouse_on_goban: ignore_mouse_on_goban}
 const draw_main = with_opts(D.draw_main_goban)
 const draw_pv = with_opts((...args) => {
-    truep(showing_until()) ? D.draw_raw_goban(...args) :
+    R.subboard_stones_suggest ? D.draw_goban_with_subboard_stones_suggest(...args) :
+        truep(showing_until()) ? D.draw_raw_goban(...args) :
         D.draw_goban_with_principal_variation(...args)
 }, ignore_mouse)
 const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
@@ -911,7 +912,8 @@ function showing_something_p() {return showing_movenum_p() || showing_endstate_v
 function showing_movenum_p() {return the_showing_movenum_p}
 function showing_endstate_value_p() {return the_showing_endstate_value_p}
 function set_showing_something_p(val) {
-    val && checker_for_showing_until.reset(); update_hover_maybe(); update_goban()
+    val && checker_for_showing_until.reset(); update_hover_maybe();
+    update_showing_until(); update_goban()
 }
 function set_showing_movenum_p(val) {
     the_showing_movenum_p = val; set_showing_something_p(val)

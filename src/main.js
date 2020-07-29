@@ -1540,9 +1540,16 @@ function update_state(keep_suggest_p) {
     const su = P.get_showing_until()
     const showing_until_p = truep(su) && su < game.move_count
     const cur = game.ref(showing_until_p ? su : game.move_count)
+    const prev_su = showing_until_p && game.ref(su - 1)
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
-    const when_showing_until = (showing_until_p && cur) ? {bturn: !cur.is_black} : {}
+    const when_showing_until = (showing_until_p && cur) ? {
+        bturn: !cur.is_black,
+        subboard_stones_suggest: {
+            stones: game.stones_at(su - 1), suggest: (prev_su.suggest || [])[0],
+            bturn : !prev_su.is_black,
+        },
+    } : {subboard_stones_suggest: null}
     !option.movenum_for_trial && (game.trial_from = null)
     const {face_image_rule} = option
     P.set_and_render({
