@@ -742,8 +742,8 @@ function apply_preset(rule, win) {
     truep(komi) && (game.komi = komi)
     board_type && set_board_type(board_type, win)
     match && start_match(win)
-    update_engines_by_preset(rule)
-    AI.backup(); resume()
+    const is_engine_updated = update_engines_by_preset(rule)
+    AI.backup(); is_engine_updated && resume()
 }
 
 function expand_preset(preset) {
@@ -772,6 +772,9 @@ function update_engines_by_preset(rule) {
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
         unload_leelaz_for_white()
     engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label_for_white)
+    const is_updated =
+          need_restart || weight_file || weight_file_for_white || engine_for_white
+    return is_updated
 }
 
 function restart_leelaz_by_preset(rule, first_p) {
