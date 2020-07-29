@@ -182,10 +182,6 @@ on Mac or Linux. The latter option overwrites the former one in the second examp
 
 In addition, LizGoban reads external/config.json (and config.json in the "working directory" in the above (*1)) beforehand if they exist.
 
-#### To save/load analyses in SGF
-
-Check "Tool > Reuse analysis" in the menu. This is expected to be compatible with Lizzie 0.7.2.
-
 #### To show ownerships of stones by facial expressions:
 
 Prepare stone images and put them into `external/` directory.
@@ -232,6 +228,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 * Support ownerships of stones by facial expressions.
 * Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`.
 * Modify "File" menu slightly for convenience.
+* Add "Save/Copy SGF with analysis" into menu. (compatible with Lizzie 0.7.2)
 * Add more configurations (rules, komi, handicap, stone_style) into `preset` in `config.json`.
 * Omit marks for too minor suggestions on the board.
 * Experimentally add "Tool > Experimental > Tsumego frame1&2" for solving life & death problems. (See "Tips" section in "Help" menu.)
@@ -243,7 +240,6 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 
 Incompatibilities:
 * Upgrade libraries (Electron 9, etc.). So you may need to do "npm install" again.
-* Save/Load analyses to/from SGF in Lizzie-compatible format by "Tool > Reuse analysis". (Officially supported now.)
 
 ### 0.4.0
 

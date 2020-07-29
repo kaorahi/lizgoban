@@ -605,14 +605,15 @@ function menu_template(win) {
                      ]),
                      item('Open exercise', 'Alt+?', open_exercise_dir, true),
                      sep),
-        store_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
-        item('...Clear analysis', undefined, P.delete_cache, false, R.use_cached_suggest_p),
+        item('Clear analysis', undefined, P.delete_cache, false, R.use_cached_suggest_p),
         item('...Restore analysis', undefined, P.undelete_cache, false, R.use_cached_suggest_p),
         sep,
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         menu('Experimental...', [
+            obsolete_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
+            sep,
             item("Tsumego frame1", 'Shift+f', () => add_tsumego_frame(),
                  true, game.move_count > 0),
             item("Tsumego frame2", 'CmdOrCtrl+Shift+f', () => add_tsumego_frame(true),
@@ -691,6 +692,15 @@ function toggle_stored(key) {
 }
 
 function unload_leelaz_for_white() {AI.unload_leelaz_for_white()}
+
+function obsolete_toggler_menu_item(label, key, accelerator) {
+    const message = 'This preference will be removed in future versions. If you have a special reason to change the default value, please post it to GitHub issues from the link "Project Home" at the bottom of "Help > en".'
+    const f = () => toggle_stored(key)
+    const with_warning = (f, title, message) =>
+          (...args) => (dialog.showErrorBox(title, message), f(...args))
+    const on_click =  with_warning(f, `Obsolete preference: "${label}"`, message)
+    return store_toggler_menu_item(label, key, accelerator, on_click)
+}
 
 // preset
 
