@@ -232,7 +232,8 @@ function set_tentative_endstate_maybe() {
     update_p ? set_endstate_uptodate(endstate) :
         reuse_p ? do_nothing() : set_endstate_obsolete()
     const es = recall_endstate()
-    tentatively_add_endstate_to_stones(R.stones, es, update_p && pausing)
+    const immediately = update_p && (pausing || get_showing_until())
+    tentatively_add_endstate_to_stones(R.stones, es, immediately)
     R.is_endstate_drawable = !!es
 }
 
