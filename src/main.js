@@ -1543,7 +1543,7 @@ function update_state(keep_suggest_p) {
     const bturn = !cur.is_black
     const subboard_stones_suggest = prev_su && prev_su.suggest && {
         stones: game.stones_at(su - 1), suggest: (prev_su.suggest || [{}])[0],
-        bturn: !prev_su.is_black,
+        bturn: !prev_su.is_black, gain: cur.gain,
     }
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}

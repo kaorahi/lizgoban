@@ -130,8 +130,12 @@ function draw_goban_with_principal_variation(canvas, options) {
 }
 
 function draw_goban_with_subboard_stones_suggest(canvas, options) {
-    const {stones, suggest, bturn} = R.subboard_stones_suggest
-    const opts = {stones, bturn, mapping_to_winrate_bar: false, ...options}
+    const {stones, suggest, bturn, gain} = R.subboard_stones_suggest
+    const draw_visits_p = truep(gain) && gain <= blunder_threshold &&
+            `  ${bturn ? 'B' : 'W'} ${f2s(gain, 1)} pts`
+    const opts = {stones, bturn, mapping_to_winrate_bar: false, ...options,
+                  // draw_visits_p must be later than options
+                  draw_visits_p}
     draw_goban_with_variation(canvas, suggest, opts)
 }
 
