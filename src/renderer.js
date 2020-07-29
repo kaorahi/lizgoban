@@ -455,8 +455,8 @@ function hover_here(e, coord2idx, canvas) {
 }
 function hover_off(canvas) {set_hovered(null, null, null)}
 
-function goto_idx_maybe(idx, another_board, tagged_stone_only) {
-    const mc = latest_move_count_for_idx(idx, tagged_stone_only)
+function goto_idx_maybe(idx, another_board) {
+    const mc = latest_move_count_for_idx(idx)
     return mc &&
         (duplicate_if(another_board), main('goto_move_count', mc), wink(), true)
 }
@@ -538,11 +538,9 @@ function set_hovered_move_count_as(count) {
 
 // util
 
-function latest_move_count_for_idx(idx, tagged_stone_only) {
+function latest_move_count_for_idx(idx) {
     const s = idx && aa_ref(R.stones, ...idx)
-    const go = s && (!tagged_stone_only || (s.tag && s.stone))
-    // use !! for safety (truep('') is true)
-    return !!go && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
+    return s && (D.latest_move(s.anytime_stones, R.move_count) || {}).move_count
 }
 
 function mouse2coord(e) {
