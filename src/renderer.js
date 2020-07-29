@@ -42,7 +42,7 @@ const R = {
     lizzie_style: false,
     window_id: -1,
     image_paths: null, image: null, stone_image_p: true, board_image_p: true,
-    stone_style: 'paint',
+    stone_style: '2D',
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null

@@ -163,13 +163,20 @@ let pausing = false, busy = false
 const default_for_stored_key = {
     lizzie_style: true, expand_winrate_bar: false, score_bar: true,
     let_me_think: false, show_endstate: true, gorule: default_gorule,
-    stone_image_p: true, board_image_p: true, stone_style: 'dome',
+    stone_image_p: true, board_image_p: true, stone_style: '3D',
     use_cached_suggest: false,
     komi_for_new_game: leelaz_komi, komi_for_new_handicap_game: handicap_komi,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
 game.komi = get_stored('komi_for_new_game')
+
+function keep_backward_compatibility_of_stone_style() {
+    const rename = [['paint', '2D'], ['flat', '2.5D'], ['dome', '3D'], ['face', 'Face']]
+    const key = 'stone_style', new_name = aa2hash(rename)[get_stored(key)]
+    new_name && set_stored(key, new_name)
+}
+keep_backward_compatibility_of_stone_style()
 
 globalize({  // for ai.js
     is_bturn: () => R.bturn,
@@ -664,13 +671,10 @@ function set_gorule(new_gorule, set_as_default_p) {
 }
 
 function stone_style_submenu() {
-    const label_table = [
-        ['2D', 'paint'], ['2.5D', 'flat'], ['3D', 'dome'],
-        ...(option.face_image_rule ? [['Face', 'face']] : []),
-    ]
-    return label_table.map(([label, val]) => ({
-        label, type: 'radio', checked: R.stone_style === val,
-        click: () => {set_stored('stone_style', val); update_all()},
+    const styles = ['2D', '2.5D', '3D', ...(option.face_image_rule ? ['Face'] : [])]
+    return styles.map(label => ({
+        label, type: 'radio', checked: R.stone_style === label,
+        click: () => {set_stored('stone_style', label); update_all()},
     }))
 }
 

@@ -399,7 +399,7 @@ function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
         edged_fill_circle(xy, radius, g)
     }
     stone_image ? draw_stone_by_image() :
-        style === 'dome' ? draw_stone_by_gradation() : draw_stone_by_paint()
+        style === '3D' ? draw_stone_by_gradation() : draw_stone_by_paint()
     draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
     draw_last_p && h.last && h.move_count > R.handicaps &&
         draw_last_move(h, xy, radius, g)
@@ -420,7 +420,7 @@ function stone_style_for(h) {
     return {b_color, w_color, stone_image, style}
 }
 
-function face_image_p() {return R.face_image_rule && (R.stone_style === 'face')}
+function face_image_p() {return R.face_image_rule && (R.stone_style === 'Face')}
 
 function stone_image_for(h) {return stone_image_for_key(h, 'black_stone', 'white_stone')}
 function face_image_for(h) {
@@ -486,7 +486,7 @@ function draw_loss(h, xy, radius, g) {
 function draw_shadow_maybe(h, xy, radius, cheap_shadow_p, g) {
     if (!h.stone) {return}
     const {stone_image, style} = stone_style_for(h)
-    const shadow_p = stone_image || (style && style !== 'paint')
+    const shadow_p = stone_image || (style && style !== '2D')
     if (!shadow_p) {return}
     cheap_shadow_p ? draw_cheap_shadow(xy, radius, g) :
         draw_gorgeous_shadow(xy, radius, g)
