@@ -278,7 +278,7 @@ function new_window(default_board_type) {
           = store.get(conf_key) || {}
     const [x, y] = position || [0, 0]
     const [width, height] = size || [ss.height, ss.height * 0.6]
-    const webPreferences = {nodeIntegration: true}
+    const webPreferences = {nodeIntegration: true, enableRemoteModule: true}
     const win = get_new_window('index.html',
                                {x, y, width, height, webPreferences, show: false})
     const prop = window_prop(win)
