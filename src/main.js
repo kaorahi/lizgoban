@@ -1589,7 +1589,6 @@ function availability() {
 // leelaz process
 
 // load weight file
-let previous_weight_file = null
 function load_weight(white_p) {
     const dir = option_path('weight_dir') ||
           PATH.dirname(AI.leelaz_weight_file(white_p) || '')
@@ -1597,11 +1596,7 @@ function load_weight(white_p) {
     AI.backup(); return ret
 }
 function load_weight_file(weight_file, white_p) {
-    if (!weight_file) {return false}
-    const current_weight_file = AI.leelaz_weight_file(white_p)
-    weight_file !== current_weight_file && !white_p &&
-        (previous_weight_file = current_weight_file)
-    AI.load_weight_file(weight_file, white_p)
+    weight_file && AI.load_weight_file(weight_file, white_p)
     return weight_file
 }
 function load_leelaz_for_black() {load_weight()}
