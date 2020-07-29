@@ -452,7 +452,8 @@ function clear_info_in_stones(stones) {
     aa_each(stones, s => keys.forEach(key => {delete s[key]}))
 }
 function stone_for_history_elem(h, stones) {
-    return h && h.move && aa_ref(stones, ...move2idx(h.move))
+    return h && h.move &&
+        aa_ref(stones, ...with_board_size(stones.length, move2idx, h.move))
 }
 function pick_properties(orig, keys) {
     const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
