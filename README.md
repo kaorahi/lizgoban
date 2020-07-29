@@ -31,7 +31,7 @@ on [Electron](https://electronjs.org/).
 * Auto-replay / Auto-analysis
 * Quick switching of multiple engines
 * Open URL (by drag & drop or clipboard)
-* [Experimental] Save/load analyses to/from SGF in Lizzie-compatible format
+* Save/load analyses to/from SGF in Lizzie-compatible format
 * [Experimental] Use your favorite images for the board and the stones
 
 ### Original features
@@ -182,6 +182,10 @@ on Mac or Linux. The latter option overwrites the former one in the second examp
 
 In addition, LizGoban reads external/config.json (and config.json in the "working directory" in the above (*1)) beforehand if they exist.
 
+#### To save/load analyses in SGF
+
+Check "Tool > Reuse analysis" in the menu. This is expected to be compatible with Lizzie 0.7.2.
+
 #### To show ownerships of stones by facial expressions:
 
 Prepare stone images and put them into `external/` directory.
@@ -221,10 +225,6 @@ Set KataGo as the engine and select View > Stone > Face. You need to enable View
 
 Put your favorite images of board and stones as `external/board.png`, `external/black.png`, and `external/white.png` (before starting LizGoban).
 
-#### To save/load analyses in SGF (Experimental)
-
-Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be compatible with Lizzie 0.7.2.
-
 ## Major changes
 
 ### 0.5.0-pre*
@@ -243,6 +243,7 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 
 Incompatibilities:
 * Upgrade libraries (Electron 9, etc.). So you may need to do "npm install" again.
+* Save/Load analyses to/from SGF in Lizzie-compatible format by "Tool > Reuse analysis". (Officially supported now.)
 
 ### 0.4.0
 
