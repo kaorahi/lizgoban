@@ -210,8 +210,8 @@ Then add "face_image_rule" into config.json like this.
 
 It means
 
-* goisi_k4.png or goisi_s4.png for ownership <= -0.8 (dead).
-* goisi_k15.png or goisi_s15.png for ownership <= -0.6.
+* goisi_k4.png (black) or goisi_s4.png (white) for ownership < -0.8 (dead).
+* goisi_k15.png or goisi_s15.png for ownership < -0.6.
 * ...
 * goisi_k16.png or goisi_s16.png for ownership <= 1.00 (alive).
 
