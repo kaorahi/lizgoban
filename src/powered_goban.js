@@ -7,7 +7,7 @@ const {create_game} = require('./game.js')
 const {endstate_clusters_for} = require('./area.js')
 
 // state
-let endstate_diff_interval = 12, endstate_diff_from = null
+let endstate_diff_interval = 12, showing_until = null
 let game = create_game()  // dummy empty game until first set_board()
 const winrate_trail = true
 
@@ -213,8 +213,8 @@ function append_endstate_tag_maybe(h) {
 }
 function get_endstate_diff_interval() {return endstate_diff_interval}
 function set_endstate_diff_interval(k) {endstate_diff_interval = k}
-function set_endstate_diff_from(k) {
-    change_endstate_diff_target(() => {endstate_diff_from = k})
+function set_showing_until(k) {
+    change_endstate_diff_target(() => {showing_until = k})
 }
 function change_endstate_diff_target(proc) {
     const old = endstate_diff_move_count()
@@ -270,8 +270,8 @@ function update_endstate_diff(endstate, tentatively, immediately) {
     R.prev_endstate_sum = game.ref(prev).score_without_komi
 }
 function endstate_diff_move_count() {
-    const edf = endstate_diff_from, mc = game.move_count
-    return (truep(edf) && edf !== mc) ? edf : (mc - endstate_diff_interval)
+    const su = showing_until, mc = game.move_count
+    return (truep(su) && su !== mc) ? su : (mc - endstate_diff_interval)
 }
 function average_endstate_sum(move_count) {
     return for_current_and_previous_endstate(move_count, 'endstate_sum', 1,
@@ -477,7 +477,7 @@ module.exports = {
     set_board,
     // endstate
     append_endstate_tag_maybe,
-    get_endstate_diff_interval, set_endstate_diff_interval, set_endstate_diff_from,
+    get_endstate_diff_interval, set_endstate_diff_interval, set_showing_until,
     // renderer
     set_and_render,
     // util

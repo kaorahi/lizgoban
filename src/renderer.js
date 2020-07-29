@@ -931,7 +931,7 @@ function showing_until(canvas) {
 function update_showing_until() {
     const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)
     if (!R.show_endstate || !changed) {return}
-    main('set_endstate_diff_from', cur)
+    main('set_showing_until', cur)
 }
 
 function undoable() {return R.move_count > R.handicaps}

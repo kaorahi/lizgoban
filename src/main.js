@@ -318,10 +318,10 @@ function renderer_gen(channel, win_prop_p, ...args) {
 
 // normal commands
 
-const {set_endstate_diff_from} = P
+const {set_showing_until} = P
 const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
-    copy_sgf_to_clipboard, set_endstate_diff_interval, set_endstate_diff_from, update_menu,
+    copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
     set_match_param,
 }
 const api = merge({}, simple_api, {
@@ -352,7 +352,7 @@ function api_handler(channel, handler, busy) {
     }
 }
 function apply_api(channel, handler, args) {
-    const keep_board = ['toggle_pause', !is_busy() && 'unset_busy', 'set_endstate_diff_from']
+    const keep_board = ['toggle_pause', !is_busy() && 'unset_busy', 'set_showing_until']
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
     handler(...args); update_all(whether(keep_board))
