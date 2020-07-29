@@ -3,12 +3,12 @@
 
 let winrate_bar_prev = 50
 
-function draw_winrate_bar_sub(target_move, canvas, large_bar, pale_text_p) {
+function draw_winrate_bar_sub(target_move, canvas, move_count, large_bar, pale_text_p) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const score_p = score_bar_p(), tics = score_p ? 19 : 9
     const xfor = percent => w * percent / 100
     const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
-    const z = R.winrate_history[R.move_count] || {}
+    const z = R.winrate_history[move_count] || {}
     const b_wr0 = fake_winrate_for(z.r, z.score_without_komi, true)
     const b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
     const komi_wr = score_p && fake_winrate_for(0.5, R.komi, true)
@@ -25,7 +25,7 @@ function draw_winrate_bar_sub(target_move, canvas, large_bar, pale_text_p) {
         large_bar && draw_winrate_bar_horizontal_lines(w, h, g)
         draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g)
         R.winrate_trail && draw_winrate_trail(target_move, canvas)
-        draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g)
+        draw_winrate_bar_suggestions(w, h, xfor, vline, move_count, large_bar, g)
     }
     draw_winrate_bar_text(b_wr, prev_score, w, h, pale_text_p, !ready, g)
 }
@@ -137,13 +137,13 @@ function winrate_bar_max_radius(w, h) {return Math.min(h * 1, w * 0.1)}
 
 // draw
 
-function draw_winrate_bar_suggestions(w, h, xfor, vline, large_bar, g) {
+function draw_winrate_bar_suggestions(w, h, xfor, vline, move_count, large_bar, g) {
     g.lineWidth = 1
     const max_radius = Math.min(h, w * 0.05)
     const prev_color = 'rgba(64,128,255,0.8)'
     R.suggest.filter(s => s.visits > 0).forEach(s => {
         const {edge_color, fan_color, vline_color, aura_color,
-               target_p, draw_order_p, winrate} = winrate_bar_suggest_prop(s)
+               target_p, draw_order_p, winrate} = winrate_bar_suggest_prop(s, move_count)
         if (vline_color) {
             g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
         }
@@ -278,7 +278,7 @@ const winrate_trail_engine_checker = change_detector()
 let winrate_trail = {}, winrate_trail_move_count = 0, winrate_trail_visits = 0
 
 function update_winrate_trail() {
-    if (!truep(R.visits)) {return}
+    if (!R.winrate_trail || !truep(R.visits)) {return}
     const total_visits_increase = R.visits - winrate_trail_visits;
     // check visits for detecting restart of leelaz
     const new_trail_p =

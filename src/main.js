@@ -1537,17 +1537,19 @@ function update_state(keep_suggest_p) {
     }
     const history_tags = flatten(game.map(pick_tagged))
     const {player_black, player_white, trial} = game
-    const cur = game.ref_current()
-    const more = keep_suggest_p ? {} :
-          (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
-          {suggest: []}
+    const su = P.get_showing_until()
+    const showing_until_p = truep(su) && su < game.move_count
+    const cur = game.ref(showing_until_p ? su : game.move_count)
+    const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
+          keep_suggest_p ? {} : {suggest: []}
+    const when_showing_until = (showing_until_p && cur) ? {bturn: !cur.is_black} : {}
     !option.movenum_for_trial && (game.trial_from = null)
     const {face_image_rule} = option
     P.set_and_render({
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule,
-    }, more)
+    }, more, when_showing_until)
 }
 
 function update_ui(ui_only) {

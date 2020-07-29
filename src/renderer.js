@@ -309,7 +309,8 @@ function draw_wr_graph(canvas) {
 function draw_wr_bar(canvas) {
     const wr_only = (current_board_type() === 'winrate_only')
     const large_bar = R.expand_winrate_bar || wr_only
-    D.draw_winrate_bar(canvas, large_bar, wr_only)
+    const su = showing_until(), move_count = truep(su) ? su : R.move_count
+    D.draw_winrate_bar(canvas, move_count, large_bar, wr_only)
 }
 
 function first_board_canvas() {return the_first_board_canvas}
@@ -933,7 +934,7 @@ function showing_until(canvas) {
 }
 function update_showing_until() {
     const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)
-    if (!R.show_endstate || !changed) {return}
+    if (!changed) {return}
     main('set_showing_until', cur)
 }
 

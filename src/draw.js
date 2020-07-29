@@ -54,7 +54,7 @@ function score_bar_p() {return R.score_bar && R.is_katago}
 /////////////////////////////////////////////////
 // winrate bar style
 
-function winrate_bar_suggest_prop(s) {
+function winrate_bar_suggest_prop(s, move_count) {
     // const
     const next_color = '#48f'
     const next_vline_color = 'rgba(64,128,255,0.5)'
@@ -64,7 +64,7 @@ function winrate_bar_suggest_prop(s) {
     // main
     const {move} = s, winrate = fake_winrate(s)
     const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
-    const target_p = (move === target_move), next_p = is_next_move(move)
+    const target_p = (move === target_move), next_p = is_next_move(move, move_count)
     const alpha = target_p ? 1.0 : target_move ? 0.3 : 0.8
     const {fill} = suggest_color(s, alpha)
     const fan_color = (!target_move && next_p) ? next_color : fill
@@ -136,8 +136,11 @@ function zone_color(i, j, alpha) {
 
 // stones
 
-function is_next_move(move) {
-    [i, j] = move2idx(move); return (i >= 0) && (aa_ref(R.stones, i, j) || {}).next_move
+function is_next_move(move, move_count) {
+    const [i, j] = move2idx(move); if (i < 0) {return false}
+    const s = aa_ref(R.stones, i, j) || {}, as = s.anytime_stones || []
+    const mc_p = truep(move_count) && move_count !== R.move_count
+    return mc_p ? !!as.find(z => z.move_count === move_count + 1) : s.next_move
 }
 
 function latest_move(moves, show_until) {
@@ -158,10 +161,11 @@ function max_movenum() {return mc2movenum(R.history_length)}
 
 function b_winrate(nth_prev) {return winrate_history_ref('r', nth_prev)}
 function winrate_history_ref(key, nth_prev) {
+    const su = showing_until(), mc = truep(su) ? su : R.move_count
     const [whs, rest] = R.winrate_history_set
     const winrate_history = !truep(nth_prev) ? R.winrate_history :
           (alternative_engine_for_white_p() && !R.bturn) ? whs[1] : whs[0]
-    return (winrate_history[R.move_count - (nth_prev || 0)] || {})[key]
+    return (winrate_history[mc - (nth_prev || 0)] || {})[key]
 }
 
 function winrate_history_values_of(key) {return R.winrate_history.map(h => h[key])}

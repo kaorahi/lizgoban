@@ -9,7 +9,6 @@ const {endstate_clusters_for} = require('./area.js')
 // state
 let endstate_diff_interval = 12, showing_until = null
 let game = create_game()  // dummy empty game until first set_board()
-const winrate_trail = true
 
 /////////////////////////////////////////////////
 // basic
@@ -69,6 +68,7 @@ const suggest_keys2 = ['endstate', 'score_without_komi']
 
 const too_small_prior = 1e-3
 function suggest_handler(h) {
+    if (get_showing_until()) {return}
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
@@ -136,7 +136,9 @@ function set_renderer_state(...args) {
     const busy = M.is_busy(), long_busy = M.is_long_busy()
     const winrate_history = busy ? [] : winrate_from_game()
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
-    const previous_suggest = get_previous_suggest()
+    const su_p = truep(get_showing_until())
+    const previous_suggest = !su_p && get_previous_suggest()
+    const winrate_trail = !su_p
     const max_visits = clip(Math.max(...(R.suggest || []).filter(orig_suggest_p).map(h => h.visits)), 1)
     const progress = M.auto_progress()
     const weight_info = weight_info_text()
@@ -213,6 +215,7 @@ function append_endstate_tag_maybe(h) {
 }
 function get_endstate_diff_interval() {return endstate_diff_interval}
 function set_endstate_diff_interval(k) {endstate_diff_interval = k}
+function get_showing_until() {return showing_until}
 function set_showing_until(k) {
     change_endstate_diff_target(() => {showing_until = k})
 }
@@ -270,7 +273,7 @@ function update_endstate_diff(endstate, tentatively, immediately) {
     R.prev_endstate_sum = game.ref(prev).score_without_komi
 }
 function endstate_diff_move_count() {
-    const su = showing_until, mc = game.move_count
+    const su = get_showing_until(), mc = game.move_count
     return (truep(su) && su !== mc) ? su : (mc - endstate_diff_interval)
 }
 function average_endstate_sum(move_count) {
@@ -477,7 +480,8 @@ module.exports = {
     set_board,
     // endstate
     append_endstate_tag_maybe,
-    get_endstate_diff_interval, set_endstate_diff_interval, set_showing_until,
+    get_endstate_diff_interval, set_endstate_diff_interval,
+    get_showing_until, set_showing_until,
     // renderer
     set_and_render,
     // util
