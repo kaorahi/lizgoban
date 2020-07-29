@@ -230,11 +230,19 @@ Check "Tool > Experimental > Reuse analysis" in the menu. This is expected to be
 ### 0.5.0-pre*
 
 * Support ownerships of stones by facial expressions.
-* Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`. (You may need to do "npm install" again.)
+* Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`.
 * Modify "File" menu slightly for convenience.
-* Add more configurations (rules, komi, handicap) into `preset` in `config.json`.
+* Add more configurations (rules, komi, handicap, stone_style) into `preset` in `config.json`.
 * Omit marks for too minor suggestions on the board.
 * Experimentally add "Tool > Experimental > Tsumego frame1&2" for solving life & death problems. (See "Tips" section in "Help" menu.)
+* Improve display by "c" key + mouse hover on existing stones.
+* Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
+** Show mistakes and actually punished scores on stones.
+** Click on a stone to temporarily show the past board.
+** Double-click on a stone to jump to the move.
+
+Incompatibilities:
+* Upgrade libraries (Electron 9, etc.). So you may need to do "npm install" again.
 
 ### 0.4.0
 
