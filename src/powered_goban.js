@@ -350,9 +350,17 @@ function winrate_from_game(engine_id) {
         const record_gain_as_side_effect = gain => {
             if (engine_id || s === 0 || !truep(score_without_komi_at(s - 1))) {return}
             merge(cur, {gain})
-            s <= game.move_count &&
-                merge(aa_ref(R.stones, ...move2idx(cur.move)) || {}, {gain})
+            s <= game.move_count && merge_to_stone_at(cur, {gain})
+            record_panished(gain)
         }
+        const record_panished = gain => {
+            const prev = game.ref(s - 1), prev_gain = (prev || {}).gain
+            truep(prev_gain) &&
+                // prev_punished = prev_loss - cur_loss
+                merge_to_stone_at(prev, {punished: - (prev_gain - gain)})
+        }
+        const merge_to_stone_at = (at, val) =>
+              merge(aa_ref(R.stones, ...move2idx(at.move)) || {}, val)
         const update_score_loss = gain => {
             // (A) gain < 0: Your move is bad.
             // (B) gain > 0: Your move is good or the opponent's last move was bad.

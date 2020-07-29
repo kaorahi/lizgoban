@@ -473,14 +473,15 @@ function draw_next_move(h, xy, radius, g) {
 
 // ref. https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067
 function draw_loss(h, xy, radius, g) {
-    const {gain} = h, NOTHING = []
-    const [color, size, line_width, draw] = !truep(gain) ? NOTHING :
-          (gain <= big_blunder_threshold) ? [RED, 1, 1, rev_triangle_around] :
-          (gain <= blunder_threshold) ? [BLUE, 0.7, 1, rev_triangle_around] :
+    const {gain, punished} = h, NOTHING = []
+    const [color, size, draw, min_width] = !truep(gain) ? NOTHING :
+          (gain <= big_blunder_threshold) ? [RED, 1, rev_triangle_around, 0.7] :
+          (gain <= blunder_threshold) ? [BLUE, 0.7, rev_triangle_around, 0.5] :
           // annoying in auto_analysis with visits = 1
           // (gain >= 5) ? ['#0c0', 1, 1, triangle_around] :
           NOTHING
     if (!draw || face_image_p()) {return}
+    const line_width = truep(punished) ? clip(punished * 0.2, min_width, 3) : 1
     g.strokeStyle = color; g.lineWidth = line_width
     draw(xy, radius * size - line_width, g)
 }
