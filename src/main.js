@@ -739,12 +739,13 @@ function preset_menu_for_recent(menu_tools) {
 }
 
 function apply_preset(rule, win) {
-    const {empty_board, board_type, match, rules, handicap, komi} = rule
+    const {empty_board, board_type, stone_style, match, rules, handicap, komi} = rule
     empty_board && !game.is_empty() && new_empty_board()
     handicap && add_handicap_stones(handicap)
     rules && set_gorule(rules)
     truep(komi) && (game.komi = komi)
     board_type && set_board_type(board_type, win)
+    stone_style && set_stored('stone_style', stone_style)
     match && start_match(win)
     const is_engine_updated = update_engines_by_preset(rule)
     AI.backup(); is_engine_updated && resume()
