@@ -742,9 +742,7 @@ function apply_preset(rule, win) {
            label_for_white, engine_for_white} = rule
     const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
     const need_restart = cur && (f(cur) !== f(extended))
-    const load = (switcher, file) => switcher(() => load_weight_file(file))
-    const preset_label = {label: label || ''}
-    const preset_label_for_white = {label: label_for_white || preset_label.label + '(W)'}
+    const preset_label_for_white = {label: label_for_white || (label || '') + '(W)'}
     empty_board && !game.is_empty() && new_empty_board()
     handicap && add_handicap_stones(handicap)
     rules && set_gorule(rules)
