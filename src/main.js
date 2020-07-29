@@ -164,7 +164,7 @@ const default_for_stored_key = {
     lizzie_style: true, expand_winrate_bar: false, score_bar: true,
     let_me_think: false, show_endstate: true, gorule: default_gorule,
     stone_image_p: true, board_image_p: true, stone_style: '3D',
-    use_cached_suggest: true,
+    use_cached_suggest_p: true,
     komi_for_new_game: leelaz_komi, komi_for_new_handicap_game: handicap_komi,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
@@ -605,9 +605,9 @@ function menu_template(win) {
                      ]),
                      item('Open exercise', 'Alt+?', open_exercise_dir, true),
                      sep),
-        store_toggler_menu_item('Reuse analysis', 'use_cached_suggest'),
-        item('...Clear analysis', undefined, P.delete_cache, false, R.use_cached_suggest),
-        item('...Restore analysis', undefined, P.undelete_cache, false, R.use_cached_suggest),
+        store_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
+        item('...Clear analysis', undefined, P.delete_cache, false, R.use_cached_suggest_p),
+        item('...Restore analysis', undefined, P.undelete_cache, false, R.use_cached_suggest_p),
         sep,
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
@@ -1450,7 +1450,7 @@ function push_deleted_sequence(sequence) {
     expired > 0 && deleted_sequences.splice(0, expired)
 }
 function pop_deleted_sequence() {
-    return game_from_pgame(deleted_sequences.pop(), R.use_cached_suggest)
+    return game_from_pgame(deleted_sequences.pop(), R.use_cached_suggest_p)
 }
 function exist_deleted_sequence() {return !empty(deleted_sequences)}
 function empty_deleted_sequence_p(pgame) {
@@ -1742,7 +1742,7 @@ function save_sgf_to(filename, if_success, force_short_p) {
 
 function read_sgf(sgf_str, filename, internally) {
     const too_many_games = 6, interactive = !internally
-    const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest)
+    const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest_p)
     const len = new_games.length
     const open1 = (g, k) => {
         g.merge_common_header(game); backup_and_replace_game(g, k > 0)

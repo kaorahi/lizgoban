@@ -78,7 +78,7 @@ function suggest_handler(h) {
     const prefer_cached_p = cur_by_engine.visits > h.visits &&
           (!AI.katago_p() || cur_by_engine.komi === h.komi) &&
           (!AI.is_gorule_supported() || !cur_by_engine.gorule || cur_by_engine.gorule === h.gorule)
-    const preferred_h = !R.use_cached_suggest ? h :
+    const preferred_h = !R.use_cached_suggest_p ? h :
           prefer_cached_p ? {...h, ...cur_by_engine} : h
     preferred_h.background_visits = (h !== preferred_h) && h.visits
     const copy_vals = (keys, to) =>
