@@ -46,7 +46,7 @@ function create_game(init_history, init_prop) {
         ref: mc => history[mc - 1] || self.move0,
         ref_current: () => self.ref(self.move_count),
         current_stones: () => self.stones_at(self.move_count),
-        stones_at: mc => {const {stones} = self.stones_and_hama_at(mc); return stones},
+        stones_at: mc => self.stones_and_hama_at(mc).stones,
         stones_and_hama_at: mc =>
             get_stones_and_set_ko_state(self.array_until(mc).filter(h => !h.illegal)),
         array_until: mc => history.slice(0, mc),
