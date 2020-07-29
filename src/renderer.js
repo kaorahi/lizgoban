@@ -267,6 +267,7 @@ function clear_selected_variation() {R.suggest = []}  // fixme: overkill
 function with_opts(d, opts) {
     return c => {
         update_first_board_canvas(c); const firstp = is_first_board_canvas(c)
+        if (R.busy && !firstp) {return}
         d(c, {
             main_canvas_p: c === main_canvas, selected_suggest: selected_suggest(c),
             first_board_p: firstp, draw_visits_p: firstp,
