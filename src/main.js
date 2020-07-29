@@ -1592,12 +1592,12 @@ function availability() {
 function load_weight(white_p) {
     const dir = option_path('weight_dir') ||
           PATH.dirname(AI.leelaz_weight_file(white_p) || '')
-    const ret = load_weight_file(select_weight_file(dir), white_p)
-    AI.backup(); return ret
+    const weight_file = select_weight_file(dir)
+    weight_file && load_weight_file(weight_file, white_p)
+    AI.backup()
 }
 function load_weight_file(weight_file, white_p) {
-    weight_file && AI.load_weight_file(weight_file, white_p)
-    return weight_file
+    AI.load_weight_file(weight_file, white_p)
 }
 function load_leelaz_for_black() {load_weight()}
 function load_leelaz_for_white() {load_weight(true)}
