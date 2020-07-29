@@ -1541,12 +1541,12 @@ function update_state(keep_suggest_p) {
     const showing_until_p = truep(su) && su < game.move_count
     const cur = game.ref(showing_until_p ? su : game.move_count)
     const prev_su = showing_until_p && game.ref(su - 1)
+    const bturn = !cur.is_black
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
     const when_showing_until = (showing_until_p && cur) ? {
-        bturn: !cur.is_black,
-        subboard_stones_suggest: {
-            stones: game.stones_at(su - 1), suggest: (prev_su.suggest || [])[0],
+        subboard_stones_suggest: prev_su && prev_su.suggest && {
+            stones: game.stones_at(su - 1), suggest: (prev_su.suggest || [{}])[0],
             bturn : !prev_su.is_black,
         },
     } : {subboard_stones_suggest: null}
@@ -1556,6 +1556,7 @@ function update_state(keep_suggest_p) {
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule,
+        bturn,
     }, more, when_showing_until)
 }
 
