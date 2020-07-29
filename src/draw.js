@@ -152,9 +152,7 @@ function latest_move(moves, show_until) {
 
 // handicaps
 
-function clip_handicaps(move_count) {
-    return clip(move_count, R.handicaps, R.history_length)
-}
+function clip_handicaps(move_count) {return clip(move_count, R.handicaps)}
 function mc2movenum(move_count) {return clip(move_count - R.handicaps, 0)}
 function max_movenum() {return mc2movenum(R.history_length)}
 

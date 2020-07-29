@@ -528,11 +528,11 @@ function set_hovered(move, count, canvas) {
     changed && update_goban()
 }
 function set_hovered_move_count(move) {
-    const count = move && (latest_move_count_for_idx(move2idx(move)) || R.move_count)
+    const count = move && latest_move_count_for_idx(move2idx(move))
     set_hovered_move_count_as(count)
 }
 function set_hovered_move_count_as(count) {
-    hovered_move_count = truep(count) && clip(count, 0, R.history_length)
+    hovered_move_count = count
     update_showing_until()
 }
 
@@ -932,8 +932,7 @@ function set_showing_endstate_value_p(val) {
     the_showing_endstate_value_p = val; set_showing_something_p(val)
 }
 function showing_until(canvas) {
-    const hovered_mc = truep(hovered_move_count) ? hovered_move_count :
-          (R.move_count || Infinity)
+    const hovered_mc = truep(hovered_move_count) ? hovered_move_count : Infinity
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||
           (by_hover && showing_something_p() && hovered_mc)
@@ -947,6 +946,7 @@ function showing_until(canvas) {
 function update_showing_until() {
     const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)
     if (!changed) {return}
+    // Caution: JSON.stringify(Infinity) === 'null'
     main('set_showing_until', cur)
 }
 

@@ -1537,8 +1537,7 @@ function update_state(keep_suggest_p) {
     }
     const history_tags = flatten(game.map(pick_tagged))
     const {player_black, player_white, trial} = game
-    const su = P.get_showing_until()
-    const showing_until_p = truep(su) && su < game.move_count
+    const su = P.get_showing_until(), showing_until_p = finitep(su)
     const cur = game.ref(showing_until_p ? su : game.move_count)
     const prev_su = showing_until_p && game.ref(su - 1)
     const bturn = !cur.is_black

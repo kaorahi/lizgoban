@@ -20,8 +20,8 @@ function draw_main_goban(canvas, options) {
 }
 
 function draw_goban_until(canvas, show_until, opts) {
-    const all_p = [R.move_count, Infinity].includes(show_until)
-    const displayed_stones = stones_until(show_until, all_p)
+    const all_p = (show_until === Infinity)
+    const displayed_stones = stones_until(all_p ? R.move_count : show_until, all_p)
     const serious = in_match_p(true)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: !serious,
@@ -137,8 +137,8 @@ function draw_endstate_goban(canvas, options) {
     const past_p = past_endstate_p(options.draw_endstate_value_p)
     const scores = winrate_history_values_of('score_without_komi')
     const {show_until} = options, mc = R.move_count
-    const past_mc = clip_handicaps((truep(show_until) && show_until !== mc) ?
-                                   show_until : R.move_count - R.endstate_diff_interval)
+    const default_mc = R.move_count - R.endstate_diff_interval
+    const past_mc = clip_handicaps(finite_or(show_until, default_mc))
     const past_score = scores[past_mc]
     const past_text = (d_i, es) =>
           `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
@@ -322,7 +322,8 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
 function draw_endstate_stones(each_coord, past_p, cheap_shadow_p,
                               show_until, stone_radius, g) {
     if (past_p && !R.prev_endstate_clusters) {return}
-    const d = (!truep(show_until) || show_until === R.move_count) ? R.endstate_diff_interval : (R.move_count - show_until)
+    const d = finitep(show_until) ?
+          (R.move_count - show_until) : R.endstate_diff_interval
     const sign = Math.sign(d)
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {

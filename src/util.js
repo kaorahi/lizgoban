@@ -7,6 +7,8 @@ E.to_f = x => (x - 0)
 E.to_s = x => (x + '')
 E.xor = (a, b) => (!a === !!b)
 E.truep = x => (x || x === 0 || x === '')
+E.finitep = x => truep(x) && x !== Infinity
+E.finite_or = (x, y) => E.finitep(x) ? x : y
 E.do_nothing = () => {}
 E.identity = x => x
 E.clip = (x, lower, upper) =>
