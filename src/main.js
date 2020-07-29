@@ -1137,7 +1137,8 @@ function info_text() {
           (f("engine (black)", sa.black) + f("engine (white)", sa.white)) :
           f("engine", sa.black)
     const slog = `<startup log>\n${AI.startup_log().join("\n")}`
-    const message = f("sgf file", game.sgf_file) + lz + f("sgf", game.sgf_str) + slog
+    const sgf = snip_text(game.sgf_str || '', 500, 0, over => `...${over}...`)
+    const message = f("sgf file", game.sgf_file) + lz + f("sgf", sgf) + slog
     return message
 }
 function ask_new_game(win) {ask_game_info(win, false, true)}
