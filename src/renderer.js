@@ -412,10 +412,10 @@ function double_boards_p() {return R.board_type.match(/^double_boards/)}
 // on goban
 
 function handle_mouse_on_goban(canvas, coord2idx, read_only, tag_clickable_p) {
-    const onmousedown = e =>
-        (!read_only && !R.attached &&
-         (play_here(e, coord2idx, tag_clickable_p), hover_off(canvas)))
-    const onmousemove = e => hover_here(e, coord2idx, canvas)
+    const onmousedown = e => !read_only && !R.attached &&
+          play_here(e, coord2idx, canvas, tag_clickable_p) &&
+          (set_showing_movenum_p(false), hover_off(canvas))
+    const onmousemove = e => {unset_stone_is_clicked(); hover_here(e, coord2idx, canvas)}
     const onmouseenter = onmousemove
     const onmouseleave = e => hover_off(canvas)
     const handlers = {onmousedown, onmousemove, onmouseenter, onmouseleave}
@@ -426,16 +426,22 @@ function ignore_mouse_on_goban(canvas) {
     ks.forEach(k => canvas[k] = do_nothing)
 }
 
-function play_here(e, coord2idx, tag_clickable_p) {
-    const move = mouse2move(e, coord2idx); if (!move) {return}
+function play_here(e, coord2idx, canvas, tag_clickable_p) {
+    const move = mouse2move(e, coord2idx); if (!move) {return true}
     const idx = move2idx(move)
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
     const goto_p = showing_movenum_p()
+    const stone_p = aa_ref(R.stones, ...idx).stone
     const match_sec = in_match_p() && (set_match_param(), auto_play_in_match_sec())
-    if (goto_p) {goto_idx_maybe(idx, another_board); return}
+    if (goto_p) {goto_idx_maybe(idx, another_board); return true}
+    if (stone_p) {
+        set_showing_movenum_p(true); hover_here(e, coord2idx, canvas)
+        set_stone_is_clicked(); return false
+    }
     (tag_clickable_p && goto_idx_maybe(idx, another_board, true)) ||
         (pass && main('pass'),  // right click = pass and play
          main('play', move, !!another_board, null, null, match_sec))
+    return true
 }
 function play_pass() {main('pass'); auto_play_in_match()}
 function auto_play_in_match() {
@@ -460,6 +466,12 @@ function duplicate_if(x) {x && main('duplicate_sequence')}
 main_canvas.addEventListener("wheel", e => {
     (e.deltaY !== 0) && (e.preventDefault(), main(e.deltaY < 0 ? 'undo' : 'redo'))
 })
+
+let is_stone_clicked = false
+function set_stone_is_clicked() {is_stone_clicked = true}
+function unset_stone_is_clicked() {
+    is_stone_clicked && ((is_stone_clicked = false), set_showing_movenum_p(false))
+}
 
 // on winrate graph
 
@@ -788,6 +800,7 @@ function set_cut_button_position() {
 const with_skip = skip_too_frequent_requests((proc, ...a) => proc(...a))
 
 document.onkeydown = e => {
+    e.key !== 'Control' && unset_stone_is_clicked()
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
