@@ -416,22 +416,26 @@ function handle_mouse_on_goban(canvas, coord2idx, read_only) {
     const onmousedown = e => !read_only && !R.attached &&
           play_here(e, coord2idx, canvas) &&
           (set_showing_movenum_p(false), hover_off(canvas))
+    const ondblclick = onmousedown
     const onmousemove = e => {unset_stone_is_clicked(); hover_here(e, coord2idx, canvas)}
     const onmouseenter = onmousemove
     const onmouseleave = e => hover_off(canvas)
-    const handlers = {onmousedown, onmousemove, onmouseenter, onmouseleave}
+    const handlers = {onmousedown, ondblclick, onmousemove, onmouseenter, onmouseleave}
     add_mouse_handlers_with_record(canvas, handlers)
 }
 function ignore_mouse_on_goban(canvas) {
-    const ks = ['onmousedown', 'onmousemove', 'onmouseenter', 'onmouseleave']
+    const ks = ['onmousedown', 'ondblclick', 'onmousemove',
+                'onmouseenter', 'onmouseleave']
     ks.forEach(k => canvas[k] = do_nothing)
 }
 
 function play_here(e, coord2idx, canvas) {
+    const dblclick = (e.type === 'dblclick')
+    if (is_stone_clicked && !dblclick) {return true}
     const move = mouse2move(e, coord2idx); if (!move) {return true}
     const idx = move2idx(move)
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
-    const goto_p = showing_movenum_p()
+    const goto_p = showing_movenum_p() || dblclick
     const stone_p = aa_ref(R.stones, ...idx).stone
     const match_sec = in_match_p() && (set_match_param(), auto_play_in_match_sec())
     if (goto_p) {goto_idx_maybe(idx, another_board); return true}
