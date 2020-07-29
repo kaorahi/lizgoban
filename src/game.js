@@ -69,6 +69,7 @@ function create_game(init_history, init_prop) {
             another_game.move_count = com
         },
         merge_common_header: another_game => {
+            if (self.board_size !== another_game.board_size) {return}
             const another_history = another_game.array_until(Infinity)
             const com = common_header_length(history, another_history)
             seq(com).forEach(n => {
