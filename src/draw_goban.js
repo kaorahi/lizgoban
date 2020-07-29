@@ -292,12 +292,13 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
     // (1) ownership, (2) halo, (3) shadow, (4) stone etc. in this order
     draw_endstate_p && !hide_endstate_p() &&
         each_coord((h, xy, idx) => draw_endstate(h.endstate, xy, stone_radius, g))
-    R.lizzie_style &&
+    R.lizzie_style && !R.busy &&
         each_coord((h, xy, idx) => draw_halo_lizzie(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
-        h.stone ? draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g) :
-            h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
+        h.stone && draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g)
+        if (R.busy) {return}
+        h.suggest && draw_suggest(h, xy, stone_radius, large_font_p, g)
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
@@ -307,8 +308,9 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         draw_endstate_diff_p && !hide_endstate_p() &&
             draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
-    !R.lizzie_style && each_coord((h, xy) => h.suggest && (h.data.visits > 0)
-                                  && draw_winrate_mapping_line(h, xy, unit, g))
+    !R.lizzie_style && !R.busy &&
+        each_coord((h, xy) => h.suggest && (h.data.visits > 0)
+                   && draw_winrate_mapping_line(h, xy, unit, g))
 }
 
 function draw_endstate_stones(each_coord, past_p, cheap_shadow_p,
