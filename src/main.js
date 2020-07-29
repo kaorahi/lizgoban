@@ -1542,22 +1542,20 @@ function update_state(keep_suggest_p) {
     const cur = game.ref(showing_until_p ? su : game.move_count)
     const prev_su = showing_until_p && game.ref(su - 1)
     const bturn = !cur.is_black
-    const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
-          keep_suggest_p ? {} : {suggest: []}
-    const when_showing_until = (showing_until_p && cur) ? {
-        subboard_stones_suggest: prev_su && prev_su.suggest && {
+    const subboard_stones_suggest = prev_su && prev_su.suggest && {
             stones: game.stones_at(su - 1), suggest: (prev_su.suggest || [{}])[0],
             bturn : !prev_su.is_black,
-        },
-    } : {subboard_stones_suggest: null}
+    }
+    const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
+          keep_suggest_p ? {} : {suggest: []}
     !option.movenum_for_trial && (game.trial_from = null)
     const {face_image_rule} = option
     P.set_and_render({
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule,
-        bturn,
-    }, more, when_showing_until)
+        bturn, subboard_stones_suggest,
+    }, more)
 }
 
 function update_ui(ui_only) {
