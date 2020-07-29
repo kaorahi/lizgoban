@@ -735,26 +735,14 @@ function preset_menu_for_recent(menu_tools) {
 }
 
 function apply_preset(rule, win) {
-    const cur = AI.engine_info().black
-    const extended = {...cur, ...rule}
-    const {label, empty_board, board_type, weight_file, weight_file_for_white,
-           match, rules, handicap, komi,
-           label_for_white, engine_for_white} = rule
-    const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
-    const need_restart = cur && (f(cur) !== f(extended))
-    const preset_label_for_white = {label: label_for_white || (label || '') + '(W)'}
+    const {empty_board, board_type, match, rules, handicap, komi} = rule
     empty_board && !game.is_empty() && new_empty_board()
     handicap && add_handicap_stones(handicap)
     rules && set_gorule(rules)
     truep(komi) && (game.komi = komi)
     board_type && set_board_type(board_type, win)
     match && start_match(win)
-    need_restart && restart_leelaz_by_preset(extended)
-    // backward compatibility for obsolete "weight_file" and "weight_file_for_white"
-    weight_file && load_weight_file(weight_file)
-    weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
-        unload_leelaz_for_white()
-    engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label_for_white)
+    update_engines_by_preset(rule)
     AI.backup(); resume()
 }
 
@@ -769,6 +757,21 @@ function expand_preset(preset) {
         const leelaz_command = resolve_engine_path(command)
         merge(rule, {leelaz_command, leelaz_args})
     })
+}
+
+function update_engines_by_preset(rule) {
+    const {label, label_for_white, engine_for_white,
+           weight_file, weight_file_for_white} = rule
+    const cur = AI.engine_info().black, extended = {...cur, ...rule}
+    const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
+    const need_restart = cur && (f(cur) !== f(extended))
+    const preset_label_for_white = {label: label_for_white || (label || '') + '(W)'}
+    need_restart && restart_leelaz_by_preset(extended)
+    // backward compatibility for obsolete "weight_file" and "weight_file_for_white"
+    weight_file && load_weight_file(weight_file)
+    weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
+        unload_leelaz_for_white()
+    engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label_for_white)
 }
 
 function restart_leelaz_by_preset(rule, first_p) {
