@@ -521,7 +521,8 @@ function menu_template(win) {
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
-        item('Save SGF...', 'CmdOrCtrl+S', save_sgf, true),
+        item('Save SGF with analysis...', 'CmdOrCtrl+S', () => save_sgf(true), true),
+        item('Save SGF...', 'CmdOrCtrl+Shift+S', () => save_sgf(false), true),
         sep,
         item('New empty board', 'Shift+N', () => new_empty_board(), true),
         item('New handicap game', 'Shift+H', ask_handicap_stones, true),
@@ -536,7 +537,8 @@ function menu_template(win) {
         item('Quit', undefined, app.quit),
     ])
     const edit_menu = menu('Edit', [
-        item('Copy SGF', 'CmdOrCtrl+C', copy_sgf_to_clipboard, true),
+        item('Copy SGF', 'CmdOrCtrl+Shift+C', () => copy_sgf_to_clipboard(false), true),
+        item('Copy SGF with analysis', 'CmdOrCtrl+C', () => copy_sgf_to_clipboard(true), true),
         item('Paste SGF or URL', 'CmdOrCtrl+V', paste_sgf_or_url_from_clipboard, true),
         sep,
         item('Delete board', 'CmdOrCtrl+X', cut_sequence, true),
@@ -1704,7 +1706,9 @@ function resolve_engine_path(given_leelaz_command) {
 /////////////////////////////////////////////////
 // SGF
 
-function copy_sgf_to_clipboard() {clipboard.writeText(game.to_sgf(R.use_cached_suggest)); wink()}
+function copy_sgf_to_clipboard(cache_suggestions_p) {
+    clipboard.writeText(game.to_sgf(cache_suggestions_p)); wink()
+}
 function paste_sgf_or_url_from_clipboard() {
     const s = clipboard.readText(); s.startsWith('http') ? open_url(s) : read_sgf(s)
 }
@@ -1722,18 +1726,18 @@ function load_sgf(filename, internally) {
     read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename, internally)
 }
 
-function save_sgf() {
+function save_sgf(cache_suggestions_p) {
     const f = dialog.showSaveDialogSync(null, {
         title: 'Save SGF file',
         defaultPath: option_path('sgf_dir'),
     }); if (!f) {return}
     const ext = '.sgf', filename = f + (f.endsWith(ext) ? '' : ext)
     const if_success = () => (game.sgf_file = filename)
-    save_sgf_to(filename, if_success)
+    save_sgf_to(filename, if_success, !cache_suggestions_p)
 }
 function save_sgf_to(filename, if_success, force_short_p) {
     const callback = err => {if (err) {throw err} else {if_success && if_success()}}
-    fs.writeFile(filename, game.to_sgf(R.use_cached_suggest && !force_short_p), callback)
+    fs.writeFile(filename, game.to_sgf(!force_short_p), callback)
 }
 
 function read_sgf(sgf_str, filename, internally) {
