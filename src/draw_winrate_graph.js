@@ -37,6 +37,7 @@ function draw_winrate_graph(canvas, additional_canvas,
     draw_winrate_graph_ambiguity(sq2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_zone(w, sr2coord, g)
+    draw_winrate_graph_order(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     draw_score('score') || draw_no_score(w, sq2coord, fontsize, g)
@@ -328,6 +329,12 @@ function draw_winrate_graph_zone(w, sr2coord, g) {
     })
 }
 
+function draw_winrate_graph_order(sr2coord, g) {
+    const table = [['order_b', '0,192,0', true], ['order_w', '255,0,255', false]]
+    table.forEach(([key, rgb, upside_down]) =>
+                  draw_winrate_graph_barchart(key, 1, rgb, upside_down, sr2coord, g))
+}
+
 function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
     const unit_r = 10, s0 = clip_handicaps(0)
     const [x0, y0] = sr2coord(s0, 0), [_, y1] = sr2coord(s0, unit_r)
@@ -348,6 +355,20 @@ function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
 function draw_winrate_graph_history(ary, to_r, plotter, sr2coord, g) {
     const f = (val, s) => truep(val) && plotter(...sr2coord(s, to_r(val)), s, g)
     ary.forEach(f)
+}
+
+function draw_winrate_graph_barchart(key, mag, rgb, upside_down, sr2coord, g) {
+    const values = winrate_history_values_of(key)
+    const conv = upside_down ? (val => 100 - val) : identity
+    const to_r = val => conv(clip(val * mag, 0, 100))
+    const threshold = num_sort(values.filter(truep)).slice(-10)[0]
+    const [_, base_y] = sr2coord(clip_handicaps(0), upside_down ? 100 : 0)
+    const plotter = (x, y, s, g) => {
+        const [line_width, alpha] = values[s] >= threshold ? [1, 0.5] : [1, 0.5]
+        g.strokeStyle = `rgba(${rgb},${alpha})`; g.lineWidth = line_width
+        line([x, y], [x, base_y], g)
+    }
+    draw_winrate_graph_history(values, to_r, plotter, sr2coord, g)
 }
 
 /////////////////////////////////////////////////

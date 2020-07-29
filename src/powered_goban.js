@@ -339,7 +339,7 @@ function winrate_from_game(engine_id) {
     const winrates = seq(game.len() + 1).map(mc => get_b_winrate(mc, engine_id))
     const score_loss = {b: 0, w: 0}; let prev_score = game.get_komi()
     return winrates.map((r, s, a) => {
-        const cur = game.ref(s)
+        const [cur, prev] = [s, s - 1].map(game.ref)
         const [turn_letter, opponent_letter, turn_sign] =
               cur.is_black ? ['b', 'w', 1] : ['w', 'b', -1]
         const h = append_endstate_tag_maybe(cur), tag = h.tag
@@ -347,6 +347,15 @@ function winrate_from_game(engine_id) {
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * turn_sign
         const predict = winrate_suggested(s, engine_id)
+        const order_of = is_black => {
+            if (s <= game.handicaps || xor(is_black, cur.is_black)) {return null}
+            const max_order = 20, {suggest} = prev, {move} = cur
+            const hit = (suggest || []).find(z => z.move === move)
+            const valid = hit && hit.order >= 0
+            return clip(valid ? hit.order : Infinity, 0, max_order)
+        }
+        const orders = M.plot_order_p() ?
+              {order_b: order_of(true), order_w: order_of(false)} : {}
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const pass = implicit_pass || M.is_pass(h.move) || h.illegal
         const score_without_komi = score_without_komi_at(s)
@@ -357,7 +366,7 @@ function winrate_from_game(engine_id) {
             record_panished(gain)
         }
         const record_panished = gain => {
-            const prev = game.ref(s - 1), prev_gain = (prev || {}).gain
+            const prev_gain = (prev || {}).gain
             truep(prev_gain) &&
                 // prev_punished = prev_loss - cur_loss
                 merge_to_stone_at(prev, {punished: - (prev_gain - gain)})
@@ -389,7 +398,7 @@ function winrate_from_game(engine_id) {
         return merge({
             r, move_b_eval, move_eval, tag, score_without_komi, cumulative_score_loss,
             turn_letter,
-        }, pass ? {pass} : {predict})
+        }, pass ? {pass} : {predict}, orders)
     })
 }
 
