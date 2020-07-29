@@ -283,7 +283,10 @@ function with_opts(d, opts) {
 
 const ignore_mouse = {handle_mouse_on_goban: ignore_mouse_on_goban}
 const draw_main = with_opts(D.draw_main_goban)
-const draw_pv = with_opts(D.draw_goban_with_principal_variation, ignore_mouse)
+const draw_pv = with_opts((...args) => {
+    truep(showing_until()) ? D.draw_raw_goban(...args) :
+        D.draw_goban_with_principal_variation(...args)
+}, ignore_mouse)
 const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
