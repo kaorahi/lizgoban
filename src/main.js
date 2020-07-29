@@ -1593,8 +1593,7 @@ function load_weight(white_p) {
     const dir = option_path('weight_dir') ||
           PATH.dirname(AI.leelaz_weight_file(white_p) || '')
     const weight_file = select_weight_file(dir)
-    weight_file && load_weight_file(weight_file, white_p)
-    AI.backup()
+    weight_file && (load_weight_file(weight_file, white_p), AI.backup())
 }
 function load_weight_file(weight_file, white_p) {
     AI.load_weight_file(weight_file, white_p)
