@@ -348,7 +348,7 @@ function create_leelaz () {
     const check_supported =
           (feature, cmd) => leelaz(cmd, ok => (supported[feature] = ok), true)
     const is_supported = feature => supported[feature]
-    const is_katago = maybe => is_supported('kata-analyze') || (!is_ready && maybe)
+    const is_katago = maybe => is_supported('kata-analyze') || (is_in_startup && maybe)
 
     /////////////////////////////////////////////////
     // exported methods
