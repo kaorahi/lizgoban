@@ -95,7 +95,7 @@ with the file config.json:
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
-Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1.3.4.
+Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1.4.4.
 
 ~~~~
 {
