@@ -17,8 +17,7 @@ function tsumego_frame(stones) {
     const [bottom_fill, bottom_gap]
           = checker_horizontal([i1, jmin], [end, jmax], bottom.black, false)
     const fill = [...left_fill, ...right_fill, ...top_fill, ...bottom_fill]
-    const gap = [...left_gap, ...right_gap, ...top_gap, ...bottom_gap]
-    return {fill, gap}
+    return fill
 }
 
 function seq_from_to(from, to) {return (from > to) ? [] : seq(to - from + 1, from)}

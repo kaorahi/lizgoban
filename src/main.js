@@ -614,9 +614,7 @@ function menu_template(win) {
         menu('Experimental...', [
             obsolete_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
             sep,
-            item("Tsumego frame1", 'Shift+f', () => add_tsumego_frame(),
-                 true, game.move_count > 0),
-            item("Tsumego frame2", 'CmdOrCtrl+Shift+f', () => add_tsumego_frame(true),
+            item("Tsumego frame", 'Shift+f', () => add_tsumego_frame(),
                  true, game.move_count > 0),
         ]),
     ])
@@ -880,8 +878,7 @@ function start_auto_play(replaying, sec, count) {
 function try_auto_play(force_next) {
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() &&
-        (auto_replaying ? try_auto_replay() :
-         (try_fill_tsumego_frame_gap() || try_play_best(...auto_play_weaken)))
+        (auto_replaying ? try_auto_replay() : try_play_best(...auto_play_weaken))
     update_let_me_think(true)
 }
 function try_auto_replay() {do_as_auto_play(redoable(), redo)}
@@ -1186,40 +1183,17 @@ function tag_or_untag() {
 /////////////////////////////////////////////////
 // tsumego frame
 
-let tsumego_frame_gap = null
 let tsumego_frame_bturn = true
 
-function add_tsumego_frame(try_balance_p) {
+function add_tsumego_frame() {
     if (game.move_count === 0) {return}
     const play1 = ([i, j, is_black]) => do_play(idx2move(i, j), is_black)
     tsumego_frame_bturn = is_bturn()
     duplicate_sequence(true, true)
-    const {fill, gap} = tsumego_frame(game.current_stones())
+    const fill = tsumego_frame(game.current_stones())
     fill.forEach(play1)
-    if (try_balance_p) {
-        toast('Balancing...')
-        const sec = 0; tsumego_frame_gap = gap; start_auto_play(false, sec, Infinity)
-    } else {
-        const [i0, j0, is_black0] = last(fill) || []
-        !empty(fill) && tsumego_frame_restore_turn(is_black0)
-    }
-}
-
-function try_fill_tsumego_frame_gap() {
-    if (!tsumego_frame_gap) {return false}
-    const balanced_winrate = 50, balance_margin = 0
-    const winrate = winrate_after(game.move_count)
-    const playable = !empty(tsumego_frame_gap) &&
-          Math.abs(winrate - balanced_winrate) > balance_margin
-    const proc = () => {
-        const [i, j] = tsumego_frame_gap.pop()
-        const is_black = winrate < balanced_winrate
-        do_play(idx2move(i, j), is_black)
-        tsumego_frame_restore_turn(is_black)
-    }
-    do_as_auto_play(playable, proc)
-    !playable && ((tsumego_frame_gap = null), resume(), update_all(), toast('...Done.'))
-    return true
+    const [i0, j0, is_black0] = last(fill) || []
+    !empty(fill) && tsumego_frame_restore_turn(is_black0)
 }
 
 function tsumego_frame_restore_turn(is_last_black) {
