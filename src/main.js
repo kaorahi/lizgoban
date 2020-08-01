@@ -614,8 +614,10 @@ function menu_template(win) {
         menu('Experimental...', [
             obsolete_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
             sep,
-            item("Tsumego frame", 'Shift+f', () => add_tsumego_frame(),
-                 true, game.move_count > 0),
+            item("Tsumego frame", 'Shift+f',
+                 () => add_tsumego_frame(), true, game.move_count > 0),
+            item("Tsumego frame (ko)", 'CmdOrCtrl+Shift+f',
+                 () => add_tsumego_frame(true), true, game.move_count > 0),
         ]),
     ])
     const white_unloader_item =
@@ -1183,21 +1185,15 @@ function tag_or_untag() {
 /////////////////////////////////////////////////
 // tsumego frame
 
-let tsumego_frame_bturn = true
-
-function add_tsumego_frame() {
+function add_tsumego_frame(ko_p) {
     if (game.move_count === 0) {return}
     const play1 = ([i, j, is_black]) => do_play(idx2move(i, j), is_black)
-    tsumego_frame_bturn = is_bturn()
-    duplicate_sequence(true, true)
-    const fill = tsumego_frame(game.current_stones())
-    fill.forEach(play1)
+    const bturn = is_bturn(), komi = AI.engine_info().engine_komi
+    const fill = tsumego_frame(game.current_stones(), komi, bturn, ko_p)
+    duplicate_sequence(true, true); fill.forEach(play1)
+    set_gorule(default_gorule)
     const [i0, j0, is_black0] = last(fill) || []
-    !empty(fill) && tsumego_frame_restore_turn(is_black0)
-}
-
-function tsumego_frame_restore_turn(is_last_black) {
-    !!is_last_black === !!tsumego_frame_bturn && do_play('pass', !is_last_black)
+    !empty(fill) && !!is_black0 === !!bturn && do_play('pass', !bturn)
 }
 
 /////////////////////////////////////////////////

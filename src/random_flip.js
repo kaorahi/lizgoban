@@ -32,5 +32,6 @@ function coin_toss() {return Math.random() < 0.5}
 
 module.exports = {
     random_flip_rotation, horizontal_flip, vertical_flip,
-    clockwise_rotation, counterclockwise_rotation, half_turn
+    clockwise_rotation, counterclockwise_rotation, half_turn,
+    ij_flipper,
 }
