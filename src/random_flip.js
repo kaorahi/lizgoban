@@ -12,9 +12,9 @@ function half_turn(history) {return transform(history, true, true, false)}
 
 // backend
 
-function transform(history, ...spec) {return convert(trans1(...spec), history)}
+function transform(history, ...spec) {return convert(ij_flipper(...spec), history)}
 
-function trans1(flip_i, flip_j, swap_ij) {
+function ij_flipper(flip_i, flip_j, swap_ij) {
     const fl = (k, bool) => bool ? (board_size() - 1 - k) : k
     const sw = (i, j, bool) => bool ? [j, i] : [i, j]
     return ([i, j]) => sw(fl(i, flip_i), fl(j, flip_j), swap_ij)
@@ -34,6 +34,3 @@ module.exports = {
     random_flip_rotation, horizontal_flip, vertical_flip,
     clockwise_rotation, counterclockwise_rotation, half_turn
 }
-
-
-
