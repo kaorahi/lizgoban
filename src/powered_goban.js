@@ -61,8 +61,7 @@ function endstate_handler(h) {
 }
 
 // keys1: required. individual plot for each engine.
-const suggest_keys1 = ['suggest', 'visits', 'background_visits', 'b_winrate',
-                       'komi', 'gorule']
+const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 // keys2: optional. single global plot.
 const suggest_keys2 = ['endstate', 'score_without_komi']
 
@@ -80,7 +79,10 @@ function suggest_handler(h) {
           (!AI.is_gorule_supported() || !cur_by_engine.gorule || cur_by_engine.gorule === h.gorule)
     const preferred_h = !R.use_cached_suggest_p ? h :
           prefer_cached_p ? {...h, ...cur_by_engine} : h
-    preferred_h.background_visits = (h !== preferred_h) && h.visits
+    // do not use suggest_keys1 for background_visits
+    // because we need to copy falsy value too.
+    preferred_h.background_visits =
+        cur.background_visits = ((h !== preferred_h) && h.visits)
     const copy_vals = (keys, to) =>
           keys.forEach(k => truep(preferred_h[k]) && (to[k] = preferred_h[k]))
     copy_vals(suggest_keys1, cur)
