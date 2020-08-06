@@ -228,10 +228,12 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 * Support ownerships of stones by facial expressions.
 * Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`.
 * Modify "File" menu slightly for convenience.
+* Officially support reuse of analyses like Lizzie.
 * Add "Save/Copy SGF with analysis" into menu. (compatible with Lizzie 0.7.2)
 * Add more configurations (rules, komi, handicap, stone_style) into `preset` in `config.json`.
 * Omit marks for too minor suggestions on the board.
-* Experimentally add "Tool > Experimental > Tsumego frame1&2" for solving life & death problems. (See "Tips" section in "Help" menu.)
+* Automatically start quick overview after reading SGF.
+* Experimentally add "Tool > Experimental > Tsumego" for solving life & death problems. (See "Tips" section in "Help" menu.)
 * Improve display by "c" key + mouse hover on existing stones.
 * Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
 ** Show mistakes and actually punished scores on stones.
