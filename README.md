@@ -235,6 +235,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 * Automatically start quick overview after reading SGF.
 * Experimentally add "Tool > Experimental > Tsumego" for solving life & death problems. (See "Tips" section in "Help" menu.)
 * Improve display by "c" key + mouse hover on existing stones.
+* Stop pondering in match vs. AI if human's move is played in pausing.
 * Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
 ** Show mistakes and actually punished scores on stones.
 ** Click on a stone to temporarily show the past board.

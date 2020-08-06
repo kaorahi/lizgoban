@@ -922,7 +922,7 @@ function auto_playing(forever) {
 }
 
 // match
-let auto_play_weaken = []
+let auto_play_weaken = [], pondering_in_match = false
 function start_match(win) {
     set_board_type('raw', win); R.in_match = true
 }
@@ -937,7 +937,9 @@ function set_match_param(weaken) {
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
         []
 }
-function auto_play_in_match(sec) {start_auto_play(false, sec, 1)}
+function auto_play_in_match(sec) {
+    pondering_in_match = !pausing; start_auto_play(false, sec, 1)
+}
 
 // auto-redo (without additional analysis)
 let the_auto_redo_progress = 0, auto_redo_millisec = 0, auto_redo_timer = null
@@ -1007,6 +1009,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const play_it = () => {
         decrement_auto_play_count()
         weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move)
+        R.in_match && !pondering_in_match && pause()
     }
     do_as_auto_play(move !== 'pass', play_it)
 }
