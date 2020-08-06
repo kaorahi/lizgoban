@@ -229,14 +229,14 @@ function change_endstate_diff_target(proc) {
 
 function set_tentative_endstate_maybe() {
     const {endstate} = game.ref_current(), pausing = M.is_pausing()
-    const update_p = endstate
+    const update_p = endstate, dummy_p = endstate && empty(endstate[0])
     const reuse_p = !M.is_busy() && is_endstate_nearly_uptodate(pausing ? 0 : 20)
     update_p ? set_endstate_uptodate(endstate) :
         reuse_p ? do_nothing() : set_endstate_obsolete()
     const es = recall_endstate()
     const immediately = update_p && (pausing || get_showing_until())
     tentatively_add_endstate_to_stones(R.stones, es, immediately)
-    R.is_endstate_drawable = !!es
+    R.is_endstate_drawable = !!es && !dummy_p
 }
 
 function add_endstate_to_stones(stones, endstate, move_count, update_diff_p) {

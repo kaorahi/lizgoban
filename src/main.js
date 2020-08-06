@@ -552,7 +552,7 @@ function menu_template(win) {
              ['half_turn', false, 'horizontal_flip', 'vertical_flip', false,
               'clockwise_rotation', 'counterclockwise_rotation']
              .map(key => key ? item(key.replace(/_/g, ' '), undefined,
-                                    () => game.transform(key)) : sep)
+                                    () => transform_board(key)) : sep)
             ),
         item(`Komi (${game.get_komi()})`, undefined, () => ask_komi(win)),
         menu(`Rule (${get_gorule()})`, AI.is_gorule_supported() ? gorule_submenu() : []),
@@ -1180,6 +1180,10 @@ function tag_or_untag() {
     if (game.move_count === 0) {wink(); return}
     game.trial_from = game.move_count - 1
     game.add_or_remove_tag(); P.update_info_in_stones()
+}
+function transform_board(key) {
+    // set dummy endstate for cheating set_tentative_endstate_maybe()
+    game.transform(key); game.ref_current().endstate = [[]]
 }
 
 /////////////////////////////////////////////////
