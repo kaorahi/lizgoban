@@ -44,7 +44,6 @@ const default_option = {
     record_note_to_SGF: false,
     auto_overview: true,
     movenum_for_trial: false,
-    repl: false,
 }
 const option = {}
 let white_preset = []
@@ -638,6 +637,7 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
+        {label: 'REPL', type: 'checkbox', checked: repl_p(), click: toggle_repl},
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
         {role: 'toggleDevTools'},
@@ -1885,5 +1885,12 @@ function toggle_sabaki() {
 /////////////////////////////////////////////////
 // REPL for debug
 
-const repl_context = {game, sequence, sequence_cursor, option, R}
-option.repl && merge(require('repl').start('LizGoban> ').context, repl_context)
+let repl = null
+function toggle_repl() {repl ? repl.close() : start_repl()}
+function repl_p() {return !!repl}
+function start_repl() {
+    const repl_context = {game, sequence, sequence_cursor, option, R}
+    repl = require('repl').start('LizGoban> ')
+    repl.on('exit', () => {repl = null; console.log('REPL is closed.'); update_all()})
+    merge(repl.context, repl_context)
+}
