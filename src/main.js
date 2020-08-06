@@ -1885,7 +1885,5 @@ function toggle_sabaki() {
 /////////////////////////////////////////////////
 // REPL for debug
 
-function debug_get() {return {game, sequence, sequence_cursor, option, R}}
-globalize({debug_get})
-
-option.repl && require('repl').start()
+const repl_context = {game, sequence, sequence_cursor, option, R}
+option.repl && merge(require('repl').start('LizGoban> ').context, repl_context)
