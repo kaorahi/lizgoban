@@ -237,11 +237,12 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 * Improve display by "c" key + mouse hover on existing stones.
 * Stop pondering in match vs. AI if human's move is played in pausing.
 * Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
-** Show mistakes and actually punished scores on stones.
-** Click on a stone to temporarily show the past board.
-** Double-click on a stone to jump to the move.
+  * Show mistakes and actually punished scores on stones.
+  * Click on a stone to temporarily show the past board.
+  * Double-click on a stone to jump to the move.
 
 Incompatibilities:
+
 * Upgrade libraries (Electron 9, etc.). So you may need to do "npm install" again.
 
 ### 0.4.0

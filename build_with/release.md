@@ -18,6 +18,7 @@
 * Fix minor bugs etc.
 
 Incompatibilities:
+
 * Upgrade libraries (Electron 9, etc.). So you may need to do "npm install" again.
 
 ### Links
