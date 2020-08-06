@@ -6,9 +6,9 @@
 
 * Upgrade the built-in engine of the all-in-one package to [KataGo 1.5.0](https://github.com/lightvector/KataGo/releases/tag/1.5.0) (OpenCL) for better performance in some environments.
 * Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
-** Show mistakes and actually punished scores on stones.
-** Click on a stone to temporarily show the past board.
-** Double-click on a stone to jump to the move.
+  * Show mistakes and actually punished scores on stones.
+  * Click on a stone to temporarily show the past board.
+  * Double-click on a stone to jump to the move.
 * Improve display by "c" key + mouse hover on existing stones.
 * Improve "Tool > Experimental > Tsumego frame" for solving life & death problems. (See "Tips" section in "Help" menu.)
 * Officially support reuse of analyses like Lizzie.
