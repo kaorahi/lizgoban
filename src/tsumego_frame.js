@@ -14,10 +14,16 @@ function tsumego_frame_stones(stones, komi, black_to_play_p, ko_p) {
     const ijs = flatten(aa_map(stones, (h, i, j) => h.stone && {i, j, black: h.black}))
           .filter(truep)
     if (empty(ijs)) {return []}
+    // detect corner/edge/center problems
+    // (avoid putting border stones on the first lines)
+    const near_to_edge = 2
+    const snapper = to => k => Math.abs(k - to) <= near_to_edge ? to : k
+    const snap0 = snapper(0), snapS = snapper(size - 1)
     // find range of problem
     const top = min_by(ijs, z => z.i), bottom = min_by(ijs, z => - z.i)
     const left = min_by(ijs, z => z.j), right = min_by(ijs, z => - z.j)
-    const imin = top.i, imax = bottom.i, jmin = left.j, jmax = right.j
+    const imin = snap0(top.i), imax = snapS(bottom.i)
+    const jmin = snap0(left.j), jmax = snapS(right.j)
     // flip/rotate for standard position
     const need_flip_p = (kmin, kmax) => (kmin < size - kmax - 1)
     const flip_spec = (imin < jmin) ? [false, false, true] :
