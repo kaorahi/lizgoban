@@ -144,7 +144,6 @@ let game = create_game_with_gorule(store.get('gorule', default_gorule))
 let sequence = [game], sequence_cursor = 0
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 let auto_analysis_steps = 1
-const simple_ui = false
 let auto_play_sec = 0, auto_replaying = false
 let pausing = false, busy = false
 
@@ -1577,7 +1576,6 @@ function availability() {
         auto_analyze: !game.is_empty(),
         start_auto_analyze: !auto_p,
         stop_auto: auto_p,
-        simple_ui: simple_ui, normal_ui: !simple_ui,
         trial: game.trial,
     }
 }

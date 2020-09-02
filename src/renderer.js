@@ -1010,7 +1010,7 @@ function update_button_etc(availability) {
     f('bturn'); f('wturn'); f('auto_analyze')
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_visits')
     f('stop_auto')
-    f('normal_ui'); f('simple_ui'); f('trial')
+    f('trial')
     const in_match = in_match_p(), serious = in_match_p(true)
     update_ui_element('.show_in_match', in_match)
     update_ui_element('.hide_in_match', !in_match)
