@@ -608,6 +608,8 @@ function menu_template(win) {
                  () => add_tsumego_frame(), true, game.move_count > 0),
             item("Tsumego frame (ko)", 'CmdOrCtrl+Shift+f',
                  () => add_tsumego_frame(true), true, game.move_count > 0),
+            sep,
+            item("Save Q&&A images", 'PrintScreen', save_q_and_a_images),
         ]),
     ])
     const white_unloader_item =
@@ -1181,6 +1183,13 @@ function tag_or_untag() {
 function transform_board(key) {
     // set dummy endstate for cheating set_tentative_endstate_maybe()
     game.transform(key); game.ref_current().endstate = [[]]
+}
+function save_q_and_a_images() {
+    const pre = 'qa', format = {pre, sep: '_', post: ''}, dir = exercise_dir()
+    const path = PATH.join(dir, exercise_filename(format))
+    const filenames = ['a', 'b'].map(z => `${path}_${z}.png`)
+    renderer('save_q_and_a_images', ...filenames)
+    toast(`Saved as ${PATH.join(dir, pre)}...`, 7000)
 }
 
 /////////////////////////////////////////////////
@@ -1820,8 +1829,8 @@ function delete_exercise() {
 function exercise_dir() {return option_path('exercise_dir')}
 
 const exercise_format = {pre: 'exercise', sep: '_', post: '.sgf'}
-function exercise_filename() {
-    const {pre, sep, post} = exercise_format
+function exercise_filename(format) {
+    const {pre, sep, post} = format || exercise_format
     const mc = to_s(game.move_count).padStart(3, '0')
     const ti = (new Date()).toJSON().replace(/:/g, '') // cannot use ":" in Windows
     return `${pre}${board_size()}${sep}${ti}${sep}${mc}${post}`

@@ -11,6 +11,7 @@ const {globalize} = require('./globalize.js')
 globalize(require('./util.js'), require('./coord.js'), require('./draw_common.js'))
 const current_window = electron.remote.getCurrentWindow()
 const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
+const {save_blob} = require('./image_exporter.js')
 
 // canvas
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
@@ -206,6 +207,14 @@ ipc.on('ask_game_info', (e, params) => {
     update_ui_element('.game_info_dialog_non_initial', !initial_p)
     // show it
     show_dialog('#game_info_dialog', asking_komi_p && '#komi')
+})
+
+ipc.on('save_q_and_a_images', (e, q_filename, a_filename) => {
+    const q_draw = canvas => D.draw_raw_goban(canvas, {draw_last_p: true})
+    const a_draw = canvas => D.draw_goban_with_principal_variation(canvas, {})
+    const saver = filename => blob => save_blob(blob, filename)
+    const args = [[q_draw, saver(q_filename)], [a_draw, saver(a_filename)]]
+    args.forEach(a => generate_board_image_blob(...a))
 })
 
 ipc.on('reset_match_param', (e) => set_match_param(true))
