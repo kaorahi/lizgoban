@@ -208,6 +208,7 @@ ipc.on('ask_game_info', (e, params) => {
     show_dialog('#game_info_dialog', asking_komi_p && '#komi')
 })
 
+ipc.on('reset_match_param', (e) => set_match_param(true))
 ipc.on('take_thumbnail', (e, id, stones, trial_p) => take_thumbnail(id, stones, trial_p))
 ipc.on('slide_in', (e, direction) => slide_in(direction))
 ipc.on('wink', (e) => wink())
@@ -456,8 +457,9 @@ function play_pass() {main('pass'); auto_play_in_match()}
 function auto_play_in_match() {
     in_match_p() && main('auto_play_in_match', auto_play_in_match_sec())
 }
-function set_match_param() {
-    const it = Q('#weaken'); main('set_match_param', it.options[it.selectedIndex].value)
+function set_match_param(reset_p) {
+    const it = Q('#weaken'); reset_p && (it.selectedIndex = 0)
+    main('set_match_param', it.options[it.selectedIndex].value)
 }
 function auto_play_in_match_sec() {return to_f(Q('#match_sec').value)}
 function hover_here(e, coord2idx, canvas) {

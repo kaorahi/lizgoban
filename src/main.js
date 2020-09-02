@@ -915,7 +915,8 @@ function auto_playing(forever) {
 
 // match
 let auto_play_weaken = [], pondering_in_match = false
-function start_match(win) {
+function start_match(win, reset_match_param_p) {
+    reset_match_param_p && renderer('reset_match_param')
     set_board_type('raw', win); R.in_match = true
 }
 function stop_match(window_id) {
@@ -1799,7 +1800,7 @@ function load_exercise(selector, win, random_flip_p) {
     const retry = () => {seen_exercises = []; load_exercise(selector, win)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files); seen_exercises.push(fn)
-    start_match(win); load_as_exercise(expand_exercise_filename(fn))
+    start_match(win, true); load_as_exercise(expand_exercise_filename(fn))
     random_flip_p && game.random_flip_rotate()
     game.set_last_loaded_element(); tag_or_untag()
 }
