@@ -154,8 +154,8 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
     }
     const move2sgf = h => {
         const {move, is_black, comment, note} = h
-        const note_maybe =
-              f(note_property, use_note_property_p() && note && JSON.stringify({note}))
+        const note_p = use_note_property_p() && cache_suggestions_p && note
+        const note_maybe = f(note_property, note_p && JSON.stringify({note}))
         return `;${is_black ? 'B' : 'W'}${m2s(move)}${f('C', comment)}${note_maybe}`
             + (cache_suggestions_p ? lizzie072_cache_for(h) : '')
     }
