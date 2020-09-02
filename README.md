@@ -42,6 +42,7 @@ on [Electron](https://electronjs.org/).
 * Personal exercise book that can be used like bookmarks in web browsers for random exercise
 * Quick comparison of stones, ownerships, and areas of the current and past boards
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
+* [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 
 ### Original visualizations
 
@@ -233,7 +234,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 * Add more configurations (rules, komi, handicap, stone_style) into `preset` in `config.json`.
 * Omit marks for too minor suggestions on the board.
 * Automatically start quick overview after reading SGF.
-* Experimentally add "Tool > Experimental > Tsumego" for solving life & death problems. (See "Tips" section in "Help" menu.)
+* Experimentally add "Tool > Experimental > Tsumego frame" for solving life & death problems. (See "Tips" section in "Help" menu.)
 * Improve display by "c" key + mouse hover on existing stones.
 * Stop pondering in match vs. AI if human's move is played in pausing.
 * Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
