@@ -123,9 +123,19 @@ function draw_goban_with_variation(canvas, suggest, opts) {
 }
 
 function draw_goban_with_principal_variation(canvas, options) {
+    draw_readonly_goban_with_variation(canvas, R.suggest[0] || {}, options)
+}
+
+function draw_goban_with_expected_variation(canvas, options) {
+    const title = 'expected variation at the previous move'
+    const opts = {...options, draw_visits_p: `  ${title}`}
+    draw_readonly_goban_with_variation(canvas, {pv: expected_pv()}, opts)
+}
+
+function draw_readonly_goban_with_variation(canvas, suggest, options) {
     const opts = {read_only: true, force_draw_expected_p: true,
                   mapping_to_winrate_bar: false, ...options}
-    draw_goban_with_variation(canvas, R.suggest[0] || {}, opts)
+    draw_goban_with_variation(canvas, suggest, opts)
 }
 
 function draw_goban_with_subboard_stones_suggest(canvas, options) {
@@ -792,6 +802,7 @@ module.exports = {
     draw_raw_goban,
     draw_main_goban,
     draw_goban_with_principal_variation,
+    draw_goban_with_expected_variation,
     draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban,
     draw_thumbnail_goban,

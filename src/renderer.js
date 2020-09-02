@@ -286,6 +286,7 @@ const draw_main = with_opts(D.draw_main_goban)
 const draw_pv = with_opts((...args) => {
     R.subboard_stones_suggest ? D.draw_goban_with_subboard_stones_suggest(...args) :
         truep(showing_until()) ? D.draw_raw_goban(...args) :
+        already_showing_pv_p() ? D.draw_goban_with_expected_variation(...args) :
         D.draw_goban_with_principal_variation(...args)
 }, ignore_mouse)
 const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
@@ -319,6 +320,11 @@ function is_first_board_canvas(canvas) {return canvas === the_first_board_canvas
 function reset_first_board_canvas() {the_first_board_canvas = null}
 function update_first_board_canvas(canvas) {
     !the_first_board_canvas && (the_first_board_canvas = canvas)
+}
+
+function already_showing_pv_p() {
+    const target = D.target_move()
+    return target && ((R.suggest[0] || {}).move === target)
 }
 
 /////////////////////////////////////////////////
@@ -910,7 +916,9 @@ function set_keyboard_moves_for_next_move() {
     const hit = R.suggest.find(h => D.is_next_move(h.move))
     hit && !keyboard_moves[0] && (keyboard_moves = hit.pv) && update_goban()
 }
-function reset_keyboard_moves() {keyboard_moves = []; update_goban()}
+function reset_keyboard_moves() {
+    keyboard_moves = []; update_goban()
+}
 
 function set_keyboard_tag_maybe(key) {
     const old = keyboard_tag_move_count
