@@ -445,7 +445,7 @@ function weight_info_text() {
     const game_gorule = AI.is_gorule_supported() && game.gorule
     const gorule = game_gorule ? `(${game_gorule}) ` : ''
     const f = z => z ?
-          `${z.preset_label_text} ${s(z.network_size)}${s(!z.is_ready && '(waiting...)')}` : ''
+          `${z.preset_label_text}${s(z.aggressive_p && '!')} ${s(z.network_size)}${s(!z.is_ready && '(waiting...)')}` : ''
     const weight_info = h.leelaz_for_white_p ?
           `${f(h.black)} / ${f(h.white)}` : f(h.black)
     const tuning = M.tuning_message()

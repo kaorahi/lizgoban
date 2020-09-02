@@ -165,6 +165,7 @@ function engine_info() {
               (modified_p ?
                `{${snip_text(PATH.basename(weight_file || ''), 20, 5, '..')}}` : '')
         return {leelaz_command, leelaz_args, is_ready: lz.is_ready(), preset_label_text,
+                aggressive_p: !!lz.aggressive(),
                 weight_file, network_size: lz.network_size()}
     }
     const cur_lz = leelaz_for_this_turn()
