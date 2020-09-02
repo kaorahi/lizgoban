@@ -8,8 +8,9 @@ MTCH_IMG = $(DOC)/match.png
 FACE_IMG = $(DOC)/faces.png
 LG_CONF = $(SAMPLE)/config.json
 PD_HEADER = pandoc_header
+KATA_DOC = $(DOC)/KataGo/README.txt
 
-TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF)
+TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF) $(KATA_DOC)
 
 PANDOC = pandoc -H $(PD_HEADER)
 
@@ -34,4 +35,7 @@ $(MTCH_IMG): ../match.png
 	cp -f $< $@
 
 $(FACE_IMG): ../faces.png
+	cp -f $< $@
+
+$(KATA_DOC): bin/win/katago/README.txt
 	cp -f $< $@
