@@ -187,7 +187,7 @@ ipc.on('ask_game_info', (e, params) => {
     Q('#sgf_rule').value = sgf_rule
     Q('#comment_form').value = R.comment
     Q('#info_form').value = info_text
-    Q('#initial_p').value = initial_p ? "yes" : "no"
+    Q('#initial_p').value = yes_no(initial_p)
     // rule selection
     const sel = Q('#rule'), rules = supported_rules || ['unsupported']
     while (sel.firstChild) {sel.removeChild(sel.firstChild)}
