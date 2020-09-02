@@ -81,11 +81,13 @@ function create_leelaz () {
 
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
-        const checks = [['minmoves', 'lz-analyze interval 1 minmoves 30'],
-                        ['lz-setoption', 'lz-setoption name visits value 0'],
-                        ['endstate', 'endstate_map'],
-                        ['kata-analyze', 'kata-analyze interval 1'],
-                        ['kata-set-rules', `kata-set-rules ${gorule}`]]
+        const checks = [
+            ['minmoves', 'lz-analyze interval 1 minmoves 30'],
+            ['lz-setoption', 'lz-setoption name visits value 0'],
+            ['endstate', 'endstate_map'],
+            ['kata-analyze', 'kata-analyze interval 1'],
+            ['kata-set-rules', `kata-set-rules ${gorule}`],
+        ]
         checks.map(a => check_supported(...a))
         // clear_leelaz_board for restart
         // komi may be changed tentatively in set_board before check of engine type
