@@ -1546,6 +1546,7 @@ function update_state(keep_suggest_p) {
 function subboard_stones_suggest_for(su, prev_su) {
     const bturn = !prev_su.is_black, suggest = (prev_su.suggest || [{}])[0]
     const stones = game.stones_at(su - 1)
+    P.add_next_mark_to_stones(stones, game, su - 1)
     return {stones, suggest, bturn}
 }
 
