@@ -101,6 +101,14 @@ function create_game(init_history, init_prop) {
 }
 
 /////////////////////////////////////////////////
+// privete note property for SGF
+
+const note_property = 'LG'
+let use_note_property_val = false
+function use_note_property_p() {return use_note_property_val}
+function use_note_property(bool) {use_note_property_val = !!bool}
+
+/////////////////////////////////////////////////
 // SGF
 
 function game_to_sgf(game, cache_suggestions_p) {
@@ -267,7 +275,7 @@ function history_from_sabaki_nodes(nodes, komi, cache_suggestions_p) {
             const move = sgfpos2move(pos)
             const get_com = key => k === 0 && (h[key] || [])[0]
             const comment = get_com('C')
-            const private_prop_json = use_note_property_p() && get_com('LG')
+            const private_prop_json = use_note_property_p() && get_com(note_property)
             const note = private_prop_json && JSON.parse(private_prop_json).note
             const tag = h.branching_tag, analysis_for_black = !is_black
             const cached_suggest_maybe = (cache_suggestions_p && h.LZ) ?
@@ -325,14 +333,6 @@ function add_or_remove_tag_on_game(game) {
     const h = game.ref_current(); if (!h) {return}
     const t = h.tag; h.tag = (t ? t.slice(0, -1) : new_tag_for_game(game))
 }
-
-/////////////////////////////////////////////////
-// privete note property for SGF
-
-const note_property = 'LG'
-let use_note_property_val = false
-function use_note_property_p() {return use_note_property_val}
-function use_note_property(bool) {use_note_property_val = !!bool}
 
 /////////////////////////////////////////////////
 // exports
