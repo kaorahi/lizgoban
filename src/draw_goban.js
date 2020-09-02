@@ -33,7 +33,7 @@ function draw_goban_until(canvas, show_until, opts) {
 
 function stones_until(show_until, all_p, for_endstate) {
     // fixme: need cleaning (for_endstate)
-    const recent_moves = 3, thick_moves = 7
+    const recent_moves = Math.min(3, show_until - R.init_len), thick_moves = 7
     const unnumbered =
           clip_init_len(for_endstate ? Infinity : all_p ? 0 : show_until - recent_moves)
     const highlighted_after = for_endstate ? Infinity :
