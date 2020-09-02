@@ -28,16 +28,8 @@
                        "-model", ["built-in", "katanetwork.bin.gz"]]
         },
         {
-            "label": "KataGo for handicap games",
-            "accelerator": "F3",
-            "engine": [["built-in", "katago/katago"], "gtp",
-                       "-override-config",
-                       "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
-                       "-model", ["built-in", "katanetwork.bin.gz"]]
-        },
-        {
             "label": "KataGo for wider search",
-            "accelerator": "F4",
+            "accelerator": "F3",
             "engine": [["built-in", "katago/katago"], "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false, analysisWideRootNoise=0.03",
