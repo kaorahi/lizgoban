@@ -188,7 +188,8 @@ function add_next_played_move_as_fake_suggest() {
         winrate: is_black ? b_winrate : 100 - b_winrate,
         order: -1, scoreStdev: null, prior: orig && orig.prior,
     }
-    R.suggest.push(fake_suggest_elem)
+    // destructive R.suggest.push(fake_suggest_elem) is wrong!
+    R.suggest = [...R.suggest, fake_suggest_elem]
 }
 
 /////////////////////////////////////////////////
