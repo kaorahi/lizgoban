@@ -811,6 +811,7 @@ const with_skip = skip_too_frequent_requests((proc, ...a) => proc(...a))
 const arrow_keys = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"]
 
 document.onkeydown = e => {
+    const until = showing_until()  // before unset_stone_is_clicked()
     arrow_keys.includes(e.key) || unset_stone_is_clicked()
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
@@ -873,10 +874,12 @@ document.onkeydown = e => {
     case "M": m('toggle_let_me_think'); return
     }
     // GROUP 4: stand-alone only
-    const until = showing_until()
+    const goto_move_count = (c, another_board) => {
+        duplicate_if(another_board); m('goto_move_count', finite_or(c, R.move_count))
+    }
     const play_it = (steps, another_board) =>
           D.target_move() ? m('play', D.target_move(), another_board) :
-          truep(until) ? (duplicate_if(another_board), m('goto_move_count', until)) :
+          truep(until) ? goto_move_count(until, another_board) :
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
     switch (!R.attached && key) {
