@@ -102,21 +102,20 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const reliable_moves = 7
     const variation = suggest.pv || []
     const expected = expected_pv()
-    let mark_unexpected_p = (expected[0] === variation[0]) || opts.force_draw_expected_p
+    const mark_unexpected_p =
+          (expected[0] === variation[0]) || opts.force_draw_expected_p
     const displayed_stones = copy_stones_for_display(opts.stones)
     const bturn = opts.stones ? opts.bturn : R.bturn
     variation.forEach((move, k) => {
-        const b = xor(bturn, k % 2 === 1), w = !b, expected_move = expected[k]
+        const b = xor(bturn, k % 2 === 1), w = !b
         merge_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
             variation: true, movenums: [k + 1],
             variation_last: k === variation.length - 1, is_vague: k >= reliable_moves
         })
-        if (mark_unexpected_p && expected_move && expected_move !== move) {
-            set_expected_stone(expected[k], move, displayed_stones)
-            mark_unexpected_p = false
-        }
     })
+    mark_unexpected_p &&
+        set_expected_stone_for_variation(expected, variation, displayed_stones)
     const mapping_to_winrate_bar = mapping_text(suggest, opts)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_expected_p: true,
@@ -765,6 +764,16 @@ function suggest_texts(suggest) {
 // previously expected move
 
 function expected_pv() {return ((R.previous_suggest || {}).pv || []).slice(1)}
+
+function set_expected_stone_for_variation(expected, variation, displayed_stones) {
+    const with_turn = (s, z) => s ? (s + to_s(z % 2)) : ''
+    const head = (a, k) => a.slice(0, k + 1).map(with_turn).sort().join()
+    const eq_until = (_, k) => head(expected, k) === head(variation, k) ? k : -1
+    const last_eq = Math.max(...variation.map(eq_until)), first_diff = last_eq + 1
+    const expected_move = expected[first_diff], unexpected_move = variation[first_diff]
+    expected_move && unexpected_move &&
+        set_expected_stone(expected_move, unexpected_move, displayed_stones)
+}
 
 function set_expected_stone(expected_move, unexpected_move, displayed_stones) {
     merge_stone_at(expected_move, displayed_stones, {expected_move: true})
