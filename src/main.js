@@ -1087,7 +1087,6 @@ function set_board_type(type, win, keep_let_me_think) {
 // handicap stones & komi
 function add_handicap_stones(k) {
     game.is_empty() || new_empty_board()
-    merge(game, {init_len: k, komi: get_stored('komi_for_new_handicap_game')})
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
     // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
@@ -1102,6 +1101,8 @@ function add_handicap_stones(k) {
     const moves = pos.slice(0, k)
     exceptional_ks.includes(k) && (moves[k - 1] = last(pos))
     moves.forEach(m => do_play(m, true))
+    const len = game.len(), komi: get_stored('komi_for_new_handicap_game')
+    merge(game, {init_len: len, komi})
 }
 function ask_handicap_stones() {
     ask_choice("Handicap stones", seq(8, 2), add_handicap_stones)
