@@ -130,20 +130,13 @@ function create_games_from_sgf_internal(sgf_str, cache_suggestions_p) {
         new_game.gorule =
             katago_rule_from_sgf_rule(new_game.sgf_gorule) || get_gorule(true)
     }
-    const cook_lizzie_cache = new_game => new_game.forEach(cur => {
-        if (!cur.suggest) {return}
-        const ids = AI.engine_ids()
-        const engine_id = is_bturn() ? ids[0] : (ids[1] || ids[0])
-        !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
-        const cur_by_engine = cur.by[engine_id]
-        const keys = ['suggest', 'visits', 'b_winrate',
-                      'komi', 'gorule', 'endstate', 'score_without_komi']
-        keys.forEach(k => truep(cur[k]) && (cur_by_engine[k] = cur[k]))
-    })
     // set 9x9 engine before cooking 9x9 games so that cached suggestions
     // are loaded correctly
     !empty(gs) && set_AI_board_size_maybe(gs[0].board_size)
-    const f = g => {set_gorule(g); cook_lizzie_cache(g); P.set_ambiguity_etc_in_game(g)}
+    const f = g => {
+        set_gorule(g); g.needs_cooking_lizzie_cache = true
+        P.set_ambiguity_etc_in_game(g)
+    }
     gs.forEach(f); return gs
 }
 

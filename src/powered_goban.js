@@ -337,6 +337,7 @@ function make_lagged_aa(max_diff) {
 // winrate history
 
 function winrate_from_game(engine_id) {
+    cook_lizzie_cache_maybe(game)
     // +1 for move_count (see game.js)
     const winrates = seq(game.len() + 1).map(mc => get_b_winrate(mc, engine_id))
     const score_loss = {b: 0, w: 0}; let prev_score = game.get_komi()
@@ -402,6 +403,21 @@ function winrate_from_game(engine_id) {
             turn_letter,
         }, pass ? {pass} : {predict}, orders)
     })
+}
+function cook_lizzie_cache_maybe(new_game) {
+    // engine_id depends komi etc. that are not updated yet
+    // when create_games_from_sgf_internal is called.
+    if (!new_game.needs_cooking_lizzie_cache) {return}
+    const engine_id = AI.engine_ids()[0]
+    new_game.forEach(cur => {
+        if (!cur.suggest) {return}
+        !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
+        const cur_by_engine = cur.by[engine_id]
+        const keys = ['suggest', 'visits', 'b_winrate',
+                      'komi', 'gorule', 'endstate', 'score_without_komi']
+        keys.forEach(k => truep(cur[k]) && (cur_by_engine[k] = cur[k]))
+    })
+    new_game.needs_cooking_lizzie_cache = false
 }
 
 function score_without_komi_at(move_count) {
