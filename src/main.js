@@ -1566,6 +1566,7 @@ function renderer_preferences() {
 function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
 
 function availability() {
+    const auto_p = auto_analyzing_or_playing()
     return {
         undo: undoable(),
         redo: redoable(),
@@ -1576,8 +1577,8 @@ function availability() {
         bturn: R.bturn,
         wturn: !R.bturn,
         auto_analyze: !game.is_empty(),
-        start_auto_analyze: !auto_analyzing_or_playing(),
-        stop_auto: auto_progress() >= 0,
+        start_auto_analyze: !auto_p,
+        stop_auto: auto_p,
         simple_ui: simple_ui, normal_ui: !simple_ui,
         trial: game.trial,
     }
