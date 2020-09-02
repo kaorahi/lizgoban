@@ -591,21 +591,34 @@ function take_thumbnail(given_id, given_stones, given_trial_p) {
     take_thumbnail_of_stones(stones, url => store_thumbnail(id, url), trial_p)
 }
 
-let reusable_canvas = null
 function take_thumbnail_of_stones(stones, proc, trail_p) {
     if (R.sequence_length > max_sequence_length_for_thumbnail) {return}
+    const drawing_func = canvas =>
+          with_board_size(stones.length, D.draw_thumbnail_goban, canvas, stones, trail_p)
+    const callback = blob => proc(URL.createObjectURL(blob))
+    generate_board_image_blob(drawing_func, callback, 'image/jpeg', 0.3)
+}
+
+let reusable_canvas = null
+function generate_board_image_blob(drawing_func, callback, mime_type, quality) {
     // note: main_canvas can be rectangular by "x" key
     const [size, _] = get_canvas_size(main_canvas)
     const canvas = reusable_canvas || document.createElement("canvas")
+    const my_callback = blob => {callback(blob); reusable_canvas = canvas}
     reusable_canvas = null
     set_canvas_square_size(canvas, size)
-    with_board_size(stones.length, D.draw_thumbnail_goban, canvas, stones, trail_p)
+    drawing_func(canvas)
+    generate_canvas_image_blob(canvas, my_callback, mime_type, quality)
+}
+
+function generate_canvas_image_blob(canvas, callback, mime_type, quality) {
+    // mime_type and quality are optional. See
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
     let fired = false
     canvas.toBlob(blob => {
         if (fired) {return}; fired = true  // can be called twice???
-        proc(URL.createObjectURL(blob))
-        reusable_canvas = canvas
-    }, 'image/jpeg', 0.3)
+        callback(blob)
+    }, mime_type, quality)
 }
 
 function store_thumbnail(id, url) {
