@@ -176,14 +176,14 @@ ipc.on('generic_input_dialog', (e, label, init_val, channel, warning) =>
        show_generic_input_dialog(warning, label, init_val, val => main(channel, val)))
 
 ipc.on('ask_game_info', (e, params) => {
-    const {info_text, sgf_rule, current_rule, supported_rules,
+    const {info_text, sgf_rule, current_rule, supported_rules, handicaps,
            asking_komi_p, initial_p} = params
     const unless_initial = text => initial_p ? '' : text
     // defaults
     Q('#player_black').value = unless_initial(R.player_black)
     Q('#player_white').value = unless_initial(R.player_white)
     Q('#board_size').value = board_size()
-    Q('#handicap').value = R.init_len
+    Q('#handicap').value = handicaps
     Q('#komi').value = R.komi
     Q('#sgf_rule').value = sgf_rule
     Q('#comment_form').value = R.comment

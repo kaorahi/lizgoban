@@ -30,7 +30,7 @@ function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
-        init_len: 0, sgf_gorule: "", gorule: null,
+        handicaps: 0, init_len: 0, sgf_gorule: "", gorule: null,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
         trial: false, last_loaded_element: null, engines: {}, current_engine: null,
         trial_from: null,
@@ -119,6 +119,7 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
     const f = (t, p) => p ? `${t}[${SGF.escapeString(p)}]` : ''
     const m2s = move => `[${move2sgfpos(move)}]`
     // header
+    const ha = game.handicaps > 0 ? `HA[${game.handicaps}]` : ''
     const km = truep(game.komi) ? `KM[${game.komi}]` : ''
     const ru = f('RU', game.sgf_gorule)
     const com0 = f('C', game.move0.comment)
@@ -130,7 +131,7 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
             `${is_black ? 'AB' : 'AW'}${hits.map(h => m2s(h.move)).join('')}`
     }
     const header =
-          `;${sz}${km}${ru}${f('PW', game.player_white)}${f('PB', game.player_black)}${com0}`
+          `;${sz}${ha}${km}${ru}${f('PW', game.player_white)}${f('PB', game.player_black)}${com0}`
           + init_stones(true) + init_stones(false)
     // body
     const lizzie072_cache_for = h => {
@@ -244,12 +245,12 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
     const bsize = to_i(first_node_ref("SZ")) || 19  // to_i('9:13') is 0
     // [header]
     const player_name = bw => first_node_ref(bw, '')
-    const handicap_p = nodes.find(h => h.AB && !empty(h.AB))
+    const ha = first_node_ref("HA"), handicaps = ha ? to_i(ha) : 0, handicap_p = ha > 1
     const km = first_node_ref("KM")
     const komi = truep(km) ? to_f(km) : handicap_p ? handicap_komi : null
     const sgf_gorule = first_node_ref("RU", '')
     merge(game, {player_black: player_name("PB"), player_white: player_name("PW"),
-                 komi, sgf_gorule, board_size: bsize, trial: false})
+                 handicaps, komi, sgf_gorule, board_size: bsize, trial: false})
     const comment = first_node_ref("C")
     merge(game.ref(0), comment ? {comment} : {})
     // [body]

@@ -1101,8 +1101,8 @@ function add_handicap_stones(k) {
     const moves = pos.slice(0, k)
     exceptional_ks.includes(k) && (moves[k - 1] = last(pos))
     moves.forEach(m => do_play(m, true))
-    const len = game.len(), komi: get_stored('komi_for_new_handicap_game')
-    merge(game, {init_len: len, komi})
+    const len = game.len(), komi = get_stored('komi_for_new_handicap_game')
+    merge(game, {init_len: len, handicaps: len, komi})
 }
 function ask_handicap_stones() {
     ask_choice("Handicap stones", seq(8, 2), add_handicap_stones)
@@ -1159,11 +1159,11 @@ function info_text() {
 }
 function ask_new_game(win) {ask_game_info(win, false, true)}
 function ask_game_info(win, asking_komi_p, initial_p) {
-    const {board_size} = game
+    const {board_size, handicaps} = game
     const params = {
         info_text: info_text(), sgf_rule: game.sgf_gorule, current_rule: get_gorule(),
         supported_rules: AI.is_gorule_supported() && katago_supported_rules,
-        asking_komi_p, initial_p,
+        handicaps, asking_komi_p, initial_p,
     }
     win.webContents.send('ask_game_info', params)
 }
