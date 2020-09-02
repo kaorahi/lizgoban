@@ -585,6 +585,7 @@ const [try_thumbnail] =
       deferred_procs([take_thumbnail, thumbnail_deferring_millisec])
 
 function take_thumbnail(given_id, given_stones, given_trial_p) {
+    if (R.sequence_length > max_sequence_length_for_thumbnail) {return}
     const id = truep(given_id) ? given_id : current_sequence_id()
     const stones = given_stones || R.stones
     const trial_p = (given_trial_p === undefined) ? R.trial : given_trial_p
@@ -592,7 +593,6 @@ function take_thumbnail(given_id, given_stones, given_trial_p) {
 }
 
 function take_thumbnail_of_stones(stones, proc, trail_p) {
-    if (R.sequence_length > max_sequence_length_for_thumbnail) {return}
     const drawing_func = canvas =>
           with_board_size(stones.length, D.draw_thumbnail_goban, canvas, stones, trail_p)
     const callback = blob => proc(URL.createObjectURL(blob))
