@@ -99,11 +99,13 @@ function add_movenum_to_stones(stones, from) {
 }
 
 function draw_goban_with_variation(canvas, suggest, opts) {
+    const {variation_expected} = opts
     const reliable_moves = 7
-    const variation = suggest.pv || []
-    const expected = expected_pv()
+    const [variation, expected] = variation_expected || [suggest.pv || [], expected_pv()]
+    const [v, e] = variation_expected ? [expected, variation] : [variation, expected]
     const mark_unexpected_p =
-          (expected[0] === variation[0]) || opts.force_draw_expected_p
+          (expected[0] === variation[0]) || opts.force_draw_expected_p ||
+          suggest === (R.suggest[0] || {})
     const displayed_stones = copy_stones_for_display(opts.stones)
     const bturn = opts.stones ? opts.bturn : R.bturn
     variation.forEach((move, k) => {
@@ -114,8 +116,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
             variation_last: k === variation.length - 1, is_vague: k >= reliable_moves
         })
     })
-    mark_unexpected_p &&
-        set_expected_stone_for_variation(expected, variation, displayed_stones)
+    mark_unexpected_p && set_expected_stone_for_variation(e, v, displayed_stones)
     const mapping_to_winrate_bar = mapping_text(suggest, opts)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_expected_p: true,
@@ -128,8 +129,10 @@ function draw_goban_with_principal_variation(canvas, options) {
 
 function draw_goban_with_expected_variation(canvas, options) {
     const title = 'expected variation at the previous move'
-    const opts = {...options, draw_visits_p: `  ${title}`, trial_p: 'ref'}
-    draw_readonly_goban_with_variation(canvas, {pv: expected_pv()}, opts)
+    const variation_expected = [expected_pv(), (R.suggest[0] || {}).pv]
+    const opts = {...options, variation_expected,
+                  draw_visits_p: `  ${title}`, trial_p: 'ref'}
+    draw_readonly_goban_with_variation(canvas, {}, opts)
 }
 
 function draw_readonly_goban_with_variation(canvas, suggest, options) {
