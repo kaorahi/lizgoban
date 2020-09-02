@@ -120,7 +120,7 @@ Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1
                        "-config", "/foo/bar/gtp.cfg"]
         },
         {
-            "label": "KataGo (handicap)",
+            "label": "KataGo (always aggressive)",
             "match": true, "rules": "tromp-taylor", "komi": 0, "handicap": 5,
             "stone_style": "2D",
             "engine": ["/foo/bar/katago", "gtp",
@@ -170,7 +170,7 @@ It is recommended to put all Leela Zero weights into one directory and all KataG
 Delete obsolete "weight_dir" in your config.json if you wrote it.
 
 Notes on KataGo:
-For high handicap games, you have to set `playoutDoublingAdvantage` by hand because LizGoban cannot use KataGo's dynamical adjusting of aggressiveness at present. After KataGo 1.3.4, you can add `defaultBoardSize=19` as the above example to shorten the initialization of 9x9 and 13x13. ("=19" is ok. It is replaced with 9 or 13 inside LizGoban automatically.)
+KataGo plays aggressively for handicap games in "match vs. AI" or "AI vs. AI" after LizGoban 0.5.0-pre4. To disable this automatic setting, you need to specify `playoutDoublingAdvantage` explicitly in the above "engine" entry (not in KataGo's configuration file like `gtp_example.cfg`). After KataGo 1.3.4, you can add `defaultBoardSize=19` as the above example to shorten the initialization of 9x9 and 13x13. ("=19" is ok. It is replaced with 9 or 13 inside LizGoban automatically.)
 
 For quick experiments, you can also use
 

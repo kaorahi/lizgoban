@@ -32,8 +32,15 @@ function restart(h, new_weight_p) {
           (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
-function set_board(hist, komi, gorule, ownership_p) {
-    each_leelaz(z => z.set_board(hist, komi, gorule, ownership_p), katago_p())
+function set_board(hist, komi, gorule, ownership_p, aggressive) {
+    const set_it = z => z.set_board(hist, komi, gorule, ownership_p,
+                                    aggressive_for(z, aggressive))
+    each_leelaz(set_it, katago_p())
+}
+function aggressive_for(lz, aggressive) {
+    const maybe = (val, lz_for) =>
+          (aggressive === val) && (lz === (lz_for || leelaz)) && val
+    return maybe('b', leelaz_for_black) || maybe('w', leelaz_for_white) || ''
 }
 function cancel_past_requests() {each_leelaz(z => z.clear_leelaz_board())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}

@@ -11,6 +11,7 @@ function create_leelaz () {
     const queue_log_header = 'queue>'
 
     let leelaz_process, arg, engine_id, is_ready = false, ownership_p = false
+    let aggressive = ''  // '', 'b', 'w'
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
@@ -87,6 +88,7 @@ function create_leelaz () {
             ['endstate', 'endstate_map'],
             ['kata-analyze', 'kata-analyze interval 1'],
             ['kata-set-rules', `kata-set-rules ${gorule}`],
+            ['kata-get-param', `kata-get-param playoutDoublingAdvantage`],
         ]
         checks.map(a => check_supported(...a))
         // clear_leelaz_board for restart
@@ -105,7 +107,7 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
-    const set_board = (history, new_komi, new_gorule, new_ownership_p) => {
+    const set_board = (history, new_komi, new_gorule, new_ownership_p, new_aggressive) => {
         if (is_in_startup) {return}
         change_board_size(board_size())
         let update_kata_p = false
@@ -119,12 +121,14 @@ function create_leelaz () {
         komi = update_kata(komi, new_komi, 'komi')
         gorule = update_kata(gorule, new_gorule, 'kata-set-rules')
         ownership_p = update_kata(ownership_p, new_ownership_p)
+        aggressive = update_kata(aggressive, new_aggressive)
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
-        if (back > 0 || !empty(rest) || update_kata_p) {update_move_count(history)}
+        const update_mc_p = back > 0 || !empty(rest) || update_kata_p
+        update_mc_p && update_move_count(history)
         leelaz_previous_history = history.slice()
     }
     const play1 = h => {
@@ -162,6 +166,22 @@ function create_leelaz () {
                              'lz-analyze interval 0',
                              'lz-setoption name visits value 0', 'undo'))
         return true
+    }
+
+    // aggressive
+    const kata_pda_checker = change_detector(0.0)
+    const kata_pda_command_maybe = () => {
+        const param = 'playoutDoublingAdvantage'
+        const is_pda_set_explicitly = arg.leelaz_args.join('').match(param)
+        const ok = is_supported('kata-get-param') && !is_pda_set_explicitly
+        const pda = ok && kata_pda_for_this_turn()
+        return truep(pda) && kata_pda_checker.is_changed(pda) &&
+            `kata-set-param ${param} ${last_pda =pda}`
+    }
+    const kata_pda_for_this_turn = () => {
+        const abs_pda = 2.0
+        const sign = !aggressive ? 0 : xor(aggressive === 'b', bturn) ? -1 : 1
+        return sign * abs_pda
     }
 
     /////////////////////////////////////////////////
@@ -230,6 +250,14 @@ function create_leelaz () {
     }
 
     const send_task_to_leelaz = task => {
+        pondering_command_p(task) && update_kata_pda()
+        send_task_to_leelaz_sub(task)
+    }
+    const update_kata_pda = () => {
+        const command = kata_pda_command_maybe()
+        command && send_task_to_leelaz_sub({command})
+    }
+    const send_task_to_leelaz_sub = task => {
         // see stdout_reader for optional "on_response"
         const {command, on_response} = task
         const cmd = dummy_command_p(task) ? 'name' : command

@@ -1229,13 +1229,20 @@ function update_ponder() {AI.set_pondering(pausing, busy)}
 function init_from_renderer() {setTimeout(restore_session, 100)}
 
 function set_board() {
-    const bsize = game.board_size
-    set_AI_board_size_maybe(bsize)
-    AI.set_board(P.set_board(game), game.get_komi(), get_gorule(), R.show_endstate)
+    set_AI_board_size_maybe(game.board_size)
+    const hist = P.set_board(game)
+    AI.set_board(hist, game.get_komi(), get_gorule(), R.show_endstate, aggressive())
     AI.switch_leelaz(); update_let_me_think(true)
 }
 function set_AI_board_size_maybe(bsize) {
     bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
+}
+function aggressive() {
+    const in_case = (R.in_match || AI.leelaz_for_white_p()); if (!in_case) {return {}}
+    const {handicaps} = game, komi = game.get_komi()
+    const b = (handicaps === 0 && komi >= 15) && 'b'
+    const w = (handicaps > 0 || komi <= 0) && 'w'
+    return b || w || ''
 }
 
 function generic_input_dialog(win, label, init_val, channel, warning) {
