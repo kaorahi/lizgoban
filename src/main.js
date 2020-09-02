@@ -783,11 +783,12 @@ function update_engines_by_preset(rule) {
     const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
     const need_restart = cur && (f(cur) !== f(extended))
     const preset_label_for_white = {label: label_for_white || (label || '') + '(W)'}
+    const is_engine_specified_explicitly = rule.leelaz_command || weight_file
     need_restart && restart_leelaz_by_preset(extended)
     // backward compatibility for obsolete "weight_file" and "weight_file_for_white"
     weight_file && load_weight_file(weight_file)
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
-        unload_leelaz_for_white()
+        (is_engine_specified_explicitly && unload_leelaz_for_white())
     engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label_for_white)
     const is_updated =
           need_restart || weight_file || weight_file_for_white || engine_for_white
