@@ -35,7 +35,7 @@ function stones_until(show_until, all_p, for_endstate) {
     // fixme: need cleaning (for_endstate)
     const recent_moves = 3, thick_moves = 7
     const unnumbered =
-          clip_handicaps(for_endstate ? Infinity : all_p ? 0 : show_until - recent_moves)
+          clip_init_len(for_endstate ? Infinity : all_p ? 0 : show_until - recent_moves)
     const highlighted_after = for_endstate ? Infinity :
           all_p ? clip(show_until, 0, R.history_length) - recent_moves : show_until - 1
     const thin_before =  for_endstate ? 0 :
@@ -46,7 +46,7 @@ function stones_until(show_until, all_p, for_endstate) {
         if (target) {
             h.black = target.is_black
             h.last = [show_until, thin_before - 1].includes(target.move_count)
-                && show_until > R.handicaps
+                && show_until > R.init_len
             h.displayed_colors = h.stone ? [BLACK, WHITE] : [MAYBE_BLACK, MAYBE_WHITE]
             h.stone = true
             const m = target.move_count - unnumbered
@@ -156,7 +156,7 @@ function draw_endstate_goban(canvas, options) {
     const scores = winrate_history_values_of('score_without_komi')
     const {show_until} = options, mc = R.move_count
     const default_mc = R.move_count - R.endstate_diff_interval
-    const past_mc = clip_handicaps(finite_or(show_until, default_mc))
+    const past_mc = clip_init_len(finite_or(show_until, default_mc))
     const past_score = scores[past_mc]
     const past_text = (d_i, es) =>
           `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
@@ -430,7 +430,7 @@ function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
     stone_image ? draw_stone_by_image() :
         style === '3D' ? draw_stone_by_gradation() : draw_stone_by_paint()
     draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
-    draw_last_p && h.last && h.move_count > R.handicaps &&
+    draw_last_p && h.last && h.move_count > R.init_len &&
         draw_last_move(h, xy, radius, g)
     h.movenums && draw_movenums(h, xy, radius, g)
 }

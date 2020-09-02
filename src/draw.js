@@ -8,7 +8,7 @@ target_move = null
 
 const {globalize} = require('./globalize.js')
 globalize({
-    clip_handicaps, latest_move, b_winrate,
+    clip_init_len, latest_move, b_winrate,
     origin_b_winrate, origin_score, fake_winrate, fake_winrate_for, score_bar_p,
     mc2movenum, alternative_engine_for_white_p, zone_color,
     winrate_history_values_of,
@@ -153,8 +153,8 @@ function latest_move(moves, show_until) {
 
 // handicaps
 
-function clip_handicaps(move_count) {return clip(move_count, R.handicaps)}
-function mc2movenum(move_count) {return clip(move_count - R.handicaps, 0)}
+function clip_init_len(move_count) {return clip(move_count, R.init_len)}
+function mc2movenum(move_count) {return clip(move_count - R.init_len, 0)}
 function max_movenum() {return mc2movenum(R.history_length)}
 
 // visits & winrate
@@ -177,7 +177,7 @@ function alternative_engine_for_white_p() {
 //////////////////////////////////
 
 module.exports = {
-    movenum: () => mc2movenum(R.move_count), max_movenum, clip_handicaps,
+    movenum: () => mc2movenum(R.move_count), max_movenum, clip_init_len,
     draw_thumbnail_goban,
     draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
     draw_goban_with_expected_variation,

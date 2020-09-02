@@ -420,7 +420,7 @@ function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
     const delete_last_move = () => {game.pop(); autosave_later()}
-    game.move_count <= game.handicaps ? wink() :
+    game.move_count <= game.init_len ? wink() :
         game.move_count < game.len() ? undo() : wink_if_pass(delete_last_move)
 }
 const pass_command = 'pass'
@@ -434,7 +434,7 @@ function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
 
 function goto_move_count(count) {
-    game.move_count = clip(count, game.handicaps, game.len())
+    game.move_count = clip(count, game.init_len, game.len())
 }
 
 function goto_next_something() {goto_previous_or_next_something()}
@@ -1087,7 +1087,7 @@ function set_board_type(type, win, keep_let_me_think) {
 // handicap stones & komi
 function add_handicap_stones(k) {
     game.is_empty() || new_empty_board()
-    merge(game, {handicaps: k, komi: get_stored('komi_for_new_handicap_game')})
+    merge(game, {init_len: k, komi: get_stored('komi_for_new_handicap_game')})
     // [2019-04-29] ref.
     // https://www.nihonkiin.or.jp/teach/lesson/school/start.html
     // https://www.nihonkiin.or.jp/teach/lesson/school/images/okigo09.gif
@@ -1112,7 +1112,7 @@ function ask_komi(win) {
     ask_choice(`Komi (${game.get_komi()})`, values, proc)
 }
 function set_komi(k) {
-    const update_default_p = game.is_fresh(), handicap_p = game.handicaps > 0
+    const update_default_p = game.is_fresh(), handicap_p = game.init_len > 0
     game.komi = k
     update_default_p &&
         set_stored(handicap_p ? 'komi_for_new_handicap_game' : 'komi_for_new_game', k)
@@ -1158,7 +1158,7 @@ function info_text() {
 }
 function ask_new_game(win) {ask_game_info(win, false, true)}
 function ask_game_info(win, asking_komi_p, initial_p) {
-    const {board_size, handicaps} = game
+    const {board_size, init_len} = game
     const params = {
         info_text: info_text(), sgf_rule: game.sgf_gorule, current_rule: get_gorule(),
         supported_rules: AI.is_gorule_supported() && katago_supported_rules,
@@ -1213,7 +1213,7 @@ const [set_long_busy_later, cancel_long_busy] =
 function is_long_busy() {return long_busy}
 function unset_long_busy() {long_busy = false; cancel_long_busy()}
 
-function undoable() {return game.move_count > game.handicaps}
+function undoable() {return game.move_count > game.init_len}
 function redoable() {return game.len() > game.move_count}
 function pause() {pausing = true}
 function resume() {pausing = false}
@@ -1411,8 +1411,8 @@ function sequence_prop_of(given_game) {
     }
     const tags = given_game.map(pick_tag).join('')
           .replace(endstate_diff_tag_letter, '')
-    const {player_black, player_white, handicaps, move_count, trial} = given_game
-    return {player_black, player_white, handicaps, move_count, trial, len: given_game.len(), tags}
+    const {player_black, player_white, init_len, move_count, trial} = given_game
+    return {player_black, player_white, init_len, move_count, trial, len: given_game.len(), tags}
 }
 
 /////////////////////////////////////////////////
@@ -1683,7 +1683,7 @@ function tuning_is_done() {
 }
 
 function illegal_handler({move, is_black, move_count}) {
-    const message = `Illegal: ${is_black ? 'B' : 'W'}(${move_count - game.handicaps}) ${move}`
+    const message = `Illegal: ${is_black ? 'B' : 'W'}(${move_count - game.init_len}) ${move}`
     toast(message, 5000); AI.cancel_past_requests(); update_all()
 }
 

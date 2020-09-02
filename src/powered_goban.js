@@ -134,7 +134,7 @@ function winrate_history_set_from_game() {
 
 function set_renderer_state(...args) {
     merge(R, ...args)  // use updated R in below lines
-    const {move_count, handicaps, trial_from} = game
+    const {move_count, init_len, trial_from} = game
     const busy = M.is_busy(), long_busy = M.is_long_busy()
     const winrate_history = busy ? [] : winrate_from_game()
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
@@ -159,7 +159,7 @@ function set_renderer_state(...args) {
         move: z.move, is_black: z.is_black, ko_state: z.ko_state,
         ambiguity: z.ambiguity
     }))]
-    merge(R, {move_count, handicaps, trial_from, busy, long_busy,
+    merge(R, {move_count, init_len, trial_from, busy, long_busy,
               winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
@@ -211,7 +211,7 @@ function append_endstate_tag_maybe(h) {
     const h_copy = merge({}, h)
     AI.support_endstate_p() && R.show_endstate &&
         h.move_count === game.move_count - endstate_diff_interval &&
-        h.move_count >= game.handicaps &&
+        h.move_count >= game.init_len &&
         add_tag(h_copy, endstate_diff_tag_letter)
     return h_copy
 }
@@ -350,7 +350,7 @@ function winrate_from_game(engine_id) {
         const move_eval = move_b_eval && move_b_eval * turn_sign
         const predict = winrate_suggested(s, engine_id)
         const order_of = is_black => {
-            if (s <= game.handicaps || xor(is_black, cur.is_black)) {return null}
+            if (s <= game.init_len || xor(is_black, cur.is_black)) {return null}
             const max_order = 20, {suggest} = prev, {move} = cur
             const hit = (suggest || []).find(z => z.move === move)
             const valid = hit && hit.order >= 0
@@ -390,7 +390,7 @@ function winrate_from_game(engine_id) {
         }
         const update_score_loss_maybe = () => {
             const gain = (score_without_komi - prev_score) * turn_sign
-            const valid = !pass || (s === 0 && game.handicaps === 0)
+            const valid = !pass || (s === 0 && game.init_len === 0)
             valid && update_score_loss(gain)
             prev_score = score_without_komi
         }

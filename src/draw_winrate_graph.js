@@ -10,12 +10,12 @@ function draw_winrate_graph(canvas, additional_canvas,
     const xmargin = w * 0.04, fontsize = to_i(w * 0.04)
     // s = move_count, r = winrate
     // q = winrate for lower graph, c = canvas rate (0 = top, 1 = bottom)
-    const smin = R.handicaps, smax = Math.max(R.history_length, smin + 1)
+    const smin = R.init_len, smax = Math.max(R.history_length, smin + 1)
     const get_trans = (r_top, r_bot, c_top, c_bot) => {
         const [z2c, c2z] = translator_pair([r_top, r_bot], [c_top, c_bot])
         const [sz2coord_raw, coord2sz] =
               uv2coord_translator_pair(canvas, [smin, smax], [c2z(0), c2z(1)], xmargin, 0)
-        const sz2coord = (s, r) => s < R.handicaps ? [NaN, NaN] : sz2coord_raw(s, r)
+        const sz2coord = (s, r) => s < R.init_len ? [NaN, NaN] : sz2coord_raw(s, r)
         return [sz2coord, coord2sz]
     }
     const [sr2coord, coord2sr] = get_trans(100, - zone_indicator_height_percent,
@@ -48,7 +48,7 @@ function draw_winrate_graph(canvas, additional_canvas,
 
 function draw_winrate_graph_frame(w, sr2coord, g) {
     const tics = 9, xtics = 10, xtics_delta = 50
-    const s2x = s => sr2coord(s, 0)[0], r2y = r => sr2coord(R.handicaps, r)[1]
+    const s2x = s => sr2coord(s, 0)[0], r2y = r => sr2coord(R.init_len, r)[1]
     const [y0, y50, y100] = [0, 50, 100].map(r2y)
     g.fillStyle = BLACK; fill_rect([0, r2y(100)], [w, r2y(0)], g)
     // horizontal / vertical lines (tics)
@@ -57,7 +57,7 @@ function draw_winrate_graph_frame(w, sr2coord, g) {
         const y = r2y(100 * i / (tics + 1)); line([0, y], [w, y], g)
     })
     seq(xtics, 0).forEach(k => {
-        const x = s2x(k * xtics_delta + R.handicaps); line([x, y0], [x, y100], g)
+        const x = s2x(k * xtics_delta + R.init_len); line([x, y0], [x, y100], g)
     })
     // // frame
     // g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
@@ -91,8 +91,8 @@ function draw_winrate_graph_show_until(show_until, w, fontsize,
 }
 
 function draw_winrate_graph_future(w, fontsize, sr2coord, sq2coord, g) {
-    const [x, y] = sr2coord(clip_handicaps(R.move_count), 50)
-    const [_, y_base] = sr2coord(R.handicaps, 0)
+    const [x, y] = sr2coord(clip_init_len(R.move_count), 50)
+    const [_, y_base] = sr2coord(R.init_len, 0)
     const paint = (dx, l_alpha, r_alpha, y0, y1) => {
         const c = a => `rgba(255,255,255,${a})`
         const grad = side_gradation(x, x + dx,
@@ -103,7 +103,7 @@ function draw_winrate_graph_future(w, fontsize, sr2coord, sq2coord, g) {
     const do_paint = (y0, y1) => paint(w * 0.05, alpha, 0, y0, y1)
     do_paint(0, y_base)
     sq2coord !== sr2coord &&
-        do_paint(sq2coord(R.handicaps, 100)[1], sq2coord(R.handicaps, 0)[1])
+        do_paint(sq2coord(R.init_len, 100)[1], sq2coord(R.init_len, 0)[1])
     // move number
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillStyle = WHITE
@@ -174,7 +174,7 @@ function update_winrate_text_geom(w, sr2coord, coord2sr) {
     last_winrate_text_geom = {x, y, unit, here, normal, ymax, dy_sign, r, valid}
 }
 function r_for_s(given_s) {return truep(given_s) && (R.winrate_history[given_s] || {}).r}
-function y_for_r(r, sr2coord) {return sr2coord(R.handicaps, r)[1]}
+function y_for_r(r, sr2coord) {return sr2coord(R.init_len, r)[1]}
 function dy_for_percent(percent, sr2coord) {
     return y_for_r(0, sr2coord) - y_for_r(percent, sr2coord)
 }
@@ -235,7 +235,7 @@ function draw_score_text(w, to_r, sr2coord, g) {
 }
 
 function draw_no_score(w, sr2coord, fontsize, g) {
-    const x = w / 2; [_, y] = sr2coord(R.handicaps, 50)
+    const x = w / 2; [_, y] = sr2coord(R.init_len, 50)
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'bottom'
     g.fillStyle = GRAY; fill_text(g, fontsize, "no score estimation", x, y)
@@ -320,7 +320,7 @@ function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
 function draw_winrate_graph_zone(w, sr2coord, g) {
     const half = 0.6  // > 0.5 for avoiding gaps in spectrum bar
     const rmin = - zone_indicator_height_percent
-    const y_for = r => sr2coord(R.handicaps, r)[1]
+    const y_for = r => sr2coord(R.init_len, r)[1]
     // bottom space for zone indicator
     g.fillStyle = DARK_GRAY; fill_rect([0, y_for(0)], [w, y_for(rmin)], g)
     R.move_history.forEach((z, s) => {
@@ -336,7 +336,7 @@ function draw_winrate_graph_order(sr2coord, g) {
 }
 
 function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
-    const unit_r = 10, s0 = clip_handicaps(0)
+    const unit_r = 10, s0 = clip_init_len(0)
     const [x0, y0] = sr2coord(s0, 0), [_, y1] = sr2coord(s0, unit_r)
     const maxwidth = x0 * 0.8, fontsize = Math.min((y0 - y1) * 1.7, maxwidth)
     const to_xy = r => [x_maybe || maxwidth, sr2coord(s0, r)[1]]
@@ -362,7 +362,7 @@ function draw_winrate_graph_barchart(key, mag, rgb, upside_down, sr2coord, g) {
     const conv = upside_down ? (val => 100 - val) : identity
     const to_r = val => conv(clip(val * mag, 0, 100))
     const threshold = num_sort(values.filter(truep)).slice(-10)[0]
-    const [_, base_y] = sr2coord(clip_handicaps(0), upside_down ? 100 : 0)
+    const [_, base_y] = sr2coord(clip_init_len(0), upside_down ? 100 : 0)
     const plotter = (x, y, s, g) => {
         const [line_width, alpha] = values[s] >= threshold ? [1, 0.5] : [1, 0.5]
         g.strokeStyle = `rgba(${rgb},${alpha})`; g.lineWidth = line_width

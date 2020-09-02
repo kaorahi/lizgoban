@@ -30,7 +30,7 @@ function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
-        handicaps: 0, sgf_gorule: "", gorule: null,
+        init_len: 0, sgf_gorule: "", gorule: null,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
         trial: false, last_loaded_element: null, engines: {}, current_engine: null,
         trial_from: null,
@@ -42,7 +42,7 @@ function create_game(init_history, init_prop) {
         // mc = move_count (0: empty board, 1: first move, ...)
         len: () => history.length,
         is_empty: () => empty(history),
-        is_fresh: () => self.len() === self.handicaps,
+        is_fresh: () => self.len() === self.init_len,
         ref: mc => history[mc - 1] || self.move0,
         ref_current: () => self.ref(self.move_count),
         current_stones: () => self.stones_at(self.move_count),
@@ -123,9 +123,9 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
     const ru = f('RU', game.sgf_gorule)
     const com0 = f('C', game.move0.comment)
     const sz = `SZ[${game.board_size}]`
-    const {handicaps} = game
+    const {init_len} = game
     const handicap_stones = is_black => {
-        const hits = game.slice(0, handicaps).filter(h => !xor(h.is_black, is_black))
+        const hits = game.slice(0, init_len).filter(h => !xor(h.is_black, is_black))
         return empty(hits) ? '' :
             `${is_black ? 'AB' : 'AW'}${hits.map(h => m2s(h.move)).join('')}`
     }
@@ -159,7 +159,7 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
         return `;${is_black ? 'B' : 'W'}${m2s(move)}${f('C', comment)}${note_maybe}`
             + (cache_suggestions_p ? lizzie072_cache_for(h) : '')
     }
-    const body = game.slice(handicaps).map(move2sgf).join('')
+    const body = game.slice(init_len).map(move2sgf).join('')
     // all
     return `(${header}${body})`
 }
@@ -263,7 +263,7 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
     const new_hist = history_for(nodes)
     game.set_with_reuse(new_hist)
     game.set_last_loaded_element()
-    game.handicaps = handicaps_from_sabaki_nodes(nodes)
+    game.init_len = init_len_from_sabaki_nodes(nodes)
     game.move_count = history_for(nodes_until_index).length
     return true
 }
@@ -300,7 +300,7 @@ function parse_lizzie072_cache(lizzie_cache, bturn, komi) {
     return ret
 }
 
-function handicaps_from_sabaki_nodes(nodes) {
+function init_len_from_sabaki_nodes(nodes) {
     const len = (h, key) => (h[key] || []).length
     return sum(nodes.map(h => len(h, 'AB') + len(h, 'AW')))
 }

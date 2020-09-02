@@ -23,7 +23,7 @@ let canvas_scale = 1
 
 // renderer state
 const R = {
-    stones: [], black_hama: 0, white_hama: 0, move_count: 0, handicaps: 0, bturn: true,
+    stones: [], black_hama: 0, white_hama: 0, move_count: 0, init_len: 0, bturn: true,
     history_length: 0, suggest: [], visits: 1,
     trial_from: null,
     visits_per_sec: 0,
@@ -183,7 +183,7 @@ ipc.on('ask_game_info', (e, params) => {
     Q('#player_black').value = unless_initial(R.player_black)
     Q('#player_white').value = unless_initial(R.player_white)
     Q('#board_size').value = board_size()
-    Q('#handicap').value = R.handicaps
+    Q('#handicap').value = R.init_len
     Q('#komi').value = R.komi
     Q('#sgf_rule').value = sgf_rule
     Q('#comment_form').value = R.comment
@@ -635,11 +635,11 @@ function update_all_thumbnails(style) {
 }
 
 function set_thumbnail_name(id) {
-    const {player_black, player_white, handicaps, move_count, trial, len, tags} = R.sequence_props[id]
+    const {player_black, player_white, init_len, move_count, trial, len, tags} = R.sequence_props[id]
     const players = (player_black || player_white) ?
           `${player_black || "?"}/${player_white || "?"} ` : ''
     const name = (trial ? tags : players + tags) +
-          ` ${move_count - handicaps}(${len - handicaps})`
+          ` ${move_count - init_len}(${len - init_len})`
     !thumbnails[id] && (thumbnails[id] = {})
     merge(thumbnails[id], {name})
 }
@@ -954,7 +954,7 @@ function showing_until(canvas) {
     const i_am_first_board = is_first_board_canvas(canvas)
     const my_duty_p = hover_on_me || (!hover_on_any_board && i_am_first_board)
     const retval = accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
-    return truep(retval) && D.clip_handicaps(retval)
+    return truep(retval) && D.clip_init_len(retval)
 }
 function update_showing_until() {
     const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)
@@ -963,7 +963,7 @@ function update_showing_until() {
     main('set_showing_until', cur)
 }
 
-function undoable() {return R.move_count > R.handicaps}
+function undoable() {return R.move_count > R.init_len}
 function redoable() {return R.move_count < R.history_length}
 
 /////////////////////////////////////////////////
