@@ -10,7 +10,7 @@ function create_leelaz () {
     const speedometer = make_speedometer(speedo_interval_sec, speedo_premature_sec)
     const queue_log_header = 'queue>'
 
-    let leelaz_process, arg, engine_id, is_ready = false, ownership_p = false
+    let leelaz_process, arg, base_engine_id, is_ready = false, ownership_p = false
     let aggressive = ''  // '', 'b', 'w'
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
@@ -37,7 +37,7 @@ function create_leelaz () {
 
     // process
     const start = h => {
-        arg = cook_arg(h); engine_id = hash(JSON.stringify(arg))
+        arg = cook_arg(h); base_engine_id = hash(JSON.stringify(arg))
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file, working_dir, default_board_size,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
@@ -157,6 +157,8 @@ function create_leelaz () {
     const start_args = () => arg
     const network_size = () => network_size_text
     const get_komi = () => komi
+    const get_engine_id = () =>
+          `${base_engine_id}-${gorule}-${komi}${aggressive}`
     const peek_value = (move, cont) => {
         if (!is_supported('lz-setoption')) {return false}
         the_nn_eval_reader =
@@ -318,6 +320,7 @@ function create_leelaz () {
     const suggest_reader = (s) => {
         const f = arg.suggest_handler; if (!f) {return}
         const h = parse_analyze(s, bturn, komi, is_katago())
+        const engine_id = get_engine_id()
         merge(h, {engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits)})
         f(h)
     }
@@ -388,7 +391,7 @@ function create_leelaz () {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
         is_supported, clear_leelaz_board,
-        endstate, is_ready: () => is_ready, engine_id: () => engine_id,
+        endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,
         // for debug
         send_to_leelaz,
