@@ -65,7 +65,8 @@ function create_game(init_history, init_prop) {
             return com
         },
         copy_with_reuse_to: another_game => {
-            Object.keys(prop).forEach(k => k !== 'id' && (another_game[k] = self[k]))
+            const valid = key => !['id', '__proto__'].includes(key)
+            Object.keys(prop).filter(valid).forEach(k => (another_game[k] = self[k]))
             const com = another_game.set_with_reuse(history)
             another_game.move_count = com
         },
