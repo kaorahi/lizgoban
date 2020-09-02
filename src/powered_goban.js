@@ -220,7 +220,7 @@ function get_endstate_diff_interval() {return endstate_diff_interval}
 function set_endstate_diff_interval(k) {endstate_diff_interval = k}
 function get_showing_until() {return showing_until}
 function set_showing_until(k) {
-    change_endstate_diff_target(() => {showing_until = k})
+    change_endstate_diff_target(() => {showing_until = k; R.suggest = []})
 }
 function change_endstate_diff_target(proc) {
     const old = endstate_diff_move_count()
