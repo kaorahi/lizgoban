@@ -76,7 +76,7 @@ Otherwise, see the release note to replace the built-in engines with GPU version
 
 ### Case III: Other platforms (Mac, Linux, ...) or Windows with more flexible configuration
 
-#### To use it:
+#### To use LizGoban with Leela Zero:
 
 1. Install [Node.js](https://nodejs.org/).
 2. Type `git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install` on a terminal.
@@ -85,60 +85,74 @@ Otherwise, see the release note to replace the built-in engines with GPU version
 
 Use `npm start -- --no-sandbox` if you get an error like "The SUID sandbox helper binary was found, but is not configured correctly" and you do not want to fix it.
 
-#### To configure it:
+#### To use LizGoban with KataGo:
 
-Start it as
+Follow the above 1 and 2. Place KataGo binary, its model, and its GTP configuration somewhere, say `/FOO/BAR/katago`, `/FOO/BAR/model.bin.gz`, and `/FOO/BAR/gtp.conf`. Then write `config.json` as follows.
+
+~~~~
+{
+    "preset": [
+        {
+            "label": "KataGo",
+            "engine": ["/FOO/BAR/katago", "gtp",
+                       "-override-config", "analysisPVLen=50, defaultBoardSize=19",
+                       "-model", "/FOO/BAR/model.bin.gz",
+                       "-config", "/FOO/BAR/gtp.cfg"]
+        }
+    ]
+}
+~~~~
+
+Start LizGoban as
 
     npm start -- -c config.json
 
-with the file config.json:
-
-    {"sgf_dir": "/foo/bar/sgf/"}
-
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
-Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1.4.4.
+#### To configure LizGoban:
+
+Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or later.
 
 ~~~~
 {
     "analyze_interval_centisec": 20,
     "autosave_deleted_boards": 5,
     "autosave_sec": 300,
-    "sgf_dir": "/foo/bar/sgf/",
-    "exercise_dir": "/foo/bar/exercise/",
+    "sgf_dir": "/FOO/BAR/sgf/",
+    "exercise_dir": "/FOO/BAR/exercise/",
     "max_cached_engines": 3,
     "preset": [
         {
             "label": "Leela Zero",
             "accelerator": "F1",
-            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/lz_net/254.gz"]
+            "engine": ["/FOO/BAR/leelaz", "-g", "-w", "/FOO/LZ_NET/254.gz"]
         },
         {
             "label": "KataGo",
             "accelerator": "F2",
-            "engine": ["/foo/bar/katago", "gtp",
+            "engine": ["/FOO/BAR/katago", "gtp",
                        "-override-config", "analysisPVLen=50, defaultBoardSize=19",
-                       "-model", "/foo/kata_net/g104-b20c256.gz",
-                       "-config", "/foo/bar/gtp.cfg"]
+                       "-model", "/FOO/KATA_NET/g104-b20c256.gz",
+                       "-config", "/FOO/BAR/gtp.cfg"]
         },
         {
             "label": "KataGo (always aggressive)",
             "match": true, "rules": "tromp-taylor", "komi": 0, "handicap": 5,
             "stone_style": "2D",
-            "engine": ["/foo/bar/katago", "gtp",
+            "engine": ["/FOO/BAR/katago", "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
-                       "-model", "/foo/kata_net/g104-b20c256.gz",
-                       "-config", "/foo/bar/gtp.cfg"]
+                       "-model", "/FOO/KATA_NET/g104-b20c256.gz",
+                       "-config", "/FOO/BAR/gtp.cfg"]
         },
         {
             "label": "LZ",
             "label_for_white": "KATA",
             "empty_board": true,
-            "engine": ["/foo/bar/leelaz", "-g", "-w", "/foo/lz_net/254.gz"],
-            "engine_for_white": ["/foo/bar/katago", "gtp",
-                       "-model", "/foo/kata_net/g104-b20c256.gz",
-                       "-config", "/foo/bar/gtp.cfg"]
+            "engine": ["/FOO/BAR/leelaz", "-g", "-w", "/FOO/LZ_NET/254.gz"],
+            "engine_for_white": ["/FOO/BAR/katago", "gtp",
+                       "-model", "/FOO/KATA_NET/g104-b20c256.gz",
+                       "-config", "/FOO/BAR/gtp.cfg"]
         },
         {"label": "Hide hints", "accelerator": "F3", "board_type": "raw"},
         {"label": "Show hints", "accelerator": "F4", "board_type": "double_boards"}
@@ -154,7 +168,7 @@ Here is a more practical example of config.json for Leela Zero 0.17 and KataGo 1
 * max_cached_engines: Maximum number of simultaneous engine processes. You can set this as 5 for quicker switch of 5 different engines / weights, for example, if your machine has enough spec.
 * preset: You can switch the given settings by [Preset] menu in LizGoban. The first one is used as default.
   * label: Item name shown in [Preset] menu.
-  * accelerator: Shortcut key like "Shift+F3", "CmdOrCtrl+F4", "Alt+F5", etc. It can be omitted as the above "LZ vs. KATA".
+  * accelerator: Shortcut key like "Shift+F3", "CmdOrCtrl+F4", "Alt+F5", etc. It can be omitted as the above "LZ" item.
   * engine: Engine command. (*1)
   * engine_for_white: Alternative engine is used for white if this is set. (*1)
   * label_for_white: Additional item name when engine_for_white is given.
