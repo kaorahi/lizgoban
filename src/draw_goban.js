@@ -128,7 +128,7 @@ function draw_goban_with_principal_variation(canvas, options) {
 
 function draw_goban_with_expected_variation(canvas, options) {
     const title = 'expected variation at the previous move'
-    const opts = {...options, draw_visits_p: `  ${title}`}
+    const opts = {...options, draw_visits_p: `  ${title}`, trial_p: 'ref'}
     draw_readonly_goban_with_variation(canvas, {pv: expected_pv()}, opts)
 }
 
@@ -144,7 +144,7 @@ function draw_goban_with_subboard_stones_suggest(canvas, options) {
             `  ${bturn ? 'B' : 'W'} ${f2s(gain, 1)} pts`
     const opts = {stones, bturn, mapping_to_winrate_bar: false, ...options,
                   // draw_visits_p must be later than options
-                  draw_visits_p}
+                  draw_visits_p, trial_p: 'ref'}
     draw_goban_with_variation(canvas, suggest, opts)
 }
 
@@ -351,7 +351,9 @@ function draw_endstate_stones(each_coord, past_p, cheap_shadow_p,
 }
 
 function goban_bg(pausing_p, trial_p, border) {
-    return GOBAN_BG_COLOR[(pausing_p ? 'p' : '') + (trial_p && border ? 't' : '')]
+    const key = (trial_p === 'ref') ? 'r' :
+          ((pausing_p ? 'p' : '') + (trial_p && border ? 't' : ''))
+    return GOBAN_BG_COLOR[key]
 }
 
 function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
