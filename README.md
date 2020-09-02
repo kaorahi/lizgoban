@@ -5,7 +5,8 @@ LizGoban is an analysis tool of the game Go with
 and [KataGo](https://github.com/lightvector/KataGo).
 It is an implementation of
 [Lizzie](https://github.com/featurecat/lizzie)-style real-time UI
-on [Electron](https://electronjs.org/).
+on [Electron](https://electronjs.org/)
+with lots of original gimmicks.
 
 <img src="screen.gif" width="45%"> <img src="match.png" width="50%">
 
@@ -24,10 +25,10 @@ on [Electron](https://electronjs.org/).
 
 ### Common features
 
-* Colored suggestions / Variation by mouse hover
+* Colored suggestions / Variation by mouse hover like [Lizzie](https://github.com/featurecat/lizzie)
 * Plots of winrate and estimated score
 * Subboard that always shows the principal variation
-* Blunder marks on stones
+* Blunder marks on stones and quick review of them by mouse click like [KaTrain](https://github.com/sanderland/katrain/)
 * Auto-replay / Auto-analysis
 * Quick switching of multiple engines
 * Open URL (by drag & drop or clipboard)
@@ -37,11 +38,11 @@ on [Electron](https://electronjs.org/).
 ### Original features
 
 * Trial boards that can be used like tabs in web browsers
-* Play against weakened engines in several ways
 * Watch Leela Zero vs. KataGo etc. with real-time comparison of their plans
 * Personal exercise book that can be used like bookmarks in web browsers for random exercise
 * Quick comparison of stones, ownerships, and areas of the current and past boards
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
+* Play against weakened engines in several ways (Note: [KaTrain](https://github.com/sanderland/katrain/) has nicer features in this field now.)
 * [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 
 ### Original visualizations
