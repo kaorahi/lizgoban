@@ -224,7 +224,7 @@ function set_showing_until(k) {
 function change_endstate_diff_target(proc) {
     const old = endstate_diff_move_count()
     proc()
-    endstate_diff_move_count() !== old && update_endstate_diff()
+    endstate_diff_move_count() !== old && update_endstate_diff(null, false, true)
 }
 
 function set_tentative_endstate_maybe() {
