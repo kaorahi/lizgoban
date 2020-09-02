@@ -124,14 +124,14 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
     const com0 = f('C', game.move0.comment)
     const sz = `SZ[${game.board_size}]`
     const {init_len} = game
-    const handicap_stones = is_black => {
+    const init_stones = is_black => {
         const hits = game.slice(0, init_len).filter(h => !xor(h.is_black, is_black))
         return empty(hits) ? '' :
             `${is_black ? 'AB' : 'AW'}${hits.map(h => m2s(h.move)).join('')}`
     }
     const header =
           `;${sz}${km}${ru}${f('PW', game.player_white)}${f('PB', game.player_black)}${com0}`
-          + handicap_stones(true) + handicap_stones(false)
+          + init_stones(true) + init_stones(false)
     // body
     const lizzie072_cache_for = h => {
         const {is_black, endstate, by} = h, {current_engine} = game
