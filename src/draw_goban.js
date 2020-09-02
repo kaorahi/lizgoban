@@ -11,6 +11,13 @@ function draw_raw_goban(canvas, options) {
 function draw_main_goban(canvas, options) {
     const opts = {read_only: R.attached, ...options}
     const u = options.show_until, h = options.selected_suggest
+    // special case:
+    // (canvas === sub_canvas) && (board_type === 'double_boards_swap') && (A || B)
+    // A. "c" key + mouse hover on main_canvas or winrate graph
+    // B. mouse click on stones in main_canvas
+    if (!options.main_canvas_p && R.subboard_stones_suggest && !truep(u)) {
+        draw_goban_with_subboard_stones_suggest(canvas, options); return
+    }
     // case I: "variation"
     if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
