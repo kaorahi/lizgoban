@@ -531,6 +531,7 @@ function update_hover_maybe() {
 // hover
 
 function set_hovered(move, count, canvas) {
+    clear_tentatively_showing_until()
     const [old_move, old_count] = [hovered_move, hovered_move_count]
     hovered_move = move
     truep(count) ? set_hovered_move_count_as(count) :
@@ -807,9 +808,10 @@ function set_cut_button_position() {
 // keyboard control
 
 const with_skip = skip_too_frequent_requests((proc, ...a) => proc(...a))
+const arrow_keys = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"]
 
 document.onkeydown = e => {
-    unset_stone_is_clicked()
+    arrow_keys.includes(e.key) || unset_stone_is_clicked()
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
@@ -831,12 +833,14 @@ document.onkeydown = e => {
     const skip_maybe = (...a) => e.repeat ? with_skip(busy, ...a) : busy(...a)
     switch (!R.attached && key) {
     case "ArrowLeft": case "ArrowUp":
-        (!undoable() && e.repeat && !R.busy && !e.shiftKey) ? m('redo_to_end') :
+        truep(showing_until()) ? increment_showing_until(-1) :
+            (!undoable() && e.repeat && !R.busy && !e.shiftKey) ? m('redo_to_end') :
             (!redoable() && e.repeat && !e.shiftKey) ? f(do_nothing) :
             undoable() ? busy('undo_ntimes', e.shiftKey ? 15 : 1) :
             !e.repeat && f(wink); break;
     case "ArrowRight": case "ArrowDown":
-        (!redoable() && e.repeat && !R.busy && !e.shiftKey) ? m('undo_to_start') :
+        truep(showing_until()) ? increment_showing_until(+1) :
+            (!redoable() && e.repeat && !R.busy && !e.shiftKey) ? m('undo_to_start') :
             (!undoable() && e.repeat && !e.shiftKey) ? f(do_nothing) :
             redoable() ? busy('redo_ntimes', e.shiftKey ? 15 : 1) :
             !e.repeat && f(wink); break;
@@ -901,12 +905,14 @@ document.onkeyup = e => {
     case "v" : set_showing_endstate_value_p(false); break
     case "z": case "x": set_temporary_board_type(null); break
     }
+    tag_letters.includes(e.key) && clear_tentatively_showing_until()
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
     // cancel keep_selected_variation_maybe() by any keyup
     // (ex.) keeping "2" key down, push and release control key to update
     // displayed variation
     clear_selected_variation()
     main('unset_busy')
+    update_showing_until()
 }
 
 function set_keyboard_moves_maybe(n) {
@@ -937,6 +943,7 @@ function showing_movenum_p() {return the_showing_movenum_p}
 function showing_endstate_value_p() {return the_showing_endstate_value_p}
 function set_showing_something_p(val) {
     val && checker_for_showing_until.reset(); update_hover_maybe();
+    clear_tentatively_showing_until()
     update_showing_until(); update_goban()
 }
 function set_showing_movenum_p(val) {
@@ -945,7 +952,13 @@ function set_showing_movenum_p(val) {
 function set_showing_endstate_value_p(val) {
     the_showing_endstate_value_p = val; set_showing_something_p(val)
 }
+var tentatively_showing_until = null
+function clear_tentatively_showing_until() {tentatively_showing_until = null}
 function showing_until(canvas) {
+    const orig = orig_showing_until(canvas)
+    return truep(tentatively_showing_until) ? tentatively_showing_until : orig
+}
+function orig_showing_until(canvas) {
     const hovered_mc = truep(hovered_move_count) ? hovered_move_count : Infinity
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||
@@ -957,7 +970,14 @@ function showing_until(canvas) {
     const retval = accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
     return truep(retval) && D.clip_init_len(retval)
 }
-function update_showing_until() {
+const update_showing_until = skip_too_frequent_requests(orig_update_showing_until)
+function increment_showing_until(inc) {
+    const mc = R.move_count, cur = finite_or(showing_until(), mc)
+    const target = (truep(cur) ? cur : mc) + inc
+    tentatively_showing_until = Math.min(clip_init_len(target), R.history_length)
+    update_showing_until()
+}
+function orig_update_showing_until() {
     const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)
     if (!changed) {return}
     // Caution: JSON.stringify(Infinity) === 'null'
