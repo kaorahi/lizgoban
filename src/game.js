@@ -34,7 +34,6 @@ function create_game(init_history, init_prop) {
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
         trial: false, last_loaded_element: null, engines: {}, current_engine: null,
         needs_cooking_lizzie_cache: false,
-        trial_from: null,
     }
     const update_move_count_after = f => (...args) => {
         const ret = f(...args); self.move_count = self.len(); return ret

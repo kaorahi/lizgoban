@@ -73,8 +73,6 @@ function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
     R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     each_stone(displayed_stones, h => {h.displayed_tag = h.tag && h.stone})
-    R.trial && truep(R.trial_from) &&
-        add_movenum_to_stones(displayed_stones, R.trial_from)
     const s0 = R.suggest[0]
     const expected_move = expected_pv()[0]
     expected_move && !empty(R.suggest) && s0.move !== expected_move &&
