@@ -809,7 +809,7 @@ function set_cut_button_position() {
 const with_skip = skip_too_frequent_requests((proc, ...a) => proc(...a))
 
 document.onkeydown = e => {
-    e.key !== 'Control' && unset_stone_is_clicked()
+    unset_stone_is_clicked()
     const key = (e.ctrlKey ? 'C-' : '') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
@@ -897,13 +897,13 @@ document.onkeyup = e => {
     reset_keyboard_tag();
     (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
     switch (e.key) {
-    case "c" : set_showing_movenum_p(false); return
-    case "v" : set_showing_endstate_value_p(false); return
-    case "z": case "x": set_temporary_board_type(null); return
+    case "c" : set_showing_movenum_p(false); break
+    case "v" : set_showing_endstate_value_p(false); break
+    case "z": case "x": set_temporary_board_type(null); break
     }
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
     // cancel keep_selected_variation_maybe() by any keyup
-    // (ex.) keeping "2" key down, push and release shift key to update
+    // (ex.) keeping "2" key down, push and release control key to update
     // displayed variation
     clear_selected_variation()
     main('unset_busy')
