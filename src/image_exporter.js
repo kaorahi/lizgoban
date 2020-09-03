@@ -1,9 +1,9 @@
 const fs = require('fs')
 
-function save_blob(blob, filename) {
+function save_blob(blob, filename, callback) {
     const reader = new FileReader()
     reader.onload = function() {
-        fs.writeFileSync(filename, Buffer.from(new Uint8Array(this.result)))
+        fs.writeFile(filename, Buffer.from(new Uint8Array(this.result)), callback)
     }
     reader.readAsArrayBuffer(blob)
 }

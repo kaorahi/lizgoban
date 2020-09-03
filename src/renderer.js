@@ -209,12 +209,14 @@ ipc.on('ask_game_info', (e, params) => {
     show_dialog('#game_info_dialog', asking_komi_p && '#komi')
 })
 
-ipc.on('save_q_and_a_images', (e, q_filename, a_filename) => {
+ipc.on('save_q_and_a_images', (e, q_filename, a_filename, msg_path) => {
     const q_draw = canvas => D.draw_raw_goban(canvas, {draw_last_p: true})
     const a_draw = canvas => D.draw_goban_with_principal_variation(canvas, {})
-    const saver = filename => blob => save_blob(blob, filename)
-    const args = [[q_draw, saver(q_filename)], [a_draw, saver(a_filename)]]
-    args.forEach(a => generate_board_image_blob(...a))
+    const saver = (filename, cb) => blob => save_blob(blob, filename, cb)
+    const callback = err =>
+          err ? alert(`[Error]\n${err.message}`) : toast(`Saved to ${msg_path}`, 7000)
+    generate_board_image_blob(q_draw, saver(q_filename, do_nothing))
+    generate_board_image_blob(a_draw, saver(a_filename, callback))
 })
 
 ipc.on('reset_match_param', (e) => set_match_param(true))

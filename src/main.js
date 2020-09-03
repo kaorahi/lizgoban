@@ -1188,8 +1188,8 @@ function save_q_and_a_images() {
     const pre = 'qa', format = {pre, sep: '_', post: ''}, dir = exercise_dir()
     const path = PATH.join(dir, exercise_filename(format))
     const filenames = ['a', 'b'].map(z => `${path}_${z}.png`)
-    renderer('save_q_and_a_images', ...filenames)
-    toast(`Saved as ${PATH.join(dir, pre)}...`, 7000)
+    const msg_path = `${PATH.join(dir, pre)}...`
+    renderer('save_q_and_a_images', ...filenames, msg_path)
 }
 
 /////////////////////////////////////////////////
