@@ -61,20 +61,11 @@ with lots of original gimmicks.
 
 ## Usage
 
-### Case I: 64bit Windows without GPU
+### 64bit Windows
 
-Just download the [all-in-one package](https://github.com/kaorahi/lizgoban/releases). You can use it immediately without installation, configuration, additional downloads, etc.
+Just download the [all-in-one package](https://github.com/kaorahi/lizgoban/releases). You can enjoy KataGo immediately without installation, configuration, additional downloads, etc.
 
-### Case II: 64bit Windows with GPU
-
-[BadukMegapack by wonsiks](https://github.com/wonsiks/BadukMegapack)
-may be the easiest way to install LizGoban together with many other tools.
-(Though it is not tested by the author of LizGoban,
-who does not have a Windows machine.)
-
-Otherwise, see the release note to replace the built-in engines with GPU versions in Case I or follow the steps in Case III.
-
-### Case III: Other platforms (Mac, Linux, ...) or Windows with more flexible configuration
+### Other platforms (Mac, Linux, ...) or Windows with more flexible configuration
 
 #### To use LizGoban with Leela Zero:
 
@@ -256,6 +247,10 @@ Put your favorite images of board and stones as `external/board.png`, `external/
   * Show mistakes and actually punished scores on stones.
   * Click on a stone to temporarily show the past board.
   * Double-click on a stone to jump to the move.
+* Make KataGo aggressive for handicap games automatically in "match vs. AI" or "AI vs. AI". ("!" is appended to the engine names in the title bar.)
+* In "AI vs. AI", show the principal variations of both AIs side by side by "1" key (keep holding down) if "Two boards A (main+PV)" is selected from "View" menu.
+* Separate estimations for different komi etc. in winrate graph.
+* Support HA (handicap) property in SGF.
 
 Incompatibilities:
 
