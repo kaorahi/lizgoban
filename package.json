@@ -42,7 +42,6 @@
         "from": "build_with/bin/common",
         "to": "resources/external",
         "filter": [
-          "lznetwork.gz",
           "katanetwork.bin.gz"
         ]
       }
@@ -55,7 +54,6 @@
           "from": "build_with/bin/linux",
           "to": "resources/external",
           "filter": [
-            "leelaz",
             "katago"
           ]
         }
@@ -68,8 +66,7 @@
           "from": "build_with/bin/win",
           "to": "resources/external",
           "filter": [
-            "leelaz/{leelaz.exe,*.dll}",
-            "katago/{katago.exe,*.dll,default_gtp.cfg}"
+            "katago/{katago*.exe,*.dll,default_gtp.cfg}"
           ]
         }
       ]

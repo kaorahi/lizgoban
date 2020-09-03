@@ -14,25 +14,27 @@
     ],
     "preset": [
         {
-            "label": "Leela Zero",
+            "label": "KataGo (CPU)",
             "accelerator": "F1",
-            "engine": [["built-in", "leelaz/leelaz"], "-g",
-                       "-w", ["built-in", "lznetwork.gz"]]
-        },
-        {
-            "label": "KataGo",
-            "accelerator": "F2",
-            "engine": [["built-in", "katago/katago"], "gtp",
+            "engine": [["built-in", "katago/katago-eigen"], "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false",
                        "-model", ["built-in", "katanetwork.bin.gz"]]
         },
         {
-            "label": "KataGo for wider search",
-            "accelerator": "F3",
-            "engine": [["built-in", "katago/katago"], "gtp",
+            "label": "KataGo (modern CPU)",
+            "accelerator": "F2",
+            "engine": [["built-in", "katago/katago-eigen-avx2"], "gtp",
                        "-override-config",
-                       "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false, analysisWideRootNoise=0.03",
+                       "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false",
+                       "-model", ["built-in", "katanetwork.bin.gz"]]
+        },
+        {
+            "label": "KataGo (GPU)",
+            "accelerator": "F3",
+            "engine": [["built-in", "katago/katago-opencl"], "gtp",
+                       "-override-config",
+                       "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false",
                        "-model", ["built-in", "katanetwork.bin.gz"]]
         }
     ]
