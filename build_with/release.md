@@ -2,6 +2,10 @@
 
 # Release notes
 
+## LizGoban 0.5.0-pre5
+
+* Fix "Failed to serialize arguments" error by "Silent replay" in "Tool" menu.
+
 ## LizGoban 0.5.0-pre4
 
 * Modify the built-in engines of the all-in-one package.
