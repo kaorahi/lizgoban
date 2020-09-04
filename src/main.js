@@ -939,7 +939,15 @@ function auto_play_in_match(sec) {
 // auto-redo (without additional analysis)
 let the_auto_redo_progress = 0, auto_redo_millisec = 0, auto_redo_timer = null
 let auto_redo_progress_by = 0
-function auto_redoing() {return truep(auto_redo_timer)}
+function auto_redoing() {
+    // Caution: setTimeout() returns not an integer but a Timeout object.
+    // <https://nodejs.org/api/timers.html#timers_settimeout_callback_delay_args>
+    // So if we return auto_redo_timer itself here, we get
+    // "Failed to serialize arguments" error in webContents.send()
+    // because availability() is not serialized safely
+    // when it is passed to renderer. [2020-09-05]
+    return truep(auto_redo_timer)
+}
 function try_auto_redo(force) {
     const epsilon = 1e-10
     if (!redoable()) {stop_auto_redo(); update_all(); return}
