@@ -70,7 +70,7 @@ function create_leelaz () {
             `interval ${arg.analyze_interval_centisec}`,
             is_katago() && ownership_p && 'ownership true',
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
-        ].filter(truep).join(' '))
+        ].filter(truep).join(' '), on_analysis_response)
     }
     const stop_analysis = () => {leelaz('name')}
     const set_pondering = bool => {
@@ -307,17 +307,33 @@ function create_leelaz () {
     //   {move: "Q16", visits: 17, winrate: 52.99, order: 4, winrate_order: 3, pv: v} etc.
     // v = ["Q16", "D4", "Q3", ..., "R17"] etc.
 
+    let current_stdout_reader
+    const expecting_multiline_response = unique_identifier()
+
     const stdout_reader = (s) => {
-        log('stdout|', s)
-        const m = s.match(/^([=?])(\d+)/)
-        if (m) {
-            const ok = (m[1] === '='), id = last_response_id = to_i(m[2])
-            const on_response = on_response_for_id[id]
-            on_response && (on_response(ok), delete on_response_for_id[id])
-        }
-        up_to_date_response() && s.match(/^info /) && suggest_reader(s)
-        send_from_queue()
+        log('stdout|', s); current_stdout_reader(s); send_from_queue()
     }
+
+    const stdout_main_reader = (s) => {
+        const m = s.match(/^([=?])(\d+)(\s+)?(.*)/)
+        if (!m) {return}
+        const ok = (m[1] === '='), id = last_response_id = to_i(m[2]), result = m[4]
+        const on_response = on_response_for_id[id]; delete on_response_for_id[id]
+        const multiline_p = on_response &&
+              on_response(ok, result) === expecting_multiline_response
+        const on_continued = (ok && multiline_p) ? on_response : do_nothing
+        current_stdout_reader = make_rest_reader(on_continued)
+    }
+
+    current_stdout_reader = stdout_main_reader
+
+    const make_rest_reader = on_response => s =>  // '' is falsy
+          s ? on_response('continued', s) : (current_stdout_reader = stdout_main_reader)
+
+    const on_analysis_response = (ok, result) =>
+          ((ok && up_to_date_response() && result.match(/^info /)
+            && suggest_reader(result)),
+           expecting_multiline_response)
 
     const suggest_reader = (s) => {
         const f = arg.suggest_handler; if (!f) {return}
@@ -401,6 +417,7 @@ function create_leelaz () {
 
 }  // end create_leelaz
 
+function unique_identifier() {return new Object}
 function hash(str) {
     return CRYPTO.createHash('sha256').update(str).digest('hex').slice(0, 8)
 }
