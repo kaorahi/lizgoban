@@ -181,6 +181,7 @@ const AI = require('./ai.js')
 function command_failure_handler(command, info) {
     switch (command) {
     case 'boardsize': if (is_pausing()) {return}; break;
+    case 'komi': set_komi(AI.engine_info().engine_komi); break;
     }
     toast(info, 2 * 1000)
     pause(); stop_auto(); update_all()
