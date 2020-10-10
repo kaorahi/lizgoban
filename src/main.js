@@ -1252,7 +1252,7 @@ function set_AI_board_size_maybe(bsize) {
     bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
 }
 function aggressive() {
-    const in_case = (R.in_match || AI.leelaz_for_white_p()); if (!in_case) {return {}}
+    const in_case = (R.in_match || AI.leelaz_for_white_p()); if (!in_case) {return ''}
     const {handicaps} = game, komi = game.get_komi()
     const b = (handicaps === 0 && komi >= 15) && 'b'
     const w = (handicaps > 0 || komi <= 0) && 'w'
