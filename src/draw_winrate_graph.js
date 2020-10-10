@@ -15,12 +15,14 @@ function draw_winrate_graph(canvas, additional_canvas,
         const [z2c, c2z] = translator_pair([r_top, r_bot], [c_top, c_bot])
         const [sz2coord_raw, coord2sz] =
               uv2coord_translator_pair(canvas, [smin, smax], [c2z(0), c2z(1)], xmargin, 0)
-        const sz2coord = (s, r) => s < R.init_len ? [NaN, NaN] : sz2coord_raw(s, r)
-        return [sz2coord, coord2sz]
+        const sz2coord_noclip = (s, r) =>
+              s < R.init_len ? [NaN, NaN] : sz2coord_raw(s, r)
+        const sz2coord = (s, r) => sz2coord_noclip(s, clip(r, 0, 100))
+        return [sz2coord, sz2coord_noclip, coord2sz]
     }
-    const [sr2coord, coord2sr] = get_trans(100, - zone_indicator_height_percent,
-                                           0, upper_graph_rate)
-    const [sq2coord, coord2sq] = get_trans(100, 0, upper_graph_rate, 1)
+    const [sr2coord, sr2coord_noclip, coord2sr] =
+          get_trans(100, - zone_indicator_height_percent, 0, upper_graph_rate)
+    const [sq2coord, sq2coord_noclip, coord2sq] = get_trans(100, 0, upper_graph_rate, 1)
     const overlay = graph_overlay_canvas.getContext("2d")
     clear_canvas(graph_overlay_canvas)
     truep(show_until) ?
@@ -36,7 +38,7 @@ function draw_winrate_graph(canvas, additional_canvas,
     draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_ambiguity(sq2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
-    draw_winrate_graph_zone(w, sr2coord, g)
+    draw_winrate_graph_zone(w, sr2coord_noclip, g)
     draw_winrate_graph_order(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
