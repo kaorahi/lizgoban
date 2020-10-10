@@ -24,7 +24,7 @@ function endstate_clusters_for(endstate, stones) {
     const grid_for = z => ({ownership: z, id: null})
     const grid = aa_map(endstate, grid_for)
     const get_clusters = (_, cat) => clusters_in_category(cat, grid, stones)
-    return flatten(category_spec.map(get_clusters))
+    return category_spec.flatMap(get_clusters)
 }
 
 function clusters_in_category(category, grid, stones) {
@@ -32,7 +32,7 @@ function clusters_in_category(category, grid, stones) {
     const region = region_for_category(category, grid)
     const clusters = clusters_in_region(region, grid, category)
     const divide_maybe = c => divide_large_cluster(c, grid, category)
-    const ret = (type === 'minor') ? clusters : flatten(clusters.map(divide_maybe))
+    const ret = (type === 'minor') ? clusters : clusters.flatMap(divide_maybe)
     return ret.map(c => finalize_cluster(c, grid, stones))
 }
 
@@ -130,7 +130,7 @@ function boundary_of(id, ijs, grid) {
     const checker_for = ij =>
           (idx, direction) => same_cluster_p(idx) ? null : [ij, direction]
     const boundary_around = ij => around_idx(ij).map(checker_for(ij)).filter(truep)
-    return flatten(ijs.map(boundary_around))
+    return ijs.flatMap(boundary_around)
 }
 
 function cancel_cluster(cluster, grid) {

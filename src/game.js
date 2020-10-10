@@ -95,7 +95,7 @@ function create_game(init_history, init_prop) {
         pop: update_move_count_after(() => history.pop()),
     }
     const array_methods =
-          aa2hash(['map', 'forEach', 'slice']
+          aa2hash(['map', 'flatMap', 'forEach', 'slice']
                   .map(meth => [meth, (...args) => history[meth](...args)]))
     return merge(self, prop, methods, array_methods)
 }
@@ -228,7 +228,7 @@ function games_from_parsed_sgf(parsed, to_game) {
     }
     // main
     const conv = item => is_v131(item) ? [to_game_with_reuse(item)] : recur([], item)
-    return flatten(parsed.map(conv))
+    return parsed.flatMap(conv)
 }
 
 /////////////////////////////////////////////////

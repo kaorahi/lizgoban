@@ -294,7 +294,7 @@ function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
         g.strokeStyle = style_for_key
         const to_xy = ({cumulative_score_loss}, s) => cumulative_score_loss ?
               sr2coord(s, to_r(cumulative_score_loss[key])) : [NaN, NaN]
-        line(...flatten(R.winrate_history.map(to_xy).map(to_step)), g)
+        line(...R.winrate_history.map(to_xy).flatMap(to_step), g)
     })
     // emphasize blunders
     g.lineWidth = blunder_width

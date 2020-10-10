@@ -56,7 +56,7 @@ function parse_argv() {
     const prepended_args = dir => ['-c', PATH.resolve(dir, 'config.json')]
     const argv = [
         '-j', JSON.stringify(default_option),
-        ...flatten(default_config_paths.filter(truep).map(prepended_args)),
+        ...default_config_paths.filter(truep).flatMap(prepended_args),
         ...process.argv,
     ]
     argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
@@ -206,7 +206,7 @@ function show_error(message) {
 
 // images
 const face_image_paths =
-      flatten((option.face_image_rule || []).map(([_, b, w]) => [[b, b], [w, w]]))
+      (option.face_image_rule || []).flatMap(([_, b, w]) => [[b, b], [w, w]])
 const image_paths = [
     ['black_stone', 'black.png', true],
     ['white_stone', 'white.png', true],
@@ -1545,7 +1545,7 @@ function update_state(keep_suggest_p) {
         const h_copy = P.append_endstate_tag_maybe(h)
         return h_copy.tag ? [h_copy] : []
     }
-    const history_tags = flatten(game.map(pick_tagged))
+    const history_tags = game.flatMap(pick_tagged)
     const {player_black, player_white, trial} = game
     const su = P.get_showing_until(), showing_until_p = finitep(su)
     const cur = game.ref(showing_until_p ? su : game.move_count)
