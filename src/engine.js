@@ -44,7 +44,7 @@ function create_leelaz () {
                weight_file, working_dir, default_board_size,
                minimum_suggested_moves, engine_log_line_length, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler,
-               illegal_handler, tuning_handler, unsupported_size_handler}
+               illegal_handler, tuning_handler, command_failure_handler}
               = arg || {}
         const opt = {cwd: working_dir}
         is_ready = false; is_in_startup = true; startup_log = []; network_size_text = ''
@@ -142,9 +142,13 @@ function create_leelaz () {
     let old_board_size
     const change_board_size = bsize => {
         if (bsize === old_board_size) {return}
-        const ng = () => {arg.unsupported_size_handler(); old_board_size = null}
+        const command = 'boardsize'
+        const ng = () => {
+            const info = `Unsupported board size by this engine.`
+            arg.command_failure_handler(command, info); old_board_size = null
+        }
         const f = ok => {is_ready = true; ok || ng(); arg.ready_handler(true)}
-        is_ready = false; leelaz(`boardsize ${bsize}`, f); old_board_size = bsize
+        is_ready = false; leelaz(`${command} ${bsize}`, f); old_board_size = bsize
     }
 
     // util

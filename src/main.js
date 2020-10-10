@@ -175,12 +175,14 @@ globalize({  // for ai.js
         unload_leelaz_for_white()
     },
     max_cached_engines: option.max_cached_engines,
-    unsupported_size_handler,
+    command_failure_handler,
 })
 const AI = require('./ai.js')
-function unsupported_size_handler() {
-    if (is_pausing()) {return}
-    toast('Unsupported board size by this engine.', 2 * 1000)
+function command_failure_handler(command, info) {
+    switch (command) {
+    case 'boardsize': if (is_pausing()) {return}; break;
+    }
+    toast(info, 2 * 1000)
     pause(); stop_auto(); update_all()
 }
 globalize({  // for powered_goban.js
