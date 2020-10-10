@@ -266,7 +266,18 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
     game.set_last_loaded_element()
     game.init_len = init_len_from_sabaki_nodes(nodes)
     game.move_count = history_for(nodes_until_index).length
+    // [misc.]
+    // sample of Fox SGF (has two AP[])
+    // (;GM[1]FF[4]  SZ[19]  GN[...]  DT[2020-09-19]  PB[...]  PW[...]  BR[P9...]  WR[P7...]  KM[650]HA[0]RU[Japanese]AP[GNU Go:3.8]RE[B+3.50]TM[10800]TC[5]TT[60]AP[foxwq]RL[0]  ;B[pd]  (;W[dp] ...
+    const ap = first_node.AP || []; ap.includes('foxwq') && fix_fox_sgf(game)
     return true
+}
+
+function fix_fox_sgf(game) {
+    // ad hoc fix for Fox SGF
+    // ref. https://github.com/sanderland/katrain/issues/177
+    game.komi = (game.handicaps >= 1) ? 0.5 :
+        (["chinese", "cn"].includes(game.sgf_gorule.toLowerCase)) ? 7.5 : 6.5
 }
 
 function history_from_sabaki_nodes(nodes, komi, cache_suggestions_p) {
