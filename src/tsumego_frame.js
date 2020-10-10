@@ -6,12 +6,12 @@ const {ij_flipper} = require('./random_flip.js')
 function tsumego_frame(stones, komi, black_to_play_p, ko_p) {
     const filled_stones = tsumego_frame_stones(stones, komi, black_to_play_p, ko_p)
     const pick_stone = (s, i, j) => s.tsumego_frame && [i, j, s.black]
-    return flatten(aa_map(filled_stones, pick_stone)).filter(truep)
+    return aa_map(filled_stones, pick_stone).flat().filter(truep)
 }
 
 function tsumego_frame_stones(stones, komi, black_to_play_p, ko_p) {
     const size = board_size()
-    const ijs = flatten(aa_map(stones, (h, i, j) => h.stone && {i, j, black: h.black}))
+    const ijs = aa_map(stones, (h, i, j) => h.stone && {i, j, black: h.black}).flat()
           .filter(truep)
     if (empty(ijs)) {return []}
     // detect corner/edge/center problems

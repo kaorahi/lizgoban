@@ -21,7 +21,6 @@ E.sum = a => a.reduce((r,x) => r + x, 0)
 E.merge = Object.assign
 E.empty = a => !a || (a.length === 0)
 E.last = a => a[a.length - 1]
-E.flatten = a => [].concat(...a)
 E.sort_by = (a, f) => a.slice().sort((x, y) => f(x) - f(y))
 E.sort_by_key = (a, key) => sort_by(a, h => h[key])
 E.num_sort = a => sort_by(a, E.identity)

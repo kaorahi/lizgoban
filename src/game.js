@@ -150,7 +150,7 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
         const scoremean_maybe = z => truep(z.scoreMean) ? `scoreMean ${to_s(z.scoreMean)} ` : ''
         const s2 = sort_by(suggest, z => z.order).map(z => z.order >= 0 && `move ${z.move} visits ${z.visits} winrate ${to_i(z.winrate * 100)} ` + scoremean_maybe(z) + `pv ${z.pv.join(' ')}`).filter(truep).join(' info ')
         const analysis_for_black = !is_black
-        const s3 = endstate ? ` ownership ${flatten(endstate).map(o => analysis_for_black ? o : -o).join(' ')}` : ''
+        const s3 = endstate ? ` ownership ${endstate.flat().map(o => analysis_for_black ? o : -o).join(' ')}` : ''
         return `LZ[${s1}\n${s2}${s3} info ]`
     }
     const move2sgf = h => {
@@ -210,7 +210,7 @@ function games_from_parsed_sgf(parsed, to_game) {
     // sample
     // (;B[aa](;W[ba](;B[ca](;W[da])(;W[cb]))(;B[bb]))(;W[ab](;B[bb])(;B[ac])))
     const readably_flatten = ([[main, ...rest], ...variations]) =>
-          [main, ...flatten(variations), ...rest]
+          [main, ...variations.flat(), ...rest]
     // unify common headers
     let game
     const to_game_with_reuse = gametree => {
