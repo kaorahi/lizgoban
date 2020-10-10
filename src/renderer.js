@@ -305,7 +305,6 @@ const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
 const draw_raw_pure = draw_raw_gen({})
-const draw_raw_main = draw_raw_gen({draw_last_p: true})
 const draw_es_gen = options => with_opts(D.draw_endstate_goban, options)
 const draw_current_endstate_value = draw_es_gen({draw_endstate_value_p: true})
 const draw_past_endstate_value =
@@ -358,7 +357,7 @@ const double_boards_rule = {
         normal: [draw_raw_clickable, draw_main], raw: [draw_main, draw_pv]
     },
     double_boards_raw_pv: {
-        normal: [draw_raw_main, draw_pv], raw: [draw_main, draw_pv]
+        normal: [draw_raw_clickable, draw_pv], raw: [draw_main, draw_pv]
     },
 }
 
