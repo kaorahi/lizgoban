@@ -65,7 +65,7 @@ function update_for_mac() {mac_p() && main('update_menu')}  // for board_type_me
 // util
 
 function setq(x, val) {Q(x).textContent = val}
-function setdebug(x) {setq('#debug', JSON.stringify(x))}
+function setdebug(x) {setq('#debug', JSON.stringify(x)); return x}
 globalize(setdebug)
 
 // for debug from Developper Tool
