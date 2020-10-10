@@ -291,6 +291,7 @@ function update_winrate_trail() {
     new_trail_p && (winrate_trail = {});
     [winrate_trail_move_count, winrate_trail_visits] = [R.move_count, R.visits]
     R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
+        const fake_suggest_elem_p = (s.order < 0); if (fake_suggest_elem_p) {return}
         const move = s.move, wt = winrate_trail
         const trail = wt[move] || (wt[move] = []), len = trail.length
         const relative_visits = s.visits / R.max_visits, total_visits = R.visits
