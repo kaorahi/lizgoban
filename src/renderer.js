@@ -314,7 +314,7 @@ const draw_past_endstate_value =
 function draw_wr_graph(canvas) {
     const endstate_at = showing_endstate_value_p() && R.prev_endstate_clusters &&
           (R.move_count - R.endstate_diff_interval)
-    const u = showing_until(), until = truep(u) ? u : endstate_at
+    const until = true_or(showing_until(), endstate_at)
     D.draw_winrate_graph(canvas, additional_graph_canvas,
                          until, handle_mouse_on_winrate_graph)
 }
@@ -597,7 +597,7 @@ const [try_thumbnail] =
 
 function take_thumbnail(given_id, given_stones, given_trial_p) {
     if (R.sequence_length > max_sequence_length_for_thumbnail) {return}
-    const id = truep(given_id) ? given_id : current_sequence_id()
+    const id = true_or(given_id, current_sequence_id())
     const stones = given_stones || R.stones
     const trial_p = (given_trial_p === undefined) ? R.trial : given_trial_p
     take_thumbnail_of_stones(stones, url => store_thumbnail(id, url), trial_p)
@@ -982,11 +982,10 @@ function set_showing_endstate_value_p(val) {
 var tentatively_showing_until = null
 function clear_tentatively_showing_until() {tentatively_showing_until = null}
 function showing_until(canvas) {
-    const orig = orig_showing_until(canvas)
-    return truep(tentatively_showing_until) ? tentatively_showing_until : orig
+    return true_or(tentatively_showing_until, orig_showing_until(canvas))
 }
 function orig_showing_until(canvas) {
-    const hovered_mc = truep(hovered_move_count) ? hovered_move_count : Infinity
+    const hovered_mc = true_or(hovered_move_count, Infinity)
     const ret = (by_tag, by_hover) =>
           (by_tag && keyboard_tag_move_count) ||
           (by_hover && showing_something_p() && hovered_mc)
@@ -1000,7 +999,7 @@ function orig_showing_until(canvas) {
 const update_showing_until = skip_too_frequent_requests(orig_update_showing_until)
 function increment_showing_until(inc) {
     const mc = R.move_count, cur = finite_or(showing_until(), mc)
-    const target = (truep(cur) ? cur : mc) + inc
+    const target = true_or(cur, mc) + inc
     tentatively_showing_until = Math.min(clip_init_len(target), R.history_length)
     update_showing_until()
 }

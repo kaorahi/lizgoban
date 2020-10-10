@@ -464,7 +464,7 @@ function face_image_for(h) {
     if (h.movenums) {return null}
     const {endstate, black} = h, es = (black ? 1 : -1) * (endstate || 0)
     // const wr = ((R.winrate_history[R.move_count] || {}).r || 50) / 50 - 1
-    // const es = (black ? 1 : -1) * (truep(endstate) ? endstate : wr)
+    // const es = (black ? 1 : -1) * true_or(endstate, wr)
     const [_, b, w] = R.face_image_rule.find(([threshold, _b, _w]) => es < threshold)
           || last(R.face_image_rule)
     return stone_image_for_key(h, b, w)

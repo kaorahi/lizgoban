@@ -198,7 +198,7 @@ function add_next_played_move_as_fake_suggest() {
 let endstate_array, endstate_move_count
 function set_endstate_uptodate(endstate, move_count) {
     endstate_array = endstate
-    endstate_move_count = truep(move_count) ? move_count : game.move_count
+    endstate_move_count = true_or(move_count, game.move_count)
 }
 function set_endstate_obsolete() {[endstate_array, endstate_move_count] = [null, null]}
 function is_endstate_uptodate() {return endstate_move_count === game.move_count}
@@ -422,14 +422,13 @@ function cook_lizzie_cache_maybe(new_game) {
 }
 
 function score_without_komi_at(move_count) {
-    const ret = game.ref(move_count).score_without_komi
-    return truep(ret) ? ret : average_endstate_sum(move_count)
+    return true_or(game.ref(move_count).score_without_komi,
+                   average_endstate_sum(move_count))
 }
 
 function get_initial_b_winrate(engine_id) {return get_b_winrate(0, engine_id)}
 function get_b_winrate(move_count, engine_id) {
-    const ret = get_estimation(move_count, engine_id).b_winrate
-    return truep(ret) ? ret : NaN
+    return true_or(get_estimation(move_count, engine_id).b_winrate, NaN)
 }
 function get_estimation(move_count, engine_id) {
     const m = game.ref(move_count)

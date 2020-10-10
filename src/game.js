@@ -53,7 +53,7 @@ function create_game(init_history, init_prop) {
         array_until: mc => history.slice(0, mc),
         delete_future: () => history.splice(self.move_count),
         last_move: () => (last(history) || {}).move,
-        get_komi: () => truep(self.komi) ? self.komi : leelaz_komi,
+        get_komi: () => true_or(self.komi, leelaz_komi),
         set_last_loaded_element: () => self.last_loaded_element = last(history),
         shallow_copy: () => create_game(history.slice(), merge({}, self, {
             id: new_game_id(), last_loaded_element: null
@@ -145,7 +145,7 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
         // We need to use only by_current as long as current_engine is given.
         const {suggest, b_winrate, visits} = current_engine ? by_current : h
         if (!suggest) {return ''}
-        const num = z => truep(z) ? z : 0
+        const num = z => true_or(z, 0)
         const s1 = `0.7.2 ${num(is_black ? b_winrate : 100 - b_winrate).toFixed(1)} ${kilo_str(num(visits))}`
         const scoremean_maybe = z => truep(z.scoreMean) ? `scoreMean ${to_s(z.scoreMean)} ` : ''
         const s2 = sort_by(suggest, z => z.order).map(z => z.order >= 0 && `move ${z.move} visits ${z.visits} winrate ${to_i(z.winrate * 100)} ` + scoremean_maybe(z) + `pv ${z.pv.join(' ')}`).filter(truep).join(' info ')
@@ -258,7 +258,7 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
     // (and recover the old board size immediately so that its change
     // is correctly detected elsewhere for switching of engine processes)
     const to_history = nodes =>
-          history_from_sabaki_nodes(nodes, truep(komi) ? komi : leelaz_komi,
+          history_from_sabaki_nodes(nodes, true_or(komi, leelaz_komi),
                                     cache_suggestions_p)
     const history_for = given_nodes => with_board_size(bsize, to_history, given_nodes)
     const new_hist = history_for(nodes)

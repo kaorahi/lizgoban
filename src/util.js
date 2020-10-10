@@ -9,6 +9,7 @@ E.xor = (a, b) => (!a === !!b)
 // truep() returns BOOLEAN so that availability() is safely serialized and
 // passed to renderer in main.js. [2020-09-05]
 E.truep = x => (!!x || x === 0 || x === '')
+E.true_or = (x, y) => truep(x) ? x : y
 E.finitep = x => truep(x) && x !== Infinity
 E.finite_or = (x, y) => E.finitep(x) ? x : y
 E.do_nothing = () => {}

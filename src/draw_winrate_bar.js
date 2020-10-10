@@ -10,7 +10,7 @@ function draw_winrate_bar_sub(target_move, canvas, move_count, large_bar, pale_t
     const vline = percent => {const x = xfor(percent); line([x, 0], [x, h], g)}
     const z = R.winrate_history[move_count] || {}
     const b_wr0 = fake_winrate_for(z.r, z.score_without_komi, true)
-    const b_wr = truep(b_wr0) ? b_wr0 : winrate_bar_prev
+    const b_wr = true_or(b_wr0, winrate_bar_prev)
     const komi_wr = score_p && fake_winrate_for(0.5, R.komi, true)
     const prev_score = score_p && origin_score(), ready = !empty(R.suggest)
     winrate_bar_prev = b_wr

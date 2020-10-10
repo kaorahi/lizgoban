@@ -869,7 +869,7 @@ function start_auto_play(replaying, sec, count) {
     if (replaying && sec < 0) {start_auto_redo(sec); return}
     // var
     auto_replaying = replaying
-    auto_play_sec = truep(sec) ? sec : -1
+    auto_play_sec = true_or(sec, -1)
     truep(count) && (auto_play_count = count)
     // proc
     auto_replaying && rewind_maybe()
@@ -1046,10 +1046,9 @@ function nearest_move_to_winrate(target_winrate) {
     return selected.move
 }
 function winrate_after(move_count) {
-    const or_NaN = x => truep(x) ? x : NaN
     return move_count < 0 ? NaN :
         move_count === 0 ? P.get_initial_b_winrate() :
-        or_NaN(game.ref(move_count).b_winrate)
+        true_or(game.ref(move_count).b_winrate, NaN)
 }
 function weak_move_by_score(average_losing_points) {
     if (!AI.katago_p()) {return best_move()}
