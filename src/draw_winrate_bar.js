@@ -32,14 +32,16 @@ function draw_winrate_bar_sub(target_move, canvas, move_count, large_bar, pale_t
 
 function draw_winrate_bar_text(b_wr, prev_score, w, h, pale_text_p, score_only_p, g) {
     if (!truep(b_wr)) {return}
+    const blunder_winrate_threshold = -5
     const scorep = score_bar_p(), b_sign = R.bturn ? 1 : -1
     const eval = scorep ? - (R.score_without_komi - prev_score) * b_sign
           : - (b_wr - origin_b_winrate()) * b_sign
     const visits = R.max_visits && kilo_str(R.max_visits)
     const fontsize = Math.min(h * 0.5, w * 0.04)
-    const [wr_color, vis_color] = pale_text_p ?
-          ['rgba(0,192,0,0.3)', 'rgba(160,160,160,0.3)'] :
-          [GREEN, WINRATE_TRAIL_COLOR]
+    const [wr_color, bad_wr_color, vis_color] = pale_text_p ?
+          ['rgba(0,192,0,0.3)', 'rgba(255,0,0,0.4)', 'rgba(160,160,160,0.3)'] :
+          [GREEN, RED, WINRATE_TRAIL_COLOR]
+    const bad_threshold = scorep ? blunder_threshold : blunder_winrate_threshold
     g.save()
     g.textBaseline = 'middle'
     const write = (text, x, y_rel) =>
@@ -50,8 +52,10 @@ function draw_winrate_bar_text(b_wr, prev_score, w, h, pale_text_p, score_only_p
         const vis = cond(visits, visits)
         const ev = cond(truep(eval), `(${eval > 0 ? '+' : ''}${f2s(eval)})`)
         const win = cond(true, wr_text)
+        const vis_or_ev_color = myturn ? vis_color :
+              true_or(eval, 0) < bad_threshold ? bad_wr_color : wr_color
         g.textAlign = align; g.fillStyle = wr_color; write(win, x)
-        myturn && (g.fillStyle = vis_color); write(myturn ? vis : ev, x, 1.5)
+        g.fillStyle = vis_or_ev_color; write(myturn ? vis : ev, x, 1.5)
     }
     const {lower, l_quarter, center, u_quarter, upper} = score_bar_fitter.range()
     const [left, right] = scorep ? [lower, upper].map(score_str) :
