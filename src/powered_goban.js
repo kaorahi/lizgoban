@@ -7,7 +7,7 @@ const {create_game} = require('./game.js')
 const {endstate_clusters_for} = require('./area.js')
 
 // state
-let endstate_diff_interval = 12, showing_until = null
+let endstate_diff_interval = 12, showing_until = null, the_move_count_for_suggestion = null
 let game = create_game()  // dummy empty game until first set_board()
 
 /////////////////////////////////////////////////
@@ -138,7 +138,7 @@ function set_renderer_state(...args) {
     const busy = M.is_busy(), long_busy = M.is_long_busy()
     const winrate_history = busy ? [] : winrate_from_game()
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
-    const su_p = finitep(get_showing_until())
+    const su_p = finitep(move_count_for_suggestion())
     const previous_suggest = !su_p && get_previous_suggest()
     const winrate_trail = !su_p
     const max_visits = clip(Math.max(...(R.suggest || []).filter(orig_suggest_p).map(h => h.visits)), 1)
@@ -219,8 +219,12 @@ function append_endstate_tag_maybe(h) {
 function get_endstate_diff_interval() {return endstate_diff_interval}
 function set_endstate_diff_interval(k) {endstate_diff_interval = k}
 function get_showing_until() {return showing_until}
-function set_showing_until(k) {
-    change_endstate_diff_target(() => {showing_until = k; R.suggest = []})
+function move_count_for_suggestion() {return the_move_count_for_suggestion}
+function set_showing_until(k, mc_for_suggestion) {
+    change_endstate_diff_target(() => {
+        the_move_count_for_suggestion = mc_for_suggestion
+        showing_until = k; R.suggest = []
+    })
 }
 function change_endstate_diff_target(proc) {
     const old = endstate_diff_move_count()
@@ -508,7 +512,7 @@ module.exports = {
     // endstate
     append_endstate_tag_maybe,
     get_endstate_diff_interval, set_endstate_diff_interval,
-    get_showing_until, set_showing_until,
+    move_count_for_suggestion, set_showing_until,
     // renderer
     set_and_render,
     // util

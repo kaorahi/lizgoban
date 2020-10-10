@@ -322,7 +322,7 @@ function draw_wr_graph(canvas) {
 function draw_wr_bar(canvas) {
     const wr_only = (current_board_type() === 'winrate_only')
     const large_bar = R.expand_winrate_bar || wr_only
-    const move_count = finite_or(showing_until(), R.move_count)
+    const move_count = finite_or(move_count_for_suggestion(), R.move_count)
     D.draw_winrate_bar(canvas, move_count, large_bar, wr_only)
 }
 
@@ -398,7 +398,7 @@ function update_goban() {
 function update_target_move(m, s) {
     const c = (m === draw_main) ? main_canvas : (s === draw_main) ? sub_canvas : null
     if (!c) {return}
-    const u = showing_until(c), h = selected_suggest(c)
+    const u = move_count_for_suggestion(c), h = selected_suggest(c)
     D.set_target_move(!truep(u) && (h.visits > 0) && h.move)
 }
 
@@ -981,8 +981,11 @@ function set_showing_endstate_value_p(val) {
 }
 var tentatively_showing_until = null
 function clear_tentatively_showing_until() {tentatively_showing_until = null}
-function showing_until(canvas) {
-    return true_or(tentatively_showing_until, orig_showing_until(canvas))
+function showing_until(canvas) {return showing_until_etc(canvas)[0]}
+function move_count_for_suggestion(canvas) {return showing_until_etc(canvas)[1]}
+function showing_until_etc(canvas) {
+    const su = true_or(tentatively_showing_until, orig_showing_until(canvas))
+    return [su, !showing_endstate_value_p() && su]
 }
 function orig_showing_until(canvas) {
     const hovered_mc = true_or(hovered_move_count, Infinity)
@@ -1004,10 +1007,11 @@ function increment_showing_until(inc) {
     update_showing_until()
 }
 function orig_update_showing_until() {
-    const cur = showing_until(), changed = checker_for_showing_until.is_changed(cur)
+    const su_and_mcfs = showing_until_etc()
+    const [cur, _] = su_and_mcfs, changed = checker_for_showing_until.is_changed(cur)
     if (!changed) {return}
     // Caution: JSON.stringify(Infinity) === 'null'
-    main('set_showing_until', cur)
+    main('set_showing_until', ...su_and_mcfs)
 }
 
 function undoable() {return R.move_count > R.init_len}
