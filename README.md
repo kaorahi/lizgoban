@@ -247,6 +247,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
   * Show mistakes and actually punished scores on stones.
   * Click on a stone to temporarily show the past board.
   * Double-click on a stone to jump to the move.
+  * [Fix wrong komi in Fox SGF.](https://github.com/sanderland/katrain/issues/177)
 * Make KataGo aggressive for handicap games automatically in "match vs. AI" or "AI vs. AI". ("!" is appended to the engine names in the title bar.)
 * In "AI vs. AI", show the principal variations of both AIs side by side by "1" key (keep holding down) if "Two boards A (main+PV)" is selected from "View" menu.
 * Separate estimations for different komi etc. in winrate graph.

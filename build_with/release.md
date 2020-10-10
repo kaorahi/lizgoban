@@ -2,21 +2,9 @@
 
 # Release notes
 
-## LizGoban 0.5.0-pre5
+## LizGoban 0.5.0-pre6
 
-* Fix "Failed to serialize arguments" error by "Silent replay" in "Tool" menu.
-
-## LizGoban 0.5.0-pre4
-
-* Modify the built-in engines of the all-in-one package.
-  * Upgrade KataGo to [1.6.1](https://github.com/lightvector/KataGo/releases/tag/v1.6.1).
-  * Pack three versions of KataGo (CPU, modern CPU, GPU).
-  * Drop Leela Zero to reduce the file size.
-* Make KataGo aggressive for handicap games automatically in "match vs. AI" or "AI vs. AI". ("!" is appended to the engine names in the title bar.)
-* In "AI vs. AI", show the principal variations of both AIs side by side by "1" key (keep holding down) if "Two boards A (main+PV)" is selected from "View" menu.
-* Separate estimations for different komi etc. in winrate graph.
-* Support HA (handicap) property in SGF.
-* Fix minor bugs.
+* Fix minor bugs, etc.
 
 ### To use it on 64bit Windows immediately
 
@@ -49,6 +37,22 @@ Note that some external resources are also packaged into *.exe together with Liz
 * facial stone images: [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html)
 
 # (Previous versions)
+
+## LizGoban 0.5.0-pre5
+
+* Fix "Failed to serialize arguments" error by "Silent replay" in "Tool" menu.
+
+## LizGoban 0.5.0-pre4
+
+* Modify the built-in engines of the all-in-one package.
+  * Upgrade KataGo to [1.6.1](https://github.com/lightvector/KataGo/releases/tag/v1.6.1).
+  * Pack three versions of KataGo (CPU, modern CPU, GPU).
+  * Drop Leela Zero to reduce the file size.
+* Make KataGo aggressive for handicap games automatically in "match vs. AI" or "AI vs. AI". ("!" is appended to the engine names in the title bar.)
+* In "AI vs. AI", show the principal variations of both AIs side by side by "1" key (keep holding down) if "Two boards A (main+PV)" is selected from "View" menu.
+* Separate estimations for different komi etc. in winrate graph.
+* Support HA (handicap) property in SGF.
+* Fix minor bugs.
 
 ## LizGoban 0.5.0-pre3
 
