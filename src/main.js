@@ -1550,7 +1550,7 @@ function update_state(keep_suggest_p) {
     const su = P.move_count_for_suggestion(), showing_until_p = finitep(su)
     const cur = game.ref(showing_until_p ? su : game.move_count)
     const prev_su = showing_until_p && game.ref(su - 1)
-    const bturn = !cur.is_black
+    const showing_bturn = !cur.is_black
     const subboard_stones_suggest = prev_su && prev_su.suggest && {
         ...subboard_stones_suggest_for(su, prev_su), gain: cur.gain,
     }
@@ -1561,7 +1561,7 @@ function update_state(keep_suggest_p) {
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule,
-        bturn, subboard_stones_suggest,
+        showing_bturn, subboard_stones_suggest,
     }, more)
 }
 function subboard_stones_suggest_for(su, prev_su) {

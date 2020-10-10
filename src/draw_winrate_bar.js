@@ -33,7 +33,7 @@ function draw_winrate_bar_sub(target_move, canvas, move_count, large_bar, pale_t
 function draw_winrate_bar_text(b_wr, prev_score, w, h, pale_text_p, score_only_p, g) {
     if (!truep(b_wr)) {return}
     const blunder_winrate_threshold = -5
-    const scorep = score_bar_p(), b_sign = R.bturn ? 1 : -1
+    const scorep = score_bar_p(), b_sign = R.showing_bturn ? 1 : -1
     const eval = scorep ? - (R.score_without_komi - prev_score) * b_sign
           : - (b_wr - origin_b_winrate()) * b_sign
     const visits = R.max_visits && kilo_str(R.max_visits)
@@ -60,7 +60,7 @@ function draw_winrate_bar_text(b_wr, prev_score, w, h, pale_text_p, score_only_p
     const {lower, l_quarter, center, u_quarter, upper} = score_bar_fitter.range()
     const [left, right] = scorep ? [lower, upper].map(score_str) :
           [b_wr, 100 - b_wr].map(wr => f2s(wr) + '%')
-    !score_only_p && (f(left, 0, 'left', R.bturn), f(right, w, 'right', !R.bturn))
+    !score_only_p && (f(left, 0, 'left', R.showing_bturn), f(right, w, 'right', !R.showing_bturn))
     if (scorep) {
         g.textAlign = 'center'; g.fillStyle = wr_color
         const tics = [[l_quarter, 0.25], [center, 0.5], [u_quarter, 0.75]]
@@ -77,10 +77,10 @@ function draw_winrate_bar_areas(b_wr, w, h, xfor, vline, g) {
     const wrx = xfor(b_wr)
     g.lineWidth = 1
     // black area
-    g.fillStyle = R.bturn ? BLACK : "#000"
+    g.fillStyle = R.showing_bturn ? BLACK : "#000"
     g.strokeStyle = WHITE; edged_fill_rect([0, 0], [wrx, h], g)
     // white area
-    g.fillStyle = R.bturn ? "#fff" : WHITE
+    g.fillStyle = R.showing_bturn ? "#fff" : WHITE
     g.strokeStyle = BLACK; edged_fill_rect([wrx, 0], [w, h], g)
 }
 
@@ -127,7 +127,7 @@ function draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g) {
           fake_winrate_for(dummy, prev_score, true) : obw
     if (!truep(obw) || (b_wr === prev_b_wr)) {return}
     const [x1, x2] = num_sort([b_wr, prev_b_wr].map(xfor))
-    const last_gain = - (b_wr - prev_b_wr) * (R.bturn ? 1 : -1)
+    const last_gain = - (b_wr - prev_b_wr) * (R.showing_bturn ? 1 : -1)
     if (!truep(last_gain)) {return}
     const [stroke, fill] = (last_gain >= 0 ? [GREEN, PALE_GREEN] : [RED, PALE_RED])
     const lw = g.lineWidth = 3; g.strokeStyle = stroke; g.fillStyle = fill
@@ -164,7 +164,7 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, move_count, large_bar, 
 
 function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color,
                               force_puct_p, large_bar, g) {
-    const bturn = s.bturn === undefined ? R.bturn : s.bturn
+    const bturn = s.bturn === undefined ? R.showing_bturn : s.bturn
     const plot_params = winrate_bar_xy(s, w, h, true, bturn)
     const [x, y, r, max_radius, x_puct, y_puct] = plot_params
     const half_center_angle = 60 / 2, max_slant = large_bar ? 45 : 30
@@ -204,7 +204,7 @@ function draw_winrate_bar_order(s, w, h, g) {
     const fontsize = w * 0.03, [x, y] = winrate_bar_xy(s, w, h)
     const modified_fontsize = winrate_bar_order_set_style(s, fontsize, g)
     g.save()
-    g.textAlign = R.bturn ? 'left' : 'right'; g.textBaseline = 'middle'
+    g.textAlign = R.showing_bturn ? 'left' : 'right'; g.textBaseline = 'middle'
     fill_text(g, modified_fontsize, ` ${s.order + 1} `, x, y)
     g.restore()
 }
