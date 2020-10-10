@@ -262,6 +262,11 @@ function get_new_window(file_name, opt) {
     return win
 }
 
+const webPreferences = {
+    nodeIntegration: true, enableRemoteModule: true,
+    // [2020-09-04] ref. https://github.com/electron/electron/issues/25118
+    worldSafeExecuteJavaScript: true,
+}
 function new_window(default_board_type) {
     const window_id = ++last_window_id, conf_key = 'window.id' + window_id
     const ss = electron.screen.getPrimaryDisplay().size
@@ -269,7 +274,6 @@ function new_window(default_board_type) {
           = store.get(conf_key) || {}
     const [x, y] = position || [0, 0]
     const [width, height] = size || [ss.height, ss.height * 0.6]
-    const webPreferences = {nodeIntegration: true, enableRemoteModule: true}
     const win = get_new_window('index.html',
                                {x, y, width, height, webPreferences, show: false})
     const prop = window_prop(win)
@@ -1144,7 +1148,7 @@ function open_help(file_name) {
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
     ]
-    const opt = {webPreferences: {nodeIntegration: true}}
+    const opt = {webPreferences}
     get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
 }
 function info_text() {
