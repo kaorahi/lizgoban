@@ -1211,7 +1211,7 @@ function save_q_and_a_images() {
 function add_tsumego_frame(ko_p) {
     if (game.move_count === 0) {return}
     const play1 = ([i, j, is_black]) => do_play(idx2move(i, j), is_black)
-    const bturn = is_bturn(), komi = AI.engine_komi()
+    const bturn = is_bturn(), komi = AI.engine_info().engine_komi
     const fill = tsumego_frame(game.current_stones(), komi, bturn, ko_p)
     duplicate_sequence(true, true); fill.forEach(play1)
     set_gorule(default_gorule)

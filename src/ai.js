@@ -173,7 +173,6 @@ function engine_info() {
             leelaz_for_white_p: leelaz_for_white_p(), current: f(cur_lz),
             black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
-function engine_komi() {return engine_info().engine_komi}
 
 function startup_log() {return leelaz_for_this_turn().startup_log()}
 
@@ -288,5 +287,5 @@ module.exports = {
     // powered_goban.js only
     set_handlers, another_leelaz_for_endstate_p, engine_ids,
     // both
-    katago_p, support_endstate_p, engine_info, engine_komi, is_gorule_supported,
+    katago_p, support_endstate_p, engine_info, is_gorule_supported,
 }
