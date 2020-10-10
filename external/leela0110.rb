@@ -35,7 +35,7 @@ end
 Thread.new {
   $leela_out.each_line{|line|
     case line
-    when /(\w+)\s*->\s*(\d+).*\(W:\s*([0-9.]+)%\).*\(N:\s*([0-9.]+)%\).*PV:\s*(.+)/
+    when /(\w+)\s*->\s*(\d+).*\(W:\s*([-0-9.]+)%\).*\(N:\s*([-0-9.]+)%\).*PV:\s*(.+)/
       _, move, visits, winrate, prior, pv = *$~
       # print ' ' if $order > 0
       print "info move #{move} visits #{visits} winrate #{c(winrate)} prior #{c(prior)} order #{$order} pv #{pv}"
