@@ -121,7 +121,7 @@ function create_leelaz () {
         komi = update_kata(komi, new_komi, 'komi')
         gorule = update_kata(gorule, new_gorule, 'kata-set-rules')
         ownership_p = update_kata(ownership_p, new_ownership_p)
-        aggressive = update_kata(aggressive, new_aggressive)
+        aggressive = update_kata(aggressive, kata_pda_supported() ? new_aggressive : '')
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
@@ -171,19 +171,21 @@ function create_leelaz () {
     }
 
     // aggressive
+    const kata_pda_param = 'playoutDoublingAdvantage'
     const kata_pda_checker = change_detector(0.0)
     const kata_pda_command_maybe = () => {
-        const param = 'playoutDoublingAdvantage'
-        const is_pda_set_explicitly = arg.leelaz_args.join('').match(param)
-        const ok = is_supported('kata-get-param') && !is_pda_set_explicitly
-        const pda = ok && kata_pda_for_this_turn()
+        const pda = kata_pda_supported() && kata_pda_for_this_turn()
         return truep(pda) && kata_pda_checker.is_changed(pda) &&
-            `kata-set-param ${param} ${last_pda =pda}`
+            `kata-set-param ${kata_pda_param} ${last_pda =pda}`
     }
     const kata_pda_for_this_turn = () => {
         const abs_pda = 2.0
         const sign = !aggressive ? 0 : xor(aggressive === 'b', bturn) ? -1 : 1
         return sign * abs_pda
+    }
+    const kata_pda_supported = () => {
+        const is_pda_set_explicitly = arg.leelaz_args.join('').match(kata_pda_param)
+        return is_supported('kata-get-param') && !is_pda_set_explicitly
     }
 
     /////////////////////////////////////////////////
