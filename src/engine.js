@@ -1,5 +1,7 @@
 const CRYPTO = require('crypto')
 
+const assuming_broken_GTP = true
+
 function create_leelaz () {
 
     /////////////////////////////////////////////////
@@ -314,26 +316,30 @@ function create_leelaz () {
         log('stdout|', s); current_stdout_reader(s); send_from_queue()
     }
 
-    const stdout_main_reader = (s) => {
+    const stdout_main_reader = (s, strict) => {
         const m = s.match(/^([=?])(\d+)(\s+)?(.*)/)
-        if (!m) {return}
+        if (!m) {assuming_broken_GTP && !strict && suggest_reader_maybe(s); return false}
         const ok = (m[1] === '='), id = last_response_id = to_i(m[2]), result = m[4]
         const on_response = on_response_for_id[id]; delete on_response_for_id[id]
         const multiline_p = on_response &&
               on_response(ok, result) === expecting_multiline_response
         const on_continued = (ok && multiline_p) ? on_response : do_nothing
         current_stdout_reader = make_rest_reader(on_continued)
+        return true
     }
 
     current_stdout_reader = stdout_main_reader
 
-    const make_rest_reader = on_response => s =>  // '' is falsy
+    const make_rest_reader = on_response => s =>
+          assuming_broken_GTP && stdout_main_reader(s, true) ? null :
+          // '' is falsy
           s ? on_response('continued', s) : (current_stdout_reader = stdout_main_reader)
 
     const on_analysis_response = (ok, result) =>
-          ((ok && up_to_date_response() && result.match(/^info /)
-            && suggest_reader(result)),
-           expecting_multiline_response)
+          ((ok && suggest_reader_maybe(result)), expecting_multiline_response)
+
+    const suggest_reader_maybe = (s) =>
+          up_to_date_response() && s.match(/^info /) && suggest_reader(s)
 
     const suggest_reader = (s) => {
         const f = arg.suggest_handler; if (!f) {return}
