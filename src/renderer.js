@@ -295,6 +295,11 @@ function with_opts(d, opts) {
 
 const ignore_mouse = {handle_mouse_on_goban: ignore_mouse_on_goban}
 const draw_main = with_opts(D.draw_main_goban)
+const draw_sub = with_opts((...args) => {
+    const sss_p = R.subboard_stones_suggest && !hover_on_subboard_p()
+    const draw = sss_p ? D.draw_goban_with_subboard_stones_suggest : D.draw_main_goban
+    draw(...args)
+})
 const draw_pv = with_opts((...args) => {
     R.subboard_stones_suggest ? D.draw_goban_with_subboard_stones_suggest(...args) :
         truep(showing_until()) ? D.draw_raw_goban(...args) :
@@ -305,6 +310,9 @@ const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
 const draw_raw_pure = draw_raw_gen({})
+const draw_raw_swap =
+      draw_raw_gen(() => ({draw_last_p: true,
+                           ...(hover_on_subboard_p() ? {show_until: null} : {})}))
 const draw_es_gen = options => with_opts(D.draw_endstate_goban, options)
 const draw_current_endstate_value = draw_es_gen({draw_endstate_value_p: true})
 const draw_past_endstate_value =
@@ -354,7 +362,7 @@ const double_boards_rule = {
         normal: [draw_main, draw_raw_unclickable], raw: [draw_raw_pure, draw_pv]
     },
     double_boards_swap: {
-        normal: [draw_raw_clickable, draw_main], raw: [draw_main, draw_pv]
+        normal: [draw_raw_swap, draw_sub], raw: [draw_main, draw_pv]
     },
     double_boards_raw_pv: {
         normal: [draw_raw_clickable, draw_pv], raw: [draw_main, draw_pv]
@@ -396,7 +404,7 @@ function update_goban() {
 }
 
 function update_target_move(m, s) {
-    const c = (m === draw_main) ? main_canvas : (s === draw_main) ? sub_canvas : null
+    const c = (m === draw_main) ? main_canvas : (s === draw_sub) ? sub_canvas : null
     if (!c) {return}
     const u = move_count_for_suggestion(c), h = selected_suggest(c)
     D.set_target_move(!truep(u) && (h.visits > 0) && h.move)
@@ -411,6 +419,7 @@ function selected_suggest(canvas) {
     return R.suggest.find(h => h.move === m) || {}
 }
 function if_hover_on(canvas, val) {return (canvas === hovered_board_canvas) && val}
+function hover_on_subboard_p() {return if_hover_on(sub_canvas, true)}
 
 function current_board_type() {return temporary_board_type || R.board_type}
 
