@@ -117,13 +117,9 @@ function create_leelaz () {
             const valid_p = truep(new_val) || !command
             const update_p = is_katago(true) && valid_p && new_val !== val
             if (!update_p) {return val}
-            const engine_command = `${command} ${new_val}`
-            const cancel = () => {
-                const info = `Rejected: ${engine_command}`
-                setter(val); arg.command_failure_handler(command, info)
-            }
-            command && leelaz(engine_command, setter && (ok => !ok && cancel()))
-            setter && setter(new_val)
+            command && leelaz(`${command} ${new_val}`,
+                              setter && (ok => setter(ok ? new_val : val)))
+            setter && setter(new_val)  // tentatively
             update_kata_p = true; return new_val
         }
         update_kata(komi, new_komi, 'komi', z => {komi = z})
