@@ -351,7 +351,7 @@ const double_boards_rule = {
         normal: [draw_main, draw_pv], raw: [draw_raw_pure, draw_pv]
     },
     double_boards_raw: {
-        normal: [draw_main, draw_raw_clickable], raw: [draw_raw_pure, draw_pv]
+        normal: [draw_main, draw_raw_unclickable], raw: [draw_raw_pure, draw_pv]
     },
     double_boards_swap: {
         normal: [draw_raw_clickable, draw_main], raw: [draw_main, draw_pv]
