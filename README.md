@@ -69,7 +69,7 @@ Just download the [all-in-one package](https://github.com/kaorahi/lizgoban/relea
 
 #### To use LizGoban with Leela Zero:
 
-1. Install [Node.js](https://nodejs.org/).
+1. Install [Node.js](https://nodejs.org/) v12 or later.
 2. Type `git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install` on a terminal.
 3. Put Leela Zero binary (version 0.17 or later) as `external/leelaz` together with its network weight as `external/network.gz`.
 4. Type `npm start`. (Windows: Double-click `lizgoban_windows.vbs`.)
