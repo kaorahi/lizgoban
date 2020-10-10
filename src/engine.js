@@ -113,15 +113,17 @@ function create_leelaz () {
         if (is_in_startup) {return}
         change_board_size(board_size())
         let update_kata_p = false
-        const update_kata = (val, new_val, command) => {
+        const update_kata = (val, new_val, command, setter) => {
             const valid_p = truep(new_val) || !command
             const update_p = is_katago(true) && valid_p && new_val !== val
             if (!update_p) {return val}
-            command && leelaz(`${command} ${new_val}`)
+            command && leelaz(`${command} ${new_val}`,
+                              setter && (ok => setter(ok ? new_val : val)))
+            setter && setter(new_val)  // tentatively
             update_kata_p = true; return new_val
         }
-        komi = update_kata(komi, new_komi, 'komi')
-        gorule = update_kata(gorule, new_gorule, 'kata-set-rules')
+        update_kata(komi, new_komi, 'komi', z => {komi = z})
+        update_kata(gorule, new_gorule, 'kata-set-rules', z => {gorule = z})
         ownership_p = update_kata(ownership_p, new_ownership_p)
         aggressive = update_kata(aggressive, kata_pda_supported() ? new_aggressive : '')
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
