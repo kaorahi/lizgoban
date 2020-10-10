@@ -28,6 +28,7 @@ E.min_by = (a, f) => {const b = a.map(f), m = Math.min(...b); return a[b.indexOf
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
 E.each_value = (h, f) => each_key_value(h, (_, v) => f(v))  // for non-array
 E.array2hash = a => {
+    // array2hash(['a', 3, 'b', 1, 'c', 4]) ==> {a: 3, b: 1, c: 4}
     const h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h
 }
 E.safely = (proc, ...args) => {try {return proc(...args)} catch(e) {return null}}
