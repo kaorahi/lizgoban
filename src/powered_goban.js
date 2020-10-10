@@ -145,7 +145,7 @@ function set_renderer_state(...args) {
     const progress = M.auto_progress()
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
-    const komi = game.get_komi(), bsize = board_size()
+    const komi = AI.engine_komi(), bsize = board_size()
     const cur = game.ref_current(), {note} = cur, comment = cur.comment || ''
     const comment_note = [comment, note].filter(identity).join(' / ')
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
@@ -345,7 +345,7 @@ function winrate_from_game(engine_id) {
     cook_lizzie_cache_maybe(game)
     // +1 for move_count (see game.js)
     const winrates = seq(game.len() + 1).map(mc => get_b_winrate(mc, engine_id))
-    const score_loss = {b: 0, w: 0}; let prev_score = game.get_komi()
+    const score_loss = {b: 0, w: 0}; let prev_score = AI.engine_komi()
     return winrates.map((r, s, a) => {
         const [cur, prev] = [s, s - 1].map(game.ref)
         const [turn_letter, opponent_letter, turn_sign] =
