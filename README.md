@@ -230,7 +230,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 
 ## Major changes
 
-### 0.5.0-pre*
+### 0.5.0
 
 * Support ownerships of stones by facial expressions.
 * Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`.
@@ -255,7 +255,7 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 
 Incompatibilities:
 
-* Upgrade libraries (Electron 9, etc.). So you may need to do "npm install" again.
+* Upgrade libraries (Electron 10, etc.). So you may need to do "npm install" again.
 
 ### 0.4.0
 
