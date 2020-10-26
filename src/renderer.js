@@ -237,7 +237,7 @@ function skip_too_frequent_requests(f) {
 }
 
 function initialize_image_maybe() {
-    !image && R.image_paths && (R.image = aa2hash(R.image_paths.map(([key, path]) => {
+    !R.image && R.image_paths && (R.image = aa2hash(R.image_paths.map(([key, path]) => {
         const img = new Image(); img.src = path; return [key, img]
     })))
 }
