@@ -2,32 +2,9 @@
 
 # Release notes
 
-## LizGoban 0.5.0
+## LizGoban 0.5.1
 
-* Support ownerships of stones by facial expressions.
-* Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`.
-* Modify "File" menu slightly for convenience.
-* Officially support reuse of analyses like Lizzie.
-* Add "Save/Copy SGF with analysis" into menu. (compatible with Lizzie 0.7.2)
-* Add more configurations (rules, komi, handicap, stone_style) into `preset` in `config.json`.
-* Omit marks for too minor suggestions on the board.
-* Automatically start quick overview after reading SGF.
-* Experimentally add "Tool > Experimental > Tsumego frame" for solving life & death problems. (See "Tips" section in "Help" menu.)
-* Improve display by "c" key + mouse hover on existing stones.
-* Stop pondering in match vs. AI if human's move is played in pausing.
-* Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
-  * Show mistakes and actually punished scores on stones.
-  * Click on a stone to temporarily show the past board.
-  * Double-click on a stone to jump to the move.
-  * [Fix wrong komi in Fox SGF.](https://github.com/sanderland/katrain/issues/177)
-* Make KataGo aggressive for handicap games automatically in "match vs. AI" or "AI vs. AI". ("!" is appended to the engine names in the title bar.)
-* In "AI vs. AI", show the principal variations of both AIs side by side by "1" key (keep holding down) if "Two boards A (main+PV)" is selected from "View" menu.
-* Separate estimations for different komi etc. in winrate graph.
-* Support HA (handicap) property in SGF.
-
-Incompatibilities:
-
-* Upgrade libraries (Electron 10, etc.). So you may need to do "npm install" again.
+* Fix: View > Stone > Face did not work from v0.5.0-pre4.
 
 ### To use it on 64bit Windows immediately
 
@@ -58,3 +35,32 @@ Note that some external resources are also packaged into *.exe together with Liz
 
 * engines and neural networks: [KataGo](https://github.com/lightvector/KataGo/)
 * facial stone images: [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html)
+
+# (Previous versions)
+
+## LizGoban 0.5.0
+
+* Support ownerships of stones by facial expressions.
+* Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`.
+* Modify "File" menu slightly for convenience.
+* Officially support reuse of analyses like Lizzie.
+* Add "Save/Copy SGF with analysis" into menu. (compatible with Lizzie 0.7.2)
+* Add more configurations (rules, komi, handicap, stone_style) into `preset` in `config.json`.
+* Omit marks for too minor suggestions on the board.
+* Automatically start quick overview after reading SGF.
+* Experimentally add "Tool > Experimental > Tsumego frame" for solving life & death problems. (See "Tips" section in "Help" menu.)
+* Improve display by "c" key + mouse hover on existing stones.
+* Stop pondering in match vs. AI if human's move is played in pausing.
+* Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
+  * Show mistakes and actually punished scores on stones.
+  * Click on a stone to temporarily show the past board.
+  * Double-click on a stone to jump to the move.
+  * [Fix wrong komi in Fox SGF.](https://github.com/sanderland/katrain/issues/177)
+* Make KataGo aggressive for handicap games automatically in "match vs. AI" or "AI vs. AI". ("!" is appended to the engine names in the title bar.)
+* In "AI vs. AI", show the principal variations of both AIs side by side by "1" key (keep holding down) if "Two boards A (main+PV)" is selected from "View" menu.
+* Separate estimations for different komi etc. in winrate graph.
+* Support HA (handicap) property in SGF.
+
+Incompatibilities:
+
+* Upgrade libraries (Electron 10, etc.). So you may need to do "npm install" again.
