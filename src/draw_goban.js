@@ -447,7 +447,10 @@ function stone_style_for(h) {
     return {b_color, w_color, stone_image, style}
 }
 
-function stone_image_p() {return R.stone_image_p && R.image}
+function stone_image_p() {
+    const im = R.image
+    return R.stone_image_p && im && (im.black_stone || im.white_stone)
+}
 function face_image_p() {
     return !stone_image_p() && R.face_image_rule && (R.stone_style === 'Face')
 }
