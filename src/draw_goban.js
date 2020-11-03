@@ -201,6 +201,7 @@ function draw_goban(canvas, stones, opts) {
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
     mapping_to_winrate_bar && !(draw_endstate_value_p && draw_endstate_p) &&
         draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
+    pv_visits && draw_pv_visits(pv_visits, font_unit, idx2coord, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
@@ -281,6 +282,25 @@ function draw_visits_text(text, margin, g) {
     g.fillStyle = MAYBE_BLACK
     g.textAlign = 'left'; g.textBaseline = 'middle'
     fill_text(g, margin / 2, text, 0, margin / 4)
+    g.restore()
+}
+
+function draw_pv_visits(pv_visits, margin, idx2coord, g) {
+    const at = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50]
+    const bsize = board_size(), half = margin / 2, v0 = pv_visits[0]
+    const fontsize = half, maxwidth = half, x = g.canvas.width - 1
+    g.save()
+    g.textAlign = 'right'; g.textBaseline = 'middle'
+    let prev_y = - Infinity
+    const draw_text = (v, k) => {
+        const [_, y] = idx2coord((1 - v / v0) * (bsize - 1), 0)
+        const major = y - prev_y > fontsize; prev_y = y
+        g.fillStyle = major ? VAGUE_BLACK : PALE_BLACK
+        fill_text(g, fontsize, to_s(k), x, y, maxwidth)
+    }
+    at.slice().forEach(k => draw_text(pv_visits[k - 1], k))
+    g.fillStyle = 'rgba(255,0,0,0.3)'; g.textAlign = 'right'; g.textBaseline = 'top'
+    fill_text(g, fontsize, kilo_str(v0), x, 1)
     g.restore()
 }
 
