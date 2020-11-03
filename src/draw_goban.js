@@ -196,7 +196,7 @@ function draw_goban(canvas, stones, opts) {
     draw_grid(unit, idx2coord, g)
     draw_coordinates_p && draw_coordinates(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
-    draw_visits_p && draw_visits(draw_visits_p, font_unit, canvas, g)
+    draw_visits_p && draw_visits(draw_visits_p, font_unit, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
     mapping_to_winrate_bar && !(draw_endstate_value_p && draw_endstate_p) &&
         draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
@@ -261,9 +261,9 @@ function draw_coordinates(unit, idx2coord, g) {
     g.restore()
 }
 
-function draw_visits(text_maybe, margin, canvas, g) {
+function draw_visits(text_maybe, margin, g) {
     if (typeof text_maybe === 'string') {
-        draw_visits_text(text_maybe, margin, canvas, g); return
+        draw_visits_text(text_maybe, margin, g); return
     }
     if (!truep(R.visits)) {return}
     const maybe = (z, g) => truep(z) ? g(z >= 1000 ? kilo_str(z) : f2s(z)) : ''
@@ -272,10 +272,10 @@ function draw_visits(text_maybe, margin, canvas, g) {
     const score = truep(R.endstate_sum) && !R.in_match && (R.endstate_sum - R.komi)
     const esum = maybe(score, z => `  score = ${z}`)
     const text = `  visits = ${bg}${R.visits}${esum}${vps}`
-    draw_visits_text(text, margin, canvas, g)
+    draw_visits_text(text, margin, g)
 }
 
-function draw_visits_text(text, margin, canvas, g) {
+function draw_visits_text(text, margin, g) {
     g.save()
     g.fillStyle = MAYBE_BLACK
     g.textAlign = 'left'; g.textBaseline = 'middle'
