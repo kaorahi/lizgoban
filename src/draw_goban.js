@@ -100,6 +100,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const {variation_expected} = opts
     const reliable_moves = 7
     const [variation, expected] = variation_expected || [suggest.pv || [], expected_pv()]
+    const pv_visits = !variation_expected && suggest.pvVisits
     const [v, e] = variation_expected ? [expected, variation] : [variation, expected]
     const mark_unexpected_p =
           (expected[0] === variation[0]) || opts.force_draw_expected_p ||
@@ -118,7 +119,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const mapping_to_winrate_bar = mapping_text(suggest, opts)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_expected_p: true,
-                mapping_to_winrate_bar, ...opts})
+                mapping_to_winrate_bar, pv_visits, ...opts})
 }
 
 function draw_goban_with_principal_variation(canvas, options) {
@@ -185,7 +186,7 @@ function draw_goban(canvas, stones, opts) {
            pausing_p, trial_p,
            draw_loss_p, draw_coordinates_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
-           read_only, mapping_tics_p, mapping_to_winrate_bar,
+           read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
            hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
           = opts || {}
     const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)

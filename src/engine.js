@@ -72,6 +72,7 @@ function create_leelaz () {
             `interval ${arg.analyze_interval_centisec}`,
             is_katago() && ownership_p && 'ownership true',
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
+            is_supported('pvVisits') && 'pvVisits true',
         ].filter(truep).join(' '), on_analysis_response)
     }
     const stop_analysis = () => {leelaz('name')}
@@ -91,6 +92,7 @@ function create_leelaz () {
             ['kata-analyze', 'kata-analyze interval 1'],
             ['kata-set-rules', `kata-set-rules ${gorule}`],
             ['kata-get-param', `kata-get-param playoutDoublingAdvantage`],
+            ['pvVisits', `kata-analyze 1 pvVisits true`],
         ]
         checks.map(a => check_supported(...a))
         // clear_leelaz_board for restart
@@ -473,17 +475,25 @@ function parse_analyze(s, bturn, komi, katago_p) {
 // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4 ... pv D17 R16 ownership -0.0261067 -0.0661169 ... 0.203051
 function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     const to_percent = str => to_f(str) * (katago_p ? 100 : 1/100)
-    const [a, b] = s.split(/pv/); if (!b) {return false}
-    const h = array2hash(a.trim().split(/\s+/))
+    // (ex)
+    // s = 'move D17 order 0 pv D17 C4 pvVisits 20 14'
+    // aa = [['move', 'D17', 'order', '0' ], ['pv', ['D17', 'C4']], ['pvVisits', ['20', '14']]]
+    // orig h = {move: 'D17', order: '0', pv: ['D17', 'C4'], pvVisits: ['20', '14']}
+    // cooked h = {move: 'D17', order: 0, pv: ['D17', 'C4'], pvVisits: [20, 14]}
+    const pat = /\s*(?=(?:pv|pvVisits)\b)/  // keys for variable-length fields
+    const to_key_value = a => a[0].match(pat) ? [a[0], a.slice(1)] : a
+    const aa = s.trim().split(pat).map(z => z.split(/\s+/)).map(to_key_value)
+    const h = array2hash([].concat(...aa))
     const if_missing = (key, val) => !truep(h[key]) && (h[key] = val)
     if_missing('order', fake_order)
     if_missing('prior', 1000)
-    h.pv = b.trim().split(/\s+/); h.lcb = to_percent(h.lcb || h.winrate)
+    h.lcb = to_percent(h.lcb || h.winrate)
     h.visits = to_i(h.visits); h.order = to_i(h.order)
     h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
     truep(h.scoreMean) &&
         (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
     h.scoreStdev = to_f(h.scoreStdev || 0)
+    h.pvVisits && (h.pvVisits = h.pvVisits.map(to_i))
     return h
 }
 function ownership_parser(s, bturn) {
