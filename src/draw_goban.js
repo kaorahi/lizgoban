@@ -205,7 +205,7 @@ function draw_goban(canvas, stones, opts) {
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
-        hovered_move, show_until,
+        hovered_move, show_until, pv_visits,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     draw_endstate_p && !hide_endstate_clusters_p() &&
@@ -301,7 +301,7 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
-           large_font_p, hovered_move, show_until}
+           large_font_p, hovered_move, show_until, pv_visits}
           = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
@@ -321,7 +321,8 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         each_coord((h, xy, idx) => draw_halo_lizzie(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
-        h.stone && draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g)
+        h.stone &&
+            draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, pv_visits, g)
         if (R.busy) {return}
         h.suggest && draw_suggest(h, xy, stone_radius, large_font_p, g)
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
@@ -347,7 +348,7 @@ function draw_endstate_stones(each_coord, past_p, cheap_shadow_p,
     each_coord((h, xy, idx) => {
         const stone_p = h.stone
         past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
-        stone_p && draw_stone(h, xy, stone_radius, true, false, g)
+        stone_p && draw_stone(h, xy, stone_radius, true, false, null, g)
         past_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_endstate_value(h, past_p, sign, xy, stone_radius, g)
     })
@@ -411,7 +412,7 @@ function past_endstate_p(flag) {return flag === 'past'}
 
 // stone
 
-function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
+function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, pv_visits, g) {
     const {b_color, w_color, stone_image, style} = stone_style_for(h)
     const hide_loss_p = h.suggest || h.future_stone
     const draw_stone_by_image = () => draw_square_image(stone_image, xy, radius, g)
@@ -432,7 +433,7 @@ function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
     draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
     draw_last_p && h.last && h.move_count > R.init_len &&
         draw_last_move(h, xy, radius, g)
-    h.movenums && draw_movenums(h, xy, radius, g)
+    h.movenums && draw_movenums(h, xy, radius, pv_visits, g)
 }
 
 function stone_style_for(h) {
@@ -468,13 +469,16 @@ function face_image_for(h) {
 }
 function stone_image_for_key(h, b_key, w_key) {return R.image[h.black ? b_key : w_key]}
 
-function draw_movenums(h, xy, radius, g) {
-    const movenums = num_sort(h.movenums)
+function draw_movenums(h, xy, radius, pv_visits, g) {
+    const movenums = num_sort(h.movenums), mc = movenums[0] - 1
     const bw = h.thin_movenums ? ['rgba(0,0,0,0.2)', 'rgba(255,255,255,0.3)'] :
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
-    const color = (movenums[0] === 1) ? GREEN : h.variation_last ? RED :
+    const color = (mc === 0) ? GREEN : h.variation_last ? RED :
           bw[h.black ? 1 : 0]
-    draw_text_on_stone(movenums.join(','), color, xy, radius, g)
+    const [pv0, pv] = (pv_visits && mc) ? pv_visits.slice(mc - 1, mc + 1) : []
+    const confidence = pv0 && pv && (pv / pv0), min_rad_coef = 0.3
+    const rad_coef = truep(confidence) ? clip(Math.sqrt(confidence), min_rad_coef) : 1
+    draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
 }
 
 function draw_tag(tag, xy, radius, g) {draw_text_on_stone(tag, BLUE, xy, radius, g)}
