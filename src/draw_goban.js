@@ -490,10 +490,11 @@ function face_image_for(h) {
 function stone_image_for_key(h, b_key, w_key) {return R.image[h.black ? b_key : w_key]}
 
 function draw_movenums(h, xy, radius, pv_visits, g) {
-    const movenums = num_sort(h.movenums), mc = movenums[0] - 1
+    const movenums = num_sort(h.movenums), mn0 = movenums[0], mc = mn0 - 1
     const bw = h.thin_movenums ? ['rgba(0,0,0,0.2)', 'rgba(255,255,255,0.3)'] :
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
-    const color = (mc === 0) ? GREEN : h.variation_last ? RED : bw[h.black ? 1 : 0]
+    // clean me: Don't use GREEN when mn0 is the string '1'. (see stones_until())
+    const color = (mn0 === 1) ? GREEN : h.variation_last ? RED : bw[h.black ? 1 : 0]
     const [pv0, pv] = (pv_visits && mc) ? pv_visits.slice(mc - 1, mc + 1) : []
     const inevitability = true_or(pv0 && pv && (pv / pv0), 1), min_rad_coef = 0.3
     const rad_coef = clip(Math.sqrt(inevitability), min_rad_coef)
