@@ -267,8 +267,8 @@ function update_body_color() {
 
 function keep_selected_variation_maybe(suggest) {
     const sticky = any_selected_suggest(); if (!sticky) {return}
-    const {move, pv} = sticky, s = suggest.find(z => z.move === move)
-    s ? (s.pv = pv) : merge(suggest, sticky)  // can't happen?
+    const {move, pv, pvVisits} = sticky, s = suggest.find(z => z.move === move)
+    s ? merge(s, {pv, pvVisits}) : merge(suggest, sticky)  // can't happen?
 }
 function clear_selected_variation() {R.suggest = []}  // fixme: overkill
 
