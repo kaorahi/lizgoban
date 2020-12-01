@@ -355,11 +355,20 @@ function apply_api(channel, handler, args) {
     handler(...args); update_all(whether(keep_board))
 }
 
-each_key_value(api, (channel, handler) => {
+function simple_or_normal_api_handler(channel, handler) {
     const simple = Object.keys(simple_api).indexOf(channel) >= 0
     const simple_api_handler = (e, ...a) => apply_api(channel, handler, a)
-    ipc.on(channel, simple ? simple_api_handler : api_handler(channel, handler))
+    return simple ? simple_api_handler : api_handler(channel, handler)
+}
+each_key_value(api, (channel, handler) => {
+    ipc.on(channel, simple_or_normal_api_handler(channel, handler))
 })
+
+function mimic(channel, ...args) {
+    const api_h = simple_or_normal_api_handler(channel, api[channel])
+    const dummy_event = null
+    return api_h(dummy_event, ...args)
+}
 
 // special commands
 
@@ -1923,7 +1932,12 @@ let repl = null
 function toggle_repl() {repl ? repl.close() : start_repl()}
 function repl_p() {return !!repl}
 function start_repl() {
-    const repl_context = {game, sequence, sequence_cursor, option, R, api, update_all}
+    const repl_context = {
+        // unoffical: may be changed in future
+        game, sequence, sequence_cursor, option, R, api, update_all,
+        // official
+        mimic,
+    }
     repl = require('repl').start('LizGoban> ')
     repl.on('exit', () => {repl = null; console.log('REPL is closed.'); update_all()})
     merge(repl.context, repl_context)
