@@ -43,6 +43,7 @@ const default_option = {
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     record_note_to_SGF: false,
     auto_overview: true,
+    repl: false,
 }
 const option = {}
 let white_preset = []
@@ -229,6 +230,7 @@ fs.access(option.sabaki_command, null,
 
 app.on('ready', () => {
     restart_leelaz_by_preset(option.preset[0], true); new_window('double_boards')
+    option.repl && start_repl()
 })
 app.on('window-all-closed', app.quit)
 app.on('quit', () => {store_session(true); kill_all_leelaz()})
