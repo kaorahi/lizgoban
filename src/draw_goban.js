@@ -495,9 +495,8 @@ function draw_movenums(h, xy, radius, pv_visits, g) {
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
     const color = (mc === 0) ? GREEN : h.variation_last ? RED : bw[h.black ? 1 : 0]
     const [pv0, pv] = (pv_visits && mc) ? pv_visits.slice(mc - 1, mc + 1) : []
-    const inevitability = pv0 && pv && (pv / pv0), min_rad_coef = 0.3
-    const rad_coef = truep(inevitability) ?
-          clip(Math.sqrt(inevitability), min_rad_coef) : 1
+    const inevitability = true_or(pv0 && pv && (pv / pv0), 1), min_rad_coef = 0.3
+    const rad_coef = clip(Math.sqrt(inevitability), min_rad_coef)
     draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
 }
 
