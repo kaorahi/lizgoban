@@ -1923,7 +1923,7 @@ let repl = null
 function toggle_repl() {repl ? repl.close() : start_repl()}
 function repl_p() {return !!repl}
 function start_repl() {
-    const repl_context = {game, sequence, sequence_cursor, option, R}
+    const repl_context = {game, sequence, sequence_cursor, option, R, api, update_all}
     repl = require('repl').start('LizGoban> ')
     repl.on('exit', () => {repl = null; console.log('REPL is closed.'); update_all()})
     merge(repl.context, repl_context)
