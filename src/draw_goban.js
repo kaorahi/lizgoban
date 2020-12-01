@@ -493,11 +493,11 @@ function draw_movenums(h, xy, radius, pv_visits, g) {
     const movenums = num_sort(h.movenums), mc = movenums[0] - 1
     const bw = h.thin_movenums ? ['rgba(0,0,0,0.2)', 'rgba(255,255,255,0.3)'] :
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
-    const color = (mc === 0) ? GREEN : h.variation_last ? RED :
-          bw[h.black ? 1 : 0]
+    const color = (mc === 0) ? GREEN : h.variation_last ? RED : bw[h.black ? 1 : 0]
     const [pv0, pv] = (pv_visits && mc) ? pv_visits.slice(mc - 1, mc + 1) : []
-    const confidence = pv0 && pv && (pv / pv0), min_rad_coef = 0.3
-    const rad_coef = truep(confidence) ? clip(Math.sqrt(confidence), min_rad_coef) : 1
+    const inevitability = pv0 && pv && (pv / pv0), min_rad_coef = 0.3
+    const rad_coef = truep(inevitability) ?
+          clip(Math.sqrt(inevitability), min_rad_coef) : 1
     draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
 }
 
