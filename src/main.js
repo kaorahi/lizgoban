@@ -229,7 +229,9 @@ fs.access(option.sabaki_command, null,
 // app
 
 app.on('ready', () => {
-    restart_leelaz_by_preset(option.preset[0], true); new_window('double_boards')
+    const first_preset = option.preset[0]
+    if (!restart_leelaz_by_preset(first_preset, true)) {return}
+    apply_preset(first_preset, new_window('double_boards'))
     option.repl && start_repl()
 })
 app.on('window-all-closed', app.quit)
@@ -291,6 +293,7 @@ function new_window(default_board_type) {
         position: win.getPosition(), size: win.getSize(), maximized: win.isMaximized(),
     }))
     win.once('ready-to-show', () => win.show())
+    return win
 }
 
 // renderer
@@ -807,9 +810,10 @@ function update_engines_by_preset(rule) {
 
 function restart_leelaz_by_preset(rule, first_p) {
     const {leelaz_command, leelaz_args, label} = rule
-    if (!leelaz_command || !leelaz_args) {no_engine_error(first_p); return}
+    if (!leelaz_command || !leelaz_args) {no_engine_error(first_p); return false}
     unload_leelaz_for_white(); kill_all_leelaz()
     start_leelaz(leelaz_command, leelaz_args, label)
+    return true
 }
 
 function no_engine_error(quit_p) {
