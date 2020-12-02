@@ -768,7 +768,7 @@ function apply_preset(rule, win) {
     empty_board && !game.is_empty() && new_empty_board()
     handicap && add_handicap_stones(handicap)
     rules && set_gorule(rules)
-    truep(komi) && (game.komi = komi)
+    truep(komi) && set_komi(komi)
     board_type && set_board_type(board_type, win)
     stone_style && set_stored('stone_style', stone_style)
     match && start_match(win)
