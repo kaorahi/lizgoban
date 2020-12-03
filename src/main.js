@@ -552,9 +552,13 @@ function menu_template(win) {
         ...[19, 13, 9].map(n => item(`New ${n}x${n} board`, undefined,
                                      () => new_empty_board(n), true,
                                      n === 19 || AI.katago_p())),
-        item('New window', 'CmdOrCtrl+Shift+N',
-             (this_item, win) => new_window(window_prop(win).board_type === 'suggest' ?
-                                            'variation' : 'suggest')),
+        item('(new window)', undefined,
+             (this_item, win) => {
+                 const message = '"New window" is no longer maintained and will be removed in future versions. If you have a special reason to use this feature, please post it to GitHub issues from the link "Project Home" at the bottom of "Help > en".'
+                 dialog.showErrorBox('Obsolete feature', message)
+                 new_window(window_prop(win).board_type === 'suggest' ?
+                            'variation' : 'suggest')
+             }),
         sep,
         item('Close', undefined, (this_item, win) => win.close()),
         item('Quit', undefined, app.quit),
