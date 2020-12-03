@@ -1849,7 +1849,7 @@ function load_exercise(selector, win, random_flip_p) {
           is_exercise_filename(name) && seen_exercises.indexOf(name) < 0 &&
           exercise_board_size(name) === board_size()
     const files = (fs.readdirSync(dir) || []).filter(valid)
-    const retry = () => {seen_exercises = []; load_exercise(selector, win)}
+    const retry = () => {seen_exercises = []; load_exercise(selector, win, random_flip_p)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files); seen_exercises.push(fn)
     start_match(win, true); load_as_exercise(expand_exercise_filename(fn))
