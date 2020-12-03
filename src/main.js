@@ -127,6 +127,7 @@ function create_games_from_sgf(sgf_str, cache_suggestions_p) {
     toast('loading...', 1000); return create_games_from_sgf_internal(sgf_str, cache_suggestions_p)
 }
 function create_games_from_sgf_internal(sgf_str, cache_suggestions_p) {
+    const too_many_games = 30
     const gs = GAME.create_games_from_sgf(sgf_str, cache_suggestions_p)
     const set_gorule = new_game => {
         new_game.gorule =
@@ -135,9 +136,9 @@ function create_games_from_sgf_internal(sgf_str, cache_suggestions_p) {
     // set 9x9 engine before cooking 9x9 games so that cached suggestions
     // are loaded correctly
     !empty(gs) && set_AI_board_size_maybe(gs[0].board_size)
-    const f = g => {
+    const f = (g, k) => {
         set_gorule(g); g.needs_cooking_lizzie_cache = true
-        P.set_ambiguity_etc_in_game(g)
+        k < too_many_games && P.set_ambiguity_etc_in_game(g)
     }
     gs.forEach(f); return gs
 }
