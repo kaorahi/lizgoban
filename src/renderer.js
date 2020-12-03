@@ -160,7 +160,10 @@ function render_now(e, h, is_board_changed) {
     update_goban()
 }
 
-function update_displayed_comment() {setq('#comment', displayed_comment())}
+function update_displayed_comment() {
+    const com = Q('#comment'), old_text = com.textContent, text = displayed_comment()
+    text !== old_text && (com.textContent = text) && (com.scrollTop = 0)
+}
 function displayed_comment() {return (showing_branch || {}).comment || R.comment_note}
 
 ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
@@ -761,7 +764,9 @@ function set_all_canvas_size() {
     const additional_graph_height = 0
     // const additional_graph_height = wr_only ? main_board_height : 0
     const winrate_bar_height = main_size - main_board_height - additional_graph_height
-    const sub_board_size = Math.min(main_board_max_size * 0.65, rest_size * 0.85)
+    const sub_board_size =
+          Math.min(main_board_max_size * 0.65, rest_size * 0.85,
+                   (!portrait_p() && wr_only) ? window.innerHeight * 0.5 : Infinity)
     // use main_board_ratio in winrate_graph_width for portrait layout
     const winrate_graph_height = main_board_max_size * 0.25
     const winrate_graph_width = (wr_only && !double_boards_p()) ?
@@ -781,6 +786,11 @@ function set_all_canvas_size() {
     set_subscript(zone_chart_canvas, winrate_graph_canvas, zone_chart_canvas_size) &&
         D.draw_zone_color_chart(zone_chart_canvas)  // call this here for efficiency
     set_cut_button_position_maybe()
+
+    const com = Q('#comment')
+    const controller_row_margin_top = 0.02  // see index.html (dirty)
+    const com_h = !portrait_p() && (window.innerHeight * (1 - controller_row_margin_top) - Q('#above_comment_for_height_calculation').getBoundingClientRect().bottom)
+    com.style.height = com_h ? `${com_h}px` : 'auto'
 }
 
 function set_canvas_square_size(canvas, size) {

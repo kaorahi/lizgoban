@@ -34,7 +34,8 @@
   border: solid 0vw green; position: absolute; left: 0%; z-index: 8;
  }
  #preview.show {width: 40vw; border-width: 3vw;}
- #comment:hover {color: green;}
+ #comment {white-space: pre-wrap; overflow-y: auto;}
+ #comment:not(:empty):hover {background: rgba(0, 0, 0, 0.7);}
  .dialog {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; font-size: 2vmin;
   background-color: rgba(255, 255, 255, 0.5); visibility: hidden;
@@ -125,6 +126,8 @@
 
 <!-------- begin rest_div ----------->
 <div id="rest_div">
+
+<div id="above_comment_for_height_calculation">
 
 <div class="hide_in_serious_match">
 <div id="sub_goban_container" style="text-align: center;"><canvas id="sub_goban"></canvas></div>
@@ -237,9 +240,11 @@ vs.
 <!-------- end hide_when_attached3 ----------->
 </div>
 
+</div><!-- id="above_comment_for_height_calculation" -->
+
 <div class="controller_row">
+<pre id="debug" style='clear: both; white-space: pre-wrap;'></pre>
 <pre id="comment" style='clear: both' onclick="alert_comment()"></pre>
-<pre id="debug" style='clear: both'></pre>
 </div>
 
 <span class="hide_in_serious_match">
