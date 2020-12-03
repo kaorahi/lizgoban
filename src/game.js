@@ -222,15 +222,18 @@ function games_from_parsed_sgf(parsed, to_game) {
     // for v3.0.0-style
     const recur = (nodes, {data, children}, bros_count) => {
         const k = children.length
-        const branching_tag = bros_count > 0 && (data.B || data.W) && unused_tag()
+        const branching_tag = bros_count > 0 && !!(data.B || data.W) // assigned later
         nodes.push({...data, branching_tag})
         return k === 0 ? [to_game_with_reuse(minimum_v131_gametree(nodes))] :
             k === 1 ? recur(nodes, children[0], 0) :
             readably_flatten(children.map((c, count) => recur(nodes.slice(), c, count)))
     }
+    const assign_tag = h => (h.tag === true) && (h.tag = unused_tag())
     // main
     const conv = item => is_v131(item) ? [to_game_with_reuse(item)] : recur([], item, 0)
-    return parsed.flatMap(conv)
+    const obtained_games = parsed.flatMap(conv)
+    obtained_games.forEach(gm => gm.forEach(assign_tag))
+    return obtained_games
 }
 
 /////////////////////////////////////////////////
