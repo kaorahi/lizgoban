@@ -951,13 +951,12 @@ document.onkeyup = e => {
     update_showing_until()
 }
 
-function set_keyboard_moves_maybe(n) {
-    const h = R.suggest[n]
-    h && !keyboard_moves[0] && (keyboard_moves = h.pv) && update_goban()
-}
+function set_keyboard_moves_maybe(n) {set_keyboard_moves(R.suggest[n])}
 function set_keyboard_moves_for_next_move() {
-    const hit = R.suggest.find(h => D.is_next_move(h.move))
-    hit && !keyboard_moves[0] && (keyboard_moves = hit.pv) && update_goban()
+    set_keyboard_moves(R.suggest.find(h => D.is_next_move(h.move)))
+}
+function set_keyboard_moves(h) {
+    h && !keyboard_moves[0] && (keyboard_moves = h.pv) && update_goban()
 }
 function reset_keyboard_moves() {
     keyboard_moves = []; update_goban()
