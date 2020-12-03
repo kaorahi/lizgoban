@@ -398,7 +398,7 @@ function ipc_with_sender_window(channel, proc, args) {
            }, args || []))
 }
 each_key_value({
-    close_window_or_cut_sequence, ask_new_game,
+    close_window_or_cut_sequence, ask_new_game, ask_game_info,
 }, (channel, proc) => ipc_with_sender_window(channel, proc))
 
 // update after every command
