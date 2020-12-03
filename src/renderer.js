@@ -1055,6 +1055,7 @@ function set_branch_moves_maybe(key) {
     return branch && (set_branch(), true)
 }
 function showing_branch_p() {return !!showing_branch}
+globalize({showing_branch_p})
 
 function undoable() {return R.move_count > R.init_len}
 function redoable() {return R.move_count < R.history_length}

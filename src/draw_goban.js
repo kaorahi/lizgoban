@@ -100,7 +100,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const {variation_expected} = opts
     const reliable_moves = 7
     const [variation, expected] = variation_expected || [suggest.pv || [], expected_pv()]
-    const pv_visits = !variation_expected && suggest.pvVisits
+    const pv_visits = !variation_expected && !showing_branch_p() && suggest.pvVisits
     const [v, e] = variation_expected ? [expected, variation] : [variation, expected]
     const mark_unexpected_p =
           (expected[0] === variation[0]) || opts.force_draw_expected_p ||
