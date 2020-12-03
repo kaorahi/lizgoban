@@ -51,7 +51,7 @@ let temporary_board_type = null, the_first_board_canvas = null
 let keyboard_moves = [], keyboard_tag_move_count = null
 let hovered_move = null, hovered_move_count = null, hovered_board_canvas = null
 let the_showing_movenum_p = false, the_showing_endstate_value_p = false
-let branch_comment = null
+let showing_branch = null
 let thumbnails = []
 
 // drawer
@@ -160,7 +160,9 @@ function render_now(e, h, is_board_changed) {
     update_goban()
 }
 
-function update_displayed_comment() {setq('#comment', branch_comment || R.comment_note)}
+function update_displayed_comment() {
+    setq('#comment', (showing_branch || {}).comment || R.comment_note)
+}
 
 ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     R.pausing = availability.resume
@@ -973,7 +975,7 @@ function set_keyboard_moves(h) {
     h && !keyboard_moves[0] && (keyboard_moves = h.pv) && update_goban()
 }
 function reset_keyboard_moves() {
-    keyboard_moves = []; branch_comment = null; update_goban()
+    keyboard_moves = []; showing_branch = null; update_goban()
 }
 
 function set_keyboard_tag_maybe(key) {
@@ -1042,12 +1044,12 @@ function orig_update_showing_until() {
 function set_branch_moves_maybe(key) {
     const branch = R.branch_for_tag.find(z => z.tag.includes(key))
     const set_branch = () => {
-        set_keyboard_moves(branch); branch_comment = branch.comment
+        set_keyboard_moves(branch); showing_branch = branch
         update_goban(); update_displayed_comment()
     }
     return branch && (set_branch(), true)
 }
-function showing_branch_p() {return truep(branch_comment)}  // fixme: dirty
+function showing_branch_p() {return !!showing_branch}
 
 function undoable() {return R.move_count > R.init_len}
 function redoable() {return R.move_count < R.history_length}
