@@ -50,6 +50,7 @@ with lots of original gimmicks.
 * Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
 * Play against weakened engines in several ways (Note: [KaTrain](https://github.com/sanderland/katrain/) has nicer features in this field now.)
 * [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
+* [Experimental] [External control of GUI](https://github.com/kaorahi/lizgoban/issues/61) from another program
 
 ### Original visualizations
 
@@ -234,6 +235,21 @@ Set KataGo as the engine and select View > Stone > Face. You need to enable View
 #### To replace images of board and stones (Experimental)
 
 Put your favorite images of board and stones as `external/board.png`, `external/black.png`, and `external/white.png` (before starting LizGoban).
+
+#### To control LizGoban from another program (Experimental)
+
+[ref.](https://github.com/kaorahi/lizgoban/issues/61)
+
+You can control lizgoban from its STDIN as follows (example on Linux).
+
+~~~
+$ cd lizgoban/
+$ echo 'mimic("play", "D3"); mimic("play", "R4")' | npm start -- -j '{"repl": true}'
+~~~
+
+See `const api = ...` in src/main.js for the list of commands. "Debug log" in "Debug" menu will be also useful if you want to observe which API is called for each mouse/keyboard operation. For debugging, you may prefer to type `mimic(...)` directly on the console with "REPL" in "Debug" menu.
+
+Please note that this feature is experimental and API etc. may be changed in future.
 
 ## Major changes
 
