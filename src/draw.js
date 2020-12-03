@@ -5,7 +5,7 @@
 
 const {globalize} = require('./globalize.js')
 globalize({
-    clip_init_len, latest_move, b_winrate,
+    clip_init_len, latest_move, latest_move_and_nearest_future_move, b_winrate,
     origin_b_winrate, origin_score, fake_winrate, fake_winrate_for, score_bar_p,
     mc2movenum, alternative_engine_for_white_p, zone_color,
     winrate_history_values_of,
@@ -147,9 +147,13 @@ function is_next_move(move, move_count) {
 }
 
 function latest_move(moves, show_until) {
-    if (!moves) {return false}
+    return latest_move_and_nearest_future_move(moves, show_until)[0]
+}
+function latest_move_and_nearest_future_move(moves, show_until) {
+    if (!moves) {return []}
     const n = moves.findIndex(z => (z.move_count > show_until))
-    return n >= 0 ? moves[n - 1] : last(moves)
+    const nearest_future = moves[n], latest = (n >= 0) ? moves[n - 1] : last(moves)
+    return [latest, nearest_future]
 }
 
 // handicaps

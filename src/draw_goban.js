@@ -39,6 +39,7 @@ function draw_goban_until(canvas, show_until, opts) {
 function stones_until(show_until, all_p, for_endstate) {
     // fixme: need cleaning (for_endstate)
     const recent_moves = Math.min(3, show_until - R.init_len), thick_moves = 7
+    const near_future_moves = 7
     const unnumbered =
           clip_init_len(for_endstate ? Infinity : all_p ? 0 : show_until - recent_moves)
     const highlighted_after = for_endstate ? Infinity :
@@ -47,7 +48,8 @@ function stones_until(show_until, all_p, for_endstate) {
           all_p ? highlighted_after - thick_moves + 1 : 0
     const displayed_stones = copy_stones_for_display()
     each_stone(displayed_stones, (h, idx) => {
-        const ss = h.anytime_stones, target = latest_move(ss, show_until)
+        const ss = h.anytime_stones
+        const [target, future] = latest_move_and_nearest_future_move(ss, show_until)
         if (target) {
             h.black = target.is_black
             h.last = [show_until, thin_before - 1].includes(target.move_count)
@@ -64,7 +66,10 @@ function stones_until(show_until, all_p, for_endstate) {
                                thin_movenums, tag: null})
         } else {
             for_endstate && (h.stone = false)
+            const mc = (future || {}).move_count || 0, k = mc - show_until + 1
+            const movenums = k > 1 && k <= near_future_moves ? [k] : []
             h.stone && merge(h, {displayed_colors: [PALER_BLACK, PALER_WHITE],
+                                 movenums, thin_movenums: true,
                                  last: false, future_stone: true})
         }
         h.displayed_tag = h.tag
