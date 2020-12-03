@@ -70,8 +70,8 @@ kilo_str_sub = (x, rules) => {
     return (y < 10 ? to_s(y).slice(0, 3) : to_s(z)) + unit
 }
 
-// str_uniq('zabcacd') = 'zabcd'
-E.str_uniq = str => [...new Set(str.split(''))].join('')
+// str_sort_uniq('zabcacd') = 'abcdz'
+E.str_sort_uniq = str => [...new Set(str.split(''))].sort().join('')
 
 let debug_log_p = false
 E.debug_log = (arg, limit_len) => (typeof arg === 'boolean') ?

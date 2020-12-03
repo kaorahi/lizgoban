@@ -526,7 +526,7 @@ function draw_next_move(h, xy, radius, g) {
     g.lineWidth = next_move_line_width; circle(xy, radius, g)
 }
 function draw_branches(h, [x, y], radius, g) {
-    const tag = h.branches.map(z => z.tag).join('')
+    const tag = h.branches.map(z => z.tag).sort().join('')
     g.save()
     g.strokeStyle = h.branches[0].is_black ? BLACK : WHITE
     g.lineWidth = branch_line_width; g.setLineDash([radius / 10])

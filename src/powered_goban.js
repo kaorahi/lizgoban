@@ -293,7 +293,7 @@ function for_current_and_previous_endstate(move_count, key, delta, f) {
     const [cur, prev] = [0, delta].map(k => game.ref(mc - k)[key])
     return truep(cur) && truep(prev) && f(cur, prev)
 }
-function add_tag(h, tag) {h.tag = str_uniq((h.tag || '') + (tag || ''))}
+function add_tag(h, tag) {h.tag = str_sort_uniq((h.tag || '') + (tag || ''))}
 
 function clear_endstate() {lagged_endstate.reset(); lagged_endstate_diff.reset()}
 
