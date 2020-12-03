@@ -186,7 +186,7 @@ function create_leelaz () {
     const kata_pda_command_maybe = () => {
         const pda = kata_pda_supported() && kata_pda_for_this_turn()
         return truep(pda) && kata_pda_checker.is_changed(pda) &&
-            `kata-set-param ${kata_pda_param} ${last_pda = pda}`
+            `kata-set-param ${kata_pda_param} ${pda}`
     }
     const kata_pda_for_this_turn = () => {
         const abs_pda = 2.0

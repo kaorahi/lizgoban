@@ -476,7 +476,7 @@ function add_next_mark_to_stones(stones, game, move_count) {
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
 function add_info_to_stones(stones, game) {
-    game.forEach((h, c) => {
+    game.forEach(h => {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
         add_tag(s, h.tag)
         s.stone && (h.move_count <= game.move_count) && (s.move_count = h.move_count)
