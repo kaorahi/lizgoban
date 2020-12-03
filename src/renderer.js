@@ -913,8 +913,12 @@ document.onkeydown = e => {
     const goto_move_count = (c, another_board) => {
         duplicate_if(another_board); m('goto_move_count', finite_or(c, R.move_count))
     }
+    const play_target = another_board => {
+        const move = D.target_move()
+        reset_keyboard_moves(); m('play', move, another_board)
+    }
     const play_it = (steps, another_board) =>
-          D.target_move() ? m('play', D.target_move(), another_board) :
+          D.target_move() ? play_target(another_board) :
           truep(until) ? goto_move_count(until, another_board) :
           truep(steps) ? m('play_best', steps) :
           !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
