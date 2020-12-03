@@ -1358,9 +1358,12 @@ function new_empty_board(given_board_size) {
     insert_sequence(new_game)
 }
 
-function backup_game() {backup_and_replace_game(game.shallow_copy())}
-function backup_and_replace_game(new_game, before) {
+function backup_game(delete_future_p) {
+    backup_and_replace_game(game.shallow_copy(), false, delete_future_p)
+}
+function backup_and_replace_game(new_game, before, delete_future_p) {
     game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game, before)
+    delete_future_p && game.delete_future()
     const stones = new_game.current_stones()
     P.add_info_to_stones(stones, new_game)
     // setTimeout for updating of new_game.trial in create_sequence_maybe()
@@ -1371,8 +1374,7 @@ function create_sequence_maybe(force) {
     const create_p = force || game.move_count < game.len()
     const empty_now = game.move_count === 0
     return !create_p ? false : empty_now ? (new_empty_board(), true) :
-        (backup_game(), game.delete_future(),
-         merge(game, {trial: true, sgf_file: "", sgf_str: ""}), true)
+        (backup_game(true), merge(game, {trial: true, sgf_file: "", sgf_str: ""}), true)
 }
 
 function next_sequence() {previous_or_next_sequence(1)}
@@ -1404,12 +1406,11 @@ function uncut_sequence() {
 }
 
 function duplicate_sequence(until_current_move_p, explicit) {
-    const del_future = () => {
-        game.delete_future(); P.update_info_in_stones()  // remove next_move mark
-    }
+    const remove_next_move_mark = () => P.update_info_in_stones()
     game.is_empty() ? new_empty_board() :
-        (backup_game(), game.set_last_loaded_element(), (game.trial = !explicit),
-         (until_current_move_p && del_future()))
+        (backup_game(until_current_move_p),
+         game.set_last_loaded_element(), (game.trial = !explicit),
+         (until_current_move_p && remove_next_move_mark()))
 }
 
 function delete_sequence() {
