@@ -141,7 +141,8 @@ function draw_goban_with_expected_variation(canvas, options) {
 
 function draw_goban_with_future_moves(canvas, options) {
     const title = 'succeeding moves'
-    const pv = R.future_moves, move = pv[0], pvVisits = null
+    const pv_len = Math.max(keyboard_moves.length, 15)
+    const pv = R.future_moves.slice(0, pv_len), move = pv[0], pvVisits = null
     const suggest = {move, pv, pvVisits}
     const opts = {...options, draw_visits_p: `  ${title}`, trial_p: 'ref'}
     draw_readonly_goban_with_variation(canvas, suggest, opts)

@@ -160,10 +160,12 @@ function set_renderer_state(...args) {
         move: z.move, is_black: z.is_black, ko_state: z.ko_state,
         ambiguity: z.ambiguity
     }))]
+    const different_engine_for_white_p = AI.leelaz_for_white_p()
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
+              different_engine_for_white_p,
               previous_suggest, future_moves, winrate_trail}, endstate_d_i)
     add_next_played_move_as_fake_suggest()
 }

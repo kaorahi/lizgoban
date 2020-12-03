@@ -311,9 +311,14 @@ const draw_pv = with_opts((...args) => {
     R.subboard_stones_suggest ? D.draw_goban_with_subboard_stones_suggest(...args) :
         truep(showing_until()) ? D.draw_raw_goban(...args) :
         showing_branch_p() ? D.draw_goban_with_future_moves(...args) :
-        already_showing_pv_p() ? D.draw_goban_with_expected_variation(...args) :
+        already_showing_pv_p() ? draw_another(...args) :
         D.draw_goban_with_principal_variation(...args)
 }, ignore_mouse)
+const draw_another = (...args) => {
+    R.different_engine_for_white_p ?
+        D.draw_goban_with_expected_variation(...args) :
+        D.draw_goban_with_future_moves(...args)
+}
 const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
