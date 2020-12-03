@@ -109,10 +109,7 @@ const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 const {tsumego_frame} = require('./tsumego_frame.js')
 const {branch_at, update_branch_for} = require('./branch.js')
-function update_branch(additional_games) {
-    const all_games = [...sequence, ...(additional_games || [])]
-    update_branch_for(game, all_games)
-}
+function update_branch() {update_branch_for(game, [...sequence, ...game.brothers])}
 
 // debug log
 const debug_log_key = 'debug_log'
@@ -1793,13 +1790,10 @@ function save_sgf_to(filename, if_success, force_short_p) {
 function read_sgf(sgf_str, filename, internally) {
     const too_many_games = 6, interactive = !internally
     const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest_p)
-    const len = new_games.length
-    const open1 = (g, k) => {
-        g.merge_common_header(game); backup_and_replace_game(g, k > 0)
-    }
     const open_games = gs => {
-        filename && gs.forEach(g => g.sgf_file = filename)
-        gs.reverse().forEach(open1)
+        const trunk = gs[0], common_prop = {sgf_file: filename || "", brothers: gs}
+        gs.forEach((g, k) => merge(g, common_prop, {trial: k > 0}))
+        trunk.merge_common_header(game); backup_and_replace_game(trunk)
         interactive && option.auto_overview && !AI.leelaz_for_white_p() &&
             start_quick_overview()
     }

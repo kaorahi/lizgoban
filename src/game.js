@@ -31,7 +31,7 @@ function create_game(init_history, init_prop) {
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
         handicaps: 0, init_len: 0, sgf_gorule: "", gorule: null,
-        sgf_file: "", sgf_str: "", id: new_game_id(), move0: {},
+        sgf_file: "", sgf_str: "", id: new_game_id(), move0: {}, brothers: [],
         trial: false, last_loaded_element: null, engines: {}, current_engine: null,
         needs_cooking_lizzie_cache: false,
     }
