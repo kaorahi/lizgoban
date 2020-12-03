@@ -208,7 +208,7 @@ function is_endstate_nearly_uptodate(lim) {
 function recall_endstate() {return endstate_array}
 set_endstate_obsolete()
 
-function append_endstate_tag_maybe(h) {
+function append_implicit_tags_maybe(h) {
     const h_copy = merge({}, h)
     AI.support_endstate_p() && R.show_endstate &&
         h.move_count === game.move_count - endstate_diff_interval &&
@@ -350,7 +350,7 @@ function winrate_from_game(engine_id) {
         const [cur, prev] = [s, s - 1].map(game.ref)
         const [turn_letter, opponent_letter, turn_sign] =
               cur.is_black ? ['b', 'w', 1] : ['w', 'b', -1]
-        const h = append_endstate_tag_maybe(cur), tag = h.tag
+        const h = append_implicit_tags_maybe(cur), tag = h.tag
         if (!truep(r)) {return {tag}}
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * turn_sign
@@ -527,7 +527,7 @@ module.exports = {
     // basic
     set_board,
     // endstate
-    append_endstate_tag_maybe,
+    append_implicit_tags_maybe,
     get_endstate_diff_interval, set_endstate_diff_interval,
     move_count_for_suggestion, set_showing_until,
     // renderer

@@ -1463,7 +1463,7 @@ function previous_sequence_effect() {renderer('slide_in', 'previous')}
 
 function sequence_prop_of(given_game) {
     const pick_tag = h => {
-        const h_copy = P.append_endstate_tag_maybe(h); return h_copy.tag || ''
+        const h_copy = P.append_implicit_tags_maybe(h); return h_copy.tag || ''
     }
     const tags = given_game.map(pick_tag).join('')
           .replace(endstate_diff_tag_letter, '')
@@ -1578,7 +1578,7 @@ function update_state(keep_suggest_p) {
     const sequence_ids = sequence.map(h => h.id)
     const sequence_props = aa2hash(sequence.map(h => [h.id, sequence_prop_of(h)]))
     const pick_tagged = h => {
-        const h_copy = P.append_endstate_tag_maybe(h)
+        const h_copy = P.append_implicit_tags_maybe(h)
         return h_copy.tag ? [h_copy] : []
     }
     const history_tags = game.flatMap(pick_tagged)
