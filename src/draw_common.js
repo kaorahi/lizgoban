@@ -50,6 +50,9 @@ function square_around_gen([x, y], radius, g) {
     rect_gen([x - radius, y - radius], [x + radius, y + radius], g)
 }
 function close_line(...args) {line_gen(...args); last(args).closePath()}
+function diamond_around_gen([x, y], radius, g) {
+    const r = radius; close_line([x - r, y], [x, y - r], [x + r, y], [x, y + r], g)
+}
 function signed_triangle_around_gen(sign, [x, y], radius, g) {
     const half_width = radius * Math.sqrt(3) / 2
     const y1 = y - radius * sign, y2 = y + radius / 2 * sign
@@ -68,6 +71,8 @@ const [circle, fill_circle, edged_fill_circle] = drawers_trio(circle_gen)
 const [fan, fill_fan, edged_fill_fan] = drawers_trio(fan_gen)
 const [square_around, fill_square_around, edged_fill_square_around] =
       drawers_trio(square_around_gen)
+const [diamond_around, fill_diamond_around, edged_fill_diamond_around] =
+      drawers_trio(diamond_around_gen)
 const [triangle_around, fill_triangle_around, edged_fill_triangle_around] =
       drawers_trio(triangle_around_gen)
 const [rev_triangle_around, fill_rev_triangle_around, edged_fill_rev_triangle_around] =
@@ -165,6 +170,7 @@ module.exports = {
     circle, fill_circle, edged_fill_circle,
     fan, fill_fan, edged_fill_fan,
     square_around, fill_square_around, edged_fill_square_around,
+    diamond_around, fill_diamond_around, edged_fill_diamond_around,
     triangle_around, fill_triangle_around, edged_fill_triangle_around,
     rev_triangle_around, fill_rev_triangle_around, edged_fill_rev_triangle_around,
     x_shape_around, draw_square_image,
