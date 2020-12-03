@@ -397,7 +397,7 @@ ipc.on('close_window_or_cut_sequence',
        }, []))
 
 ipc.on('ask_new_game',
-       e => apply_api('close_window_or_cut_sequence', () => {
+       e => apply_api('ask_new_game', () => {
            get_windows().forEach(win => (win.webContents === e.sender) &&
                                  ask_new_game(win))
        }, []))
