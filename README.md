@@ -230,6 +230,13 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 
 ## Major changes
 
+### Unreleased
+
+* Indicate inevitability of each move by its font size in suggested variations (KataGo only).
+* Improve loading of nested SGFs, e.g. [AlphaGo Games](https://deepmind.com/alphago-games-english), so that we can read them conveniently:
+  * Click one of variations (dotted squares) to watch it in another trial board.
+  * Click "x" mark at the right top of the board to close it and return to the main branch.
+
 ### 0.5.*
 
 * Support ownerships of stones by facial expressions.
