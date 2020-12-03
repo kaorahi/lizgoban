@@ -389,18 +389,16 @@ const busy_handler_for =
       cached(subchannel => api_handler(subchannel, api[subchannel], true))
 ipc.on('busy', (e, subchannel, ...args) => busy_handler_for(subchannel)(e, ...args))
 
-ipc.on('close_window_or_cut_sequence',
-       e => apply_api('close_window_or_cut_sequence', () => {
-           stop_auto()
-           get_windows().forEach(win => (win.webContents === e.sender) &&
-                                 close_window_or_cut_sequence(win))
-       }, []))
-
-ipc.on('ask_new_game',
-       e => apply_api('ask_new_game', () => {
-           get_windows().forEach(win => (win.webContents === e.sender) &&
-                                 ask_new_game(win))
-       }, []))
+function ipc_with_sender_window(channel, proc, args) {
+    ipc.on(channel,
+           e => apply_api(channel, (...a) => {
+               stop_auto()
+               get_windows().forEach(win => (win.webContents === e.sender) &&
+                                     proc(win, ...a))
+           }, args || []))
+}
+ipc_with_sender_window('close_window_or_cut_sequence', close_window_or_cut_sequence)
+ipc_with_sender_window('ask_new_game', ask_new_game)
 
 // update after every command
 
