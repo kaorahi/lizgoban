@@ -1788,7 +1788,7 @@ function save_sgf_to(filename, if_success, force_short_p) {
 }
 
 function read_sgf(sgf_str, filename, internally) {
-    const too_many_games = 6, interactive = !internally
+    const interactive = !internally
     const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest_p)
     const open_games = gs => {
         const trunk = gs[0], common_prop = {sgf_file: filename || "", brothers: gs}
@@ -1797,19 +1797,8 @@ function read_sgf(sgf_str, filename, internally) {
         interactive && option.auto_overview && !AI.leelaz_for_white_p() &&
             start_quick_overview()
     }
-    const ask_really_open = gs => {
-        const message = `Really open ${gs.length} games (variations)?`
-        const first_only = 'first one only', values = ['ok', first_only]
-        const proc = v => {
-            if (v === 'cancel') {return}
-            v === first_only && (gs.splice(1), gs.map(g => g.remove_all_tags()))
-            open_games(gs)
-        }
-        ask_choice(message, values, proc)
-    }
     empty(new_games) ?
         dialog.showErrorBox("Failed to read SGF", snip(sgf_str, 200)) :
-        (interactive && (len >= too_many_games)) ? ask_really_open(new_games, len) :
         open_games(new_games)
 }
 
