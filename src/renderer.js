@@ -974,10 +974,12 @@ function reset_keyboard_moves() {
 
 function set_keyboard_tag_maybe(key) {
     if (set_branch_moves_maybe(key)) {return}
-    const old = keyboard_tag_move_count
-    const tags = R.history_tags.slice().reverse()
-    const data = tags.find(h => h.tag.includes(key) && h.move_count < R.move_count) ||
-          tags.find(h => h.tag.includes(key))
+    const old = keyboard_tag_move_count, explicit = exclude_implicit_tags(key)
+    const tags = R.history_tags.slice(); explicit && tags.reverse()
+    const included = h => h.tag.includes(key)
+    const preferred = h =>
+          Math.sign(h.move_count - R.move_count) * (explicit ? -1 : 1) > 0
+    const data = [...tags.filter(preferred), ...tags].find(included)
     data && (data.move_count !== old) &&
         ((keyboard_tag_move_count = data.move_count),
          update_showing_until(), update_goban())
