@@ -764,9 +764,11 @@ function set_all_canvas_size() {
     const additional_graph_height = 0
     // const additional_graph_height = wr_only ? main_board_height : 0
     const winrate_bar_height = main_size - main_board_height - additional_graph_height
+    const sub_board_max_height = h =>
+          h * (portrait_p() ? 1 : wr_only ? 0.5 : h < 1000 ? 0.55 : 1)
     const sub_board_size =
           Math.min(main_board_max_size * 0.65, rest_size * 0.85,
-                   (!portrait_p() && wr_only) ? window.innerHeight * 0.5 : Infinity)
+                   sub_board_max_height(window.innerHeight))
     // use main_board_ratio in winrate_graph_width for portrait layout
     const winrate_graph_height = main_board_max_size * 0.25
     const winrate_graph_width = (wr_only && !double_boards_p()) ?
