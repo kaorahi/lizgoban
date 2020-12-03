@@ -16,7 +16,8 @@ globalize({
 // draw_*
 
 const {
-    draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
+    draw_raw_goban, draw_main_goban,
+    draw_goban_with_principal_variation,
     draw_goban_with_expected_variation,
     draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban, draw_thumbnail_goban, draw_zone_color_chart,
@@ -178,7 +179,8 @@ function alternative_engine_for_white_p() {
 module.exports = {
     movenum: () => mc2movenum(R.move_count), max_movenum, clip_init_len,
     draw_thumbnail_goban,
-    draw_raw_goban, draw_main_goban, draw_goban_with_principal_variation,
+    draw_raw_goban, draw_main_goban,
+    draw_goban_with_principal_variation,
     draw_goban_with_expected_variation,
     draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban,
