@@ -127,8 +127,9 @@ E.make_speedometer = (interval_sec, premature_sec) => {
 }
 
 // for engine (chiefly)
-E.common_header_length = (a, b) => {
-    const eq = (x, y) => (!!x.is_black === !!y.is_black && x.move === y.move)
+E.common_header_length = (a, b, strictly) => {
+    const same_move = (x, y) => (!!x.is_black === !!y.is_black && x.move === y.move)
+    const eq = strictly ? ((x, y) => (x === y)) : same_move
     const k = a.findIndex((x, i) => !eq(x, b[i] || {}))
     return (k >= 0) ? k : a.length
 }

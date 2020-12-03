@@ -91,6 +91,8 @@ function create_game(init_history, init_prop) {
             new_tag_maybe_for_game(self, new_sequence_p, move_count),
         add_or_remove_tag: () => add_or_remove_tag_on_game(self),
         remove_all_tags: () => history.forEach(h => {delete h.tag}),
+        strictly_common_header_length: another_history =>
+            common_header_length(history, another_history, true),
         push: update_move_count_after(z => history.push(z)),
         pop: update_move_count_after(() => history.pop()),
     }

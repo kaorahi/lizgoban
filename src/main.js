@@ -108,6 +108,11 @@ const http = require('http'), https = require('https')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 const {tsumego_frame} = require('./tsumego_frame.js')
+const {branch_at, update_branch_for} = require('./branch.js')
+function update_branch(additional_games) {
+    const all_games = [...sequence, ...(additional_games || [])]
+    update_branch_for(game, all_games)
+}
 
 // debug log
 const debug_log_key = 'debug_log'
@@ -430,7 +435,9 @@ function do_play(move, is_black, tag, note) {
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last_move = () => {game.pop(); autosave_later()}
+    const delete_last_move = () => {
+        game.pop(); update_branch(); autosave_later()
+    }
     game.move_count <= game.init_len ? wink() :
         game.move_count < game.len() ? undo() : wink_if_pass(delete_last_move)
 }
@@ -1364,6 +1371,7 @@ function backup_game(delete_future_p) {
 function backup_and_replace_game(new_game, before, delete_future_p) {
     game.is_empty() ? replace_sequence(new_game) : insert_sequence(new_game, before)
     delete_future_p && game.delete_future()
+    update_branch()
     const stones = new_game.current_stones()
     P.add_info_to_stones(stones, new_game)
     // setTimeout for updating of new_game.trial in create_sequence_maybe()
@@ -1439,6 +1447,7 @@ function switch_to_nth_sequence(n) {
     AI.cancel_past_requests()  // avoid hang-up caused by fast repeated operations
     P.renew_game()
     game = sequence[sequence_cursor = n]
+    update_branch()
 }
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
