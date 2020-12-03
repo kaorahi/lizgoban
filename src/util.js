@@ -156,6 +156,7 @@ const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
       start_moves_tag_letter + endstate_diff_tag_letter +
       branching_tag_letter + unnamed_branch_tag_letter
 const implicit_tag_letters = endstate_diff_tag_letter + branching_tag_letter
+      + last_loaded_element_tag_letter
 function exclude_implicit_tags(tags) {
     return implicit_tag_letters.split('').reduce((acc, t) => acc.replaceAll(t, ''), tags)
 }
