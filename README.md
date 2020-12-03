@@ -41,7 +41,13 @@ with lots of original gimmicks.
 * Watch Leela Zero vs. KataGo etc. with real-time comparison of their plans
 * Personal exercise book that can be used like bookmarks in web browsers for random exercise
 * Quick comparison of stones, ownerships, and areas of the current and past boards
+* Side by side comparisons of two sequences:
+  * the principal variation and the actual succeeding moves
+  * the branch and the main sequence for nested SGFs
+  * the plans by both players in AI vs. AI
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
+* Preview of branches before switching for nested SGFs
+* Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
 * Play against weakened engines in several ways (Note: [KaTrain](https://github.com/sanderland/katrain/) has nicer features in this field now.)
 * [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 
@@ -50,6 +56,7 @@ with lots of original gimmicks.
 * Visualization of search progress via plots of visits, winrate, score, prior, ... for each suggested move
 * Real-time display of area counts by KataGo
 * Analysis of gains and losses in recent moves on the board that reveals overlooked side effects
+* Larger fonts for inevitable moves in the suggested variation
 * Highlighting of unexpected good moves that are overlooked by engines
 * Detection of inconsistency between analyses before/after a move as a check of their reliability
 * Additional plots
@@ -234,8 +241,11 @@ Put your favorite images of board and stones as `external/board.png`, `external/
 
 * Indicate inevitability of each move by its font size in suggested variations (KataGo only).
 * Improve loading of nested SGFs, e.g. [AlphaGo Games](https://deepmind.com/alphago-games-english), so that we can read them conveniently:
-  * Click one of variations (dotted squares) to watch it in another trial board.
+  * Push the corresponding key (b, d, ...) for each branch (b, d, ... in dotted squares) to preview its sequence with comments.
+  * Click one of branches (or hit Enter key in the above preview) to watch it in another trial board.
   * Click "x" mark at the right top of the board to close it and return to the main branch.
+* Implement side by side comparisons of the principal variation and the actual succeeding moves, etc.
+* Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 
 ### 0.5.*
 

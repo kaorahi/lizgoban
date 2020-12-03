@@ -21,8 +21,9 @@ and
 
 <h2><a name="Display">Display</a></h2>
 
-<h3>Suggested moves on the board</h3>
+<h3>Board</h3>
 
+Suggested moves
 <ul>
  <li>color: winrate</li>
  <li>opacity: visits</li>
@@ -49,6 +50,15 @@ Mouse operations:
 </p>
 
 <p>
+Branches:
+<ul>
+ <li>dotted square: branch (= child node)</li>
+ <li>dotted triangle: branch at the previous move (= brother node)</li>
+</ul>
+You can preview branches by pushing the keys "b", "d", ... that correspond to the tag letters in the above marks (keep holding down). In this preview, you can hit Enter key to expand the branch on another trial board. Mouse click on the dotted square also triggers the latter action.
+</p>
+
+<p>
 When the best suggested move is different from the previously expected one,
 they are marked as red and blue squares respectively
 so that you can notice the change of engine's opinion.
@@ -56,8 +66,7 @@ Black/white corner of the square indicates the plan of black/white.
 They also appear in displayed variations.
 This is especially useful when you are watching AI vs. AI, e.g.
 "Black expects an extension after 8 moves, but white is planning a cut!"
-(See "Alternative weights for white" in "Engine" menu and "AI vs. AI" in "Tool" menu.)
-Select "Two boards A (main+PV)" in "View" menu and push "1" key (keep holding down) to show both variations side by side.
+(See "Alternative weights for white" in "Engine" menu and "AI vs. AI" in "Tool" menu. See also <a href="#side-by-side">Side by side comparison</a> for detailed display.)
 </p>
 
 <p>
@@ -311,6 +320,13 @@ At the first (last) move, long press of up/left (down/right) arrow also works as
       (+Enter: go to this move)</li>
  <li>b, d, e, f, ... (shown on empty places): show branch
       (+Enter: go to this branch)</li>
+</ul>
+
+<a name="side-by-side">Side by side comparison:</a>
+If you select "Two boards A (main+PV)" in "View" menu, you can compare two sequences side by side with these keys (keep holding down).
+<ul>
+ <li>1: the principal variation and the actual succeeding moves (or, the principal variations of both engines if different engines are used for black and white)</li>
+ <li>b, d, e, f, ... for branches: the branch and the main sequence</li>
 </ul>
 
 (Hit normally)
