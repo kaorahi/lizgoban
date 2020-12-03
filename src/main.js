@@ -331,7 +331,7 @@ const simple_api = {
     set_match_param,
 }
 const api = merge({}, simple_api, {
-    new_window, init_from_renderer,
+    init_from_renderer,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     let_me_think_next, goto_next_something, goto_previous_something,

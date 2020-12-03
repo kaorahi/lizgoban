@@ -76,7 +76,6 @@ function send_to_leelaz(cmd) {main('send_to_leelaz', cmd)}
 /////////////////////////////////////////////////
 // action
 
-function new_window() {main('new_window', R.board_type === 'suggest' ? 'variation' : 'suggest')}
 function toggle_auto_analyze() {
     main('toggle_auto_analyze', auto_analysis_visits_setting())
 }
