@@ -924,7 +924,12 @@ document.onkeydown = e => {
               (showing_branch_p() ? false : 'never_redo')
         reset_keyboard_moves(); m('play', move, force_create)
     }
+    const switch_to_branch = () => {
+        const {id} = showing_branch
+        reset_keyboard_moves(true); m('switch_to_game_id', id, R.move_count + 1)
+    }
     const play_it = (steps, another_board) =>
+          showing_branch_p() ? switch_to_branch() :
           D.target_move() ? play_target(another_board) :
           truep(until) ? goto_move_count(until, another_board) :
           truep(steps) ? m('play_best', steps) :
@@ -974,8 +979,8 @@ function set_keyboard_moves_for_next_move() {
 function set_keyboard_moves(h) {
     h && !keyboard_moves[0] && (keyboard_moves = h.pv) && update_goban()
 }
-function reset_keyboard_moves() {
-    keyboard_moves = []; showing_branch = null; update_goban()
+function reset_keyboard_moves(silent) {
+    keyboard_moves = []; showing_branch = null; silent || update_goban()
 }
 
 function set_keyboard_tag_maybe(key) {

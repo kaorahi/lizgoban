@@ -109,7 +109,7 @@ const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 const {tsumego_frame} = require('./tsumego_frame.js')
 const {branch_at, update_branch_for} = require('./branch.js')
-function update_branch() {update_branch_for(game, [...sequence, ...game.brothers])}
+function update_branch() {update_branch_for(game, sequences_and_brothers())}
 
 // debug log
 const debug_log_key = 'debug_log'
@@ -343,6 +343,7 @@ const api = merge({}, simple_api, {
     paste_sgf_or_url_from_clipboard,
     read_sgf, open_url, set_game_info,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
+    switch_to_game_id,
     detach_from_sabaki,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
@@ -1412,6 +1413,10 @@ function switch_to_game(another_game, move_count) {
     n >= 0 ? nth_sequence(n) : backup_and_replace_game(another_game)
     goto_move_count(move_count)
 }
+function switch_to_game_id(id, move_count) {
+    const another_game = sequences_and_brothers().find(g => g.id === id)
+    another_game && switch_to_game(another_game, move_count)
+}
 
 let cut_first_p = false
 function cut_sequence() {
@@ -1471,6 +1476,8 @@ function sequence_prop_of(given_game) {
     const {player_black, player_white, init_len, move_count, trial} = given_game
     return {player_black, player_white, init_len, move_count, trial, len: given_game.len(), tags}
 }
+
+function sequences_and_brothers() {return [...sequence, ...game.brothers]}
 
 /////////////////////////////////////////////////
 // deleted_sequences
