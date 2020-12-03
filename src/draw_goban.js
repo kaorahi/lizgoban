@@ -544,12 +544,16 @@ function draw_next_move(h, xy, radius, g) {
 function draw_branches(h, xy, radius, g) {
     const branch_tag_color = 'rgba(0,0,255,0.3)'
     const tag = h.branches.map(z => z.tag).sort().join('')
-    const first = h.branches[0], {past_p} = first
-    const draw = past_p ? triangle_around : square_around
+    const draw1 = ({is_black, past_p}) => {
+        const [shape, thick, dash] = past_p ?
+              [triangle_around, 1, [radius / 5]] :
+              [square_around, branch_line_width, [radius / 10]]
+        g.strokeStyle = is_black ? BLACK : WHITE
+        g.lineWidth = thick; g.setLineDash(dash)
+        shape(xy, radius, g)
+    }
     g.save()
-    g.strokeStyle = first.is_black ? BLACK : WHITE
-    g.lineWidth = past_p ? 1 : branch_line_width; g.setLineDash([radius / 10])
-    draw(xy, radius, g)
+    h.branches.map(draw1)
     draw_text_on_stone(tag, branch_tag_color, xy, radius, g)
     g.restore()
 }
