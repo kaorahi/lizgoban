@@ -485,8 +485,10 @@ function add_branches_to_stones(stones, move_count) {
         const tag = h.tag || unnamed_branch_tag_letter
         s.branches || (s.branches = [])
         s.branches.push({tag, is_black: h.is_black})
-        const {id} = gm, pv = gm.array_until(Infinity).slice(move_count).map(z => z.move)
-        R.branch_for_tag.push({tag, id, pv})
+        const {id} = gm, future = gm.array_until(Infinity).slice(move_count)
+        const pv = future.map(z => z.move)
+        const comment = future.map(z => z.comment).filter(truep).join('/')
+        R.branch_for_tag.push({tag, id, pv, comment})
     })
 }
 function add_info_to_stones(stones, game) {

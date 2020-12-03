@@ -51,6 +51,7 @@ let temporary_board_type = null, the_first_board_canvas = null
 let keyboard_moves = [], keyboard_tag_move_count = null
 let hovered_move = null, hovered_move_count = null, hovered_board_canvas = null
 let the_showing_movenum_p = false, the_showing_endstate_value_p = false
+let branch_comment = null
 let thumbnails = []
 
 // drawer
@@ -154,10 +155,12 @@ function render_now(e, h, is_board_changed) {
     setq('#black_hama', R.black_hama)
     setq('#white_hama', R.white_hama)
     setq('#history_length', ' (' + D.max_movenum() + ')')
-    setq('#comment', R.comment_note)
+    update_displayed_comment()
     D.update_winrate_trail()
     update_goban()
 }
+
+function update_displayed_comment() {setq('#comment', branch_comment || R.comment_note)}
 
 ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     R.pausing = availability.resume
@@ -967,7 +970,7 @@ function set_keyboard_moves(h) {
     h && !keyboard_moves[0] && (keyboard_moves = h.pv) && update_goban()
 }
 function reset_keyboard_moves() {
-    keyboard_moves = []; update_goban()
+    keyboard_moves = []; branch_comment = null; update_goban()
 }
 
 function set_keyboard_tag_maybe(key) {
@@ -1033,7 +1036,11 @@ function orig_update_showing_until() {
 
 function set_branch_moves_maybe(key) {
     const branch = R.branch_for_tag.find(z => z.tag.includes(key))
-    return branch && (set_keyboard_moves(branch), update_goban(), true)
+    const set_branch = () => {
+        set_keyboard_moves(branch); branch_comment = branch.comment
+        update_goban(); update_displayed_comment()
+    }
+    return branch && (set_branch(), true)
 }
 
 function undoable() {return R.move_count > R.init_len}
