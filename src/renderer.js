@@ -816,6 +816,9 @@ function set_canvas_size(canvas, width, height) {
 }
 
 function set_overlay(canvas, orig) {
+    // https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
+    const hidden = (orig.offsetParent == null)
+    canvas.style.display = hidden ? 'none' : ''; if (hidden) {return}
     copy_canvas_size(canvas, orig)
     set_relative_canvas_position(canvas, orig)
 }
