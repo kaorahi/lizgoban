@@ -349,7 +349,7 @@ function update_first_board_canvas(canvas) {
 
 function already_showing_pv_p() {
     const target = D.target_move()
-    return target && ((R.suggest[0] || {}).move === target)
+    return target && ((R.suggest[0] || {}).move === target) && !showing_branch_p()
 }
 
 /////////////////////////////////////////////////
