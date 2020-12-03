@@ -12,7 +12,7 @@ function draw_main_goban(canvas, options) {
     const opts = {read_only: R.attached, ...options}
     const u = options.show_until, h = options.selected_suggest
     // case I: "variation"
-    if (target_move) {draw_goban_with_variation(canvas, h, opts); return}
+    if (get_target_move()) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
     const mapping_to_winrate_bar = h.move && mapping_text(h, opts)
     truep(u) ? draw_goban_until(canvas, u, opts)

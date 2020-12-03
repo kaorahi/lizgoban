@@ -107,7 +107,7 @@ function check_resolved_by_capture(stones, ko_pool) {
 }
 
 function filter_ko_pool(ko_pool, pred) {
-    new_ko_pool = ko_pool.filter(pred)
+    const new_ko_pool = ko_pool.filter(pred)
     const filtered_p = new_ko_pool.length < ko_pool.length
     copy_array(new_ko_pool, ko_pool)
     return filtered_p

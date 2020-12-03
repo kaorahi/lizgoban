@@ -61,7 +61,7 @@ E.around_idx = ([i, j]) => {
 // ['1','10','100','1.0K','10K','100K','1.0M','10M','100M','1.0G','10G','100G','1000G']
 E.kilo_str = x => kilo_str_sub(x, [[1e9, 'G'], [1e6, 'M'], [1e3, 'k']])
 
-kilo_str_sub = (x, rules) => {
+function kilo_str_sub(x, rules) {
     if (empty(rules)) {return to_s(x)}
     const [[base, unit], ...rest] = rules
     if (x < base) {return kilo_str_sub(x, rest)}

@@ -237,7 +237,7 @@ function draw_score_text(w, to_r, sr2coord, g) {
 }
 
 function draw_no_score(w, sr2coord, fontsize, g) {
-    const x = w / 2; [_, y] = sr2coord(R.init_len, 50)
+    const x = w / 2, [_, y] = sr2coord(R.init_len, 50)
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'bottom'
     g.fillStyle = GRAY; fill_text(g, fontsize, "no score estimation", x, y)

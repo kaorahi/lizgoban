@@ -4,10 +4,11 @@
 // setup
 
 // state
-target_move = null
+let target_move = null
 
 const {globalize} = require('./globalize.js')
 globalize({
+    get_target_move: () => target_move,
     clip_init_len, latest_move, b_winrate,
     origin_b_winrate, origin_score, fake_winrate, fake_winrate_for, score_bar_p,
     mc2movenum, alternative_engine_for_white_p, zone_color,

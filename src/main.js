@@ -1424,7 +1424,7 @@ function cut_sequence() {
     push_deleted_sequence(game); delete_sequence()
 }
 function uncut_sequence() {
-    insert_before = (cut_first_p && sequence_cursor === 0)
+    const insert_before = (cut_first_p && sequence_cursor === 0)
     exist_deleted_sequence() &&
         backup_and_replace_game(pop_deleted_sequence(), insert_before)
 }
@@ -1925,7 +1925,7 @@ function sabaki_reader(line) {
 
 function attach_to_sabaki() {
     if (attached || !has_sabaki) {return}
-    const sgf_file = TMP.fileSync({mode: 0644, prefix: 'lizgoban-', postfix: '.sgf'})
+    const sgf_file = TMP.fileSync({mode: 0o644, prefix: 'lizgoban-', postfix: '.sgf'})
     const sgf_text = game.to_sgf()
     fs.writeSync(sgf_file.fd, sgf_text)
     debug_log(`temporary file (${sgf_file.name}) for sabaki: ${sgf_text}`)
