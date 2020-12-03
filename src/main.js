@@ -473,6 +473,7 @@ function goto_previous_or_next_something(backwardp) {
         reason = valid(h) && [
             comment_p(h) && snip_text(h.comment, 40, 0, '...'),
             h.tag,
+            branch_at(h.move_count) && 'branch',
             (resolved_by_connection || resolved_by_capture) && 'ko',
             h.illegal && 'illegal',
             check_blunder(ary[k + sign] || {}),  // show the board BEFORE the blunder
