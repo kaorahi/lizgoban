@@ -845,7 +845,7 @@ function set_relative_canvas_position(canvas, orig, shift_x, shift_y) {
 }
 
 function portrait_p() {
-    const [my, sy] = [main_canvas, sub_canvas].map(c => c.getBoundingClientRect().y)
+    const [my, sy] = ['#main_div', '#rest_div'].map(z => Q(z).getBoundingClientRect().y)
     return my < sy
 }
 
