@@ -160,9 +160,8 @@ function render_now(e, h, is_board_changed) {
     update_goban()
 }
 
-function update_displayed_comment() {
-    setq('#comment', (showing_branch || {}).comment || R.comment_note)
-}
+function update_displayed_comment() {setq('#comment', displayed_comment())}
+function displayed_comment() {return (showing_branch || {}).comment || R.comment_note}
 
 ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     R.pausing = availability.resume
