@@ -418,6 +418,11 @@ function update_all(keep_board) {
 function play(move, force_create, default_tag, comment, auto_play_in_match_sec) {
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
+    const next_move_count = game.move_count + 1
+    const is_next_move = gm => !force_create && (move === gm.ref(next_move_count).move)
+    if (is_next_move(game)) {redo(); return}
+    const another_game = (branch_at(game.move_count) || []).find(is_next_move)
+    if (another_game) {switch_to_game(another_game, next_move_count); return}
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     do_play(move, R.bturn, tag || default_tag || undefined, comment)
@@ -1401,6 +1406,11 @@ function nth_sequence(n) {
     if (n === old) {return}
     switch_to_nth_sequence(n)
     n < old ? previous_sequence_effect() : next_sequence_effect()
+}
+function switch_to_game(another_game, move_count) {
+    const n = sequence.indexOf(another_game)
+    n >= 0 ? nth_sequence(n) : backup_and_replace_game(another_game)
+    goto_move_count(move_count)
 }
 
 let cut_first_p = false
