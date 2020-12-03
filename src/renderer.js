@@ -420,8 +420,8 @@ function any_selected_suggest() {
 }
 function selected_suggest(canvas) {
     const m = keyboard_moves[0] || if_hover_on(canvas, hovered_move)
-    const [fake, overwrite] = empty(keyboard_moves) ? [{}, {}] :
-          [{move: keyboard_moves[0], visits: 1}, {pv: keyboard_moves}]
+    const [fake, overwrite] = showing_branch_p() ?
+          [{move: keyboard_moves[0], visits: 1}, {pv: keyboard_moves}] : [{}, {}]
     return merge(R.suggest.find(h => h.move === m) || fake, overwrite)
 }
 function if_hover_on(canvas, val) {return (canvas === hovered_board_canvas) && val}
@@ -1042,6 +1042,7 @@ function set_branch_moves_maybe(key) {
     }
     return branch && (set_branch(), true)
 }
+function showing_branch_p() {return truep(branch_comment)}  // fixme: dirty
 
 function undoable() {return R.move_count > R.init_len}
 function redoable() {return R.move_count < R.history_length}
