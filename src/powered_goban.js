@@ -209,12 +209,12 @@ function recall_endstate() {return endstate_array}
 set_endstate_obsolete()
 
 function append_implicit_tags_maybe(h) {
-    const h_copy = merge({}, h)
+    const h_copy = merge({}, h), add = tag_letter => add_tag(h_copy, tag_letter)
     AI.support_endstate_p() && R.show_endstate &&
         h.move_count === game.move_count - endstate_diff_interval &&
         h.move_count >= game.init_len &&
-        add_tag(h_copy, endstate_diff_tag_letter)
-    M.branch_at(h.move_count) && add_tag(h_copy, branching_tag_letter)
+        add(endstate_diff_tag_letter)
+    M.branch_at(h.move_count) && add(branching_tag_letter)
     return h_copy
 }
 function get_endstate_diff_interval() {return endstate_diff_interval}
