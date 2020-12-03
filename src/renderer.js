@@ -39,6 +39,7 @@ const R = {
     move_history: [],
     sequence_cursor: 1, sequence_length: 1, sequence_ids: [], sequence_props: {},
     history_tags: [], endstate_clusters: [], prev_endstate_clusters: null,
+    branch_for_tag: [],
     is_endstate_drawable: false,
     lizzie_style: false,
     window_id: -1,
@@ -416,7 +417,9 @@ function any_selected_suggest() {
 }
 function selected_suggest(canvas) {
     const m = keyboard_moves[0] || if_hover_on(canvas, hovered_move)
-    return R.suggest.find(h => h.move === m) || {}
+    const [fake, overwrite] = empty(keyboard_moves) ? [{}, {}] :
+          [{move: keyboard_moves[0], visits: 1}, {pv: keyboard_moves}]
+    return merge(R.suggest.find(h => h.move === m) || fake, overwrite)
 }
 function if_hover_on(canvas, val) {return (canvas === hovered_board_canvas) && val}
 function hover_on_subboard_p() {return if_hover_on(sub_canvas, true)}
@@ -935,7 +938,8 @@ document.onkeydown = e => {
 
 document.onkeyup = e => {
     reset_keyboard_tag();
-    (to_i(e.key) > 0 || e.key === "0") && reset_keyboard_moves()
+    (to_i(e.key) > 0 || e.key === "0" || tag_letters.includes(e.key))
+        && reset_keyboard_moves()
     switch (e.key) {
     case "c" : set_showing_movenum_p(false); break
     case "v" : set_showing_endstate_value_p(false); break
@@ -963,6 +967,7 @@ function reset_keyboard_moves() {
 }
 
 function set_keyboard_tag_maybe(key) {
+    if (set_branch_moves_maybe(key)) {return}
     const old = keyboard_tag_move_count
     const tags = R.history_tags.slice().reverse()
     const data = tags.find(h => h.tag.includes(key) && h.move_count < R.move_count) ||
@@ -1020,6 +1025,11 @@ function orig_update_showing_until() {
     if (!changed) {return}
     // Caution: JSON.stringify(Infinity) === 'null'
     main('set_showing_until', ...su_and_mcfs)
+}
+
+function set_branch_moves_maybe(key) {
+    const branch = R.branch_for_tag.find(z => z.tag.includes(key))
+    return branch && (set_keyboard_moves(branch), update_goban(), true)
 }
 
 function undoable() {return R.move_count > R.init_len}

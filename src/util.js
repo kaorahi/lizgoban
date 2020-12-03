@@ -153,7 +153,8 @@ const start_moves_tag_letter = "'"
 const endstate_diff_tag_letter = "/"
 const unnamed_branch_tag_letter = "^"
 const tag_letters = normal_tag_letters + last_loaded_element_tag_letter +
-      start_moves_tag_letter + endstate_diff_tag_letter
+      start_moves_tag_letter + endstate_diff_tag_letter +
+      unnamed_branch_tag_letter
 const common_constants = {
     normal_tag_letters, last_loaded_element_tag_letter,
     start_moves_tag_letter, endstate_diff_tag_letter,

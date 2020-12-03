@@ -476,13 +476,17 @@ function add_next_mark_to_stones(stones, game, move_count) {
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
 function add_branches_to_stones(stones, move_count) {
+    // update R.branch_for_tag as a side effect (dirty...)
+    R.branch_for_tag = []
     const b = M.branch_at(move_count); if (!b) {return}
     b.forEach(gm => {
         const h = gm.ref(move_count + 1), s = stone_for_history_elem(h, stones)
         if (!s) {return}
-        const {tag, is_black} = h
+        const tag = h.tag || unnamed_branch_tag_letter
         s.branches || (s.branches = [])
-        s.branches.push({tag: tag || unnamed_branch_tag_letter, is_black})
+        s.branches.push({tag, is_black: h.is_black})
+        const {id} = gm, pv = gm.array_until(Infinity).slice(move_count).map(z => z.move)
+        R.branch_for_tag.push({tag, id, pv})
     })
 }
 function add_info_to_stones(stones, game) {
