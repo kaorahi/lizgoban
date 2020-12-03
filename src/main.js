@@ -414,6 +414,7 @@ function update_all(keep_board) {
 // main flow (2) change game state and send it to powered_goban
 
 function play(move, force_create, default_tag, comment, auto_play_in_match_sec) {
+    const force_create_p = force_create && (force_create !== 'never_redo')
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
     const next_move_count = game.move_count + 1
@@ -421,7 +422,7 @@ function play(move, force_create, default_tag, comment, auto_play_in_match_sec) 
     if (is_next_move(game)) {redo(); return}
     const another_game = (branch_at(game.move_count) || []).find(is_next_move)
     if (another_game) {switch_to_game(another_game, next_move_count); return}
-    const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create)
+    const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create_p)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     do_play(move, R.bturn, tag || default_tag || undefined, comment)
     pass && wink()
@@ -1032,7 +1033,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     if (empty(R.suggest)) {return}
     // comment
     const comment = `by ${AI.engine_info().current.preset_label_text}`
-    const play_com = m => play(m, false, null, comment)
+    const play_com = m => play(m, 'never_redo', null, comment)
     // move
     const move =
           weaken_method === 'random_candidate' ? weak_move(...weaken_args) :

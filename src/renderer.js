@@ -122,7 +122,7 @@ function hide_dialog() {
 function play_moves(moves) {
     const tag = k => (k === 0) && start_moves_tag_letter
     const com = k => `by suggestion (${k + 1})`
-    const play1 = (move, k) => main('play', move, false, tag(k), com(k))
+    const play1 = (move, k) => main('play', move, 'never_redo', tag(k), com(k))
     moves && moves.forEach(play1)
 }
 
@@ -469,13 +469,14 @@ function play_here(e, coord2idx, canvas) {
     const goto_p = showing_movenum_p() || dblclick
     const stone_p = aa_ref(R.stones, ...idx).stone
     const match_sec = in_match_p() && (set_match_param(), auto_play_in_match_sec())
+    const force_create = in_match_p() ? 'never_redo' : !!another_board
     if (goto_p) {goto_idx_maybe(idx, another_board); return true}
     if (stone_p) {
         set_showing_movenum_p(true); hover_here(e, coord2idx, canvas)
         set_stone_is_clicked(); return false
     }
     pass && main('pass')  // right click = pass and play
-    main('play', move, !!another_board, null, null, match_sec)
+    main('play', move, force_create, null, null, match_sec)
     return true
 }
 function play_pass() {main('pass'); auto_play_in_match()}
@@ -917,13 +918,16 @@ document.onkeydown = e => {
     }
     const play_target = another_board => {
         const move = D.target_move()
-        reset_keyboard_moves(); m('play', move, another_board)
+        const force_create = another_board ||
+              (showing_branch_p() ? false : 'never_redo')
+        reset_keyboard_moves(); m('play', move, force_create)
     }
     const play_it = (steps, another_board) =>
           D.target_move() ? play_target(another_board) :
           truep(until) ? goto_move_count(until, another_board) :
           truep(steps) ? m('play_best', steps) :
-          !empty(R.suggest) ? m('play', R.suggest[0].move, another_board) : false
+          !empty(R.suggest) ? m('play', R.suggest[0].move,
+                                another_board || 'never_redo') : false
     switch (!R.attached && key) {
     case "C-v": m('paste_sgf_or_url_from_clipboard'); break;
     case "C-x": m('cut_sequence'); break;
