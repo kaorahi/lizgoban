@@ -139,6 +139,14 @@ function draw_goban_with_expected_variation(canvas, options) {
     draw_readonly_goban_with_variation(canvas, {}, opts)
 }
 
+function draw_goban_with_future_moves(canvas, options) {
+    const title = 'succeeding moves'
+    const pv = R.future_moves, move = pv[0], pvVisits = null
+    const suggest = {move, pv, pvVisits}
+    const opts = {...options, draw_visits_p: `  ${title}`, trial_p: 'ref'}
+    draw_readonly_goban_with_variation(canvas, suggest, opts)
+}
+
 function draw_readonly_goban_with_variation(canvas, suggest, options) {
     const opts = {read_only: true, force_draw_expected_p: true,
                   mapping_to_winrate_bar: false, ...options}
@@ -854,6 +862,7 @@ module.exports = {
     draw_main_goban,
     draw_goban_with_principal_variation,
     draw_goban_with_expected_variation,
+    draw_goban_with_future_moves,
     draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban,
     draw_thumbnail_goban,

@@ -140,6 +140,7 @@ function set_renderer_state(...args) {
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
     const su_p = finitep(move_count_for_suggestion())
     const previous_suggest = !su_p && get_previous_suggest()
+    const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
     const winrate_trail = !su_p
     const max_visits = clip(Math.max(...(R.suggest || []).filter(orig_suggest_p).map(h => h.visits)), 1)
     const progress = M.auto_progress()
@@ -163,7 +164,7 @@ function set_renderer_state(...args) {
               winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
-              previous_suggest, winrate_trail}, endstate_d_i)
+              previous_suggest, future_moves, winrate_trail}, endstate_d_i)
     add_next_played_move_as_fake_suggest()
 }
 function set_and_render(...args) {set_and_render_gen(true, ...args)}

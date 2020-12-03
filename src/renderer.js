@@ -29,6 +29,7 @@ const R = {
     history_length: 0, suggest: [], visits: 1,
     visits_per_sec: 0,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
+    future_moves: [],
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
     in_match: false,
     hide_suggest: false,
@@ -309,6 +310,7 @@ const draw_sub = with_opts((...args) => {
 const draw_pv = with_opts((...args) => {
     R.subboard_stones_suggest ? D.draw_goban_with_subboard_stones_suggest(...args) :
         truep(showing_until()) ? D.draw_raw_goban(...args) :
+        showing_branch_p() ? D.draw_goban_with_future_moves(...args) :
         already_showing_pv_p() ? D.draw_goban_with_expected_variation(...args) :
         D.draw_goban_with_principal_variation(...args)
 }, ignore_mouse)
