@@ -1791,16 +1791,15 @@ function save_sgf_to(filename, if_success, force_short_p) {
 function read_sgf(sgf_str, filename, internally) {
     const interactive = !internally
     const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest_p)
-    const open_games = gs => {
-        const trunk = gs[0], common_prop = {sgf_file: filename || "", brothers: gs}
-        gs.forEach((g, k) => merge(g, common_prop, {trial: k > 0}))
-        trunk.merge_common_header(game); backup_and_replace_game(trunk)
-        interactive && option.auto_overview && !AI.leelaz_for_white_p() &&
-            start_quick_overview()
+    if (empty(new_games)) {
+        dialog.showErrorBox("Failed to read SGF", snip(sgf_str, 200)); return
     }
-    empty(new_games) ?
-        dialog.showErrorBox("Failed to read SGF", snip(sgf_str, 200)) :
-        open_games(new_games)
+    const trunk = new_games[0]
+    const common_props = {sgf_file: filename || "", brothers: new_games}
+    new_games.forEach(g => merge(g, common_props, {trial: g !== trunk}))
+    trunk.merge_common_header(game); backup_and_replace_game(trunk)
+    interactive && option.auto_overview && !AI.leelaz_for_white_p() &&
+        start_quick_overview()
 }
 
 function open_url(url) {
