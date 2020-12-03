@@ -214,6 +214,7 @@ function append_implicit_tags_maybe(h) {
         h.move_count === game.move_count - endstate_diff_interval &&
         h.move_count >= game.init_len &&
         add_tag(h_copy, endstate_diff_tag_letter)
+    M.branch_at(h.move_count) && add_tag(h_copy, branching_tag_letter)
     return h_copy
 }
 function get_endstate_diff_interval() {return endstate_diff_interval}

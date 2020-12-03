@@ -1465,8 +1465,7 @@ function sequence_prop_of(given_game) {
     const pick_tag = h => {
         const h_copy = P.append_implicit_tags_maybe(h); return h_copy.tag || ''
     }
-    const tags = given_game.map(pick_tag).join('')
-          .replace(endstate_diff_tag_letter, '')
+    const tags = exclude_implicit_tags(given_game.map(pick_tag).join(''))
     const {player_black, player_white, init_len, move_count, trial} = given_game
     return {player_black, player_white, init_len, move_count, trial, len: given_game.len(), tags}
 }

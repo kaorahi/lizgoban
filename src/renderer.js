@@ -258,8 +258,7 @@ function update_title() {
 }
 
 function current_tag_letters() {
-    return R.history_tags.map(x => x.tag).join('')
-        .replace(endstate_diff_tag_letter, '')
+    return exclude_implicit_tags(R.history_tags.map(x => x.tag).join(''))
 }
 
 function update_body_color() {
