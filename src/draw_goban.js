@@ -558,7 +558,7 @@ function draw_branches(h, xy, radius, g) {
         shape(xy, radius, g)
     }
     g.save()
-    h.branches.map(draw1)
+    h.branches.forEach(draw1)
     draw_text_on_stone(tag, branch_tag_color, xy, radius, g)
     g.restore()
 }
