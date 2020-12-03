@@ -196,6 +196,7 @@ globalize({  // for powered_goban.js
         // functions used in powered_goban.js
         render, show_suggest_p, is_pass,
         auto_progress, is_busy, is_long_busy, is_pausing, is_bogoterritory,
+        branch_at,
         tuning_message: () => tuning_message,
         plot_order_p: () => option.plot_order_p,
     }

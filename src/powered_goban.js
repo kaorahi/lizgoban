@@ -475,6 +475,16 @@ function add_next_mark_to_stones(stones, game, move_count) {
     const h = game.ref(move_count + 1), s = stone_for_history_elem(h, stones)
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
+function add_branches_to_stones(stones, move_count) {
+    const b = M.branch_at(move_count); if (!b) {return}
+    b.forEach(gm => {
+        const h = gm.ref(move_count + 1), s = stone_for_history_elem(h, stones)
+        if (!s) {return}
+        const {tag, is_black} = h
+        s.branches || (s.branches = [])
+        s.branches.push({tag: tag || unnamed_branch_tag_letter, is_black})
+    })
+}
 function add_info_to_stones(stones, game) {
     game.forEach(h => {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
@@ -484,6 +494,7 @@ function add_info_to_stones(stones, game) {
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
     add_next_mark_to_stones(stones, game, game.move_count)
+    add_branches_to_stones(stones, game.move_count)
 }
 function update_info_in_stones() {
     clear_info_in_stones(R.stones); add_info_to_stones(R.stones, game)

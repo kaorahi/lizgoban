@@ -346,6 +346,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         if (R.busy) {return}
         h.suggest && draw_suggest(h, xy, stone_radius, large_font_p, g)
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
+        draw_next_p && h.branches && draw_branches(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
         R.lizzie_style && h.suggest && draw_suggest_lizzie(h, xy, stone_radius, g)
@@ -519,10 +520,21 @@ function draw_last_move(h, xy, radius, g) {
     circle(xy, radius * size, g)
 }
 
-const next_move_line_width = 3
+const next_move_line_width = 3, branch_line_width = next_move_line_width
 function draw_next_move(h, xy, radius, g) {
     g.strokeStyle = h.next_is_black ? BLACK : WHITE
     g.lineWidth = next_move_line_width; circle(xy, radius, g)
+}
+function draw_branches(h, [x, y], radius, g) {
+    const tag = h.branches.map(z => z.tag).join('')
+    g.save()
+    g.strokeStyle = h.branches[0].is_black ? BLACK : WHITE
+    g.lineWidth = branch_line_width; g.setLineDash([radius / 10])
+    square_around([x, y], radius, g)
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = 'rgba(0,0,255,0.3)'
+    fill_text(g, radius * 2, tag, x, y, radius * 2)
+    g.restore()
 }
 
 // ref. https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067
