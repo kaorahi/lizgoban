@@ -133,19 +133,21 @@ function draw_goban_with_principal_variation(canvas, options) {
 
 function draw_goban_with_expected_variation(canvas, options) {
     const title = 'expected variation at the previous move'
-    const variation_expected = [expected_pv(), (R.suggest[0] || {}).pv]
-    const opts = {...options, variation_expected,
-                  draw_visits_p: `  ${title}`, trial_p: 'ref'}
-    draw_readonly_goban_with_variation(canvas, {}, opts)
+    const pv = expected_pv(), expected_variation = (R.suggest[0] || {}).pv
+    draw_goban_with_given_variation(canvas, pv, expected_variation, title, options)
 }
 
 function draw_goban_with_future_moves(canvas, options) {
-    const title = 'succeeding moves'
-    const pv_len = Math.max(keyboard_moves.length, 15)
-    const pv = R.future_moves.slice(0, pv_len), move = pv[0], pvVisits = null
-    const suggest = {move, pv, pvVisits}
-    const opts = {...options, draw_visits_p: `  ${title}`, trial_p: 'ref'}
-    draw_readonly_goban_with_variation(canvas, suggest, opts)
+    const title = 'succeeding moves', pv_len = 15
+    const pv = R.future_moves.slice(0, Math.max(keyboard_moves.length, pv_len))
+    draw_goban_with_given_variation(canvas, pv, [], title, options)
+}
+
+function draw_goban_with_given_variation(canvas, pv, expected_pv, title, options) {
+    const variation_expected = [pv, expected_pv]
+    const opts = {...options, variation_expected,
+                  draw_visits_p: `  ${title}`, trial_p: 'ref'}
+    draw_readonly_goban_with_variation(canvas, {}, opts)
 }
 
 function draw_readonly_goban_with_variation(canvas, suggest, options) {
