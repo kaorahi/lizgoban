@@ -1005,11 +1005,12 @@ function set_keyboard_moves_maybe(n) {set_keyboard_moves(R.suggest[n])}
 function set_keyboard_moves_for_next_move() {
     set_keyboard_moves(R.suggest.find(h => D.is_next_move(h.move)))
 }
-function set_keyboard_moves(h) {
-    h && !keyboard_moves[0] && (keyboard_moves = h.pv) && update_goban()
+function set_keyboard_moves(h, silent) {
+    h && !keyboard_moves[0] && (keyboard_moves = h.pv) && !silent && update_goban()
 }
 function reset_keyboard_moves(silent) {
-    keyboard_moves = []; showing_branch = null; silent || update_goban()
+    const done = reset_branch_moves_maybe()
+    keyboard_moves = []; showing_branch = null; silent || done || update_goban()
 }
 
 function set_keyboard_tag_maybe(key) {
@@ -1078,10 +1079,18 @@ function orig_update_showing_until() {
 function set_branch_moves_maybe(key) {
     const branch = R.branch_for_tag.find(z => z.tag.includes(key))
     const set_branch = () => {
-        set_keyboard_moves(branch); showing_branch = branch
-        update_goban(); update_displayed_comment()
+        showing_branch = branch; set_keyboard_moves(branch, true)
+        update_displayed_comment()
+        const {at_move_count} = branch
+        truep(at_move_count) ?
+            main('goto_move_count', at_move_count) : update_goban()
     }
     return branch && (set_branch(), true)
+}
+function reset_branch_moves_maybe() {
+    const {move_count, at_move_count} = (showing_branch || {})
+    const goto_p = truep(at_move_count)
+    return goto_p && (main('goto_move_count', move_count), true)
 }
 function showing_branch_p() {return !!showing_branch}
 globalize({showing_branch_p})

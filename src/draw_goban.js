@@ -543,10 +543,12 @@ function draw_next_move(h, xy, radius, g) {
 }
 function draw_branches(h, [x, y], radius, g) {
     const tag = h.branches.map(z => z.tag).sort().join('')
+    const first = h.branches[0], {past_p} = first
+    const draw = past_p ? triangle_around : square_around
     g.save()
-    g.strokeStyle = h.branches[0].is_black ? BLACK : WHITE
-    g.lineWidth = branch_line_width; g.setLineDash([radius / 10])
-    square_around([x, y], radius, g)
+    g.strokeStyle = first.is_black ? BLACK : WHITE
+    g.lineWidth = past_p ? 1 : branch_line_width; g.setLineDash([radius / 10])
+    draw([x, y], radius, g)
     g.textAlign = 'center'; g.textBaseline = 'middle'
     g.fillStyle = 'rgba(0,0,255,0.3)'
     fill_text(g, radius * 2, tag, x, y, radius * 2)
