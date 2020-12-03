@@ -355,8 +355,16 @@ function already_showing_pv_p() {
 
 // for smooth interaction on auto-repeated undo/redo
 const sub_canvas_deferring_millisec = 10
-const [do_on_sub_canvas_when_idle] =
-      deferred_procs([f => f && f(sub_canvas), sub_canvas_deferring_millisec])
+function do_on_sub_canvas_maybe(proc) {proc && proc(sub_canvas)}
+const [do_on_sub_canvas_when_idle, cancel_do_on_sub_canvas] =
+      deferred_procs([do_on_sub_canvas_maybe, sub_canvas_deferring_millisec],
+                     [do_nothing, 0])
+let is_sub_canvas_resized = false
+function do_on_sub_canvas(proc) {
+    const do_now = () => (cancel_do_on_sub_canvas(), do_on_sub_canvas_maybe(proc))
+    is_sub_canvas_resized ? do_now() : do_on_sub_canvas_when_idle(proc)
+    is_sub_canvas_resized = false
+}
 
 const double_boards_rule = {
     double_boards: {  // [on main_canvas, on sub_canvas]
@@ -379,7 +387,7 @@ function update_goban() {
     const f = (m, w, s) => (update_target_move(m, s),
                             m(main_canvas),
                             (w || draw_wr_graph)(winrate_graph_canvas),
-                            do_on_sub_canvas_when_idle(s),
+                            do_on_sub_canvas(s),
                             draw_wr_bar(winrate_bar_canvas))
     if (showing_endstate_value_p()) {
         const sub = R.prev_endstate_clusters ?
@@ -764,7 +772,7 @@ function set_all_canvas_size() {
     set_canvas_size(main_canvas, main_board_size, main_board_height)
     set_canvas_size(additional_graph_canvas, main_board_size, additional_graph_height)
     set_canvas_size(winrate_bar_canvas, main_board_size, winrate_bar_height)
-    set_canvas_square_size(sub_canvas, sub_board_size)
+    is_sub_canvas_resized = set_canvas_square_size(sub_canvas, sub_board_size)
     set_canvas_size(winrate_graph_canvas, winrate_graph_width, winrate_graph_height)
     after_effect(() => set_overlay(graph_overlay_canvas,
                                    wr_only ? main_canvas : winrate_graph_canvas))
