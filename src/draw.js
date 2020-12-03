@@ -3,12 +3,8 @@
 /////////////////////////////////////////////////
 // setup
 
-// state
-let target_move = null
-
 const {globalize} = require('./globalize.js')
 globalize({
-    get_target_move: () => target_move,
     clip_init_len, latest_move, b_winrate,
     origin_b_winrate, origin_score, fake_winrate, fake_winrate_for, score_bar_p,
     mc2movenum, alternative_engine_for_white_p, zone_color,
@@ -24,11 +20,12 @@ const {
     draw_goban_with_expected_variation,
     draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban, draw_thumbnail_goban, draw_zone_color_chart,
+    target_move, set_target_move,
 } = require('./draw_goban.js')
 
 const {draw_winrate_bar_sub, update_winrate_trail, score_bar_fitter, get_winrate_trail}
       = require('./draw_winrate_bar.js')
-function draw_winrate_bar(...args) {draw_winrate_bar_sub(target_move, ...args)}
+function draw_winrate_bar(...args) {draw_winrate_bar_sub(target_move(), ...args)}
 
 const {draw_winrate_graph} = require('./draw_winrate_graph.js')
 
@@ -66,17 +63,18 @@ function winrate_bar_suggest_prop(s, move_count) {
     const target_aura_color = 'rgba(0,192,0,0.8)'
     // main
     const {move} = s, winrate = fake_winrate(s)
-    const edge_color = target_move ? 'rgba(128,128,128,0.5)' : '#888'
-    const target_p = (move === target_move), next_p = is_next_move(move, move_count)
-    const alpha = target_p ? 1.0 : target_move ? 0.3 : 0.8
+    const target = target_move()
+    const edge_color = target ? 'rgba(128,128,128,0.5)' : '#888'
+    const target_p = (move === target), next_p = is_next_move(move, move_count)
+    const alpha = target_p ? 1.0 : target ? 0.3 : 0.8
     const {fill} = suggest_color(s, alpha)
-    const fan_color = (!target_move && next_p) ? next_color : fill
+    const fan_color = (!target && next_p) ? next_color : fill
     const vline_color = target_p ? target_vline_color :
           next_p ? next_vline_color : null
     const aura_color = target_p ? target_aura_color : normal_aura_color
     const major = s.visits >= R.max_visits * 0.3 || s.prior >= 0.3 ||
           s.order < 3 || s.winrate_order < 3 || target_p || next_p
-    const eliminated = target_move && !target_p
+    const eliminated = target && !target_p
     const draw_order_p = major && !eliminated
     return {edge_color, fan_color, vline_color, aura_color, alpha,
             target_p, draw_order_p, next_p, winrate}
@@ -186,5 +184,5 @@ module.exports = {
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
     update_winrate_trail, clear_canvas, is_next_move, latest_move,
-    target_move: () => target_move, set_target_move: move => (target_move = move),
+    target_move, set_target_move,
 }

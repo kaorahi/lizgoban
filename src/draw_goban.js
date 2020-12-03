@@ -1,5 +1,10 @@
 // -*- coding: utf-8 -*-
 
+// state
+let the_target_move = null
+function target_move() {return the_target_move}
+function set_target_move(move) {the_target_move = move}
+
 /////////////////////////////////////////////////
 // various gobans
 
@@ -12,7 +17,7 @@ function draw_main_goban(canvas, options) {
     const opts = {read_only: R.attached, ...options}
     const u = options.show_until, h = options.selected_suggest
     // case I: "variation"
-    if (get_target_move()) {draw_goban_with_variation(canvas, h, opts); return}
+    if (target_move()) {draw_goban_with_variation(canvas, h, opts); return}
     // case II: "suggest" or "until"
     const mapping_to_winrate_bar = h.move && mapping_text(h, opts)
     truep(u) ? draw_goban_until(canvas, u, opts)
@@ -853,4 +858,5 @@ module.exports = {
     draw_endstate_goban,
     draw_thumbnail_goban,
     draw_zone_color_chart,
+    target_move, set_target_move,
 }
