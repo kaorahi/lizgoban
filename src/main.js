@@ -107,6 +107,9 @@ const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
+const {
+    exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
+} = require('./exercise.js')
 const {tsumego_frame} = require('./tsumego_frame.js')
 const {branch_at, update_branch_for} = require('./branch.js')
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
@@ -1231,7 +1234,7 @@ function transform_board(key) {
 }
 function save_q_and_a_images() {
     const pre = 'qa', format = {pre, sep: '_', post: ''}, dir = exercise_dir()
-    const path = PATH.join(dir, exercise_filename(format))
+    const path = PATH.join(dir, exercise_filename(game, format))
     const filenames = ['a', 'b'].map(z => `${path}_${z}.png`)
     const msg_path = `${PATH.join(dir, pre)}...`
     renderer('save_q_and_a_images', ...filenames, msg_path)
@@ -1831,7 +1834,7 @@ function open_url(url) {
 // personal exercise book
 
 function store_as_exercise() {
-    const path = PATH.join(exercise_dir(), exercise_filename())
+    const path = PATH.join(exercise_dir(), exercise_filename(game))
     save_sgf_to(path, null, true); toast('stored as exercise')
 }
 function load_random_exercise(win) {
@@ -1872,30 +1875,11 @@ function delete_exercise() {
 }
 function exercise_dir() {return option_path('exercise_dir')}
 
-const exercise_format = {pre: 'exercise', sep: '_', post: '.sgf'}
-function exercise_filename(format) {
-    const {pre, sep, post} = format || exercise_format
-    const mc = to_s(game.move_count).padStart(3, '0')
-    const ti = (new Date()).toJSON().replace(/:/g, '') // cannot use ":" in Windows
-    return `${pre}${board_size()}${sep}${ti}${sep}${mc}${post}`
-}
-function is_exercise_filename(filename) {
-    const {pre, sep, post} = exercise_format
-    return filename.startsWith(pre) && filename.endsWith(post)
-}
 function expand_exercise_filename(filename) {return PATH.join(exercise_dir(), filename)}
 function is_exercise_file(path) {
     const in_dir_p = (f, d) => d && (PATH.resolve(d, PATH.basename(f)) === f)
     const name = PATH.basename(path)
     return in_dir_p(path, exercise_dir()) && is_exercise_filename(name)
-}
-function exercise_move_count(filename) {
-    const {pre, sep, post} = exercise_format
-    return to_i(last(filename.split(sep)).split(post)[0])
-}
-function exercise_board_size(filename) {
-    const {pre, sep, post} = exercise_format
-    return to_i(filename.split(sep)[0].split(pre)[1] || 19)
 }
 
 /////////////////////////////////////////////////
