@@ -261,6 +261,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
   * Click one of branches (or hit Enter key in the above preview) to watch it in another trial board.
   * Click "x" mark at the right top of the board to close it and return to the main branch.
 * Implement side by side comparisons of the principal variation and the actual succeeding moves, etc.
+* Add stars to personal exercise book. Starred exercises will appear more often.
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 
 ### 0.5.*
