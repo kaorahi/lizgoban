@@ -281,7 +281,7 @@ function create_leelaz () {
         log('engine>', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
     }
     // ignore unintentional wrong on_response by a.forEach(send_to_leelaz)
-    const with_response_p = task => (typeof task.on_response === 'function')
+    const with_response_p = task => functionp(task.on_response)
     const send_to_leelaz = (command, on_response) =>
           send_task_to_leelaz({command, on_response})
 

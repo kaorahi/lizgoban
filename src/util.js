@@ -14,6 +14,7 @@ E.finitep = x => truep(x) && x !== Infinity
 E.finite_or = (x, y) => E.finitep(x) ? x : y
 E.do_nothing = () => {}
 E.identity = x => x
+E.functionp = obj => (typeof obj === 'function')
 E.clip = (x, lower, upper) =>
     Math.max(lower, Math.min(x, E.truep(upper) ? upper : Infinity))
 E.sum = a => a.reduce((r,x) => r + x, 0)

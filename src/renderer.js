@@ -295,7 +295,7 @@ function with_opts(d, opts) {
             hovered_move: if_hover_on(c, hovered_move),
             cheap_shadow_p: R.long_busy,
             handle_mouse_on_goban,
-            ...((typeof opts === 'function') ? opts() : opts || {}),
+            ...(functionp(opts) ? opts() : opts || {}),
         })
     }
 }
