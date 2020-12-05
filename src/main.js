@@ -103,12 +103,14 @@ const ELECTRON_STORE = safely(require, 'electron-store') ||
                    safely(require, 'electron-config') ||
                    // ... and throw the original error when both fail
                    require('electron-store')
+globalize({ELECTRON_STORE})
 const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
+    update_exercise_metadata_for, get_all_exercise_metadata,
 } = require('./exercise.js')
 const {tsumego_frame} = require('./tsumego_frame.js')
 const {branch_at, update_branch_for} = require('./branch.js')
@@ -153,6 +155,7 @@ let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 let auto_analysis_steps = 1
 let auto_play_sec = 0, auto_replaying = false
 let pausing = false, busy = false
+let exercise_metadata = null
 
 // renderer state
 // (cf.) "set_renderer_state" in powered_goban.js
@@ -347,6 +350,7 @@ const api = merge({}, simple_api, {
     read_sgf, open_url, set_game_info,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     switch_to_game_id,
+    increase_exercise_stars,
     detach_from_sabaki,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
@@ -1608,10 +1612,11 @@ function update_state(keep_suggest_p) {
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
     const {face_image_rule} = option
+    update_exercise_metadata()
     P.set_and_render({
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
-        image_paths, face_image_rule,
+        image_paths, face_image_rule, exercise_metadata,
         showing_bturn, subboard_stones_suggest,
     }, more)
 }
@@ -1859,6 +1864,7 @@ function load_exercise(selector, win, random_flip_p) {
     start_match(win, true); load_as_exercise(expand_exercise_filename(fn))
     random_flip_p && game.random_flip_rotate()
     game.set_last_loaded_element(); tag_or_untag()
+    update_exercise_metadata({seen_at: (new Date()).toJSON()})
 }
 function load_as_exercise(file) {
     load_sgf(file, true); goto_move_count(exercise_move_count(file)); game.trial = true
@@ -1877,10 +1883,30 @@ function exercise_dir() {return option_path('exercise_dir')}
 
 function expand_exercise_filename(filename) {return PATH.join(exercise_dir(), filename)}
 function is_exercise_file(path) {
+    if (!path) {return}
     const in_dir_p = (f, d) => d && (PATH.resolve(d, PATH.basename(f)) === f)
     const name = PATH.basename(path)
     return in_dir_p(path, exercise_dir()) && is_exercise_filename(name)
 }
+
+const exercise_metadata_checker = change_detector()
+function update_exercise_metadata(prop) {
+    if (!in_exercise_p()) {
+        exercise_metadata = null; exercise_metadata_checker.reset(); return
+    }
+    const key = exercise_metadata_key()
+    const changed = prop || exercise_metadata_checker.is_changed(key)
+    changed && (exercise_metadata = update_exercise_metadata_for(key, prop || {}))
+}
+function exercise_metadata_key() {return PATH.basename(game.sgf_file || '')}
+
+function increase_exercise_stars(delta) {
+    if (!in_exercise_p()) {return}
+    const stars = R.exercise_metadata.stars += delta
+    update_exercise_metadata({stars})
+}
+
+function in_exercise_p() {return is_exercise_file(game.sgf_file)}
 
 /////////////////////////////////////////////////
 // Sabaki

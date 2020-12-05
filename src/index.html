@@ -15,7 +15,9 @@
  .controller_row {margin-top: 2%; white-space: normal; text-align: left;}
  .controller_row.show_in_serious_match {margin-top: 0%; margin-bottom: 8%;}
  .controller_row.show_in_match {margin-bottom: 3%;}
- .controller_row.show_in_match span {border: solid 1px white; padding: 2%;}
+ .controller_row.show_in_match span {border: solid 1px white; padding: 1%;}
+ .controller_row.show_in_exercise > span {border: solid 1px white; padding: 1%;}
+ .controller_row.show_in_exercise input[type="button"] {width: 1em}
  .show_in_match, .show_in_serious_match {display: none;}
  .small {font-size: 70%;}
  #main_div {position: relative;}
@@ -238,6 +240,15 @@ vs.
 <input type='button' onclick="main('goto_previous_something')" value="?&lt;">
 <input type='button' onclick="main('goto_next_something')" value="&gt;?">
 <!-------- end hide_when_attached3 ----------->
+</div>
+
+<div class="controller_row show_in_exercise">
+<span>
+Exercise ★<span id='exercise_stars'></span>
+<input type='button' onclick="main('increase_exercise_stars', 1)" value="+">
+<input type='button' onclick="main('increase_exercise_stars', -1)" value="-">
+<span id='exercise_prev_seen'></span>
+</span>
 </div>
 
 </div><!-- id="above_comment_for_height_calculation" -->

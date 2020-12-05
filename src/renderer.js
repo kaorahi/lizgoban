@@ -46,6 +46,7 @@ const R = {
     window_id: -1,
     image_paths: null, image: null, stone_image_p: true, board_image_p: true,
     stone_style: '2D',
+    exercise_metadata: {},
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null
@@ -160,6 +161,16 @@ function render_now(e, h, is_board_changed) {
     update_goban()
 }
 
+function update_exercise() {
+    if (!R.exercise_metadata) {return}
+    const {seen_at, stars} = R.exercise_metadata
+    const prev_seen_at = (seen_at || [])[1]
+    const prev_seen_text = prev_seen_at ?
+          `(seen: ${(new Date(prev_seen_at)).toLocaleDateString()})` : ''
+    setq('#exercise_stars', true_or(stars, 0))
+    setq('#exercise_prev_seen', prev_seen_text)
+}
+
 function update_displayed_comment() {
     const com = Q('#comment'), old_text = com.textContent, text = displayed_comment()
     text !== old_text && (com.textContent = text) && (com.scrollTop = 0)
@@ -174,6 +185,7 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     if (R.busy) {return}
     ui_only || update_goban()
     update_body_color()
+    update_exercise()
     update_button_etc(availability)
     update_board_type()
     update_all_thumbnails()
@@ -1152,6 +1164,7 @@ function update_button_etc(availability) {
     update_ui_element('.hide_in_match', !in_match)
     update_ui_element('.show_in_serious_match', serious)
     update_ui_element('.hide_in_serious_match', !serious)
+    update_ui_element('.show_in_exercise', !!R.exercise_metadata)
     update_ui_element('.katago_only', R.is_katago)
 }
 
