@@ -1843,16 +1843,42 @@ function store_as_exercise() {
     save_sgf_to(path, null, true); toast('stored as exercise')
 }
 function load_random_exercise(win) {
-    const random_choice = a => a[Math.floor(Math.random() * a.length)]
+    const coin_toss = (Math.random() < 0.5)
+    const prefer_recent = coin_toss ? 0 : 0.1, prefer_stars = Math.log(2)
+    const random_choice = (a, metadata) => {
+        const recently_seen = fn => {
+            const last_seen = ((metadata[fn] || {}).seen_at || [])[0]
+            return - new Date(last_seen || exercise_mtime(fn))
+        }
+        const sorted = sort_by(a, recently_seen)
+        const weight_of = (fn, k) => {
+            const {stars} = metadata[fn] || {}
+            const preferred = prefer_recent * (- k) + prefer_stars * (stars || 0)
+            return Math.exp(preferred)
+        }
+        return weighted_random_choice(sorted, weight_of)
+    }
     load_exercise(random_choice, win, true)
 }
 function load_recent_exercise(win) {
-    const neg_mtime = fn => - fs.statSync(expand_exercise_filename(fn)).mtimeMs
+    const neg_mtime = fn => - exercise_mtime(fn)
     const recent = a => sort_by(a, neg_mtime)[0]
     load_exercise(recent, win)
 }
+function exercise_mtime(fn) {return fs.statSync(expand_exercise_filename(fn)).mtimeMs}
 let seen_exercises = []
+function revive_seen_exercises(metadata) {
+    const now = new Date(), hour = 60 * 60 * 1000, recent = 18 * hour
+    const recent_p = fn => {
+        const last_seen = ((metadata[fn] || {}).seen_at || [])[0]
+        return (now - new Date(last_seen || 0) < recent)
+    }
+    seen_exercises = seen_exercises.filter(recent_p)
+}
+
 function load_exercise(selector, win, random_flip_p) {
+    const metadata = get_all_exercise_metadata()
+    revive_seen_exercises(metadata)
     const dir = exercise_dir()
     const valid = name =>
           is_exercise_filename(name) && seen_exercises.indexOf(name) < 0 &&
@@ -1860,7 +1886,7 @@ function load_exercise(selector, win, random_flip_p) {
     const files = (fs.readdirSync(dir) || []).filter(valid)
     const retry = () => {seen_exercises = []; load_exercise(selector, win, random_flip_p)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
-    const fn = selector(files); seen_exercises.push(fn)
+    const fn = selector(files, metadata); seen_exercises.push(fn)
     start_match(win, true); load_as_exercise(expand_exercise_filename(fn))
     random_flip_p && game.random_flip_rotate()
     game.set_last_loaded_element(); tag_or_untag()

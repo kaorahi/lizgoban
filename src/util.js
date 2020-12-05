@@ -44,6 +44,14 @@ E.big_blunder_threshold = -5
 E.seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
+// "magic" in ai.py of KaTrain
+// seq(1000).map(_ => weighted_random_choice([1,2,3,4], identity)).filter(x => x === 3).length
+// ==> around 300
+E.weighted_random_choice = (ary, weight_of) => {
+    const magic = (...args) => - Math.log(Math.random()) / (weight_of(...args) + 1e-18)
+    return E.min_by(ary, magic)
+}
+
 // array of array
 E.aa_new = (m, n, f) => E.seq(m).map(i => E.seq(n).map(j => f(i, j)))
 E.aa_ref = (aa, i, j) => truep(i) && (i >= 0) && aa[i] && aa[i][j]
