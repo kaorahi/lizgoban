@@ -71,9 +71,10 @@ function put_outside(stones, size, frame_range,
     let count = 0
     const offence_to_win = 5, offense_komi = (black_to_attack_p ? 1 : -1) * komi
     const defense_area = (size * size - offense_komi - offence_to_win) / 2
-    const black_p = () => xor(black_to_attack_p, (++count <= defense_area))
+    const black_p = () => xor(black_to_attack_p, (count <= defense_area))
+    const empty_p = (i, j) => ((i + j) % 2 === 0 && Math.abs(count - defense_area) > size)
     const put = (i, j) => !inside_p(i, j, frame_range) &&
-          put_stone(stones, size, i, j, black_p(), (i + j) % 2 === 0)
+          (++count, put_stone(stones, size, i, j, black_p(), empty_p(i, j)))
     const [is, js] = seq(2).map(_ => seq_from_to(0, size - 1))
     is.forEach(i => js.forEach(j => put(i, j)))
 }
