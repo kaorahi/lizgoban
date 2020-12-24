@@ -110,7 +110,8 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const {variation_expected} = opts
     const reliable_moves = 7
     const [variation, expected] = variation_expected || [suggest.pv || [], expected_pv()]
-    const pv_visits = !variation_expected && !showing_branch_p() && suggest.pvVisits
+    const pv_visits = !variation_expected && !showing_branch_p() && suggest.pvVisits &&
+          [suggest.visits, ...suggest.pvVisits]
     const [v, e] = variation_expected ? [expected, variation] : [variation, expected]
     const mark_unexpected_p =
           (expected[0] === variation[0]) || opts.force_draw_expected_p ||
@@ -309,12 +310,13 @@ function draw_visits_text(text, margin, g) {
     g.restore()
 }
 
-function draw_pv_visits(pv_visits, margin, idx2coord, g) {
+function draw_pv_visits([present_visits, ...pv_visits], margin, idx2coord, g) {
     const at = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50]
     const bsize = board_size(), half = margin / 2, v0 = pv_visits[0]
     const fontsize = half, maxwidth = half, x = g.canvas.width - 1
     g.save()
     g.textAlign = 'right'; g.textBaseline = 'middle'
+    // pv_visits
     let prev_y = - Infinity
     const draw_text = (v, k) => {
         const [_, y] = idx2coord((1 - v / v0) * (bsize - 1), 0)
@@ -323,8 +325,12 @@ function draw_pv_visits(pv_visits, margin, idx2coord, g) {
         fill_text(g, fontsize, to_s(k), x, y, maxwidth)
     }
     at.slice().forEach(k => draw_text(pv_visits[k - 1], k))
+    // v0
+    const behind = present_visits - v0
+    const behind_text = (behind === 0) ? '' : `(+${kilo_str(behind)})`
+    const visits_text = kilo_str(v0) + behind_text
     g.fillStyle = 'rgba(255,0,0,0.3)'; g.textAlign = 'right'; g.textBaseline = 'top'
-    fill_text(g, fontsize, kilo_str(v0), x, 1)
+    fill_text(g, fontsize, visits_text, x, 1)
     g.restore()
 }
 
