@@ -9,7 +9,6 @@ function Q_all(x) {return document.querySelectorAll(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
 const {globalize} = require('./globalize.js')
 globalize(require('./util.js'), require('./coord.js'), require('./draw_common.js'))
-const current_window = electron.remote.getCurrentWindow()
 const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
 const {save_blob} = require('./image_exporter.js')
 
@@ -192,7 +191,6 @@ ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
     update_button_etc(availability)
     update_board_type()
     update_all_thumbnails()
-    update_title()
     try_thumbnail()
 })
 
@@ -262,21 +260,6 @@ function initialize_image_maybe() {
     !R.image && R.image_paths && (R.image = aa2hash(R.image_paths.map(([key, path]) => {
         const img = new Image(); img.src = path; return [key, img]
     })))
-}
-
-let last_title = ''
-function update_title() {
-    const b = R.player_black, w = R.player_white
-    const n = x => x || '?'
-    const names = (b || w) ? `(B: ${n(b)} / W: ${n(w)})` : ''
-    const tags = current_tag_letters()
-    const tag_text = tags ? `[${tags}]` : ''
-    const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''}`
-    if (title !== last_title) {current_window.setTitle(title); last_title = title}
-}
-
-function current_tag_letters() {
-    return exclude_implicit_tags(R.history_tags.map(x => x.tag).join(''))
 }
 
 function update_body_color() {
