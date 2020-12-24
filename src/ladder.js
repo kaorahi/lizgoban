@@ -1,5 +1,7 @@
 'use strict'
 
+const too_short = 5
+
 // wrap into array for convenience
 
 let last_ladder_branches = []
@@ -51,7 +53,7 @@ function moves_to_capture([attack_move, escape_move], [a_idx, e_idx], move_count
 function try_next(ret, idx, move_count, is_black, attack_p, u, v, stones) {
     const hit = stopped(idx, is_black, u, v, stones), tag = ladder_tag_letter
     if (hit) {
-        return empty(ret) ? null : (merge(ret[0], {ladder_hit: idx2move(...hit), tag}), ret)
+        return ret.length <= too_short ? null : (merge(ret[0], {ladder_hit: idx2move(...hit), tag}), ret)
     }
     const next_ret = [...ret, {move: idx2move(...idx), is_black, move_count}]
     const [offset, next_uv] = attack_p ? [idx_minus(v, u), [u, v]] : [v, [v, u]]
