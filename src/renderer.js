@@ -550,8 +550,10 @@ function goto_idx_maybe(idx, another_board) {
 }
 function duplicate_if(x) {x && main('duplicate_sequence')}
 
+const [unset_busy_layter] = deferred_procs([() => main('unset_busy'), 100])
+
 main_canvas.addEventListener("wheel", e => {
-    (e.deltaY !== 0) && (e.preventDefault(), main(e.deltaY < 0 ? 'undo' : 'redo'))
+    (e.deltaY !== 0) && (e.preventDefault(), main('busy', e.deltaY < 0 ? 'undo' : 'redo'), unset_busy_layter())
 })
 
 let is_stone_clicked = false
