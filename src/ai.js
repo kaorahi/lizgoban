@@ -81,9 +81,11 @@ function is_gorule_supported() {
     return leelaz_for_this_turn().is_supported('kata-set-rules')
 }
 
+let analysis_region = null
 function update_analysis_region(region) {
-    each_leelaz(z => z.update_analysis_region(region))
+    analysis_region = region; each_leelaz(apply_current_analysis_region, true)
 }
+function apply_current_analysis_region(lz) {lz.update_analysis_region(analysis_region)}
 
 /////////////////////////////////////////////////
 // leelaz for endstate
@@ -205,6 +207,7 @@ function create_leelaz_proxy() {
     const start_gen = (h, command) => {
         const c = pull_cached_engine(h)
         truncate_cached_engines(); renew_lz(c); c || lz[command](h)
+        apply_current_analysis_region(lz)
     }
     // override original methods
     const start = h => start_gen(h, 'start')
