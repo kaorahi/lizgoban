@@ -264,6 +264,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Implement side by side comparisons of the principal variation and the actual succeeding moves, etc.
 * Add stars to personal exercise book. Starred exercises will appear more often.
 * Support restriction of analysis region by Alt+drag like [KaTrain](https://github.com/sanderland/katrain/).
+* Insert/delete moves in the middle of the game by Ctrl+Shift+click.
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 
 ### 0.5.*
