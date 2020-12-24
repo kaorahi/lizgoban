@@ -1,5 +1,5 @@
 let electron; try {electron = require('electron')} catch {}
-const version = electron ? electron.remote.app.getVersion() : ''
+const version = electron ? electron.ipcRenderer.sendSync('app_version') : ''
 const open_ext = electron ? electron.shell.openExternal : window.open
 function for_class(name, proc) {
   Array.prototype.forEach.call(document.getElementsByClassName(name), proc)

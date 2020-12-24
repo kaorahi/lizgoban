@@ -410,6 +410,8 @@ each_key_value({
     close_window_or_cut_sequence, ask_new_game,
 }, (channel, proc) => ipc_with_sender_window(channel, proc))
 
+ipc.on('app_version', e => (e.returnValue = app.getVersion()))
+
 // update after every command
 
 function update_all(keep_board) {
