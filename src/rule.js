@@ -132,4 +132,5 @@ function copy_array(from, to) {to.splice(0, Infinity, ...from)}
 
 module.exports = {
     get_stones_and_set_ko_state,
+    captured_from,
 }

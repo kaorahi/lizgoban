@@ -1,5 +1,7 @@
 'use strict'
 
+const {captured_from} = require('./rule.js')
+
 const too_short = 5
 
 // wrap into array for convenience
@@ -40,7 +42,8 @@ function moves_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
     const u = idx_minus(a_idx, e_idx), v = idx_minus(next_idx, e_idx)
     const matched =
           check_pattern_around(e_idx, escape_pattern, recent_two_moves, stones, u, v)
-    return matched &&
+    const captured_if = is_captured_if(e_idx, next_idx, attack_move.is_black, stones)
+    return matched && captured_if &&
         try_next([], next_idx, move_count, escape_move.is_black, false, u, v, stones)
 }
 
@@ -54,7 +57,9 @@ function moves_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) 
     const u = idx_minus(next_idx, e_idx), v = idx_plus(idx_minus(a_idx, e_idx), u)
     const matched =
           check_pattern_around(e_idx, attack_pattern, recent_two_moves, stones, u, v)
-    return matched &&
+    const prev_e_idx = idx_minus(e_idx, u)
+    const captured_if = is_captured_if(prev_e_idx, e_idx, attack_move.is_black, stones)
+    return matched && captured_if &&
         try_next([], next_idx, move_count, attack_move.is_black, true, u, v, stones)
 }
 
@@ -145,11 +150,27 @@ function color_stone_or_border(idx, black, stones) {
     return pred_or_border(idx, stones, h => !h || (h.stone && !xor(h.black, black)))
 }
 
+function is_captured_if(stone_idx, move_idx, move_black, stones) {
+    const h = aa_ref(stones, ...stone_idx)
+    const valid = h && h.stone && xor(h.black, move_black)
+    const eq = ij => idx_eq(ij, stone_idx)
+    const is_captured = ss => captured_from(stone_idx, !move_black, ss).find(eq)
+    return valid && with_temporary_stone(move_idx, move_black, stones, is_captured)
+}
+
 // internal
 
 function pred_or_border([i, j], stones, pred) {
     const inside = 0 < i && i < stones.length - 1 && 0 < j && j < stones[0].length - 1
     return (!inside || pred(aa_ref(stones, i, j))) && [i, j]
+}
+
+function with_temporary_stone(idx, black, stones, f) {
+    const orig = aa_ref(stones, ...idx)
+    aa_set(stones, ...idx, {stone:true, black})
+    const ret = f(stones)
+    aa_set(stones, ...idx, orig)
+    return ret
 }
 
 //////////////////////////////////////
