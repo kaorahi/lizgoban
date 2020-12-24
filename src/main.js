@@ -1247,8 +1247,17 @@ function save_q_and_a_images() {
     renderer('save_q_and_a_images', ...filenames, msg_path)
 }
 function edit_middle(move) {
+    const new_game = game.successive_edit_middle_p() ? game : game.shallow_copy()
+    with_game(new_game, edit_middle_sub, move)
+    const new_baord_p = (new_game.ref_last() !== game.ref_last())
+    new_baord_p && (backup_and_replace_game(new_game), clear_sgf())
+}
+function edit_middle_sub(move) {
     const last_move_p = move === game.ref_current().move
     last_move_p ? game.edit_middle(explicit_undo) : game.edit_middle(play, move)
+}
+function with_game(tmp_game, proc, ...args) {
+    const orig = game; game = tmp_game; proc(...args); game = orig
 }
 
 /////////////////////////////////////////////////

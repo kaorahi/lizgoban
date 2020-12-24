@@ -28,6 +28,7 @@ function new_game_id() {return next_game_id++}
 
 function create_game(init_history, init_prop) {
     const self = {}, history = init_history || []  // private
+    let edit_middle_last = null  // private
     const prop = init_prop || {  // public
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
         handicaps: 0, init_len: 0, sgf_gorule: "", gorule: null,
@@ -45,6 +46,7 @@ function create_game(init_history, init_prop) {
         is_fresh: () => self.len() === self.init_len,
         ref: mc => history[mc - 1] || self.move0,
         ref_current: () => self.ref(self.move_count),
+        ref_last: () => self.ref(self.len()),
         current_stones: () => self.stones_at(self.move_count),
         stones_at: mc => self.stones_and_hama_at(mc).stones,
         stones_and_hama_at: mc =>
@@ -96,6 +98,8 @@ function create_game(init_history, init_prop) {
         push: update_move_count_after(z => history.push(z)),
         pop: update_move_count_after(() => history.pop()),
         edit_middle: (proc, ...args) => edit_middle(self, proc, ...args),
+        update_edit_middle: () => (edit_middle_last = self.ref_last()),
+        successive_edit_middle_p: () => (edit_middle_last === self.ref_last()),
     }
     const array_methods =
           aa2hash(['map', 'flatMap', 'forEach', 'slice']
@@ -121,6 +125,7 @@ function edit_middle(game, proc, ...args) {
     const future_moves = game.delete_future()
     const changed = with_checking_change(game.len, proc, ...args)
     save_move_count(() => future_moves.forEach(replayer(changed)))
+    changed && game.update_edit_middle()
 }
 
 /////////////////////////////////////////////////
