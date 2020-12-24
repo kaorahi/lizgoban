@@ -31,23 +31,31 @@ function succeeding_ladder_moves(game, stones) {
     return moves_to_escape(...args) || moves_to_capture(...args)
 }
 
-function moves_to_escape([escape_move, attack_move], [e_idx, a_idx], move_count, stones) {
+function moves_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
+    const [escape_move, attack_move] = recent_two_moves
     const dame = dame_around(e_idx, stones)
     const valid = touch_p(e_idx, a_idx) && (dame.length === 1)
     if (!valid) {return null}
     const [next_idx] = dame
     const u = idx_minus(a_idx, e_idx), v = idx_minus(next_idx, e_idx)
-    return try_next([], next_idx, move_count, escape_move.is_black, false, u, v, stones)
+    const matched =
+          check_pattern_around(e_idx, escape_pattern, recent_two_moves, stones, u, v)
+    return matched &&
+        try_next([], next_idx, move_count, escape_move.is_black, false, u, v, stones)
 }
 
-function moves_to_capture([attack_move, escape_move], [a_idx, e_idx], move_count, stones) {
+function moves_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
+    const [attack_move, escape_move] = recent_two_moves
     const dame = dame_around(e_idx, stones)
     const keima = dame.filter(ij => keima_p(ij, a_idx))
     const valid = kosumi_p(e_idx, a_idx) && (dame.length === 2) && (keima.length === 1)
     if (!valid) {return null}
     const [next_idx] = keima
     const u = idx_minus(next_idx, e_idx), v = idx_plus(idx_minus(a_idx, e_idx), u)
-    return try_next([], next_idx, move_count, attack_move.is_black, true, u, v, stones)
+    const matched =
+          check_pattern_around(e_idx, attack_pattern, recent_two_moves, stones, u, v)
+    return matched &&
+        try_next([], next_idx, move_count, attack_move.is_black, true, u, v, stones)
 }
 
 function try_next(ret, idx, move_count, is_black, attack_p, u, v, stones) {
@@ -67,6 +75,62 @@ function stopped(idx, is_black, u, v, stones) {
     const opponent_or_border = d =>
           color_stone_or_border(idx_plus(idx, d), !is_black, stones)
     return stone_or_border(idx, stones) || offsets.map(opponent_or_border).find(truep)
+}
+
+//////////////////////////////////////
+// pattern match
+
+// 1, 2: recent two moves
+// 3: next move (not used at present)
+// X, O: same color stone as 1, 2, respectively
+// .: empty
+// S, x, o: "X or O", "X or .", "O or ."
+// ?: don't care
+
+// each position in 3x3 pattern corresponds to p u + q v for (p, q) = ...
+//   (-1,-1) (-1,0) (-1,1)
+//   (0,-1) (0,0) (0,1)
+//   (1,-1) (1,0) (1,1)
+
+function split_pattern(pat) {
+    return pat.replace("3", ".").split("\n").filter(identity).map(s => s.split(""))
+}
+
+const attack_pattern = split_pattern(`
+SO1
+X2.
+x3.
+`)
+
+const escape_pattern = split_pattern(`
+SXO
+O13
+o2.
+`)
+
+function check_pattern_around(idx, pattern, recent_two_moves, stones, u, v) {
+    const [m1, m2] = recent_two_moves
+    const [color1, color2] = recent_two_moves.map(m => m.is_black)
+    const ij_from_offset = (p, q) =>
+          idx_plus(idx, idx_plus(idx_mul(p, u), idx_mul(q, v)))
+    const check = (c, a, b) => {
+        const ij = ij_from_offset(a - 1, b - 1), move = idx2move(...ij)
+        const h = aa_ref(stones, ...ij); if (!h) {return false}
+        const {stone, black} = h
+        const [is_color1, is_color2] = [color1, color2].map(col => !xor(black, col))
+        switch (c) {
+        case '1': return move === m1.move
+        case '2': return move === m2.move
+        case 'X': return stone && is_color1
+        case 'O': return stone && is_color2
+        case 'x': return !stone || is_color1
+        case 'o': return !stone || is_color2
+        case 'S': return stone
+        case '.': return !stone
+        case '?': return true
+        }
+    }
+    return aa_map(pattern, check).flat().every(truep)
 }
 
 //////////////////////////////////////
@@ -92,8 +156,11 @@ function pred_or_border([i, j], stones, pred) {
 // idx utils
 
 function idx_plus(a, b) {return idx_trans_map(a, b, (p, q) => p + q)}
+function idx_mul(coef, a) {return a.map(z => coef * z)}
+// function idx_minus(a, b) {return idx_plus(a, idx_mul(-1, b))}
 function idx_minus(a, b) {return idx_trans_map(a, b, (p, q) => p - q)}
 function idx_diff(a, b) {return idx_minus(a, b).map(Math.abs)}
+// function idx_eq(a, b) {return !idx_diff(a, b).some(identity)}
 function idx_eq(a, b) {return idx_trans_map(a, b, (p, q) => p === q).every(identity)}
 
 function touch_p(a, b) {return is_idx_diff(a, b, [0, 1])}
