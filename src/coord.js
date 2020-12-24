@@ -40,9 +40,10 @@ function idx2move(i, j) {
     const [row, col] = idx2rowcol(i, j); return truep(row) && (col + row)
 }
 
-function move2idx(move) {
+function move2idx(move) {return move2idx_maybe(move) || idx_pass}
+function move2idx_maybe(move) {
     const m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [dummy, col, row] = m || []
-    return m ? [board_size() - to_i(row), col_name.indexOf(col)] : idx_pass
+    return m && [board_size() - to_i(row), col_name.indexOf(col)]
 }
 
 /////////////////////////////////////////////////
@@ -105,7 +106,7 @@ function sgfpos2move(pos) {
 }
 
 module.exports = {
-    idx2rowcol,
+    idx2rowcol, move2idx_maybe,
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
     translator_pair,
     board_size, set_board_size, with_board_size, sgfpos2move, move2sgfpos, stars,
