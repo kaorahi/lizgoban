@@ -483,6 +483,7 @@ function handle_mouse_on_goban(canvas, coord2idx, read_only) {
         if (!is_setting_analysis_region()) {return}
         const idx = is_event_to_set_analysis_region(e) && mouse2idx(e, coord2idx)
         set_analysis_region(idx); hover_off(canvas)
+        idx && cancel_next_alt_up()
     }
     const ondblclick = onmousedown
     const onmousemove = e => {unset_stone_is_clicked(); hover_here(e, coord2idx, canvas)}
@@ -1059,6 +1060,7 @@ document.onkeyup = e => {
     reset_keyboard_tag();
     (to_i(e.key) > 0 || e.key === "0" || tag_letters.includes(e.key))
         && reset_keyboard_moves()
+    cancel_alt_up_maybe(e)
     switch (e.key) {
     case "c": set_showing_movenum_p(false); break
     case "v": set_showing_endstate_value_p(false); break
@@ -1170,6 +1172,13 @@ globalize({showing_branch_p})
 
 function undoable() {return R.move_count > R.init_len}
 function redoable() {return R.move_count < R.history_length}
+
+let cancel_next_alt_up_p = false
+function cancel_next_alt_up() {cancel_next_alt_up_p = true}
+function cancel_alt_up_maybe(e) {
+    const cancel_p = (e.key === 'Alt') && cancel_next_alt_up_p
+    cancel_p && (e.preventDefault(), (cancel_next_alt_up_p = false))
+}
 
 /////////////////////////////////////////////////
 // drag and drop
