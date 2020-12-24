@@ -1280,11 +1280,13 @@ function add_tsumego_frame(ko_p) {
     if (game.move_count === 0) {return}
     const play1 = ([i, j, is_black]) => do_play(idx2move(i, j), is_black)
     const bturn = is_bturn(), komi = AI.engine_info().engine_komi
-    const fill = tsumego_frame(game.current_stones(), komi, bturn, ko_p)
+    const [fill, analysis_region] =
+          tsumego_frame(game.current_stones(), komi, bturn, ko_p)
     duplicate_sequence(true, true); fill.forEach(play1)
     set_gorule(default_gorule)
     const [i0, j0, is_black0] = last(fill) || []
     !empty(fill) && !!is_black0 === !!bturn && do_play('pass', !bturn)
+    renderer('update_analysis_region', analysis_region)
 }
 
 /////////////////////////////////////////////////

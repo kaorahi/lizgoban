@@ -4,9 +4,18 @@ const {ij_flipper} = require('./random_flip.js')
 // main
 
 function tsumego_frame(stones, komi, black_to_play_p, ko_p) {
+    // util
+    const pick = key => (s, i, j) => s[key] && [i, j, s.black]
+    const pick_all = (given_stones, key) =>
+          aa_map(given_stones, pick(key)).flat().filter(truep)
+    const range = ks => [Math.min(...ks), Math.max(...ks)]
+    // main
     const filled_stones = tsumego_frame_stones(stones, komi, black_to_play_p, ko_p)
-    const pick_stone = (s, i, j) => s.tsumego_frame && [i, j, s.black]
-    return aa_map(filled_stones, pick_stone).flat().filter(truep)
+    const fill = pick_all(filled_stones, 'tsumego_frame')
+    const region_pos = pick_all(filled_stones, 'tsumego_frame_region_mark')
+    const analysis_region = !empty(region_pos) &&
+          aa_transpose(region_pos).slice(0, 2).map(range)
+    return [fill, analysis_region]
 }
 
 function tsumego_frame_stones(stones, komi, black_to_play_p, ko_p) {
@@ -58,7 +67,7 @@ function put_border(stones, size, frame_range, is_black) {
     const [i0, i1, j0, j1] = frame_range
     const ij_for = (k, at, reverse_p) => reverse_p ? [at, k] : [k, at]
     const put = (k, at, reverse_p) =>
-          put_stone(stones, size, ...ij_for(k, at, reverse_p), is_black)
+          put_stone(stones, size, ...ij_for(k, at, reverse_p), is_black, false, true)
     const put_line = (from, to, at, reverse_p) =>
           seq_from_to(from, to).forEach(k => put(k, at, reverse_p))
     const put_twin = (from, to, at0, at1, reverse_p) =>
@@ -147,9 +156,10 @@ function flip_stones(stones, flip_spec) {
     return new_stones
 }
 
-function put_stone(stones, size, i, j, black, empty) {
+function put_stone(stones, size, i, j, black, empty, tsumego_frame_region_mark) {
     if (i < 0 || size <= i || j < 0 || size <= j) {return}
-    aa_set(stones, i, j, empty ? {} : {tsumego_frame: true, black})
+    aa_set(stones, i, j,
+           empty ? {} : {tsumego_frame: true, black, tsumego_frame_region_mark})
 }
 
 function inside_p(i, j, [i0, i1, j0, j1]) {
