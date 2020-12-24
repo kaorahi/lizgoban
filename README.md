@@ -51,6 +51,7 @@ with lots of original gimmicks.
 * Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
 * Play against weakened engines in several ways (Note: [KaTrain](https://github.com/sanderland/katrain/) has nicer features in this field now.)
 * [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
+* [Experimental] Indicate ladder breakers and show continuation of ladders automatically.
 * [Experimental] [External control of GUI](https://github.com/kaorahi/lizgoban/issues/61) from another program
 
 ### Original visualizations
@@ -266,6 +267,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Support restriction of analysis region by Alt+drag like [KaTrain](https://github.com/sanderland/katrain/).
 * Slightly improve Tsumego frame (boundary, analysis region).
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
+* Automatically mark ladder breakers as "=" and show the continuation of the ladder by "=" key (experimental).
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 
 Incompatibilities:
