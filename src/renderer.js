@@ -243,11 +243,10 @@ ipc.on('save_q_and_a_images', (e, q_filename, a_filename, msg_path) => {
     generate_board_image_blob(a_draw, saver(a_filename, callback))
 })
 
-ipc.on('reset_match_param', (e) => set_match_param(true))
-ipc.on('take_thumbnail', (e, id, stones, trial_p) => take_thumbnail(id, stones, trial_p))
-ipc.on('slide_in', (e, direction) => slide_in(direction))
-ipc.on('wink', (e) => wink())
-ipc.on('toast', (e, ...a) => toast(...a))
+const direct_ipc = {
+    reset_match_param, take_thumbnail, slide_in, wink, toast,
+}
+each_key_value(direct_ipc, (key, func) => ipc.on(key, (e, ...a) => func(...a)))
 
 function skip_too_frequent_requests(f) {
     let latest_request = null
@@ -537,6 +536,7 @@ function set_match_param(reset_p) {
     const it = Q('#weaken'); reset_p && (it.selectedIndex = 0)
     main('set_match_param', it.options[it.selectedIndex].value)
 }
+function reset_match_param() {set_match_param(true)}
 function auto_play_in_match_sec() {return to_f(Q('#match_sec').value)}
 function hover_here(e, coord2idx, canvas) {
     set_hovered(mouse2move(e, coord2idx) || 'last_move', null, canvas)
