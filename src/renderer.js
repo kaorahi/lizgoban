@@ -996,7 +996,9 @@ document.onkeydown = e => {
     case "v" : set_showing_endstate_value_p(true); return
     case "C-c": m('copy_sgf_to_clipboard', true); return
     case "z": f(set_temporary_board_type, "raw", "suggest"); return
-    case "x": f(set_temporary_board_type, "winrate_only", "suggest"); return
+    case "x": set_showing_movenum_p(false);  // avoid broken display
+        // by "c" key + "x" key when mouse cursor is on the winrate graph
+        f(set_temporary_board_type, "winrate_only", "suggest"); return
     case " ": m('toggle_pause'); return
     case "Z": f(toggle_board_type, 'raw'); return
     case "Tab": f(toggle_board_type); return
