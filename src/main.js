@@ -375,7 +375,7 @@ function apply_api(channel, handler, args) {
 }
 
 function simple_or_normal_api_handler(channel, handler) {
-    const simple = Object.keys(simple_api).indexOf(channel) >= 0
+    const simple = !!simple_api[channel]
     const simple_api_handler = (e, ...a) => apply_api(channel, handler, a)
     return simple ? simple_api_handler : api_handler(channel, handler)
 }
