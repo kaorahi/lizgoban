@@ -208,7 +208,7 @@ function draw_goban(canvas, stones, opts) {
            draw_loss_p, draw_coordinates_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
-           hovered_move, show_until, main_canvas_p, handle_mouse_on_goban}
+           hovered_move, show_until, analysis_region, main_canvas_p, handle_mouse_on_goban}
           = opts || {}
     const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
     const large_font_p = !main_canvas_p
@@ -232,6 +232,7 @@ function draw_goban(canvas, stones, opts) {
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     draw_endstate_p && !hide_endstate_clusters_p() &&
         draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
+    analysis_region && draw_analysis_region(analysis_region, unit, idx2coord, g)
     // mouse events
     const mouse_handler = handle_mouse_on_goban || do_nothing
     mouse_handler(canvas, coord2idx, read_only)
@@ -448,6 +449,14 @@ function draw_endstate_boundary(cluster, unit, idx2coord, g) {
 }
 
 function past_endstate_p(flag) {return flag === 'past'}
+
+function draw_analysis_region(region, unit, idx2coord, g) {
+    const color = BLUE, line_width = 0.1 * unit, margin = 0.5
+    const [[imin, imax], [jmin, jmax]] = region
+    const xy0 = idx2coord(imin - margin, jmin - margin)
+    const xy1 = idx2coord(imax + margin, jmax + margin)
+    g.strokeStyle = color; g.lineWidth = line_width; rect(xy0, xy1, g)
+}
 
 /////////////////////////////////////////////////
 // on goban grids

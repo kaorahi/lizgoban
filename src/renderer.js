@@ -305,6 +305,7 @@ function with_opts(d, opts) {
             pausing_p: R.pausing, trial_p: R.trial,
             show_until: showing_until(c),
             hovered_move: if_hover_on(c, hovered_move),
+            analysis_region: get_analysis_region_for_display(),
             cheap_shadow_p: R.long_busy,
             handle_mouse_on_goban,
             ...(functionp(opts) ? opts() : opts || {}),
@@ -647,6 +648,11 @@ function set_analysis_region(idx) {
     analysis_region_start_idx && cancel_p && toast('Canceled')
     analysis_region_start_idx = null; analysis_region = cancel_p ? null : region
     main('update_analysis_region', analysis_region)
+}
+function get_analysis_region_for_display() {
+    const tmp_idx = move2idx_maybe(hovered_move || '')
+    const tmp_region = region_from_idx(analysis_region_start_idx, tmp_idx)
+    return tmp_region || analysis_region
 }
 function region_from_idx(...idx_pair) {
     return idx_pair.every(truep) && aa_transpose(idx_pair).map(num_sort)
