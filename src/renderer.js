@@ -1002,8 +1002,8 @@ document.onkeyup = e => {
     (to_i(e.key) > 0 || e.key === "0" || tag_letters.includes(e.key))
         && reset_keyboard_moves()
     switch (e.key) {
-    case "c" : set_showing_movenum_p(false); break
-    case "v" : set_showing_endstate_value_p(false); break
+    case "c": set_showing_movenum_p(false); break
+    case "v": set_showing_endstate_value_p(false); break
     case "z": case "x": set_temporary_board_type(null); break
     }
     tag_letters.includes(e.key) && clear_tentatively_showing_until()
