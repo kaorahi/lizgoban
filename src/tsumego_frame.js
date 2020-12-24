@@ -156,8 +156,6 @@ function inside_p(i, j, [i0, i1, j0, j1]) {
     return clip(i, i0, i1) === i && clip(j, j0, j1) === j
 }
 
-function seq_from_to(from, to) {return (from > to) ? [] : seq(to - from + 1, from)}
-
 //////////////////////////////////////
 // exports
 

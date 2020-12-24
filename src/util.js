@@ -41,7 +41,8 @@ E.blunder_threshold = -2
 E.big_blunder_threshold = -5
 
 // seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
-E.seq = (n, from) => [...Array(n)].map((_, i) => i + (from || 0))
+E.seq = (n, from) => [...Array(clip(n, 0))].map((_, i) => i + (from || 0))
+E.seq_from_to = (from, to) => E.seq(to - from + 1, from)
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
 // "magic" in ai.py of KaTrain
@@ -59,6 +60,7 @@ E.aa_set = (aa, i, j, val) =>
     truep(i) && (i >= 0) && ((aa[i] = aa[i] || []), (aa[i][j] = val))
 E.aa_each = (aa, f) => aa.forEach((row, i) => row.forEach((s, j) => f(s, i, j)))
 E.aa_map = (aa, f) => aa.map((row, i) => row.map((s, j) => f(s, i, j)))
+E.aa_transpose = aa => aa[0].map((_, k) => aa.map(a => a[k]))
 E.aa2hash = aa => {const h = {}; aa.forEach(([k, v]) => h[k] = v); return h}
 E.around_idx_diff = [[1, 0], [0, 1], [-1, 0], [0, -1]]
 E.around_idx = ([i, j]) => {
