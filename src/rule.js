@@ -31,21 +31,21 @@ function capture_stones_and_check_ko(ij, is_black, stones, hama, ko_pool) {
 function capture(ij, is_black, stones, hama) {
     let captured_opponents = []
     around_idx(ij).forEach(idx => {
-        const r = remove_dead(idx, !is_black, stones); captured_opponents.push(...r)
+        const r = remove_captured(idx, !is_black, stones); captured_opponents.push(...r)
         hama[!!is_black] += r.length
     })
-    hama[!is_black] += remove_dead(ij, is_black, stones).length
+    hama[!is_black] += remove_captured(ij, is_black, stones).length
     return captured_opponents
 }
 
-function remove_dead(ij, is_black, stones) {
-    const state = {hope: [], dead_pool: [], dead_map: [[]], is_black, stones}
+function remove_captured(ij, is_black, stones) {
+    const state = {hope: [], captured_pool: [], captured_map: [[]], is_black, stones}
     check_if_liberty(ij, state)
     while (!empty(state.hope)) {
         if (search_for_liberty(state)) {return []}
     }
-    state.dead_pool.forEach(idx => aa_set(stones, ...idx, {}))
-    return state.dead_pool
+    state.captured_pool.forEach(idx => aa_set(stones, ...idx, {}))
+    return state.captured_pool
 }
 
 function search_for_liberty(state) {
@@ -58,9 +58,9 @@ function check_if_liberty(ij, state) {
 }
 
 function push_hope(ij, s, state) {
-    if (xor(s.black, state.is_black) || aa_ref(state.dead_map, ...ij)) {return}
+    if (xor(s.black, state.is_black) || aa_ref(state.captured_map, ...ij)) {return}
     state.hope.push(ij)
-    state.dead_pool.push(ij); aa_set(state.dead_map, ...ij, true)
+    state.captured_pool.push(ij); aa_set(state.captured_map, ...ij, true)
 }
 
 ///////////////////////////////////////
