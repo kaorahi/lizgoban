@@ -1402,8 +1402,9 @@ function create_sequence_maybe(force) {
     const create_p = force || game.move_count < game.len()
     const empty_now = game.move_count === 0
     return !create_p ? false : empty_now ? (new_empty_board(), true) :
-        (backup_game(true), merge(game, {trial: true, sgf_file: "", sgf_str: ""}), true)
+        (backup_game(true), clear_sgf(true), true)
 }
+function clear_sgf(trial) {merge(game, {trial, sgf_file: "", sgf_str: ""})}
 
 function next_sequence() {previous_or_next_sequence(1)}
 function previous_sequence() {previous_or_next_sequence(-1)}
