@@ -268,6 +268,10 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 
+Incompatibilities:
+
+* Upgrade libraries (Electron 11, etc.). So you may need to do "npm install" again.
+
 ### 0.5.*
 
 * Support ownerships of stones by facial expressions.
