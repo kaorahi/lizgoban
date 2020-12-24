@@ -1246,10 +1246,12 @@ function save_q_and_a_images() {
 }
 function edit_middle(move) {
     const editing_p = game.trial && game.successive_edit_middle_p()
-    const new_game = editing_p ? game : game.shallow_copy()
+    const new_game = game.shallow_copy()
     with_game(new_game, edit_middle_sub, move)
-    const new_board_p = (new_game.ref_last() !== game.ref_last()) || (new_game.len() !== game.len())
-    new_board_p && (backup_and_replace_game(new_game), clear_sgf(true))
+    const modified = (new_game.ref_last() !== game.ref_last()) || (new_game.len() !== game.len())
+    if (!modified) {return}
+    const replace = editing_p ? replace_sequence : backup_and_replace_game
+    new_game.brothers = [game]; replace(new_game); clear_sgf(true); update_branch()
 }
 function edit_middle_sub(move) {
     const last_move_p = move === game.ref_current().move
