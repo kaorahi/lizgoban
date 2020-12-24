@@ -39,12 +39,17 @@ function capture(ij, is_black, stones, hama) {
 }
 
 function remove_captured(ij, is_black, stones) {
+    const captured = captured_from(ij, is_black, stones)
+    captured.forEach(idx => aa_set(stones, ...idx, {}))
+    return captured
+}
+
+function captured_from(ij, is_black, stones) {
     const state = {hope: [], captured_pool: [], captured_map: [[]], is_black, stones}
     check_if_liberty(ij, state)
     while (!empty(state.hope)) {
         if (search_for_liberty(state)) {return []}
     }
-    state.captured_pool.forEach(idx => aa_set(stones, ...idx, {}))
     return state.captured_pool
 }
 
