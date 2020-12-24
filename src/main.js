@@ -450,12 +450,10 @@ function do_play(move, is_black, tag, note) {
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    const delete_last_move = () => {
-        game.pop(); update_branch(); autosave_later()
-    }
     game.move_count <= game.init_len ? wink() :
         game.move_count < game.len() ? undo() : wink_if_pass(delete_last_move)
 }
+function delete_last_move() {game.pop(); update_branch(); autosave_later()}
 const pass_command = 'pass'
 function pass() {play(pass_command)}
 function is_pass(move) {return move === pass_command}
@@ -1250,15 +1248,27 @@ function edit_middle(move) {
     const editting_p = game.trial && game.successive_edit_middle_p()
     const new_game = editting_p ? game : game.shallow_copy()
     with_game(new_game, edit_middle_sub, move)
-    const new_baord_p = (new_game.ref_last() !== game.ref_last())
+    const new_baord_p = (new_game.ref_last() !== game.ref_last()) || (new_game.len() !== game.len())
     new_baord_p && (backup_and_replace_game(new_game), clear_sgf(true))
 }
 function edit_middle_sub(move) {
     const last_move_p = move === game.ref_current().move
-    last_move_p ? game.edit_middle(explicit_undo) : game.edit_middle(play, move)
+    const stone_p = (aa_ref(R.stones, ...move2idx(move)) || {}).stone
+    const ed = game.edit_middle
+    last_move_p ? ed(explicit_undo) : stone_p ? delete_move(move) : ed(play, move)
 }
+function delete_move(move) {
+    const mc = game.latest_move_count_for(move); if (mc <= 0) {return}
+    with_move_count(mc, () => game.edit_middle(delete_last_move))
+    mc <= game.init_len && game.init_len--
+}
+
 function with_game(tmp_game, proc, ...args) {
     const orig = game; game = tmp_game; proc(...args); game = orig
+}
+function with_move_count(tmp_mc, proc, ...args) {
+    const diff = game.move_count - tmp_mc  // move_count can be changed in proc
+    game.move_count = tmp_mc; proc(...args); game.move_count = game.move_count + diff
 }
 
 /////////////////////////////////////////////////

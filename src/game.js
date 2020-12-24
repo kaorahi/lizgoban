@@ -100,6 +100,7 @@ function create_game(init_history, init_prop) {
         edit_middle: (proc, ...args) => edit_middle(self, proc, ...args),
         update_edit_middle: () => (edit_middle_last = self.ref_last()),
         successive_edit_middle_p: () => (edit_middle_last === self.ref_last()),
+        latest_move_count_for: move => latest_move_count_for(self, move),
     }
     const array_methods =
           aa2hash(['map', 'flatMap', 'forEach', 'slice']
@@ -126,6 +127,12 @@ function edit_middle(game, proc, ...args) {
     const changed = with_checking_change(game.len, proc, ...args)
     save_move_count(() => future_moves.forEach(replayer(changed)))
     changed && game.update_edit_middle()
+}
+
+function latest_move_count_for(game, move) {
+    const hist = game.array_until(game.move_count)
+    const index = Math.max(hist.map((h, k) => (h.move === move) && k).filter(truep))
+    return (index >= 0) && index + 1
 }
 
 /////////////////////////////////////////////////
