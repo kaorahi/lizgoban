@@ -398,13 +398,13 @@ const busy_handler_for =
       cached(subchannel => api_handler(subchannel, api[subchannel], true))
 ipc.on('busy', (e, subchannel, ...args) => busy_handler_for(subchannel)(e, ...args))
 
-function ipc_with_sender_window(channel, proc, args) {
+function ipc_with_sender_window(channel, proc) {
     ipc.on(channel,
-           e => apply_api(channel, (...a) => {
+           (e, ...args) => apply_api(channel, (...a) => {
                stop_auto()
                get_windows().forEach(win => (win.webContents === e.sender) &&
                                      proc(win, ...a))
-           }, args || []))
+           }, args))
 }
 each_key_value({
     close_window_or_cut_sequence, ask_new_game,
