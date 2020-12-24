@@ -954,7 +954,7 @@ document.onkeydown = e => {
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
     const escape = (key === "Escape" || key === "C-["), target = e.target
-    escape && hide_dialog()
+    escape && (hide_dialog(), set_analysis_region(null))
     switch (key === "Enter" && target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "generic_input_dialog_input": submit_generic_input_dialog(); return
