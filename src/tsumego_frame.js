@@ -41,7 +41,7 @@ function tsumego_frame_stones(stones, komi, black_to_play_p, ko_p) {
     const black_to_attack_p = guess_black_to_attack([top, bottom, left, right], size)
     put_border(stones, size, frame_range, black_to_attack_p)
     put_outside(stones, size, frame_range, black_to_attack_p, black_to_play_p, komi)
-    put_ko_thread(stones, size, frame_range, black_to_attack_p, black_to_play_p, ko_p)
+    put_ko_threat(stones, size, frame_range, black_to_attack_p, black_to_play_p, ko_p)
     return stones
 }
 
@@ -92,11 +92,11 @@ function put_outside(stones, size, frame_range,
 // XXXX.X???????
 
 // [pattern, top_p, left_p]
-const offense_ko_thread = [`
+const offense_ko_threat = [`
 ....OOOX.
 .....XXXX
 `, true, false]
-const defense_ko_thread = [`
+const defense_ko_threat = [`
 ..
 ..
 X.
@@ -105,14 +105,14 @@ OO
 .O
 `, false, true]
 
-// // more complicated ko threads
-// const offense_ko_thread = [`
+// // more complicated ko threats
+// const offense_ko_threat = [`
 // ..OOX.
 // ...XXX
 // ......
 // ......
 // `, true, false]
-// const defense_ko_thread = [`
+// const defense_ko_threat = [`
 // ....
 // ....
 // X...
@@ -121,11 +121,11 @@ OO
 // .O..
 // `, false, true]
 
-function put_ko_thread(stones, size, frame_range,
+function put_ko_threat(stones, size, frame_range,
                        black_to_attack_p, black_to_play_p, ko_p) {
     const for_offense_p = xor(ko_p, xor(black_to_attack_p, black_to_play_p))
     const [pattern, top_p, left_p] = for_offense_p ?
-          offense_ko_thread : defense_ko_thread
+          offense_ko_threat : defense_ko_threat
     const aa = pattern.split(/\n/).filter(identity).map(s => s.split(''))
     const width = aa[0].length, height = aa.length
     const put =  (ch, i, j) => {
