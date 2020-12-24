@@ -653,6 +653,7 @@ function set_analysis_region(idx) {
 }
 function update_analysis_region(region) {
     main('update_analysis_region', analysis_region = region)
+    region && toast('Alt+click to cancel region')
 }
 function get_analysis_region_for_display() {
     const tmp_idx = move2idx_maybe(hovered_move || '')
