@@ -340,6 +340,7 @@ const api = merge({}, simple_api, {
     init_from_renderer,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
+    edit_middle,
     let_me_think_next, goto_next_something, goto_previous_something,
     goto_move_count, toggle_auto_analyze, play_best, play_weak, stop_auto,
     submit_auto_play, submit_auto_replay, auto_play_in_match,
@@ -1244,6 +1245,10 @@ function save_q_and_a_images() {
     const filenames = ['a', 'b'].map(z => `${path}_${z}.png`)
     const msg_path = `${PATH.join(dir, pre)}...`
     renderer('save_q_and_a_images', ...filenames, msg_path)
+}
+function edit_middle(move) {
+    const last_move_p = move === game.ref_current().move
+    last_move_p ? game.edit_middle(explicit_undo) : game.edit_middle(play, move)
 }
 
 /////////////////////////////////////////////////

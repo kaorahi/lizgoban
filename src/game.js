@@ -95,11 +95,32 @@ function create_game(init_history, init_prop) {
             common_header_length(history, another_history, true),
         push: update_move_count_after(z => history.push(z)),
         pop: update_move_count_after(() => history.pop()),
+        edit_middle: (proc, ...args) => edit_middle(self, proc, ...args),
     }
     const array_methods =
           aa2hash(['map', 'flatMap', 'forEach', 'slice']
                   .map(meth => [meth, (...args) => history[meth](...args)]))
     return merge(self, prop, methods, array_methods)
+}
+
+/////////////////////////////////////////////////
+// edit middle
+
+function edit_middle(game, proc, ...args) {
+    // utils
+    const keys = ['move', 'is_black', 'note', 'comment']
+    const dup_move = orig => aa2hash(keys.map(k => [k, orig[k]]))
+    const replayer = changed => h =>
+          game.push(changed ? {...dup_move(h), move_count: game.move_count + 1} : h)
+    const save_move_count = f => {const mc = game.move_count; f(); game.move_count = mc}
+    const with_checking_change = (checker, f, ...a) => {
+        const old = checker(); f(...a);
+        return checker() !== old
+    }
+    // do
+    const future_moves = game.delete_future()
+    const changed = with_checking_change(game.len, proc, ...args)
+    save_move_count(() => future_moves.forEach(replayer(changed)))
 }
 
 /////////////////////////////////////////////////

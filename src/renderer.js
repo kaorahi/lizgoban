@@ -505,6 +505,7 @@ function play_here(e, coord2idx, canvas) {
     if (is_stone_clicked && !dblclick) {return true}
     const move = mouse2move(e, coord2idx); if (!move) {return true}
     const idx = move2idx(move)
+    if (is_event_to_edit_middle(e)) {main('edit_middle', move); return true}
     if (is_event_to_set_analysis_region(e)) {start_analysis_region(idx); return false}
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
     const goto_p = showing_movenum_p() || dblclick
@@ -550,6 +551,8 @@ function set_stone_is_clicked() {is_stone_clicked = true}
 function unset_stone_is_clicked() {
     is_stone_clicked && ((is_stone_clicked = false), set_showing_movenum_p(false))
 }
+
+function is_event_to_edit_middle(e) {return (e.shiftKey && e.ctrlKey)}
 
 // on winrate graph
 
