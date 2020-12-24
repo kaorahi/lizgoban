@@ -65,6 +65,9 @@ window.onfocus = update_for_mac
 function update()  {set_all_canvas_size(); update_goban(); update_for_mac()}
 function update_for_mac() {mac_p() && main('update_menu')}  // for board_type_menu_item
 
+// to receive the event...
+Q('#pass').onclick = play_pass
+
 /////////////////////////////////////////////////
 // util
 
@@ -523,7 +526,10 @@ function play_here(e, coord2idx, canvas) {
     main('play', move, force_create, null, null, match_sec)
     return true
 }
-function play_pass() {main('pass'); auto_play_in_match()}
+function play_pass(e) {
+    is_event_to_edit_middle(e) ? main('edit_middle', 'pass') :
+        (main('pass'), auto_play_in_match())
+}
 function auto_play_in_match() {
     in_match_p() && main('auto_play_in_match', auto_play_in_match_sec())
 }
@@ -1047,8 +1053,7 @@ document.onkeydown = e => {
     case "C-v": m('paste_sgf_or_url_from_clipboard'); break;
     case "C-x": m('cut_sequence'); break;
     case "C-w": m('close_window_or_cut_sequence'); break;
-    case "p": play_pass(); break;
-    case "C-P": m('edit_middle', 'pass'); break;
+    case "p": case "C-P": play_pass(e); break;
     case "Enter": play_it(e.shiftKey ? 5 : 1); break;
     case "`": f(play_it, false, true); break;
     case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves :
