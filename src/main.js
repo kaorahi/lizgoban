@@ -352,6 +352,8 @@ const api = merge({}, simple_api, {
     switch_to_game_id,
     increase_exercise_stars,
     detach_from_sabaki,
+    update_analysis_region: AI.update_analysis_region,
+
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
 })

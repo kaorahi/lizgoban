@@ -81,6 +81,10 @@ function is_gorule_supported() {
     return leelaz_for_this_turn().is_supported('kata-set-rules')
 }
 
+function update_analysis_region(region) {
+    each_leelaz(z => z.update_analysis_region(region))
+}
+
 /////////////////////////////////////////////////
 // leelaz for endstate
 
@@ -282,6 +286,7 @@ module.exports = {
     unload_leelaz_for_white, leelaz_weight_file, restart,
     set_engine_for_white, restore, info_for_restore, backup,
     different_komi_for_black_and_white, startup_log,
+    update_analysis_region,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only

@@ -18,6 +18,7 @@ function create_leelaz () {
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
     let startup_log = [], is_in_startup = true
+    let analysis_region = null
 
     // game state
     let move_count = 0, bturn = true
@@ -73,6 +74,7 @@ function create_leelaz () {
             is_katago() && ownership_p && 'ownership true',
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
             is_supported('pvVisits') && 'pvVisits true',
+            is_supported('allow') && analysis_region_string(),
         ].filter(truep).join(' '), on_analysis_response)
     }
     const stop_analysis = () => {leelaz('name')}
@@ -93,6 +95,7 @@ function create_leelaz () {
             ['kata-set-rules', `kata-set-rules ${gorule}`],
             ['kata-get-param', `kata-get-param playoutDoublingAdvantage`],
             ['pvVisits', `kata-analyze 1 pvVisits true`],
+            ['allow', `lz-analyze 1 allow B D4 1`],
         ]
         checks.map(a => check_supported(...a))
         // clear_leelaz_board for restart
@@ -168,7 +171,7 @@ function create_leelaz () {
     const network_size = () => network_size_text
     const get_komi = () => komi
     const get_engine_id = () =>
-          `${base_engine_id}-${gorule}-${komi}${aggressive}`
+          `${base_engine_id}-${gorule}-${komi}${aggressive}${analysis_region}`
     const peek_value = (move, cont) => {
         if (!is_supported('lz-setoption')) {return false}
         the_nn_eval_reader =
@@ -196,6 +199,17 @@ function create_leelaz () {
     const kata_pda_supported = () => {
         const is_pda_set_explicitly = arg.leelaz_args.join('').match(kata_pda_param)
         return is_supported('kata-get-param') && !is_pda_set_explicitly
+    }
+
+    // allow
+    const update_analysis_region = region => {analysis_region = region; update()}
+    const analysis_region_string = () => {
+        if (!analysis_region) {return null}
+        const [is, js] = analysis_region.map(range => seq_from_to(...range))
+        const vertices = is.flatMap(i => js.map(j => idx2move(i, j))).join(',')
+        const untildepth = 1
+        const for_color = player => `allow ${player} ${vertices} ${untildepth}`
+        return ['B', 'W'].map(for_color).join(' ')
     }
 
     /////////////////////////////////////////////////
@@ -422,6 +436,7 @@ function create_leelaz () {
     return {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
+        update_analysis_region,
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,

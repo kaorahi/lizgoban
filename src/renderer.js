@@ -440,7 +440,8 @@ function update_target_move(m, s) {
     const c = (m === draw_main) ? main_canvas : (s === draw_sub) ? sub_canvas : null
     if (!c) {return}
     const u = move_count_for_suggestion(c), h = selected_suggest(c)
-    D.set_target_move(!truep(u) && (h.visits > 0) && h.move)
+    const setp = !truep(u) && (h.visits > 0) && !is_setting_analysis_region()
+    D.set_target_move(setp && h.move)
 }
 
 function any_selected_suggest() {
@@ -477,11 +478,16 @@ function handle_mouse_on_goban(canvas, coord2idx, read_only) {
     const onmousedown = e => !read_only && !R.attached &&
           play_here(e, coord2idx, canvas) &&
           (set_showing_movenum_p(false), hover_off(canvas))
+    const onmouseup = e => {
+        if (!is_setting_analysis_region()) {return}
+        const idx = is_event_to_set_analysis_region(e) && mouse2idx(e, coord2idx)
+        set_analysis_region(idx); hover_off(canvas)
+    }
     const ondblclick = onmousedown
     const onmousemove = e => {unset_stone_is_clicked(); hover_here(e, coord2idx, canvas)}
     const onmouseenter = onmousemove
     const onmouseleave = e => hover_off(canvas)
-    const handlers = {onmousedown, ondblclick, onmousemove, onmouseenter, onmouseleave}
+    const handlers = {onmousedown, onmouseup, ondblclick, onmousemove, onmouseenter, onmouseleave}
     add_mouse_handlers_with_record(canvas, handlers)
 }
 function ignore_mouse_on_goban(canvas) {
@@ -495,6 +501,7 @@ function play_here(e, coord2idx, canvas) {
     if (is_stone_clicked && !dblclick) {return true}
     const move = mouse2move(e, coord2idx); if (!move) {return true}
     const idx = move2idx(move)
+    if (is_event_to_set_analysis_region(e)) {start_analysis_region(idx); return false}
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
     const goto_p = showing_movenum_p() || dblclick
     const stone_p = aa_ref(R.stones, ...idx).stone
@@ -624,6 +631,27 @@ function mouse2idx(e, coord2idx) {
 function mouse2move(e, coord2idx) {
     const idx = mouse2idx(e, coord2idx); return idx && idx2move(...idx)
 }
+
+// analysis_region = [[imin, imax], [jmin, jmax]]
+
+let analysis_region = null, analysis_region_start_idx = null
+function is_event_to_set_analysis_region(e) {return e.altKey}
+function is_setting_analysis_region() {return !!analysis_region_start_idx}
+function start_analysis_region(idx) {
+    toast('Drag to set analysis region')
+    set_analysis_region(null); analysis_region_start_idx = idx
+}
+function set_analysis_region(idx) {
+    const region = region_from_idx(analysis_region_start_idx, idx)
+    const cancel_p = !region || region.every(([p, q]) => p === q)
+    analysis_region_start_idx && cancel_p && toast('Canceled')
+    analysis_region_start_idx = null; analysis_region = cancel_p ? null : region
+    main('update_analysis_region', analysis_region)
+}
+function region_from_idx(...idx_pair) {
+    return idx_pair.every(truep) && aa_transpose(idx_pair).map(num_sort)
+}
+
 
 /////////////////////////////////////////////////
 // thmubnails
