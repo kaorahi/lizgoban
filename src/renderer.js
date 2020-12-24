@@ -983,7 +983,7 @@ document.onkeydown = e => {
     case "C-v": m('paste_sgf_or_url_from_clipboard'); break;
     case "C-x": m('cut_sequence'); break;
     case "C-w": m('close_window_or_cut_sequence'); break;
-    case "p": m('pass'); break;
+    case "p": play_pass(); break;
     case "Enter": play_it(e.shiftKey ? 5 : 1); break;
     case "`": f(play_it, false, true); break;
     case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves :
