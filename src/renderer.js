@@ -648,8 +648,11 @@ function set_analysis_region(idx) {
     const region = region_from_idx(analysis_region_start_idx, idx)
     const cancel_p = !region || region.every(([p, q]) => p === q)
     analysis_region_start_idx && cancel_p && toast('Canceled')
-    analysis_region_start_idx = null; analysis_region = cancel_p ? null : region
-    main('update_analysis_region', analysis_region)
+    analysis_region_start_idx = null
+    update_analysis_region(cancel_p ? null : region)
+}
+function update_analysis_region(region) {
+    main('update_analysis_region', analysis_region = region)
 }
 function get_analysis_region_for_display() {
     const tmp_idx = move2idx_maybe(hovered_move || '')
@@ -660,6 +663,19 @@ function region_from_idx(...idx_pair) {
     return idx_pair.every(truep) && aa_transpose(idx_pair).map(num_sort)
 }
 
+function shrink_analysis_region_to(direction) {
+    const args = {
+        left: [1, false], right: [1, true], up: [0, false], down: [0, true],
+    }
+    shrink_analysis_region(...args[direction])
+}
+function shrink_analysis_region(axis, positive) {
+    const ratio = 0.3, b = board_size() - 1
+    const region = analysis_region || [[0, b], [0, b]]
+    const [kmin, kmax] = region[axis], k_for = c => Math.round(kmin * (1 - c) + kmax * c)
+    const cs = positive ? [ratio, 1] : [0, 1 - ratio], shrunken = cs.map(k_for)
+    region.splice(axis, 1, shrunken); update_analysis_region(region)
+}
 
 /////////////////////////////////////////////////
 // thmubnails
@@ -934,7 +950,7 @@ const arrow_keys = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"]
 document.onkeydown = e => {
     const until = showing_until()  // before unset_stone_is_clicked()
     arrow_keys.includes(e.key) || unset_stone_is_clicked()
-    const key = (e.ctrlKey ? 'C-' : '') + e.key
+    const key = (e.ctrlKey ? 'C-' : '') + (e.altKey ? 'A-' : '') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
     const escape = (key === "Escape" || key === "C-["), target = e.target
@@ -988,6 +1004,11 @@ document.onkeydown = e => {
     case "0": challenging ? m('play_best', null, 'pass_maybe') :
             f(set_keyboard_moves_for_next_move); return
     case "#": f(alert_comment); return
+    case "A-h": shrink_analysis_region_to('left'); return
+    case "A-j": shrink_analysis_region_to('down'); return
+    case "A-k": shrink_analysis_region_to('up'); return
+    case "A-l": shrink_analysis_region_to('right'); return
+    case "A-[": update_analysis_region(null); return
     // (for safe_menu)
     case "B": m('toggle_stored', 'expand_winrate_bar'); return
     case "E": m('toggle_stored', 'show_endstate'); return
