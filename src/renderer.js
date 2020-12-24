@@ -488,7 +488,9 @@ function handle_mouse_on_goban(canvas, coord2idx, read_only) {
     const onmousemove = e => {unset_stone_is_clicked(); hover_here(e, coord2idx, canvas)}
     const onmouseenter = onmousemove
     const onmouseleave = e => hover_off(canvas)
-    const handlers = {onmousedown, onmouseup, ondblclick, onmousemove, onmouseenter, onmouseleave}
+    const handlers = {
+        onmousedown, onmouseup, ondblclick, onmousemove, onmouseenter, onmouseleave,
+    }
     add_mouse_handlers_with_record(canvas, handlers)
 }
 function ignore_mouse_on_goban(canvas) {

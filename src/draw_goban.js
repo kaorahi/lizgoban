@@ -203,13 +203,15 @@ function draw_thumbnail_goban(canvas, stones, trial_p) {
 // generic goban
 
 function draw_goban(canvas, stones, opts) {
-    const {draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
-           pausing_p, trial_p,
-           draw_loss_p, draw_coordinates_p, cheap_shadow_p,
-           draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
-           read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
-           hovered_move, show_until, analysis_region, main_canvas_p, handle_mouse_on_goban}
-          = opts || {}
+    const {
+        draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
+        pausing_p, trial_p,
+        draw_loss_p, draw_coordinates_p, cheap_shadow_p,
+        draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
+        read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
+        hovered_move, show_until, analysis_region,
+        main_canvas_p, handle_mouse_on_goban,
+    } = opts || {}
     const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
     const large_font_p = !main_canvas_p
     const font_unit = Math.min(margin, canvas.height / 20)
