@@ -510,7 +510,9 @@ function play_here(e, coord2idx, canvas) {
     const stone_p = aa_ref(R.stones, ...idx).stone
     const match_sec = in_match_p() && (set_match_param(), auto_play_in_match_sec())
     const force_create = in_match_p() ? 'never_redo' : !!another_board
-    if (is_event_to_edit_middle(e)) {main('edit_middle', move); return true}
+    if (is_event_to_edit_middle(e)) {
+        pass && main('edit_middle', 'pass'); main('edit_middle', move); return true
+    }
     if (is_event_to_set_analysis_region(e)) {start_analysis_region(idx); return false}
     if (goto_p) {goto_idx_maybe(idx, another_board); return true}
     if (stone_p) {
@@ -1046,6 +1048,7 @@ document.onkeydown = e => {
     case "C-x": m('cut_sequence'); break;
     case "C-w": m('close_window_or_cut_sequence'); break;
     case "p": play_pass(); break;
+    case "C-P": m('edit_middle', 'pass'); break;
     case "Enter": play_it(e.shiftKey ? 5 : 1); break;
     case "`": f(play_it, false, true); break;
     case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves :
