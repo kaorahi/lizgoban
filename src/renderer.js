@@ -505,13 +505,13 @@ function play_here(e, coord2idx, canvas) {
     if (is_stone_clicked && !dblclick) {return true}
     const move = mouse2move(e, coord2idx); if (!move) {return true}
     const idx = move2idx(move)
-    if (is_event_to_edit_middle(e)) {main('edit_middle', move); return true}
-    if (is_event_to_set_analysis_region(e)) {start_analysis_region(idx); return false}
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
     const goto_p = showing_movenum_p() || dblclick
     const stone_p = aa_ref(R.stones, ...idx).stone
     const match_sec = in_match_p() && (set_match_param(), auto_play_in_match_sec())
     const force_create = in_match_p() ? 'never_redo' : !!another_board
+    if (is_event_to_edit_middle(e)) {main('edit_middle', move); return true}
+    if (is_event_to_set_analysis_region(e)) {start_analysis_region(idx); return false}
     if (goto_p) {goto_idx_maybe(idx, another_board); return true}
     if (stone_p) {
         set_showing_movenum_p(true); hover_here(e, coord2idx, canvas)
