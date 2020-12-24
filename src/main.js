@@ -149,13 +149,19 @@ function create_games_from_sgf_internal(sgf_str, cache_suggestions_p) {
 }
 
 // state
-let game = create_game_with_gorule(store.get('gorule', default_gorule))
+let repl = null
+let game; set_game(create_game_with_gorule(store.get('gorule', default_gorule)))
 let sequence = [game], sequence_cursor = 0
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 let auto_analysis_steps = 1
 let auto_play_sec = 0, auto_replaying = false
 let pausing = false, busy = false
 let exercise_metadata = null
+
+function set_game(new_game) {
+    game = new_game
+    repl_update_game()
+}
 
 // renderer state
 // (cf.) "set_renderer_state" in powered_goban.js
@@ -1267,7 +1273,7 @@ function delete_move(move) {
 }
 
 function with_game(tmp_game, proc, ...args) {
-    const orig = game; game = tmp_game; proc(...args); game = orig
+    const orig = game; set_game(tmp_game); proc(...args); set_game(orig)
 }
 function with_move_count(tmp_mc, proc, ...args) {
     const diff = game.move_count - tmp_mc  // move_count can be changed in proc
@@ -1506,7 +1512,7 @@ function replace_sequence(new_game) {
 function switch_to_nth_sequence(n) {
     AI.cancel_past_requests()  // avoid hang-up caused by fast repeated operations
     P.renew_game()
-    game = sequence[sequence_cursor = n]
+    set_game(sequence[sequence_cursor = n])
     update_branch()
 }
 function next_sequence_effect() {renderer('slide_in', 'next')}
@@ -2036,7 +2042,6 @@ function toggle_sabaki() {
 /////////////////////////////////////////////////
 // REPL for debug
 
-let repl = null
 function toggle_repl() {repl ? repl.close() : start_repl()}
 function repl_p() {return !!repl}
 function start_repl() {
@@ -2050,3 +2055,4 @@ function start_repl() {
     repl.on('exit', () => {repl = null; console.log('REPL is closed.'); update_all()})
     merge(repl.context, repl_context)
 }
+function repl_update_game() {repl_p() && merge(repl.context, {game})}
