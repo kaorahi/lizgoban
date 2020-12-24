@@ -480,15 +480,17 @@ function add_next_mark_to_stones(stones, game, move_count) {
     const h = game.ref(move_count + 1), s = stone_for_history_elem(h, stones)
     s && (s.next_move = true) && (s.next_is_black = h.is_black)
 }
-function add_branches_to_stones(stones, move_count) {
+function add_branches_to_stones(stones, game, move_count) {
     // update R.branch_for_tag as a side effect (dirty...)
     R.branch_for_tag = []
     const past = [0, 1]
     const add_past_branch = delta => {
-        const mc = move_count - delta, b = M.branch_at(mc) || []
+        const mc = move_count - delta
+        const b = branch_or_ladder_at(game, mc, delta === 0 && stones)
         b.forEach(gm => {
             const h = gm.ref(mc + 1), {is_black} = h, past_p = (delta !== 0)
-            const s = stone_for_history_elem(h, stones); if (!s) {return}
+            const fake_h = h.ladder_hit ? {move: h.ladder_hit} : h
+            const s = stone_for_history_elem(fake_h, stones); if (!s) {return}
             const tag = h.tag || unnamed_branch_tag_letter
             const branch_for_stone = {tag, is_black, past_p}
             s.branches || (s.branches = []); s.branches.push(branch_for_stone)
@@ -511,7 +513,7 @@ function add_info_to_stones(stones, game) {
         s.anytime_stones.push(pick_properties(h, ['move_count', 'is_black']))
     })
     add_next_mark_to_stones(stones, game, game.move_count)
-    add_branches_to_stones(stones, game.move_count)
+    add_branches_to_stones(stones, game, game.move_count)
 }
 function update_info_in_stones() {
     clear_info_in_stones(R.stones); add_info_to_stones(R.stones, game)
@@ -527,6 +529,15 @@ function stone_for_history_elem(h, stones) {
 }
 function pick_properties(orig, keys) {
     const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
+}
+
+/////////////////////////////////////////////////
+// ladder
+
+function branch_or_ladder_at(game, move_count, stones) {
+    const b = M.branch_at(move_count) || []
+    const l = (stones && M.ladder_branches(game, stones)) || []
+    return [...b, ...l]
 }
 
 /////////////////////////////////////////////////

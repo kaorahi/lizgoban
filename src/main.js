@@ -113,6 +113,7 @@ const {
     update_exercise_metadata_for, get_all_exercise_metadata,
 } = require('./exercise.js')
 const {tsumego_frame} = require('./tsumego_frame.js')
+const {ladder_branches, last_ladder_branches} = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
 
@@ -206,7 +207,7 @@ globalize({  // for powered_goban.js
         // functions used in powered_goban.js
         render, show_suggest_p, is_pass,
         auto_progress, is_busy, is_long_busy, is_pausing, is_bogoterritory,
-        branch_at,
+        branch_at, ladder_branches,
         tuning_message: () => tuning_message,
         plot_order_p: () => option.plot_order_p,
     }
@@ -1464,8 +1465,11 @@ function switch_to_game(another_game, move_count) {
     goto_move_count(move_count)
 }
 function switch_to_game_id(id, move_count) {
-    const another_game = sequences_and_brothers().find(g => g.id === id)
-    another_game && switch_to_game(another_game, move_count)
+    const llb = last_ladder_branches()
+    const bs = [...sequences_and_brothers(), ...llb]
+    const another_game = bs.find(g => g.id === id)
+    const mc = llb.includes(another_game) ? Infinity : move_count
+    another_game && switch_to_game(another_game, mc)
 }
 
 let cut_first_p = false

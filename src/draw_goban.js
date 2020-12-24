@@ -564,9 +564,10 @@ function draw_next_move(h, xy, radius, g) {
     g.lineWidth = next_move_line_width; circle(xy, radius, g)
 }
 function draw_branches(h, xy, radius, g) {
-    const branch_tag_color = 'rgba(0,0,255,0.3)'
-    const tag = h.branches.map(z => z.tag).sort().join('')
-    const draw1 = ({is_black, past_p}) => {
+    const branch_tag_color = h.stone ? BLUE : 'rgba(0,0,255,0.3)'
+    const tag_text = h.branches.map(z => z.tag).sort().join('')
+    const draw1 = ({is_black, past_p, tag}) => {
+        if (tag === ladder_tag_letter) {return}
         const [shape, thick, dash] = past_p ?
               [triangle_around, 1, [radius / 5]] :
               [square_around, branch_line_width, [radius / 10]]
@@ -576,7 +577,7 @@ function draw_branches(h, xy, radius, g) {
     }
     g.save()
     h.branches.forEach(draw1)
-    draw_text_on_stone(tag, branch_tag_color, xy, radius, g)
+    draw_text_on_stone(tag_text, branch_tag_color, xy, radius, g)
     g.restore()
 }
 
