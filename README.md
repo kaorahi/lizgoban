@@ -33,6 +33,7 @@ with lots of original gimmicks.
 * Quick switching of multiple engines
 * Open URL (by drag & drop or clipboard)
 * Save/load analyses to/from SGF in Lizzie-compatible format
+* Restriction of analysis region like KaTrain
 * [Experimental] Use your favorite images for the board and the stones
 
 ### Original features
@@ -262,6 +263,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
   * Click "x" mark at the right top of the board to close it and return to the main branch.
 * Implement side by side comparisons of the principal variation and the actual succeeding moves, etc.
 * Add stars to personal exercise book. Starred exercises will appear more often.
+* Support restriction of analysis region by Alt+drag like [KaTrain](https://github.com/sanderland/katrain/).
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 
 ### 0.5.*
