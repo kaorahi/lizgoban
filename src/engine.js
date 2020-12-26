@@ -386,8 +386,9 @@ function create_leelaz () {
         // for KataGo (ex.) g170e-b20c256x2-s5303129600-d1228401921
         (m = s.match(/Model name: g.+-b([0-9]+)c([0-9]+).*-s[0-9]+-d.[0-9]+/)) &&
             (network_size_text = `${m[2]}x${m[1]}`);
-        // "GTP ready" for KataGo
-        s.match(/(Setting max tree size)|(GTP ready)/) && on_ready();
+        // "GTP ready" for KataGo, "feature weights loaded" for Leela 0.11.0
+        s.match(/(Setting max tree size)|(GTP ready)|(feature weights loaded)/) &&
+            on_ready();
         s.match(/Weights file is the wrong version/) && on_error();
         (m = s.match(/NN eval=([0-9.]+)/)) && the_nn_eval_reader(to_f(m[1]));
         s.match(/endstate:/) && (current_reader = endstate_reader)
