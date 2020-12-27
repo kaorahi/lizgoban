@@ -75,7 +75,6 @@ function try_next(ret, idx, move_count, is_black, attack_p, u, v, stones) {
 }
 
 function stopped(idx, is_black, u, v, stones) {
-    // const offsets = [u, v, idx_plus(u, v)]
     const offsets = [idx_plus(u, v), u, v]
     const opponent_or_border = d =>
           color_stone_or_border(idx_plus(idx, d), !is_black, stones)

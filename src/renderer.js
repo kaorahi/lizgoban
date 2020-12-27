@@ -992,8 +992,8 @@ document.onkeydown = e => {
                       f(set_keyboard_moves_maybe, to_i(key) - 1))
     key.length === 1 && tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
     switch (key) {
-    case "c" : set_showing_movenum_p(true); return
-    case "v" : set_showing_endstate_value_p(true); return
+    case "c": set_showing_movenum_p(true); return
+    case "v": set_showing_endstate_value_p(true); return
     case "C-c": m('copy_sgf_to_clipboard', true); return
     case "z": f(set_temporary_board_type, "raw", "suggest"); return
     case "x": set_showing_movenum_p(false);  // avoid broken display
