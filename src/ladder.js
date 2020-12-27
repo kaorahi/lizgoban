@@ -6,18 +6,24 @@ const too_short = 5
 
 // wrap into array for convenience
 
-let last_ladder_branches = []
+let last_ladder_branches = [], last_ladder_prop = null, last_seen_ladder_prop = null
 function set_last_ladder_branches(bs) {return last_ladder_branches = bs}
 
 function ladder_branches(game, stones) {
-    const ladder = succeeding_ladder(game, stones)
+    const orig_ladder = succeeding_ladder(game, stones)
+    const ladder = orig_ladder ||
+          try_ladder(null, last_seen_ladder_prop, game.move_count, stones)
     if (!ladder) {return set_last_ladder_branches([])}
+    last_ladder_prop = ladder && ladder.prop
     const {moves} = ladder, ladder_game = game.shallow_copy()
     ladder_game.delete_future()
     ladder_game.trial = true
     moves.forEach(m => ladder_game.push(m))
+    !orig_ladder && record_hit(moves, [-1, -1])
     return set_last_ladder_branches([ladder_game])
 }
+
+function ladder_is_seen() {last_seen_ladder_prop = last_ladder_prop}
 
 //////////////////////////////////////
 // ladder
@@ -73,6 +79,7 @@ function try_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
 }
 
 function try_ladder(ladder, prop, move_count, stones) {
+    if (!prop) {return null}
     const {idx, is_black, attack_p, u, v} = prop
     const {moves} = ladder || (ladder = new_ladder(prop))
     const hit = stopped(idx, is_black, u, v, stones)
@@ -92,7 +99,7 @@ function stopped(idx, is_black, u, v, stones) {
 }
 
 function record_hit(moves, idx) {
-    merge(moves[0], {ladder_hit: idx2move(...idx), tag: ladder_tag_letter})
+    merge(moves[0], {ladder_hit: idx2move(...idx) || 'nowhere', tag: ladder_tag_letter})
 }
 
 //////////////////////////////////////
@@ -215,5 +222,6 @@ function is_idx_diff(a, b, diff) {return idx_eq(idx_diff(a, b).sort(), diff)}
 
 module.exports = {
     ladder_branches,
+    ladder_is_seen,
     last_ladder_branches: () => last_ladder_branches,
 }

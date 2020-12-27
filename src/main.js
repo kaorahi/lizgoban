@@ -113,7 +113,7 @@ const {
     update_exercise_metadata_for, get_all_exercise_metadata,
 } = require('./exercise.js')
 const {tsumego_frame} = require('./tsumego_frame.js')
-const {ladder_branches, last_ladder_branches} = require('./ladder.js')
+const {ladder_branches, ladder_is_seen, last_ladder_branches} = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
 
@@ -340,7 +340,7 @@ const {set_showing_until} = P
 const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
-    set_match_param,
+    set_match_param, ladder_is_seen,
 }
 const api = merge({}, simple_api, {
     init_from_renderer,

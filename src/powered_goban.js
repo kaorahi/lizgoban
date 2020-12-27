@@ -490,7 +490,8 @@ function add_branches_to_stones(stones, game, move_count) {
         b.forEach(gm => {
             const h = gm.ref(mc + 1), {is_black} = h, past_p = (delta !== 0)
             const fake_h = h.ladder_hit ? {move: h.ladder_hit} : h
-            const s = stone_for_history_elem(fake_h, stones); if (!s) {return}
+            const s = stone_for_history_elem(fake_h, stones) || (fake_h && {})
+            if (!s) {return}
             const tag = h.tag || unnamed_branch_tag_letter
             const branch_for_stone = {tag, is_black, past_p}
             s.branches || (s.branches = []); s.branches.push(branch_for_stone)
