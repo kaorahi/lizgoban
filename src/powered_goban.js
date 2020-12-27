@@ -495,7 +495,7 @@ function add_branches_to_stones(stones, game, move_count) {
             const branch_for_stone = {tag, is_black, past_p}
             s.branches || (s.branches = []); s.branches.push(branch_for_stone)
             const {id} = gm, future = gm.array_until(Infinity).slice(mc)
-            const pv = future.map(z => z.move)
+            const pv = pv_from_moves(future)
             const comment = future.map(z => z.comment).filter(truep).join('/')
             const at_move_count = past_p && mc
             const branch = {tag, id, pv, comment, move_count, at_move_count}
@@ -503,6 +503,13 @@ function add_branches_to_stones(stones, game, move_count) {
         })
     }
     past.forEach(add_past_branch)
+}
+function pv_from_moves(moves) {
+    let {bturn} = R
+    return moves.flatMap(({move, is_black}) => {
+        const p = xor(bturn, is_black); bturn = !is_black
+        return p ? ['pass', move] : [move]
+    })
 }
 function add_info_to_stones(stones, game) {
     game.forEach(h => {
