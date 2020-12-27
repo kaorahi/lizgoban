@@ -10,9 +10,9 @@ let last_ladder_branches = []
 function set_last_ladder_branches(bs) {return last_ladder_branches = bs}
 
 function ladder_branches(game, stones) {
-    const moves = succeeding_ladder_moves(game, stones)
-    if (!moves) {return set_last_ladder_branches([])}
-    const ladder_game = game.shallow_copy()
+    const ladder = succeeding_ladder(game, stones)
+    if (!ladder) {return set_last_ladder_branches([])}
+    const {moves} = ladder, ladder_game = game.shallow_copy()
     ladder_game.delete_future()
     ladder_game.trial = true
     moves.forEach(m => ladder_game.push(m))
@@ -20,9 +20,18 @@ function ladder_branches(game, stones) {
 }
 
 //////////////////////////////////////
+// ladder
+
+function new_ladder(prop) {return {moves: [], prop}}
+
+function new_prop(idx, is_black, attack_p, u, v) {
+    return {idx, is_black, attack_p, u, v}
+}
+
+//////////////////////////////////////
 // main
 
-function succeeding_ladder_moves(game, stones) {
+function succeeding_ladder(game, stones) {
     const {move_count} = game
     const recent_two_moves = game.array_until(move_count).slice(-2)
     const valid = (recent_two_moves.length === 2) && recent_two_moves.every(truep) &&
@@ -30,10 +39,10 @@ function succeeding_ladder_moves(game, stones) {
     if (!valid) {return null}
     const indices = recent_two_moves.map(m => move2idx(m.move))
     const args = [recent_two_moves, indices, move_count + 1, stones]
-    return moves_to_escape(...args) || moves_to_capture(...args)
+    return try_to_escape(...args) || try_to_capture(...args)
 }
 
-function moves_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
+function try_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
     const [escape_move, attack_move] = recent_two_moves
     const dame = dame_around(e_idx, stones)
     const valid = touch_p(e_idx, a_idx) && (dame.length === 1)
@@ -43,11 +52,11 @@ function moves_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
     const matched =
           check_pattern_around(e_idx, escape_pattern, recent_two_moves, stones, u, v)
     const captured_if = is_captured_if(e_idx, next_idx, attack_move.is_black, stones)
-    return matched && captured_if &&
-        try_next([], next_idx, move_count, escape_move.is_black, false, u, v, stones)
+    const prop = new_prop(next_idx, escape_move.is_black, false, u, v)
+    return matched && captured_if && try_ladder(null, prop, move_count, stones)
 }
 
-function moves_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
+function try_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
     const [attack_move, escape_move] = recent_two_moves
     const dame = dame_around(e_idx, stones)
     const keima = dame.filter(ij => keima_p(ij, a_idx))
@@ -59,19 +68,20 @@ function moves_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) 
           check_pattern_around(e_idx, attack_pattern, recent_two_moves, stones, u, v)
     const prev_e_idx = idx_minus(e_idx, u)
     const captured_if = is_captured_if(prev_e_idx, e_idx, attack_move.is_black, stones)
-    return matched && captured_if &&
-        try_next([], next_idx, move_count, attack_move.is_black, true, u, v, stones)
+    const prop = new_prop(next_idx, attack_move.is_black, true, u, v)
+    return matched && captured_if && try_ladder(null, prop, move_count, stones)
 }
 
-function try_next(ret, idx, move_count, is_black, attack_p, u, v, stones) {
-    const hit = stopped(idx, is_black, u, v, stones), tag = ladder_tag_letter
-    if (hit) {
-        return ret.length <= too_short ? null : (merge(ret[0], {ladder_hit: idx2move(...hit), tag}), ret)
-    }
-    const next_ret = [...ret, {move: idx2move(...idx), is_black, move_count}]
+function try_ladder(ladder, prop, move_count, stones) {
+    const {idx, is_black, attack_p, u, v} = prop
+    const {moves} = ladder || (ladder = new_ladder(prop))
+    const hit = stopped(idx, is_black, u, v, stones)
+    if (hit) {return moves.length <= too_short ? null : (record_hit(moves, hit), ladder)}
+    ladder.moves.push({move: idx2move(...idx), is_black, move_count})
     const [offset, next_uv] = attack_p ? [idx_minus(v, u), [u, v]] : [v, [v, u]]
     const next_idx = idx_plus(idx, offset)
-    return try_next(next_ret, next_idx, move_count + 1, !is_black, !attack_p, ...next_uv, stones)
+    const next_prop = new_prop(next_idx, !is_black, !attack_p, ...next_uv)
+    return try_ladder(ladder, next_prop, move_count + 1, stones)
 }
 
 function stopped(idx, is_black, u, v, stones) {
@@ -79,6 +89,10 @@ function stopped(idx, is_black, u, v, stones) {
     const opponent_or_border = d =>
           color_stone_or_border(idx_plus(idx, d), !is_black, stones)
     return stone_or_border(idx, stones) || offsets.map(opponent_or_border).find(truep)
+}
+
+function record_hit(moves, idx) {
+    merge(moves[0], {ladder_hit: idx2move(...idx), tag: ladder_tag_letter})
 }
 
 //////////////////////////////////////
