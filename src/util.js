@@ -39,6 +39,7 @@ E.handicap_komi = -0.5
 E.default_gorule = 'chinese'
 E.blunder_threshold = -2
 E.big_blunder_threshold = -5
+E.black_to_play_p = (forced, bturn) => forced ? (forced === 'black') : bturn
 
 // seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
 E.seq = (n, from) => [...Array(clip(n, 0))].map((_, i) => i + (from || 0))
@@ -158,7 +159,7 @@ E.set_error_handler = (process, handler) => {
 }
 
 // avoid letters for keyboard operation in renderer.js
-const normal_tag_letters = 'bdefghijklmnorstuwy'
+const normal_tag_letters = 'defghijklmnorstuy'
 const last_loaded_element_tag_letter = '.'
 const start_moves_tag_letter = "'"
 const endstate_diff_tag_letter = "/"

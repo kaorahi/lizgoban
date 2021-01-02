@@ -43,7 +43,7 @@ LizGobanは、<span class="ext" data-url="https://github.com/gcp/leela-zero">Lee
 <ul>
  <li>クリック：石を打つ</li>
  <li>候補手にマウスカーソルをかざす：想定手順を表示</li>
- <li>右クリック：前の手と同じ色の石を打つ</li>
+ <li>右クリック：前の手と同じ色の石を打つ（この機能は将来廃止されるかもしれません）</li>
  <li>石をクリック：そのときの盤面を一時的に表示</li>
  <li>石をダブルクリック：その手を打つ直前の盤面へ</li>
  <li>Altキーを押しながらドラッグ：分析する領域を制限 (Alt+クリック：領域制限を解除)</li>
@@ -53,6 +53,7 @@ LizGobanは、<span class="ext" data-url="https://github.com/gcp/leela-zero">Lee
        <li>（石上で）その手を削除</li>
       </ul>
  </li>
+ <li>bキー（wキー）を押しながらクリック：黒石（白石）を打つ
 </ul>
 </p>
 
@@ -284,15 +285,15 @@ to get possibly better evaluations when some moves are in "blind spots" of Leela
        <li> + ,（コンマ）：その想定手順を打つ</li>
        <li> +（Ctrlなど、「意味のないキー」を押して離す）：表示されている想定手順を更新する</li>
       </ul>
- <li>石上に表示された b, d, e, f, ...：タグ文字時点の盤面を表示（+ Enter：その手に移動）</li>
- <li>空点に表示された b, d, e, f, ...：分岐を表示（+ Enter：その分岐に移動）</li>
+ <li>石上に表示された d, e, f, ...：タグ文字時点の盤面を表示（+ Enter：その手に移動）</li>
+ <li>空点に表示された d, e, f, ...：分岐を表示（+ Enter：その分岐に移動）</li>
 </ul>
 
 <a name="side-by-side">隣に並べて比較：</a>
 「View」メニューの「碁盤二枚 A (盤面＋変化図) (Two boards A (main+PV))」を選んでおけば、二種類の手順を隣あわせで見くらべることができます。以下のキーを押し続けてください。
 <ul>
  <li>1：エンジンの想定図と実際の手順（黒番と白番とで違うエンジンを使っているときは、双方の想定図）
- <li>分岐のb, d, e, f, ...：変化図と本手順</li>
+ <li>分岐のd, e, f, ...：変化図と本手順</li>
 </ul>
 
 （普通に押す）

@@ -340,7 +340,7 @@ const {set_showing_until} = P
 const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
-    set_match_param, ladder_is_seen,
+    set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
 }
 const api = merge({}, simple_api, {
     init_from_renderer,
@@ -442,11 +442,12 @@ function play(move, force_create, default_tag, comment, auto_play_in_match_sec) 
     if (another_game) {switch_to_game(another_game, next_move_count); return}
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create_p)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
-    do_play(move, R.bturn, tag || default_tag || undefined, comment)
+    do_play(move, black_to_play_now_p(), tag || default_tag || undefined, comment)
     pass && wink()
     truep(auto_play_in_match_sec) && auto_play_in_match(auto_play_in_match_sec)
     autosave_later()
 }
+function black_to_play_now_p() {return black_to_play_p(R.forced_color_to_play, R.bturn)}
 function do_play(move, is_black, tag, note) {
     // We drop "double pass" to avoid halt of analysis by Leelaz.
     // B:D16, W:Q4, B:pass ==> ok
@@ -1182,6 +1183,8 @@ function ask_choice(message, values, proc) {
 }
 
 // misc.
+function force_color_to_play(bturn) {R.forced_color_to_play = bturn ? 'black' : 'white'}
+function cancel_forced_color() {R.forced_color_to_play = null}
 function toggle_trial() {game.trial = !game.trial}
 function close_window_or_cut_sequence(win) {
     get_windows().length > 1 ? win.close() :

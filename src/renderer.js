@@ -24,7 +24,7 @@ let canvas_scale = 1
 // renderer state
 const R = {
     stones: [], black_hama: 0, white_hama: 0, move_count: 0, init_len: 0, bturn: true,
-    showing_bturn: true,
+    showing_bturn: true, forced_color_to_play: null,
     history_length: 0, suggest: [], visits: 1,
     visits_per_sec: 0,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
@@ -993,6 +993,8 @@ document.onkeydown = e => {
     key.length === 1 && tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
     key === ladder_tag_letter && m('ladder_is_seen')
     switch (key) {
+    case "b": m('force_color_to_play', true); return
+    case "w": m('force_color_to_play', false); return
     case "c": set_showing_movenum_p(true); return
     case "v": set_showing_endstate_value_p(true); return
     case "C-c": m('copy_sgf_to_clipboard', true); return
@@ -1062,6 +1064,7 @@ document.onkeyup = e => {
         && reset_keyboard_moves()
     cancel_alt_up_maybe(e)
     switch (e.key) {
+    case "b": case "w": main('cancel_forced_color'); break
     case "c": set_showing_movenum_p(false); break
     case "v": set_showing_endstate_value_p(false); break
     case "z": case "x": set_temporary_board_type(null); break
