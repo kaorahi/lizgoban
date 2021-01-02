@@ -226,13 +226,13 @@ function draw_goban(canvas, stones, opts) {
     mapping_to_winrate_bar && !(draw_endstate_value_p && draw_endstate_p) &&
         draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
     pv_visits && draw_pv_visits(pv_visits, font_unit, idx2coord, g)
-    !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
         hovered_move, show_until, pv_visits,
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
+    !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     draw_endstate_p && !hide_endstate_clusters_p() &&
         draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     analysis_region && draw_analysis_region(analysis_region, unit, idx2coord, g)
@@ -344,8 +344,9 @@ function draw_progress(highlightp, margin, canvas, g) {
 function draw_cursor(hovered_move, unit, idx2coord, g) {
     const [i, j] = move2idx(hovered_move); if (i < 0) {return}
     const xy = idx2coord(i, j), forced = R.forced_color_to_play
-    if (forced && (aa_ref(R.stones, i, j) || {}).stone) {
-        g.fillStyle = RED; fill_square_around(xy, unit * 0.75, g); return
+    if ((aa_ref(R.stones, i, j) || {}).stone) {
+        g.strokeStyle = RED; g.lineWidth = 5
+        forced && x_shape_around(xy, unit * 0.5, g); return
     }
     const color = black_to_play_p(forced, R.bturn) ? PALE_BLACK : PALE_WHITE
     const radius = (forced ? 1/2 : 1/4) * unit
