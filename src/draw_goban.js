@@ -528,7 +528,8 @@ function face_image_for(h) {
 }
 function stone_image_for_key(h, b_key, w_key) {return R.image[h.black ? b_key : w_key]}
 
-function draw_movenums(h, xy, radius, pv_visits, g) {
+function draw_movenums(h, xy, radius, extended_pv_visits, g) {
+    const [_, ...pv_visits] = extended_pv_visits || []
     const movenums = num_sort(h.movenums), mn0 = movenums[0], mc = mn0 - 1
     const bw = h.thin_movenums ? ['rgba(0,0,0,0.2)', 'rgba(255,255,255,0.3)'] :
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
