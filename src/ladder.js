@@ -18,9 +18,23 @@ function ladder_branches(game, stones) {
     const {moves} = ladder, ladder_game = game.shallow_copy()
     ladder_game.delete_future()
     ladder_game.trial = true
-    moves.forEach(m => ladder_game.push(m))
-    !orig_ladder && record_hit(moves, [-1, -1])
+    const pre_ladder_moves = orig_ladder ? [] :
+          missing_moves(stones, last_seen_ladder_prop.stones)
+    const extended_moves = [...pre_ladder_moves, ...moves]
+    extended_moves.forEach(m => ladder_game.push(m))
+    !orig_ladder && record_hit(extended_moves, [-1, -1])  // hide branch mark
     return set_last_ladder_branches([ladder_game])
+}
+
+function missing_moves(cur_stones, last_seen_stones) {
+    const missing = (i, j) => !(aa_ref(cur_stones, i, j) || {}).stone
+    const move_for = (h, i, j) => ({
+        move: idx2move(i, j), is_black: h.black, move_count: h.move_count
+    })
+    const pick = (h, i, j) =>
+          h && h.stone && missing(i, j) && move_for(h, i, j)
+    const unsorted_moves = aa_map(last_seen_stones, pick).flat().filter(truep)
+    return sort_by_key(unsorted_moves, 'move_count')
 }
 
 function ladder_is_seen() {last_seen_ladder_prop = last_ladder_prop}
@@ -30,8 +44,8 @@ function ladder_is_seen() {last_seen_ladder_prop = last_ladder_prop}
 
 function new_ladder(prop) {return {moves: [], prop}}
 
-function new_prop(idx, is_black, attack_p, u, v) {
-    return {idx, is_black, attack_p, u, v}
+function new_prop(idx, is_black, attack_p, u, v, stones) {
+    return {idx, is_black, attack_p, u, v, stones}
 }
 
 //////////////////////////////////////
@@ -58,7 +72,7 @@ function try_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
     const matched =
           check_pattern_around(e_idx, escape_pattern, recent_two_moves, stones, u, v)
     const captured_if = is_captured_if(e_idx, next_idx, attack_move.is_black, stones)
-    const prop = new_prop(next_idx, escape_move.is_black, false, u, v)
+    const prop = new_prop(next_idx, escape_move.is_black, false, u, v, stones)
     return matched && captured_if && try_ladder(null, prop, move_count, stones)
 }
 
@@ -74,7 +88,7 @@ function try_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
           check_pattern_around(e_idx, attack_pattern, recent_two_moves, stones, u, v)
     const prev_e_idx = idx_minus(e_idx, u)
     const captured_if = is_captured_if(prev_e_idx, e_idx, attack_move.is_black, stones)
-    const prop = new_prop(next_idx, attack_move.is_black, true, u, v)
+    const prop = new_prop(next_idx, attack_move.is_black, true, u, v, stones)
     return matched && captured_if && try_ladder(null, prop, move_count, stones)
 }
 
@@ -87,7 +101,7 @@ function try_ladder(ladder, prop, move_count, stones) {
     ladder.moves.push({move: idx2move(...idx), is_black, move_count})
     const [offset, next_uv] = attack_p ? [idx_minus(v, u), [u, v]] : [v, [v, u]]
     const next_idx = idx_plus(idx, offset)
-    const next_prop = new_prop(next_idx, !is_black, !attack_p, ...next_uv)
+    const next_prop = new_prop(next_idx, !is_black, !attack_p, ...next_uv, stones)
     return try_ladder(ladder, next_prop, move_count + 1, stones)
 }
 
