@@ -34,6 +34,7 @@ with lots of original gimmicks.
 * Open URL (by drag & drop or clipboard)
 * Save/load analyses to/from SGF in Lizzie-compatible format
 * Restriction of analysis region like KaTrain
+* Free editing of stones in the middle of a game
 * [Experimental] Use your favorite images for the board and the stones
 
 ### Original features
@@ -267,6 +268,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Support restriction of analysis region by Alt+drag like [KaTrain](https://github.com/sanderland/katrain/).
 * Slightly improve Tsumego frame (boundary, analysis region).
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
+* Insert a black (white) stone by b(w)+click.
 * Automatically mark ladder breakers as "=" and [show the continuation of the ladder](https://github.com/kaorahi/lizgoban/issues/63) by "=" key (experimental).
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 
