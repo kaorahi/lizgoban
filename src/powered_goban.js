@@ -17,7 +17,7 @@ function set_board(given_game) {
     game = given_game; set_board_size(game.board_size)
     const hist = game.array_until(game.move_count)
     R.move_count = game.move_count = hist.length
-    R.bturn = !(hist[hist.length - 1] || {}).is_black
+    R.bturn = !(last(hist) || {}).is_black
     R.visits = null
     set_stones(game.stones_and_hama_at(game.move_count))
     return hist.filter(h => !h.illegal)
