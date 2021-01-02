@@ -465,8 +465,7 @@ function weight_info_text() {
     const h = AI.engine_info(), ek = h.engine_komi, gk = game.get_komi()
     const game_komi = truep(gk) && gk != ek && ` (game komi=${gk})`
     const s = val => truep(val) ? to_s(val) : ''
-    const engine_komi = (game_komi || (ek !== leelaz_komi)) ?
-          `komi=${ek}${s(game_komi)} ` : ''
+    const engine_komi = `komi=${ek}${s(game_komi)} `
     const game_gorule = AI.is_gorule_supported() && game.gorule
     const gorule = game_gorule ? `(${game_gorule}) ` : ''
     const f = z => z ?
