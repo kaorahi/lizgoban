@@ -1253,17 +1253,18 @@ function save_q_and_a_images() {
     renderer('save_q_and_a_images', ...filenames, msg_path)
 }
 function edit_middle(move) {
+    const stone_p = (aa_ref(R.stones, ...move2idx(move)) || {}).stone
+    if (!stone_p && !redoable()) {do_play(move, black_to_play_now_p()); return}
     const editing_p = game.trial && game.successive_edit_middle_p()
     const new_game = game.shallow_copy()
-    with_game(new_game, edit_middle_sub, move)
+    with_game(new_game, edit_middle_sub, move, stone_p)
     const modified = (new_game.ref_last() !== game.ref_last()) || (new_game.len() !== game.len())
     if (!modified) {return}
     const replace = editing_p ? replace_sequence : backup_and_replace_game
     new_game.brothers = [game]; replace(new_game); clear_sgf(true); update_branch()
 }
-function edit_middle_sub(move) {
+function edit_middle_sub(move, stone_p) {
     const last_move_p = move === game.ref_current().move
-    const stone_p = (aa_ref(R.stones, ...move2idx(move)) || {}).stone
     const ed = game.edit_middle
     last_move_p ? ed(explicit_undo) : stone_p ? delete_move(move) : ed(play, move)
 }
