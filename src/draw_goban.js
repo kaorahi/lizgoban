@@ -344,6 +344,9 @@ function draw_progress(highlightp, margin, canvas, g) {
 function draw_cursor(hovered_move, unit, idx2coord, g) {
     const [i, j] = move2idx(hovered_move); if (i < 0) {return}
     const xy = idx2coord(i, j), forced = R.forced_color_to_play
+    if (forced && (aa_ref(R.stones, i, j) || {}).stone) {
+        g.fillStyle = RED; fill_square_around(xy, unit * 0.75, g); return
+    }
     const color = black_to_play_p(forced, R.bturn) ? PALE_BLACK : PALE_WHITE
     const radius = (forced ? 1/2 : 1/4) * unit
     g.fillStyle = color

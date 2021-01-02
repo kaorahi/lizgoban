@@ -546,7 +546,7 @@ function unset_stone_is_clicked() {
     is_stone_clicked && ((is_stone_clicked = false), set_showing_movenum_p(false))
 }
 
-function is_event_to_edit_middle(e) {return (e.shiftKey && e.ctrlKey)}
+function is_event_to_edit_middle(e) {return R.forced_color_to_play || (e.shiftKey && e.ctrlKey)}
 
 // on winrate graph
 
