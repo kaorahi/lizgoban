@@ -19,21 +19,31 @@ function ladder_branches(game, stones) {
     ladder_game.delete_future()
     ladder_game.trial = true
     const pre_ladder_moves = orig_ladder ? [] :
-          missing_moves(stones, last_seen_ladder_prop.stones)
+          missing_moves(stones, last_seen_ladder_prop)
     const extended_moves = [...pre_ladder_moves, ...moves]
     extended_moves.forEach(m => ladder_game.push(m))
     !orig_ladder && record_hit(extended_moves, [-1, -1])  // hide branch mark
     return set_last_ladder_branches([ladder_game])
 }
 
-function missing_moves(cur_stones, last_seen_stones) {
-    const missing = (i, j) => !(aa_ref(cur_stones, i, j) || {}).stone
+function missing_moves(cur_stones, prop) {
+    // .......
+    // ...X...
+    // ..XOX..
+    // ..XO...   ? = in_ladder_quadrant
+    // ...????
+    // ...????
+    const {idx, u, v, stones} = prop
+    const [i0, j0] = idx, [i_sign, j_sign] = idx_plus(u, v)
+    const front = (k, k0, sign) => (k - k0) * sign >= 0
+    const in_ladder_quadrant = (i, j) => front(i, i0, i_sign) && front(j, j0, j_sign)
+    const missing = (h, i, j) => !in_ladder_quadrant(i, j) &&
+          h && h.stone && !(aa_ref(cur_stones, i, j) || {}).stone
     const move_for = (h, i, j) => ({
         move: idx2move(i, j), is_black: h.black, move_count: h.move_count
     })
-    const pick = (h, i, j) =>
-          h && h.stone && missing(i, j) && move_for(h, i, j)
-    const unsorted_moves = aa_map(last_seen_stones, pick).flat().filter(truep)
+    const pick = (h, i, j) => missing(h, i, j) && move_for(h, i, j)
+    const unsorted_moves = aa_map(stones, pick).flat().filter(truep)
     return sort_by_key(unsorted_moves, 'move_count')
 }
 
