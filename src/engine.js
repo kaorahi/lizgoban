@@ -202,7 +202,9 @@ function create_leelaz () {
     }
 
     // allow
-    const update_analysis_region = region => {analysis_region = region; update()}
+    const update_analysis_region = region => {
+        analysis_region = region; is_ready && update()
+    }
     const analysis_region_string = () => {
         if (!analysis_region) {return null}
         const [is, js] = analysis_region.map(range => seq_from_to(...range))
