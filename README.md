@@ -14,14 +14,22 @@ with lots of original gimmicks.
 
 (Facial stone images from [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html))
 
-## Highlights
+## Table of contents
+
+* [Highlights](#Highlights)
+* [Features](#Features)
+* [Usage](#Usage)
+* [Major changes](#Changes)
+* [Links](#Links)
+
+## <a name="Highlights"></a>Highlights
 
 1. Engines do not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can use any number of trial boards in parallel, discard a needless one by a single action, and restore the deleted one if necessary.
 2. Engine's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose. We can notice the case when we should wait for a little more analysis, and will never miss a new rising candidate like the one in the above screenshot.
 3. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis. The all-in-one package of LizGoban works immediately out of the box without installation, configuration, additional downloads, and so on.
 4. Flexibility of JavaScript also enables quick experiments of fun ideas that bring various original features as follows.
 
-## Features
+## <a name="Features"></a>Features
 
 ### Common features
 
@@ -70,7 +78,7 @@ with lots of original gimmicks.
 * Translucent stones for too long variations as the above screenshot
 * Ownerships of stones by facial expressions
 
-## Usage
+## <a name="Usage"></a>Usage
 
 ### 64bit Windows
 
@@ -254,7 +262,7 @@ See `const api = ...` in src/main.js for the list of commands. "Debug log" in "D
 
 Please note that this feature is experimental and API etc. may be changed in future.
 
-## Major changes
+## <a name="Changes"></a>Major changes
 
 ### Unreleased
 
@@ -357,7 +365,7 @@ Incompatibilities:
 * The launcher command is changed from "npx electron src" to "npm start".
 * "Load engine" menu is deleted because it is misleading.
 
-## Links
+## <a name="Links"></a>Links
 
 [Project Home](https://github.com/kaorahi/lizgoban) /
 [License (GPL3)](https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt)
