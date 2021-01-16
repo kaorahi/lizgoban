@@ -24,7 +24,7 @@
         {
             "label": "KataGo (modern CPU)",
             "accelerator": "F2",
-            "engine": [["built-in", "katago/katago-eigen-avx2"], "gtp",
+            "engine": [["built-in", "katago/katago-eigenavx2"], "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false",
                        "-model", ["built-in", "katanetwork.bin.gz"]]

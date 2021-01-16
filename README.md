@@ -264,7 +264,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 
 ## <a name="Changes"></a>Major changes
 
-### Unreleased
+### 0.6.*
 
 * Indicate inevitability of each move by its font size in suggested variations (KataGo only).
 * Improve loading of nested SGFs, e.g. [AlphaGo Games](https://deepmind.com/alphago-games-english), so that we can read them conveniently:

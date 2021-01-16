@@ -2,15 +2,32 @@
 
 # Release notes
 
-## LizGoban 0.5.1
+## LizGoban 0.6.0-pre1
 
-* Fix: View > Stone > Face did not work from v0.5.0-pre4.
+* Upgrade KataGo to [1.8.0](https://github.com/lightvector/KataGo/releases/tag/v1.8.0).
+* Indicate inevitability of each move by its font size in suggested variations (KataGo only).
+* Improve loading of nested SGFs, e.g. [AlphaGo Games](https://deepmind.com/alphago-games-english), so that we can read them conveniently:
+  * Push the corresponding key (d, e, ...) for each branch (d, e, ... in dotted squares) to preview its sequence with comments.
+  * Click one of branches (or hit Enter key in the above preview) to watch it in another trial board.
+  * Click "x" mark at the right top of the board to close it and return to the main branch.
+* Implement side by side comparisons of the principal variation and the actual succeeding moves, etc.
+* Add stars to personal exercise book. Starred exercises will appear more often.
+* Support restriction of analysis region by Alt+drag like [KaTrain](https://github.com/sanderland/katrain/).
+* Slightly improve Tsumego frame (boundary, analysis region).
+* Insert/delete moves in the middle of the game by Ctrl+Shift+click.
+* Insert a black (white) stone by b(w)+click.
+* Automatically mark ladder breakers as "=" and [show the continuation of the ladder](https://github.com/kaorahi/lizgoban/issues/63) by "=" key (experimental).
+* Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
+
+Incompatibilities:
+
+* Upgrade libraries (Electron 11, etc.). So you may need to do "npm install" again.
 
 ### To use it on 64bit Windows immediately
 
 Just download the all-in-one package (`LizGoban-*_win_*.zip`), extract it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
 
-* [KataGo 1.6.1](https://github.com/lightvector/KataGo/releases/tag/v1.6.1) (eigen, eigen-avx2, opencl) + [15 blocks network](https://d3dndmfyhecmj0.cloudfront.net/g170/neuralnets/index.html) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
+* [KataGo 1.8.0](https://github.com/lightvector/KataGo/releases/tag/v1.8.0) (eigen, eigenavx2, opencl) + [15 blocks network](https://d3dndmfyhecmj0.cloudfront.net/g170/neuralnets/index.html) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
 
 You can switch KataGo versions (CPU, modern CPU, GPU) by [Preset] menu in LizGoban. The first run of the GPU version may take a long time (1 hour on a low-spec machine, for example) for its initial tuning.
 
@@ -35,32 +52,3 @@ Note that some external resources are also packaged into *.exe together with Liz
 
 * engines and neural networks: [KataGo](https://github.com/lightvector/KataGo/)
 * facial stone images: [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html)
-
-# (Previous versions)
-
-## LizGoban 0.5.0
-
-* Support ownerships of stones by facial expressions.
-* Support `*.gib`, `*.ngf`, `*.ugf`, and `*.ugi` in addition to `*.sgf`.
-* Modify "File" menu slightly for convenience.
-* Officially support reuse of analyses like Lizzie.
-* Add "Save/Copy SGF with analysis" into menu. (compatible with Lizzie 0.7.2)
-* Add more configurations (rules, komi, handicap, stone_style) into `preset` in `config.json`.
-* Omit marks for too minor suggestions on the board.
-* Automatically start quick overview after reading SGF.
-* Experimentally add "Tool > Experimental > Tsumego frame" for solving life & death problems. (See "Tips" section in "Help" menu.)
-* Improve display by "c" key + mouse hover on existing stones.
-* Stop pondering in match vs. AI if human's move is played in pausing.
-* Borrow some ideas from [KaTrain](https://github.com/sanderland/katrain/).
-  * Show mistakes and actually punished scores on stones.
-  * Click on a stone to temporarily show the past board.
-  * Double-click on a stone to jump to the move.
-  * [Fix wrong komi in Fox SGF.](https://github.com/sanderland/katrain/issues/177)
-* Make KataGo aggressive for handicap games automatically in "match vs. AI" or "AI vs. AI". ("!" is appended to the engine names in the title bar.)
-* In "AI vs. AI", show the principal variations of both AIs side by side by "1" key (keep holding down) if "Two boards A (main+PV)" is selected from "View" menu.
-* Separate estimations for different komi etc. in winrate graph.
-* Support HA (handicap) property in SGF.
-
-Incompatibilities:
-
-* Upgrade libraries (Electron 10, etc.). So you may need to do "npm install" again.
