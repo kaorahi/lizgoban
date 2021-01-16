@@ -1059,17 +1059,18 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
+    const {key} = e
     reset_keyboard_tag();
-    (to_i(e.key) > 0 || e.key === "0" || tag_letters.includes(e.key))
+    (to_i(key) > 0 || key === "0" || tag_letters.includes(key))
         && reset_keyboard_moves()
     cancel_alt_up_maybe(e)
-    switch (e.key) {
+    switch (key) {
     case "b": case "w": main('cancel_forced_color'); break
     case "c": set_showing_movenum_p(false); break
     case "v": set_showing_endstate_value_p(false); break
     case "z": case "x": set_temporary_board_type(null); break
     }
-    tag_letters.includes(e.key) && clear_tentatively_showing_until()
+    tag_letters.includes(key) && clear_tentatively_showing_until()
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
     // cancel keep_selected_variation_maybe() by any keyup
     // (ex.) keeping "2" key down, push and release control key to update
