@@ -1059,9 +1059,9 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
-    const {key} = e
+    const {key} = e, clearp = tag_letters.includes(key)
     reset_keyboard_tag();
-    (to_i(key) > 0 || key === "0" || tag_letters.includes(key))
+    (to_i(key) > 0 || key === "0" || clearp)
         && reset_keyboard_moves()
     cancel_alt_up_maybe(e)
     switch (key) {
@@ -1070,7 +1070,7 @@ document.onkeyup = e => {
     case "v": set_showing_endstate_value_p(false); break
     case "z": case "x": set_temporary_board_type(null); break
     }
-    tag_letters.includes(key) && clear_tentatively_showing_until()
+    clearp && clear_tentatively_showing_until()
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
     // cancel keep_selected_variation_maybe() by any keyup
     // (ex.) keeping "2" key down, push and release control key to update
