@@ -1293,9 +1293,12 @@ function effect_gen(...transforms) {
     after_effect(() => {in_effect = false})
 }
 
+let last_toast_animation = null
 function toast(message, millisec) {
+    last_toast_animation && last_toast_animation.finish()
     setq('#toast_message', message)
-    Q('#toast').animate([{opacity: 1}, {opacity: 0.8}, {opacity: 0}], millisec || 3000)
+    const keyframes = [{opacity: 1}, {opacity: 0.8}, {opacity: 0}]
+    last_toast_animation = Q('#toast').animate(keyframes, millisec || 3000)
 }
 
 /////////////////////////////////////////////////
