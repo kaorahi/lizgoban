@@ -1059,7 +1059,7 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
-    const {key} = e, clearp = tag_letters.includes(key)
+    const {key} = e, clearp = tag_letters.includes(key) || key === "Shift"
     reset_keyboard_tag();
     (to_i(key) > 0 || key === "0" || clearp)
         && reset_keyboard_moves()
