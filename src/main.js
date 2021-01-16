@@ -530,7 +530,9 @@ function safe_menu_maybe() {
         help_menu,
     ]
     const wait = !AI.engine_info().current.is_ready && [
-        f('Cancel(Esc)', 'Esc', () => {AI.restore(); update_all()}),
+        f('Cancel(Esc)', 'Esc', () => {
+            toast('Canceled.'); cancel_tuning(); AI.restore(); update_all()
+        }),
         help_menu,
     ]
     return auto || wait
@@ -1825,6 +1827,7 @@ function tuning_is_done() {
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message}).then(action)
     tuning_message = null; update_all()
 }
+function cancel_tuning() {tuning_message && (tuning_message = null)}
 
 function illegal_handler({move, is_black, move_count}) {
     const message = `Illegal: ${is_black ? 'B' : 'W'}(${move_count - game.init_len}) ${move}`
