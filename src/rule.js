@@ -45,27 +45,39 @@ function remove_captured(ij, is_black, stones) {
 }
 
 function captured_from(ij, is_black, stones) {
-    const state = {hope: [], checked_pool: [], checked_map: [[]], is_black, stones}
+    return low_liberty_group_from(ij, is_black, stones, 0)
+}
+
+function low_liberty_group_from(ij, is_black, stones, max_liberties) {
+    const state = {
+        hope: [], checked_pool: [], checked_map: [[]], liberties: 0, is_black, stones
+    }
     check_if_liberty(ij, state)
     while (!empty(state.hope)) {
-        if (search_for_liberty(state)) {return []}
+        search_for_liberty(state)
+        if (state.liberties > max_liberties) {return []}
     }
     return state.checked_pool
 }
 
 function search_for_liberty(state) {
-    return around_idx(state.hope.shift()).find(idx => check_if_liberty(idx, state))
+    around_idx(state.hope.shift()).forEach(idx => check_if_liberty(idx, state))
 }
 
 function check_if_liberty(ij, state) {
-    const s = aa_ref(state.stones, ...ij)
-    return !s ? false : !s.stone ? true : (push_hope(ij, s, state), false)
+    const s = aa_ref(state.stones, ...ij); if (!s) {return}
+    s.stone ? push_hope(ij, s, state) : increment_liberties(ij, state)
 }
 
 function push_hope(ij, s, state) {
-    if (xor(s.black, state.is_black) || aa_ref(state.checked_map, ...ij)) {return}
-    state.hope.push(ij)
-    state.checked_pool.push(ij); aa_set(state.checked_map, ...ij, true)
+    !xor(s.black, state.is_black) && check_map(ij, state) &&
+        (state.hope.push(ij), state.checked_pool.push(ij))
+}
+
+function increment_liberties(ij, state) {check_map(ij, state) && (state.liberties++)}
+
+function check_map(ij, {checked_map}) {
+    return !aa_ref(checked_map, ...ij) && aa_set(checked_map, ...ij, true)
 }
 
 ///////////////////////////////////////
