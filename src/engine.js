@@ -356,11 +356,11 @@ function create_leelaz () {
 
     const make_rest_reader = on_response => s =>
           assuming_broken_GTP && stdout_main_reader(s, true) ? null :
-          // '' is falsy
-          s ? on_response('continued', s) : (current_stdout_reader = stdout_main_reader)
+          s ? on_response('continued', s) :  // '' is falsy
+          (on_response('finished', s), (current_stdout_reader = stdout_main_reader))
 
     const on_analysis_response = (ok, result) =>
-          ((ok && suggest_reader_maybe(result)), expecting_multiline_response)
+          ((ok && result && suggest_reader_maybe(result)), expecting_multiline_response)
 
     const suggest_reader_maybe = (s) =>
           up_to_date_response() && s.match(/^info /) && suggest_reader(s)
