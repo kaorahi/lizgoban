@@ -2,8 +2,8 @@
 
 const E = {}
 
-E.to_i = x => (x | 0)
-E.to_f = x => (x - 0)
+E.to_i = x => (x | 0)  // to_i(true) is 1!
+E.to_f = x => (x - 0)  // to_f(true) is 1!
 E.to_s = x => (x + '')
 E.xor = (a, b) => (!a === !!b)
 // truep() returns BOOLEAN so that availability() is safely serialized and
