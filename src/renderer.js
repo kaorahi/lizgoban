@@ -148,6 +148,7 @@ ipc.on('render', (e, h, is_board_changed) => {
     // renderer state must be updated before update_ui is called
     merge(R, h)
     initialize_image_maybe()
+    cancel_obsolete_branch()
     render_in_capacity()
 })
 
@@ -1177,6 +1178,7 @@ function reset_branch_moves_maybe() {
     const goto_p = truep(at_move_count)
     return goto_p && (main('goto_move_count', move_count), true)
 }
+function cancel_obsolete_branch() {showing_branch_p() || (showing_branch = null)}
 function showing_branch_p() {
     const {move_count, at_move_count} = (showing_branch || {})
     return true_or(at_move_count, move_count) === R.move_count
