@@ -203,8 +203,9 @@ function create_leelaz () {
     const get_komi = () => komi
     const get_engine_id = () =>
           `${base_engine_id}-${gorule}-${komi}${aggressive}${analysis_region}`
-    const peek_value = (move, cont) => {
-        if (!is_supported('lz-setoption')) {return false}
+    const peek_value = (move, cont) =>
+          is_supported('lz-setoption') ? (peek_value_lz(move, cont), true) : false
+    const peek_value_lz = (move, cont) => {
         const do1 = () =>
               leelaz(join_commands('lz-setoption name visits value 1',
                                    `play ${bturn ? 'b' : 'w'} ${move}`,
@@ -214,7 +215,7 @@ function create_leelaz () {
                 value => {the_nn_eval_reader = do_nothing; cont(value); update()}
             leelaz(join_commands('lz-setoption name visits value 0', 'undo'))
         }
-        do1(); return true
+        do1()
     }
 
     // aggressive
