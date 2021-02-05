@@ -900,7 +900,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const pass_maybe =
           () => AI.peek_value('pass', value => {
               play_com(value < 0.9 ? 'pass' : move); update_all()
-          }) || toast('Not supported (Leela Zero only)')
+          }) || toast('Not supported')
     const play_it = () => {
         decrement_auto_play_count()
         weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move)

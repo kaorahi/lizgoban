@@ -90,9 +90,9 @@ function create_leelaz () {
         arg.endstate_handler && is_supported('endstate') && leelaz('endstate_map')
     }
 
-    const kata_raw_nn = () => {
+    const kata_raw_nn = given_receiver => {
         if (!is_supported('kata-raw-nn')) {return false}
-        const receiver = h => {
+        const receiver = given_receiver || (h => {
             if (!h) {return}
             const {whiteWin, whiteLead, whiteOwnership, policy, policyPass} = h
             const conv_gen = base =>
@@ -106,7 +106,7 @@ function create_leelaz () {
             const prior = to_s(extended_policy[k]), pv = move
             const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
             suggest_reader_maybe(fake_suggest)
-        }
+        })
         leelaz('kata-raw-nn 0', on_multiline_response_at_once(on_kata_raw_nn_response(receiver)))
         return true
     }
@@ -204,7 +204,9 @@ function create_leelaz () {
     const get_engine_id = () =>
           `${base_engine_id}-${gorule}-${komi}${aggressive}${analysis_region}`
     const peek_value = (move, cont) =>
-          is_supported('lz-setoption') ? (peek_value_lz(move, cont), true) : false
+          is_supported('lz-setoption') ? (peek_value_lz(move, cont), true) :
+          is_supported('kata-raw-nn') ? (peek_value_kata(move, cont), true) :
+          false
     const peek_value_lz = (move, cont) => {
         const do1 = () =>
               leelaz(join_commands('lz-setoption name visits value 1',
@@ -216,6 +218,11 @@ function create_leelaz () {
             leelaz(join_commands('lz-setoption name visits value 0', 'undo'))
         }
         do1()
+    }
+    const peek_value_kata = (move, cont) => {
+        const flip = w => bturn ? w : 1 - w // bturn is not updated!
+        const receiver = h => {leelaz('undo'); h && cont(flip(to_f(h.whiteWin[0])))}
+        leelaz(`play ${bturn ? 'b' : 'w'} ${move}`); kata_raw_nn(receiver)
     }
 
     // aggressive
