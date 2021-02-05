@@ -1444,7 +1444,7 @@ function game_from_stored(stored, cache_suggestions_p, internal_p) {
     return f(uncompress(stored), cache_suggestions_p)[0]
 }
 function stored_from_game(game, cache_suggestions_p) {
-    return compress(game.to_sgf(cache_suggestions_p))
+    return compress(game.to_sgf(cache_suggestions_p, true))
 }
 
 /////////////////////////////////////////////////

@@ -86,7 +86,8 @@ function create_game(init_history, init_prop) {
         transform: command => {
             history.splice(0, Infinity, ...TRANSFORM[command](history))
         },
-        to_sgf: cache_suggestions_p => game_to_sgf(self, cache_suggestions_p),
+        to_sgf: (cache_suggestions_p, force_note_p) =>
+            game_to_sgf(self, cache_suggestions_p, force_note_p),
         load_sabaki_gametree: (gametree, index, cache_suggestions_p) =>
             load_sabaki_gametree_to_game(gametree, index, self, cache_suggestions_p),
         new_tag_maybe: (new_sequence_p, move_count) =>
@@ -146,10 +147,11 @@ function use_note_property(bool) {use_note_property_val = !!bool}
 /////////////////////////////////////////////////
 // SGF
 
-function game_to_sgf(game, cache_suggestions_p) {
-    return with_board_size(game.board_size, game_to_sgf_sub, game, cache_suggestions_p)
+function game_to_sgf(game, cache_suggestions_p, force_note_p) {
+    return with_board_size(game.board_size, game_to_sgf_sub,
+                           game, cache_suggestions_p, force_note_p)
 }
-function game_to_sgf_sub(game, cache_suggestions_p) {
+function game_to_sgf_sub(game, cache_suggestions_p, force_note_p) {
     // util
     const f = (t, p) => p ? `${t}[${SGF.escapeString(p)}]` : ''
     const m2s = move => `[${move2sgfpos(move)}]`
@@ -190,7 +192,8 @@ function game_to_sgf_sub(game, cache_suggestions_p) {
     }
     const move2sgf = h => {
         const {move, is_black, comment, note} = h
-        const note_p = use_note_property_p() && cache_suggestions_p && note
+        const note_p = use_note_property_p() &&
+              (cache_suggestions_p || force_note_p) && note
         const note_maybe = f(note_property, note_p && JSON.stringify({note}))
         return `;${is_black ? 'B' : 'W'}${m2s(move)}${f('C', comment)}${note_maybe}`
             + (cache_suggestions_p ? lizzie072_cache_for(h) : '')
