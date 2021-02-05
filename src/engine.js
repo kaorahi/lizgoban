@@ -85,6 +85,27 @@ function create_leelaz () {
         arg.endstate_handler && is_supported('endstate') && leelaz('endstate_map')
     }
 
+    const kata_raw_nn = () => {
+        if (!is_supported('kata-raw-nn')) {return false}
+        const receiver = h => {
+            if (!h) {return}
+            const {whiteWin, whiteLead, whiteOwnership, policy, policyPass} = h
+            const conv_gen = base =>
+                  a => a.map(z => to_s(bturn ? base - z : z)).join(' ')
+            const [conv0, conv1] = [0, 1].map(conv_gen)
+            const [winrate, scoreLead] = [whiteWin, whiteLead].map(conv1)
+            const ownership = conv0(whiteOwnership)
+            const bsize = board_size(), extended_policy = [...policy, policyPass]
+            const k = argmin_by(extended_policy, p => isNaN(p) ? Infinity : - p)
+            const move = idx2move(Math.floor(k / bsize), k % bsize) || 'pass'
+            const prior = to_s(extended_policy[k]), pv = move
+            const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
+            suggest_reader_maybe(fake_suggest)
+        }
+        leelaz('kata-raw-nn 0', on_multiline_response_at_once(on_kata_raw_nn_response(receiver)))
+        return true
+    }
+
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
         const checks = [
@@ -94,6 +115,7 @@ function create_leelaz () {
             ['kata-analyze', 'kata-analyze interval 1'],
             ['kata-set-rules', `kata-set-rules ${gorule}`],
             ['kata-get-param', 'kata-get-param playoutDoublingAdvantage'],
+            ['kata-raw-nn', 'kata-raw-nn 0'],
             ['pvVisits', 'kata-analyze 1 pvVisits true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
         ]
@@ -318,7 +340,7 @@ function create_leelaz () {
     const up_to_date_response = () => {return last_response_id >= last_command_id}
 
     const command_matcher = re => (task => task.command.match(re))
-    const pondering_command_p = command_matcher(/^(lz|kata)-analyze/)
+    const pondering_command_p = command_matcher(/^((lz|kata)-analyze|kata-raw-nn)/)
     const endstate_command_p = command_matcher(/^endstate_map/)
     const peek_command_p = command_matcher(/play.*undo/)
     const changer_command_p = command_matcher(/play|undo|clear_board/)
@@ -380,6 +402,16 @@ function create_leelaz () {
         const engine_id = get_engine_id()
         merge(h, {engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits)})
         f(h)
+    }
+
+    const on_kata_raw_nn_response = receiver => (ok, results) => {
+        if (!ok || empty(results) || !up_to_date_response()) {receiver(null); return}
+        const tokens = results.join(' ').split(/\s+/).filter(identity)
+        const h = {}, numeric = /^([-.0-9]+|NAN)$/
+        let key
+        const append = v => (h[key] || (h[key] = [])).push(v)
+        tokens.forEach(t => t.match(numeric) ? append(to_f(t)) : (key = t))
+        receiver(h)
     }
 
     /////////////////////////////////////////////////
