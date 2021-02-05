@@ -1,7 +1,5 @@
 'use strict'
 
-const log_length_per_exercise = 2
-
 /////////////////////////////////////////////////
 // file name format
 
@@ -27,6 +25,8 @@ function exercise_board_size(filename) {
 
 /////////////////////////////////////////////////
 // metadata
+
+const log_length_per_exercise = 2
 
 const stored_exercise_info = new ELECTRON_STORE({name: 'lizgoban_exercise_info'})
 function get_metadata() {return stored_exercise_info.get('metadata', {})}
