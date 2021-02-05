@@ -416,7 +416,7 @@ function update_goban() {
         case "suggest": default: f(draw_main); break;
         }
     }
-    const c = visits_trail_canvas, wro = btype === "winrate_only", su = showing_until()
+    const c = visits_trail_canvas, wro = btype === "winrate_only"
     const stop_trail_p = finitep(showing_until())
     c.style.visibility = wro ? 'hidden' : 'visible'
     !wro && !stop_trail_p && D.draw_visits_trail(c)
