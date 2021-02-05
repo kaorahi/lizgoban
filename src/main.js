@@ -725,14 +725,17 @@ function toggle_auto_analyze(visits) {
         start_auto_analyze(visits)
 }
 function start_auto_analyze(visits, steps, on_finish) {
-    auto_analysis_signed_visits = visits; auto_analysis_steps = steps || 1
+    set_auto_analysis_signed_visits(visits); auto_analysis_steps = steps || 1
     on_auto_analyze_finished = on_finish || pause
     rewind_maybe(); resume()
 }
 function start_quick_overview() {
     start_auto_analyze(1, 15, is_pausing() ? pause : do_nothing)
 }
-function stop_auto_analyze() {auto_analysis_signed_visits = Infinity}
+function stop_auto_analyze() {set_auto_analysis_signed_visits(Infinity)}
+function set_auto_analysis_signed_visits(visits) {
+    auto_analysis_signed_visits = visits
+}
 function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
 function auto_analysis_progress() {
     return !auto_analyzing() ? -1 :
