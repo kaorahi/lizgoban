@@ -40,7 +40,7 @@ const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_ru
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
-    random_exercise_chooser, recent_exercise_chooser,
+    random_exercise_chooser, recent_exercise_chooser, recently_seen_exercises_in,
 } = require('./exercise.js')(exercise_mtime)
 const {tsumego_frame} = require('./tsumego_frame.js')
 const {ladder_branches, ladder_is_seen, last_ladder_branches} = require('./ladder.js')
@@ -1740,12 +1740,8 @@ function load_recent_exercise(win) {load_exercise(recent_exercise_chooser, win)}
 function exercise_mtime(fn) {return fs.statSync(expand_exercise_filename(fn)).mtimeMs}
 let seen_exercises = []
 function revive_seen_exercises(metadata) {
-    const now = new Date(), hour = 60 * 60 * 1000, recent = 18 * hour
-    const recent_p = fn => {
-        const last_seen = ((metadata[fn] || {}).seen_at || [])[0]
-        return (now - new Date(last_seen || 0) < recent)
-    }
-    seen_exercises = seen_exercises.filter(recent_p)
+    const hours = 18  // avoid showing same exercises within X hours
+    seen_exercises = recently_seen_exercises_in(seen_exercises, metadata, hours)
 }
 
 function load_exercise(selector, win, random_flip_p) {

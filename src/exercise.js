@@ -16,6 +16,7 @@ module.exports = (...a) => {
         get_all_exercise_metadata: get_metadata,
         random_exercise_chooser,
         recent_exercise_chooser,
+        recently_seen_exercises_in,
     }
 }
 
@@ -96,4 +97,16 @@ function random_exercise_chooser(a, metadata)  {
 function recent_exercise_chooser(a) {
     const neg_mtime = fn => - exercise_mtime(fn)
     return min_by(a, neg_mtime)
+}
+
+/////////////////////////////////////////////////
+// seen
+
+function recently_seen_exercises_in(exercises, metadata, hours) {
+    const now = new Date(), ms_in_h = 60 * 60 * 1000, recent = hours * ms_in_h
+    const recent_p = fn => {
+        const last_seen = ((metadata[fn] || {}).seen_at || [])[0]
+        return (now - new Date(last_seen || 0) < recent)
+    }
+    return exercises.filter(recent_p)
 }
