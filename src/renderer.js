@@ -273,9 +273,10 @@ function update_body_color() {
 }
 
 function keep_selected_variation_maybe(suggest) {
+    if (empty(suggest)) {return}; suggest[0].was_top = true
     const sticky = any_selected_suggest(); if (!sticky) {return}
-    const {move, pv, pvVisits} = sticky, s = suggest.find(z => z.move === move)
-    s ? merge(s, {pv, pvVisits}) : suggest.push(sticky)  // can't happen?
+    const {move, pv, pvVisits, was_top} = sticky, s = suggest.find(z => z.move === move)
+    s ? merge(s, {pv, pvVisits, was_top}) : suggest.push(sticky)  // can't happen?
 }
 function clear_selected_variation() {R.suggest = []}  // fixme: overkill
 
@@ -356,8 +357,8 @@ function update_first_board_canvas(canvas) {
 }
 
 function already_showing_pv_p() {
-    const target = D.target_move()
-    return target && ((R.suggest[0] || {}).move === target) && !showing_branch_p()
+    const target = D.target_move(), {move, was_top} = any_selected_suggest() || {}
+    return target && (move === target) && was_top && !showing_branch_p()
 }
 
 /////////////////////////////////////////////////
