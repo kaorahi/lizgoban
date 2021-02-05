@@ -352,7 +352,7 @@ function goto_previous_or_next_something(backwardp) {
 function update_menu() {mac_p() ? update_app_menu() : update_window_menu()}
 function update_app_menu() {
     const win = electron.BrowserWindow.getFocusedWindow() || get_windows()[0]
-    win && electron.Menu.setApplicationMenu(menu_for_window(win))
+    win && Menu.setApplicationMenu(menu_for_window(win))
 }
 function update_window_menu() {
     get_windows().forEach(win => win.setMenu(menu_for_window(win)))
