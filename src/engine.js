@@ -205,13 +205,16 @@ function create_leelaz () {
           `${base_engine_id}-${gorule}-${komi}${aggressive}${analysis_region}`
     const peek_value = (move, cont) => {
         if (!is_supported('lz-setoption')) {return false}
-        the_nn_eval_reader =
-            value => {the_nn_eval_reader = do_nothing; cont(value); update()}
-        leelaz(join_commands('lz-setoption name visits value 1',
-                             `play ${bturn ? 'b' : 'w'} ${move}`,
-                             'lz-analyze interval 0',
-                             'lz-setoption name visits value 0', 'undo'))
-        return true
+        const do1 = () =>
+              leelaz(join_commands('lz-setoption name visits value 1',
+                                   `play ${bturn ? 'b' : 'w'} ${move}`,
+                                   'lz-analyze interval 0'), do2)
+        const do2 = () => {
+            the_nn_eval_reader =
+                value => {the_nn_eval_reader = do_nothing; cont(value); update()}
+            leelaz(join_commands('lz-setoption name visits value 0', 'undo'))
+        }
+        do1(); return true
     }
 
     // aggressive
