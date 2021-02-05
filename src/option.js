@@ -82,7 +82,7 @@ function option_path(key) {
 
 function expand_preset(preset) {
     const expand_ary = ([a, b]) => a === 'built-in' ? default_path_for(b) : b
-    const expand = z => (typeof z === 'string') ? z : expand_ary(z)
+    const expand = z => stringp(z) ? z : expand_ary(z)
     preset.forEach(rule => {
         // merge rule.option for backward compatibility to 1a88dd40
         merge(rule, rule.option || {})

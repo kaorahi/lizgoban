@@ -233,7 +233,7 @@ function create_leelaz () {
     const start_args_equal = h => {
         const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b)
         // const eq = (a, b) => a === b ||
-        //       (typeof a === 'object' && typeof b === 'object' &&
+        //       (is_a(a, 'object') && is_a(b, 'object') &&
         //        Object.keys({...a, ...b}).every(k => eq(a[k], b[k])))
         return eq(arg, cook_arg(h))
     }

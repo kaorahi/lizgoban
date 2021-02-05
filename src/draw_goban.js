@@ -289,7 +289,7 @@ function draw_coordinates(unit, idx2coord, g) {
 }
 
 function draw_visits(text_maybe, margin, g) {
-    if (typeof text_maybe === 'string') {
+    if (stringp(text_maybe)) {
         draw_visits_text(text_maybe, margin, g); return
     }
     if (!truep(R.visits)) {return}

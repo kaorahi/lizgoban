@@ -14,7 +14,9 @@ E.finitep = x => truep(x) && x !== Infinity
 E.finite_or = (x, y) => E.finitep(x) ? x : y
 E.do_nothing = () => {}
 E.identity = x => x
-E.functionp = obj => (typeof obj === 'function')
+E.is_a = (obj, type) => (typeof obj === type)
+E.stringp = obj => E.is_a(obj, 'string')
+E.functionp = obj => E.is_a(obj, 'function')
 E.clip = (x, lower, upper) =>
     Math.max(lower, Math.min(x, E.truep(upper) ? upper : Infinity))
 E.sum = a => a.reduce((r,x) => r + x, 0)
@@ -86,7 +88,7 @@ function kilo_str_sub(x, rules) {
 E.str_sort_uniq = str => [...new Set(str.split(''))].sort().join('')
 
 let debug_log_p = false
-E.debug_log = (arg, limit_len) => (typeof arg === 'boolean') ?
+E.debug_log = (arg, limit_len) => is_a(arg, 'boolean') ?
     (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len))
 function do_debug_log(arg, limit_len) {
     const sec = `(${(new Date()).toJSON().replace(/(.*:)|(.Z)/g, '')}) `
@@ -97,7 +99,7 @@ E.snip = (str, limit_len) => {
     return snip_text(str, half, half, over => `{...${over}...}`)
 }
 E.snip_text = (str, head, tail, dots) => {
-    const over = str.length - (head + tail), raw = (typeof dots) === 'string'
+    const over = str.length - (head + tail), raw = stringp(dots)
     return over <= 0 ? str :
         str.slice(0, head) + (raw ? dots : dots(over)) + (tail > 0 ? str.slice(- tail) : '')
 }
