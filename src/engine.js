@@ -93,9 +93,9 @@ function create_leelaz () {
             ['endstate', 'endstate_map'],
             ['kata-analyze', 'kata-analyze interval 1'],
             ['kata-set-rules', `kata-set-rules ${gorule}`],
-            ['kata-get-param', `kata-get-param playoutDoublingAdvantage`],
-            ['pvVisits', `kata-analyze 1 pvVisits true`],
-            ['allow', `lz-analyze 1 allow B D4 1`],
+            ['kata-get-param', 'kata-get-param playoutDoublingAdvantage'],
+            ['pvVisits', 'kata-analyze 1 pvVisits true'],
+            ['allow', 'lz-analyze 1 allow B D4 1'],
         ]
         checks.map(a => check_supported(...a))
         // clear_leelaz_board for restart
