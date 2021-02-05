@@ -114,21 +114,25 @@ function create_leelaz () {
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
         const checks = [
-            ['minmoves', 'lz-analyze interval 1 minmoves 30'],
             ['lz-setoption', 'lz-setoption name visits value 0'],
-            ['endstate', 'endstate_map'],
             ['kata-analyze', 'kata-analyze interval 1'],
             ['kata-set-rules', `kata-set-rules ${gorule}`],
             ['kata-get-param', 'kata-get-param playoutDoublingAdvantage'],
+        ]
+        const checks_without_startup_log = [  // avoid too long log
+            ['minmoves', 'lz-analyze interval 1 minmoves 30'],
+            ['endstate', 'endstate_map'],
             ['kata-raw-nn', 'kata-raw-nn 0'],
             ['pvVisits', 'kata-analyze 1 pvVisits true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
         ]
-        checks.map(a => check_supported(...a))
+        const do_check = table => table.map(a => check_supported(...a))
+        do_check(checks)
         // clear_leelaz_board for restart
         // komi may be changed tentatively in set_board before check of engine type
         const after_all_checks = () => {
             is_in_startup = false
+            do_check(checks_without_startup_log)
             clear_leelaz_board(); is_katago() || (komi = leelaz_komi)
             // KataGo's default komi can be 6.5 etc. depending on "rules" in gtp.cfg.
             leelaz(`komi ${komi}`)  // force KataGo to use our komi
