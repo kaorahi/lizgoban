@@ -59,6 +59,7 @@ with lots of original gimmicks.
 * Preview of branches before switching for nested SGFs
 * Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
 * Play against weakened engines in several ways (Note: [KaTrain](https://github.com/sanderland/katrain/) has nicer features in this field now.)
+* Play pair Go, "you & KataGo" vs. Leela Zero, etc.
 * [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 * [Experimental] [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically.
 * [Experimental] [External control of GUI](https://github.com/kaorahi/lizgoban/issues/61) from another program
@@ -186,7 +187,7 @@ Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or 
   * rules: See the comments for "rules" in gtp_example.cfg of KataGo.
   * komi: 7.5, 6.5, 0, -0.5, etc. (for KataGo)
   * handicap: Number of handicap stones.
-  * match: Set it true for match vs. AI.
+  * match: Set it true for match vs. AI. Set it 3 for pair Go (= AI plays 3 moves after your move).
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
   * stone_style: One of "2D", "2.5D", "3D", or "Face". (You need to set "face_image_rule" for "Face". See the next section.)
 
@@ -277,6 +278,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Slightly improve Tsumego frame (boundary, analysis region).
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
 * Insert a black (white) stone by b(w)+click.
+* Add pair Go to "File" menu and `preset` in `config.json`.
 * Automatically mark ladder breakers as "=" and [show the continuation of the ladder](https://github.com/kaorahi/lizgoban/issues/63) by "=" key (experimental).
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 

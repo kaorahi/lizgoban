@@ -288,7 +288,8 @@ function play(move, force_create, default_tag, comment, auto_play_in_match_sec) 
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     do_play(move, black_to_play_now_p(), tag || default_tag || undefined, comment)
     pass && wink()
-    truep(auto_play_in_match_sec) && auto_play_in_match(auto_play_in_match_sec)
+    truep(auto_play_in_match_sec) &&
+        auto_play_in_match(auto_play_in_match_sec, get_auto_moves_in_match())
     autosave_later()
 }
 function black_to_play_now_p() {return black_to_play_p(R.forced_color_to_play, R.bturn)}
@@ -405,6 +406,8 @@ function menu_template(win) {
             item('Stop match', 'Shift+G',
                  (this_item, win) => stop_match(window_prop(win).window_id), true) :
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
+        item('Pair Go match', undefined,
+             (this_item, win) => start_match(win, 3), true, !R.in_match),
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
         item('Save SGF with analysis...', 'CmdOrCtrl+S', () => save_sgf(true), true),
@@ -651,7 +654,7 @@ function apply_preset(rule, win) {
     truep(komi) && set_komi(komi)
     board_type && set_board_type(board_type, win)
     stone_style && set_stored('stone_style', stone_style)
-    match && start_match(win)
+    match && start_match(win, to_i(match))
     const is_engine_updated = update_engines_by_preset(rule)
     AI.backup(); is_engine_updated && resume()
 }
@@ -809,8 +812,10 @@ function auto_playing(forever) {
 
 // match
 let auto_play_weaken = [], pondering_in_match = false
-function start_match(win, reset_match_param_p) {
-    reset_match_param_p && renderer('reset_match_param')
+function start_match(win, auto_moves_in_match) {
+    const resetp = (auto_moves_in_match === 'reset_param')
+    set_auto_moves_in_match(resetp ? 1 : to_i(auto_moves_in_match))
+    resetp && renderer('reset_match_param')
     set_board_type('raw', win); R.in_match = true
 }
 function stop_match(window_id) {
@@ -824,9 +829,13 @@ function set_match_param(weaken) {
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
         []
 }
-function auto_play_in_match(sec) {
-    pondering_in_match = !pausing; start_auto_play(false, sec, 1)
+function auto_play_in_match(sec, count) {
+    pondering_in_match = !pausing
+    start_auto_play(false, sec, count || 1)
 }
+let the_auto_moves_in_match = 1
+function get_auto_moves_in_match() {return clip(the_auto_moves_in_match, 1)}
+function set_auto_moves_in_match(k) {the_auto_moves_in_match = k}
 
 // auto-redo (without additional analysis)
 let the_auto_redo_progress = 0, auto_redo_millisec = 0, auto_redo_timer = null
@@ -904,7 +913,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const play_it = () => {
         decrement_auto_play_count()
         weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move)
-        R.in_match && !pondering_in_match && pause()
+        R.in_match && !pondering_in_match && !auto_playing() && pause()
     }
     do_as_auto_play(move !== 'pass', play_it)
 }
@@ -1770,7 +1779,7 @@ function load_exercise(selector, win, random_flip_p) {
     const retry = () => {seen_exercises = []; load_exercise(selector, win, random_flip_p)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files, metadata); seen_exercises.push(fn)
-    start_match(win, true); load_as_exercise(expand_exercise_filename(fn))
+    start_match(win, 'reset_param'); load_as_exercise(expand_exercise_filename(fn))
     random_flip_p && game.random_flip_rotate()
     game.set_last_loaded_element(); tag_or_untag()
     update_exercise_metadata({seen_at: (new Date()).toJSON()})
