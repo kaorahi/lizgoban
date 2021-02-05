@@ -359,6 +359,15 @@ function create_leelaz () {
           s ? on_response('continued', s) :  // '' is falsy
           (on_response('finished', s), (current_stdout_reader = stdout_main_reader))
 
+    const on_multiline_response_at_once = on_response => {
+        const buf = []
+        return (ok, result) => {
+            !ok ? on_response(ok, [result]) :
+                ok === 'finished' ? on_response(ok, buf) : buf.push(result)
+            return expecting_multiline_response
+        }
+    }
+
     const on_analysis_response = (ok, result) =>
           ((ok && result && suggest_reader_maybe(result)), expecting_multiline_response)
 
