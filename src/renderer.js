@@ -143,6 +143,9 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 const render_in_capacity = skip_too_frequent_requests(render_now)
 
 ipc.on('render', (e, h, is_board_changed) => {
+    // !showing_branch is necessary because of "previous branch" feature
+    // introduced in 9b00d8403c. See set_branch_moves_maybe().
+    is_board_changed && !showing_branch && reset_keyboard_moves(true)
     // for readable variation display
     keep_selected_variation_maybe(h.suggest)
     // renderer state must be updated before update_ui is called
