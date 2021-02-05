@@ -1177,7 +1177,10 @@ function reset_branch_moves_maybe() {
     const goto_p = truep(at_move_count)
     return goto_p && (main('goto_move_count', move_count), true)
 }
-function showing_branch_p() {return !!showing_branch}
+function showing_branch_p() {
+    const {move_count, at_move_count} = (showing_branch || {})
+    return true_or(at_move_count, move_count) === R.move_count
+}
 globalize({showing_branch_p})
 
 function undoable() {return R.move_count > R.init_len}
