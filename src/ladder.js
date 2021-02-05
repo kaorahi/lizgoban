@@ -1,6 +1,6 @@
 'use strict'
 
-const {captured_from} = require('./rule.js')
+const {has_liberty} = require('./rule.js')
 
 const too_short = 5
 
@@ -79,11 +79,10 @@ function try_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
     if (!valid) {return null}
     const [next_idx] = dame
     const u = idx_minus(a_idx, e_idx), v = idx_minus(next_idx, e_idx)
-    const matched =
-          check_pattern_around(e_idx, escape_pattern, recent_two_moves, stones, u, v)
-    const captured_if = is_captured_if(e_idx, next_idx, attack_move.is_black, stones)
+    const matched = check_pattern_around(e_idx, escape_pattern, escape_liberty_pattern,
+                                         recent_two_moves, stones, u, v)
     const prop = new_prop(next_idx, escape_move.is_black, false, u, v, stones)
-    return matched && captured_if && try_ladder(null, prop, move_count, stones)
+    return matched && try_ladder(null, prop, move_count, stones)
 }
 
 function try_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
@@ -94,12 +93,10 @@ function try_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
     if (!valid) {return null}
     const [next_idx] = keima
     const u = idx_minus(next_idx, e_idx), v = idx_plus(idx_minus(a_idx, e_idx), u)
-    const matched =
-          check_pattern_around(e_idx, attack_pattern, recent_two_moves, stones, u, v)
-    const prev_e_idx = idx_minus(e_idx, u)
-    const captured_if = is_captured_if(prev_e_idx, e_idx, attack_move.is_black, stones)
+    const matched = check_pattern_around(e_idx, attack_pattern, attack_liberty_pattern,
+                                         recent_two_moves, stones, u, v)
     const prop = new_prop(next_idx, attack_move.is_black, true, u, v, stones)
-    return matched && captured_if && try_ladder(null, prop, move_count, stones)
+    return matched && try_ladder(null, prop, move_count, stones)
 }
 
 function try_ladder(ladder, prop, move_count, stones) {
@@ -129,11 +126,17 @@ function record_hit(moves, idx) {
 //////////////////////////////////////
 // pattern match
 
+// (in pattern)
 // 1, 2: recent two moves
 // 3: next move (not used at present)
 // X, O: same color stone as 1, 2, respectively
 // .: empty
 // S, x, o: "X or O", "X or .", "O or ."
+// ?: don't care
+
+// (in liberty pattern)
+// a, b: at most 1, 2 liberties
+// 2, 3: at least 2, 3 liberties
 // ?: don't care
 
 // each position in 3x3 pattern corresponds to p u + q v for (p, q) = ...
@@ -151,19 +154,33 @@ X2.
 x3.
 `)
 
+const attack_liberty_pattern = split_pattern(`
+??3
+2b?
+???
+`)
+
 const escape_pattern = split_pattern(`
 SXO
 O13
 o2.
 `)
 
-function check_pattern_around(idx, pattern, recent_two_moves, stones, u, v) {
+const escape_liberty_pattern = split_pattern(`
+??3
+2a?
+???
+`)
+
+function check_pattern_around(idx, pattern, liberty_pattern, recent_two_moves,
+                              stones, u, v) {
     const [m1, m2] = recent_two_moves
     const [color1, color2] = recent_two_moves.map(m => m.is_black)
     const ij_from_offset = (p, q) =>
           idx_plus(idx, idx_plus(idx_mul(p, u), idx_mul(q, v)))
+    const ij_from_ab = (a, b) => ij_from_offset(a - 1, b - 1)
     const check = (c, a, b) => {
-        const ij = ij_from_offset(a - 1, b - 1), move = idx2move(...ij)
+        const ij = ij_from_ab(a, b), move = idx2move(...ij)
         const h = aa_ref(stones, ...ij); if (!h) {return false}
         const {stone, black} = h
         const [is_color1, is_color2] = [color1, color2].map(col => !xor(black, col))
@@ -179,7 +196,18 @@ function check_pattern_around(idx, pattern, recent_two_moves, stones, u, v) {
         case '?': return true
         }
     }
-    return aa_map(pattern, check).flat().every(truep)
+    const check_liberty = (c, a, b) => {
+        const ij = ij_from_ab(a, b), has = k => has_liberty(ij, stones, k)
+        switch (c) {
+        case 'a': return !has(2)
+        case 'b': return !has(3)
+        case '2': return has(2)
+        case '3': return has(3)
+        case '?': return true
+        }
+    }
+    const match_p = (pat, chk) => aa_map(pat, chk).flat().every(truep)
+    return match_p(pattern, check) && match_p(liberty_pattern, check_liberty)
 }
 
 //////////////////////////////////////
@@ -192,14 +220,6 @@ function stone_or_border(idx, stones) {
 }
 function color_stone_or_border(idx, black, stones) {
     return pred_or_border(idx, stones, h => !h || (h.stone && !xor(h.black, black)))
-}
-
-function is_captured_if(stone_idx, move_idx, move_black, stones) {
-    const h = aa_ref(stones, ...stone_idx)
-    const valid = h && h.stone && xor(h.black, move_black)
-    const eq = ij => idx_eq(ij, stone_idx)
-    const is_captured = ss => captured_from(stone_idx, !move_black, ss).find(eq)
-    return valid && with_temporary_stone(move_idx, move_black, stones, is_captured)
 }
 
 // internal

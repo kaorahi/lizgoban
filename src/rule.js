@@ -140,9 +140,22 @@ function idx_equal([i1, j1], [i2, j2]) {return i1 === i2 && j1 === j2}
 function copy_array(from, to) {to.splice(0, Infinity, ...from)}
 
 ///////////////////////////////////////
+// liberty check
+
+function has_liberty(ij, stones, min_liberty) {
+    return !is_low_liberty(ij, stones, min_liberty - 1)
+}
+
+function is_low_liberty(ij, stones, max_liberty) {
+    const s = aa_ref(stones, ...ij); if (!s) {return false}
+    const group = low_liberty_group_from(ij, s.black, stones, max_liberty)
+    return s && !empty(group)
+}
+
+///////////////////////////////////////
 // exports
 
 module.exports = {
     get_stones_and_set_ko_state,
-    captured_from,
+    has_liberty,
 }
