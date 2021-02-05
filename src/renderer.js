@@ -418,8 +418,8 @@ function update_goban() {
     }
     const c = visits_trail_canvas, wro = btype === "winrate_only", su = showing_until()
     const stop_trail_p = finitep(showing_until())
-    wro ? D.draw_zone_color_chart(c) : (stop_trail_p || D.draw_visits_trail(c))
-    zone_chart_canvas.style.visibility = wro ? 'hidden' : 'visible'
+    c.style.visibility = wro ? 'hidden' : 'visible'
+    !wro && !stop_trail_p && D.draw_visits_trail(c)
 }
 
 function update_target_move(m, s) {
@@ -842,7 +842,6 @@ function set_all_canvas_size() {
     const winrate_graph_height = main_board_max_size * 0.25
     const winrate_graph_width = (wr_only && !double_boards_p()) ?
           winrate_graph_height : rest_size * main_board_ratio
-    const zone_chart_canvas_size = rest_size * 0.05
     Q('#additional_graph_div').style.display = "none"
     // Q('#additional_graph_div').style.display = (wr_only ? "block" : "none")
     set_canvas_size(main_canvas, main_board_size, main_board_height)
@@ -854,9 +853,16 @@ function set_all_canvas_size() {
                                    wr_only ? main_canvas : winrate_graph_canvas))
     set_canvas_size(visits_trail_canvas, rest_size * 0.25, main_board_max_size * 0.13)
     update_all_thumbnails()
-    set_subscript(zone_chart_canvas, winrate_graph_canvas, zone_chart_canvas_size) &&
-        D.draw_zone_color_chart(zone_chart_canvas)  // call this here for efficiency
     set_cut_button_position_maybe()
+
+    const wro_main_zone_size = (main_size - main_board_size) * 0.5
+    const wro_sub_zone_size = double_boards_p() ? (rest_size - sub_board_size) * 0.5 : 0
+    const wro_zone_size = wro_main_zone_size + wro_sub_zone_size
+    const [zone_chart_canvas_size, zone_chart_base_canvas] = wr_only ?
+          [Math.min(wro_zone_size, sub_board_size * 0.5), main_canvas] :
+          [rest_size * 0.05, winrate_graph_canvas]
+    set_subscript(zone_chart_canvas, zone_chart_base_canvas, zone_chart_canvas_size, 0.5)
+    D.draw_zone_color_chart(zone_chart_canvas)  // call this here for efficiency
 
     const com = Q('#comment')
     const controller_row_margin_top = 0.02  // see index.html (dirty)
@@ -894,12 +900,13 @@ function get_canvas_size(canvas) {
     return [canvas.width / canvas_scale, canvas.height / canvas_scale]
 }
 
-function set_subscript(canvas, orig, width, height) {
-    const h = height || width
+function set_subscript(canvas, orig, size, vertical_relative_pos) {
+    const vrp = vertical_relative_pos
     const shift_x = bounding_width => bounding_width
-    const shift_y = bounding_height => bounding_height - h
+    const shift_y = bounding_height => truep(vertical_relative_pos) ?
+          bounding_height * vrp - size * (1 - vrp) : bounding_height - size
     set_relative_canvas_position(canvas, orig, shift_x, shift_y)
-    return set_canvas_size(canvas, width, h)
+    return set_canvas_size(canvas, size, size)
 }
 
 function set_relative_canvas_position(canvas, orig, shift_x, shift_y) {
