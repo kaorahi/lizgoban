@@ -2,7 +2,7 @@
 // winrate graph
 
 const zone_indicator_height_percent = 6
-const upper_graph_rate = 0.5 + (zone_indicator_height_percent * 0.01) / 2
+const upper_graph_rate = 0.5
 
 function draw_winrate_graph(canvas, additional_canvas,
                             show_until, handle_mouse_on_winrate_graph) {
@@ -20,9 +20,11 @@ function draw_winrate_graph(canvas, additional_canvas,
         const sz2coord = (s, r) => sz2coord_noclip(s, clip(r, 0, 100))
         return [sz2coord, sz2coord_noclip, coord2sz]
     }
+    const hz = zone_indicator_height_percent / 2
     const [sr2coord, sr2coord_noclip, coord2sr] =
-          get_trans(100, - zone_indicator_height_percent, 0, upper_graph_rate)
-    const [sq2coord, sq2coord_noclip, coord2sq] = get_trans(100, 0, upper_graph_rate, 1)
+          get_trans(100, - hz, 0, upper_graph_rate)
+    const [sq2coord, sq2coord_noclip, coord2sq] =
+          get_trans(100 + hz, 0, upper_graph_rate, 1)
     const overlay = graph_overlay_canvas.getContext("2d")
     clear_canvas(graph_overlay_canvas)
     truep(show_until) ?
