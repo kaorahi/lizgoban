@@ -142,17 +142,16 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 
 const render_in_capacity = skip_too_frequent_requests(render_now)
 
-ipc.on('render', (...args) => {
-    const [e, h, is_board_changed] = args
+ipc.on('render', (e, h, is_board_changed) => {
     // for readable variation display
     keep_selected_variation_maybe(h.suggest)
     // renderer state must be updated before update_ui is called
     merge(R, h)
     initialize_image_maybe()
-    render_in_capacity(...args)
+    render_in_capacity()
 })
 
-function render_now(e, h, is_board_changed) {
+function render_now() {
     set_board_size(R.bsize)
     setq('#move_count', D.movenum())
     setq('#black_hama', R.black_hama)
