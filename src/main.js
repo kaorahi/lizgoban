@@ -184,7 +184,8 @@ const simple_api = {
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
 }
-const api = merge({}, simple_api, {
+const api = {
+    ...simple_api,
     init_from_renderer,
     toggle_pause,
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
@@ -205,7 +206,7 @@ const api = merge({}, simple_api, {
 
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
-})
+}
 
 function api_handler(channel, handler, busy) {
     return (e, ...args) => {

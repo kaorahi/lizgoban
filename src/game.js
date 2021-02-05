@@ -57,9 +57,9 @@ function create_game(init_history, init_prop) {
         last_move: () => (last(history) || {}).move,
         get_komi: () => true_or(self.komi, leelaz_komi),
         set_last_loaded_element: () => self.last_loaded_element = last(history),
-        shallow_copy: () => create_game(history.slice(), merge({}, self, {
-            id: new_game_id(), last_loaded_element: null
-        })),
+        shallow_copy: () => create_game(history.slice(), {
+            ...self, id: new_game_id(), last_loaded_element: null
+        }),
         set_with_reuse: new_history => {
             const com = common_header_length(history, new_history)
             // keep old history for keeping winrate

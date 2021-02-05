@@ -73,7 +73,7 @@ function each_leelaz(f, for_black_and_white_only) {
 function with_handlers(h) {
     const more = h.ready_handler ?
           {ready_handler: (...a) => {backup(); h.ready_handler(...a)}} : {}
-    return merge({suggest_handler, command_failure_handler}, h, more)
+    return {suggest_handler, command_failure_handler, ...h, ...more}
 }
 
 function katago_p() {return leelaz_for_this_turn().is_katago()}

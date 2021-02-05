@@ -837,7 +837,7 @@ function goban_params(canvas) {
 // stones
 
 function copy_stones_for_display(stones) {
-    return (stones || R.stones).map(row => row.map(s => merge({}, s)))
+    return (stones || R.stones).map(row => row.map(s => ({...s})))
 }
 
 function each_stone(stones, proc) {

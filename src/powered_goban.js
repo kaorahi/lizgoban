@@ -212,7 +212,7 @@ function recall_endstate() {return endstate_array}
 set_endstate_obsolete()
 
 function append_implicit_tags_maybe(h) {
-    const h_copy = merge({}, h), add = tag_letter => add_tag(h_copy, tag_letter)
+    const h_copy = {...h}, add = tag_letter => add_tag(h_copy, tag_letter)
     AI.support_endstate_p() && R.show_endstate &&
         h.move_count === game.move_count - endstate_diff_interval &&
         h.move_count >= game.init_len &&
@@ -408,10 +408,11 @@ function winrate_from_game(engine_id) {
         truep(score_without_komi) && update_score_loss_maybe()
         const cumulative_score_loss = {...score_loss}  // dup
         // drop "pass" to save data size for IPC
-        return merge({
+        return {
             r, move_b_eval, move_eval, tag, score_without_komi, cumulative_score_loss,
             turn_letter,
-        }, pass ? {pass} : {predict}, orders)
+            ...(pass ? {pass} : {predict}), ...orders
+        }
     })
 }
 function cook_lizzie_cache_maybe(new_game) {

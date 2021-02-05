@@ -438,7 +438,7 @@ function selected_suggest(canvas) {
     const m = keyboard_moves[0] || if_hover_on(canvas, hovered_move)
     const [fake, overwrite] = showing_branch_p() ?
           [{move: keyboard_moves[0], visits: 1}, {pv: keyboard_moves}] : [{}, {}]
-    return merge({}, R.suggest.find(h => h.move === m) || fake, overwrite)
+    return {...(R.suggest.find(h => h.move === m) || fake), ...overwrite}
 }
 function if_hover_on(canvas, val) {return (canvas === hovered_board_canvas) && val}
 function hover_on_subboard_p() {return if_hover_on(sub_canvas, true)}
