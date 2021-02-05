@@ -1754,7 +1754,7 @@ function load_random_exercise(win) {
 }
 function load_recent_exercise(win) {
     const neg_mtime = fn => - exercise_mtime(fn)
-    const recent = a => sort_by(a, neg_mtime)[0]
+    const recent = a => min_by(a, neg_mtime)
     load_exercise(recent, win)
 }
 function exercise_mtime(fn) {return fs.statSync(expand_exercise_filename(fn)).mtimeMs}
