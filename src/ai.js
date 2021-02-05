@@ -87,6 +87,8 @@ function update_analysis_region(region) {
 }
 function apply_current_analysis_region(lz) {lz.update_analysis_region(analysis_region)}
 
+function set_instant_analysis(instant_p) {each_leelaz(lz => lz.set_instant_analysis(instant_p))}
+
 /////////////////////////////////////////////////
 // leelaz for endstate
 
@@ -289,7 +291,7 @@ module.exports = {
     unload_leelaz_for_white, leelaz_weight_file, restart,
     set_engine_for_white, restore, info_for_restore, backup,
     different_komi_for_black_and_white, startup_log,
-    update_analysis_region,
+    update_analysis_region, set_instant_analysis,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only

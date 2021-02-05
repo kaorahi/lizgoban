@@ -711,7 +711,7 @@ function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing() 
 let on_auto_analyze_finished = pause
 function try_auto_analyze(force_next) {
     const done = force_next || (auto_analysis_progress() >= 1)
-    const finish = () => (on_auto_analyze_finished(), stop_auto_analyze())
+    const finish = () => (stop_auto_analyze(), on_auto_analyze_finished())
     const next = (pred, proc) => {
         pred() ? proc(auto_analysis_steps) : finish(); update_all()
     }
@@ -735,6 +735,7 @@ function start_quick_overview() {
 function stop_auto_analyze() {set_auto_analysis_signed_visits(Infinity)}
 function set_auto_analysis_signed_visits(visits) {
     auto_analysis_signed_visits = visits
+    AI.set_instant_analysis(auto_analysis_visits() <= 1)
 }
 function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
 function auto_analysis_progress() {

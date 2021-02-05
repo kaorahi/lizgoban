@@ -18,7 +18,7 @@ function create_leelaz () {
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
     let startup_log = [], is_in_startup = true
-    let analysis_region = null
+    let analysis_region = null, instant_analysis_p = false
 
     // game state
     let move_count = 0, bturn = true
@@ -67,7 +67,12 @@ function create_leelaz () {
         leelaz_process.kill('SIGKILL')
     }
 
-    const start_analysis = () => {
+    const set_instant_analysis = instant_p =>
+          // need to start kata-analyze again if instant_p is turned off
+          (instant_analysis_p = instant_p) || (is_ready && pondering && start_analysis())
+    const start_analysis = () =>
+          (instant_analysis_p && kata_raw_nn()) || start_analysis_actually()
+    const start_analysis_actually = () => {
         pondering && leelaz([
             is_katago() ? 'kata-analyze' : 'lz-analyze',
             `interval ${arg.analyze_interval_centisec}`,
@@ -480,7 +485,7 @@ function create_leelaz () {
     return {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
-        update_analysis_region,
+        update_analysis_region, set_instant_analysis,
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,
