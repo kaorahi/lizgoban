@@ -142,7 +142,7 @@ function record_hit(moves, idx) {
 //   (1,-1) (1,0) (1,1)
 
 function split_pattern(pat) {
-    return pat.replace("3", ".").split("\n").filter(identity).map(s => s.split(""))
+    return pat.split("\n").filter(identity).map(s => s.split(""))
 }
 
 const attack_pattern = split_pattern(`
@@ -175,7 +175,7 @@ function check_pattern_around(idx, pattern, recent_two_moves, stones, u, v) {
         case 'x': return !stone || is_color1
         case 'o': return !stone || is_color2
         case 'S': return stone
-        case '.': return !stone
+        case '.': case '3': return !stone
         case '?': return true
         }
     }
