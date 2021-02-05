@@ -45,12 +45,12 @@ function remove_captured(ij, is_black, stones) {
 }
 
 function captured_from(ij, is_black, stones) {
-    const state = {hope: [], captured_pool: [], captured_map: [[]], is_black, stones}
+    const state = {hope: [], checked_pool: [], checked_map: [[]], is_black, stones}
     check_if_liberty(ij, state)
     while (!empty(state.hope)) {
         if (search_for_liberty(state)) {return []}
     }
-    return state.captured_pool
+    return state.checked_pool
 }
 
 function search_for_liberty(state) {
@@ -63,9 +63,9 @@ function check_if_liberty(ij, state) {
 }
 
 function push_hope(ij, s, state) {
-    if (xor(s.black, state.is_black) || aa_ref(state.captured_map, ...ij)) {return}
+    if (xor(s.black, state.is_black) || aa_ref(state.checked_map, ...ij)) {return}
     state.hope.push(ij)
-    state.captured_pool.push(ij); aa_set(state.captured_map, ...ij, true)
+    state.checked_pool.push(ij); aa_set(state.checked_map, ...ij, true)
 }
 
 ///////////////////////////////////////
