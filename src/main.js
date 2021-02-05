@@ -1155,7 +1155,18 @@ function set_or_unset_busy(bool) {
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
 function update_ponder() {AI.set_pondering(pausing, busy)}
-function init_from_renderer() {setTimeout(restore_session, 100)}
+function init_from_renderer() {
+    const proc = () => {warn_disabled_cache(), restore_session()}
+    setTimeout(proc, 100)
+}
+function warn_disabled_cache() {
+    const key = 'use_cached_suggest_p', label = 'Reuse analysis'
+    if (R[key]) {return}
+    const message = `"${label}" is disabled. Enable it?`
+    const yes = 'YES (recommended)', values = [yes]
+    const proc = k => k === yes && (toggle_stored(key), toast(`"${label}" is enabled.`))
+    ask_choice(message, values, proc)
+}
 
 function set_board() {
     set_AI_board_size_maybe(game.board_size)
