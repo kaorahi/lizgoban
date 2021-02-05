@@ -1,5 +1,24 @@
 'use strict'
 
+//////////////////////////////////////
+// exports
+
+let exercise_mtime
+
+module.exports = (...a) => {
+    [exercise_mtime] = a
+    return {
+        exercise_filename,
+        is_exercise_filename,
+        exercise_move_count,
+        exercise_board_size,
+        update_exercise_metadata_for,
+        get_all_exercise_metadata: get_metadata,
+        random_exercise_chooser,
+        recent_exercise_chooser,
+    }
+}
+
 /////////////////////////////////////////////////
 // file name format
 
@@ -56,13 +75,25 @@ function prepend_log(log, value) {
 }
 
 /////////////////////////////////////////////////
-// exports
+// chooser
 
-module.exports = {
-    exercise_filename,
-    is_exercise_filename,
-    exercise_move_count,
-    exercise_board_size,
-    update_exercise_metadata_for,
-    get_all_exercise_metadata: get_metadata,
+function random_exercise_chooser(a, metadata)  {
+    const coin_toss = (Math.random() < 0.5)
+    const prefer_recent = coin_toss ? 0 : 0.1, prefer_stars = Math.log(2)
+    const recently_seen = fn => {
+        const last_seen = ((metadata[fn] || {}).seen_at || [])[0]
+        return - new Date(last_seen || exercise_mtime(fn))
+    }
+    const sorted = sort_by(a, recently_seen)
+    const weight_of = (fn, k) => {
+        const {stars} = metadata[fn] || {}
+        const preferred = prefer_recent * (- k) + prefer_stars * (stars || 0)
+        return Math.exp(preferred)
+    }
+    return weighted_random_choice(sorted, weight_of)
+}
+
+function recent_exercise_chooser(a) {
+    const neg_mtime = fn => - exercise_mtime(fn)
+    return min_by(a, neg_mtime)
 }

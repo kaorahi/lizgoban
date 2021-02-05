@@ -40,7 +40,8 @@ const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_ru
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
-} = require('./exercise.js')
+    random_exercise_chooser, recent_exercise_chooser,
+} = require('./exercise.js')(exercise_mtime)
 const {tsumego_frame} = require('./tsumego_frame.js')
 const {ladder_branches, ladder_is_seen, last_ladder_branches} = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
@@ -1734,29 +1735,8 @@ function store_as_exercise() {
     const path = PATH.join(exercise_dir(), exercise_filename(game))
     save_sgf_to(path, null, true); toast('stored as exercise')
 }
-function load_random_exercise(win) {
-    const coin_toss = (Math.random() < 0.5)
-    const prefer_recent = coin_toss ? 0 : 0.1, prefer_stars = Math.log(2)
-    const random_choice = (a, metadata) => {
-        const recently_seen = fn => {
-            const last_seen = ((metadata[fn] || {}).seen_at || [])[0]
-            return - new Date(last_seen || exercise_mtime(fn))
-        }
-        const sorted = sort_by(a, recently_seen)
-        const weight_of = (fn, k) => {
-            const {stars} = metadata[fn] || {}
-            const preferred = prefer_recent * (- k) + prefer_stars * (stars || 0)
-            return Math.exp(preferred)
-        }
-        return weighted_random_choice(sorted, weight_of)
-    }
-    load_exercise(random_choice, win, true)
-}
-function load_recent_exercise(win) {
-    const neg_mtime = fn => - exercise_mtime(fn)
-    const recent = a => min_by(a, neg_mtime)
-    load_exercise(recent, win)
-}
+function load_random_exercise(win) {load_exercise(random_exercise_chooser, win, true)}
+function load_recent_exercise(win) {load_exercise(recent_exercise_chooser, win)}
 function exercise_mtime(fn) {return fs.statSync(expand_exercise_filename(fn)).mtimeMs}
 let seen_exercises = []
 function revive_seen_exercises(metadata) {
