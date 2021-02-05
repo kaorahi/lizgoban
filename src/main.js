@@ -1511,7 +1511,7 @@ function update_ui(ui_only) {
     update_title()
 }
 
-let last_title = ''
+const title_change_detector = change_detector('')
 function update_title() {
     const b = R.player_black, w = R.player_white
     const n = x => x || '?'
@@ -1519,9 +1519,8 @@ function update_title() {
     const tags = current_tag_letters()
     const tag_text = tags ? `[${tags}]` : ''
     const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''}`
-    if (title !== last_title) {
-        get_windows().forEach(win => win.setTitle(title)); last_title = title
-    }
+    title_change_detector.is_changed(title) &&
+        get_windows().forEach(win => win.setTitle(title))
 }
 function current_tag_letters() {
     return exclude_implicit_tags(R.history_tags.map(x => x.tag).join(''))
