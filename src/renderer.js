@@ -1092,8 +1092,10 @@ document.onkeyup = e => {
     }
     clearp && clear_tentatively_showing_until()
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
+    immediately_update_showing_until()
     main('unset_busy')
-    update_showing_until()
+    // (fixme) immediately_update_showing_until() also calls main() internally.
+    // Then update_all() is redundantly called twice by two "main()".
 }
 
 function set_keyboard_moves_maybe(n) {set_keyboard_moves(R.suggest[n])}
