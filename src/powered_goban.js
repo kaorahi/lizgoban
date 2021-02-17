@@ -495,7 +495,8 @@ function add_branches_to_stones(stones, game, move_count) {
             s.branches || (s.branches = []); s.branches.push(branch_for_stone)
             const {id} = gm, future = gm.array_until(Infinity).slice(mc)
             const pv = pv_from_moves(future, !game.ref(mc).is_black)
-            const comment = future.map(z => z.comment).filter(truep).join('/')
+            const pick_comment = (z, k) => z.comment ? [`${k + 1} ${z.comment}`] : []
+            const comment = future.flatMap(pick_comment).join('/')
             const at_move_count = past_p && mc
             const branch = {tag, id, pv, comment, move_count, at_move_count}
             R.branch_for_tag.push(branch)
