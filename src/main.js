@@ -1252,8 +1252,9 @@ function update_let_me_think(only_when_stage_is_changed) {
     let_me_think_switch_board_type(only_when_stage_is_changed)
 }
 function let_me_think_switch_board_type(only_when_stage_is_changed) {
+    const epsilon = 1e-10  // for auto_redo
     const progress = auto_progress(true); if (progress < 0) {return}
-    const stage = progress < 0.5 ? 'first_half' : 'latter_half'
+    const stage = progress < 0.5 - epsilon ? 'first_half' : 'latter_half'
     if (only_when_stage_is_changed && stage === let_me_think_previous_stage) {return}
     let_me_think_set_board_type_for(stage)
     only_when_stage_is_changed && update_all()
