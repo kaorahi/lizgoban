@@ -268,6 +268,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 ### 0.6.*
 
 * Indicate inevitability of each move by its font size in suggested variations (KataGo only).
+* Show X mark on suggested variations when it is updated in the background.
 * Improve loading of nested SGFs, e.g. [AlphaGo Games](https://deepmind.com/alphago-games-english), so that we can read them conveniently:
   * Push the corresponding key (b, d, ...) for each branch (b, d, ... in dotted squares) to preview its sequence with comments.
   * Click one of branches (or hit Enter key in the above preview) to watch it in another trial board.
