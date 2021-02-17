@@ -324,7 +324,7 @@ function draw_pv_visits([present_visits, ...pv_visits], margin, idx2coord, g) {
         g.fillStyle = major ? VAGUE_BLACK : PALE_BLACK
         fill_text(g, fontsize, to_s(k), x, y, maxwidth)
     }
-    at.slice().forEach(k => draw_text(pv_visits[k - 1], k))
+    at.forEach(k => draw_text(pv_visits[k - 1], k))
     // v0
     const behind = present_visits - v0
     const behind_text = (behind === 0) ? '' : `(+${kilo_str(behind)})`
