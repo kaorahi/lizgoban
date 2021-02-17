@@ -1072,15 +1072,17 @@ document.onkeydown = e => {
 
 document.onkeyup = e => {
     const {key} = e, clearp = tag_letters.includes(key) || key === "Shift"
+    const reset_kb_moves_p = (to_i(key) > 0 || key === "0" || clearp)
     reset_keyboard_tag();
-    (to_i(key) > 0 || key === "0" || clearp)
-        && reset_keyboard_moves()
+    reset_kb_moves_p && reset_keyboard_moves()
     cancel_alt_up_maybe(e)
     switch (key) {
     case "b": case "w": main('cancel_forced_color'); break
     case "c": set_showing_movenum_p(false); break
     case "v": set_showing_endstate_value_p(false); break
     case "z": case "x": set_temporary_board_type(null); break
+    default: !reset_kb_moves_p && clear_selected_variation()
+        // Don't call clear_selected_variation for z, x, ... to avoid flicker.
     }
     clearp && clear_tentatively_showing_until()
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
@@ -1090,7 +1092,6 @@ document.onkeyup = e => {
     // (caution!) Just after release of control key, keydown of "2" key is fired
     // without e.repeat. It causes a race condition with
     // ipc.on('render', ...) that is called by the following main('unset_busy').
-    clear_selected_variation()
     main('unset_busy')
     update_showing_until()
 }
