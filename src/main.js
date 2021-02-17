@@ -378,6 +378,7 @@ function safe_menu_maybe() {
         f('Cancel(Esc)', 'Esc', () => {
             toast('Canceled.'); cancel_tuning(); AI.restore(); update_all()
         }),
+        f('Info(Ctrl+I)', 'Ctrl+I', (_, win) => ask_game_info(win)),
         help_menu,
     ]
     return auto || wait
