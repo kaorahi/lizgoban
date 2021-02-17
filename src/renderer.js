@@ -1080,7 +1080,7 @@ document.onkeyup = e => {
     const {key} = e, clearp = tag_letters.includes(key) || key === "Shift"
     const reset_kb_moves_p = (to_i(key) > 0 || key === "0" || clearp)
     reset_keyboard_tag();
-    reset_kb_moves_p && reset_keyboard_moves()
+    reset_kb_moves_p && reset_keyboard_moves(true)
     cancel_alt_up_maybe(e)
     switch (key) {
     case "b": case "w": main('cancel_forced_color'); break
