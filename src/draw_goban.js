@@ -126,7 +126,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
             stone: true, black: b, white: w,
             variation: true, movenums: [k + 1],
             variation_last: k === variation.length - 1, is_vague: k >= reliable_moves,
-            inevitability: pv0 && pv && (pv / pv0),
+            inevitability: suggested_variation_p && pv0 && pv && (pv / pv0),
             obsolete_pv_p: suggested_variation_p && (k === suggest.uptodate_len),
         })
     })
