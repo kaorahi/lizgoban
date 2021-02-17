@@ -185,13 +185,12 @@ function update_displayed_comment() {
 }
 function displayed_comment() {return (showing_branch || {}).comment || R.comment_note}
 
-ipc.on('update_ui', (e, win_prop, availability, ui_only) => {
+ipc.on('update_ui', (e, win_prop, availability) => {
     R.pausing = availability.resume
     R.auto_analyzing = availability.stop_auto
     merge(R, win_prop)
     set_all_canvas_size()
     if (R.busy) {return}
-    ui_only || update_goban()
     update_body_color()
     update_exercise()
     update_button_etc(availability)
@@ -464,7 +463,7 @@ function current_board_type() {return temporary_board_type || R.board_type}
 function set_temporary_board_type(btype, btype2) {
     const b = (R.board_type === btype) ? btype2 : btype
     if (temporary_board_type === b) {return}
-    temporary_board_type = b; update_board_type()
+    temporary_board_type = b; update_board_type(); update_goban()
 }
 
 function toggle_board_type(type) {main('toggle_board_type', R.window_id, type)}
@@ -1245,7 +1244,6 @@ window.ondrop = drag_and_drop_handler(when_dropped)
 function update_board_type() {
     update_ui_element("#sub_goban_container", double_boards_p())
     set_all_canvas_size()
-    update_goban()
 }
 
 // buttons

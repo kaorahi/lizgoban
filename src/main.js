@@ -1555,8 +1555,8 @@ function subboard_stones_suggest_for(su, prev_su) {
     return {stones, suggest, bturn}
 }
 
-function update_ui(ui_only) {
-    renderer_with_window_prop('update_ui', availability(), ui_only)
+function update_ui() {
+    renderer_with_window_prop('update_ui', availability())
     update_title()
 }
 
