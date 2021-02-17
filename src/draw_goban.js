@@ -110,7 +110,8 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const {variation_expected} = opts
     const reliable_moves = 7
     const [variation, expected] = variation_expected || [suggest.pv || [], expected_pv()]
-    const pv_visits = !variation_expected && !showing_branch_p() &&
+    const suggested_variation_p = !variation_expected && !showing_branch_p()
+    const pv_visits = suggested_variation_p &&
           pick_keys(suggest, 'pvVisits', 'obsolete_visits', 'uptodate_len')
     const [v, e] = variation_expected ? [expected, variation] : [variation, expected]
     const mark_unexpected_p =
@@ -120,10 +121,13 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const bturn = opts.stones ? opts.bturn : R.bturn
     variation.forEach((move, k) => {
         const b = xor(bturn, k % 2 === 1), w = !b
+        const [pv0, pv] = (suggest.pvVisits || []).slice(k - 1, k + 1)
         merge_stone_at(move, displayed_stones, {
             stone: true, black: b, white: w,
             variation: true, movenums: [k + 1],
-            variation_last: k === variation.length - 1, is_vague: k >= reliable_moves
+            variation_last: k === variation.length - 1, is_vague: k >= reliable_moves,
+            inevitability: pv0 && pv && (pv / pv0),
+            obsolete_pv_p: suggested_variation_p && (k === suggest.uptodate_len),
         })
     })
     mark_unexpected_p && set_expected_stone_for_variation(e, v, displayed_stones)
@@ -549,11 +553,11 @@ function draw_movenums(h, xy, radius, extended_pv_visits, g) {
     // clean me: Don't use GREEN when mn0 is the string '1'. (see stones_until())
     const color = (mn0 === 1) ? GREEN : h.variation_last ? RED : bw[h.black ? 1 : 0]
     const [pv0, pv] = (pv_visits && mc) ? pv_visits.slice(mc - 1, mc + 1) : []
-    const inevitability = true_or(pv0 && pv && (pv / pv0), 1), min_rad_coef = 0.3
-    const rad_coef = clip(Math.sqrt(inevitability), min_rad_coef)
+    const min_rad_coef = 0.3
+    const rad_coef = clip(Math.sqrt(true_or(h.inevitability, 1)), min_rad_coef)
     draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
     // "obsolete" mark
-    if (truep(uptodate_len) && (mn0 === uptodate_len + 1)) {
+    if (h.obsolete_pv_p) {
         g.strokeStyle = "rgba(255,0,0,0.5)"; g.lineWidth = 3
         x_shape_around(xy, radius, g)
     }
