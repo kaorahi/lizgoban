@@ -98,7 +98,7 @@ function suggest_handler(h) {
     // (1) ownership is given here, or
     // (2) endstate_handler() was called already
     const is_endstate_drawable = is_endstate_uptodate()
-    set_and_render_maybe({...preferred_h, is_endstate_drawable, score_without_komi})
+    set_and_render(false, {...preferred_h, is_endstate_drawable, score_without_komi})
     on_suggest()
 }
 
@@ -169,9 +169,7 @@ function set_renderer_state(...args) {
               previous_suggest, future_moves, winrate_trail}, endstate_d_i)
     add_next_played_move_as_fake_suggest()
 }
-function set_and_render(...args) {set_and_render_gen(true, ...args)}
-function set_and_render_maybe(...args) {set_and_render_gen(false, ...args)}
-function set_and_render_gen(is_board_changed, ...args) {
+function set_and_render(is_board_changed, ...args) {
     set_renderer_state(...args)
     const mask = M.show_suggest_p() ? {hide_suggest: false} :
           {suggest: [], visits: null, show_endstate: false, hide_suggest: true}

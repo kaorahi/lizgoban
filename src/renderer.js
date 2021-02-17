@@ -1087,6 +1087,9 @@ document.onkeyup = e => {
     // cancel keep_selected_variation_maybe() by any keyup
     // (ex.) keeping "2" key down, push and release control key to update
     // displayed variation
+    // (caution!) Just after release of control key, keydown of "2" key is fired
+    // without e.repeat. It causes a race condition with
+    // ipc.on('render', ...) that is called by the following main('unset_busy').
     clear_selected_variation()
     main('unset_busy')
     update_showing_until()

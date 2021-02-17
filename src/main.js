@@ -1517,7 +1517,7 @@ function update_state(keep_suggest_p) {
           keep_suggest_p ? {} : {suggest: []}
     const {face_image_rule} = option
     update_exercise_metadata()
-    P.set_and_render({
+    P.set_and_render(!keep_suggest_p, {
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule, exercise_metadata,
