@@ -110,7 +110,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const {variation_expected} = opts
     const reliable_moves = 7
     const [variation, expected] = variation_expected || [suggest.pv || [], expected_pv()]
-    const pv_visits = !variation_expected && !showing_branch_p() && suggest.pvVisits &&
+    const pv_visits = !variation_expected && !showing_branch_p() &&
           pick_keys(suggest, 'pvVisits', 'obsolete_visits', 'uptodate_len')
     const [v, e] = variation_expected ? [expected, variation] : [variation, expected]
     const mark_unexpected_p =
@@ -312,7 +312,7 @@ function draw_visits_text(text, margin, g) {
 
 function draw_pv_visits(extended_pv_visits, margin, idx2coord, g) {
     const {pvVisits, obsolete_visits, uptodate_len} = extended_pv_visits
-    const pv_visits = pvVisits
+    const pv_visits = pvVisits; if (!pv_visits) {return}
     const at = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50]
     const highlight = 'rgba(255,0,0,0.3)'
     const bsize = board_size(), half = margin / 2, v0 = pv_visits[0]
@@ -541,7 +541,8 @@ function face_image_for(h) {
 function stone_image_for_key(h, b_key, w_key) {return R.image[h.black ? b_key : w_key]}
 
 function draw_movenums(h, xy, radius, extended_pv_visits, g) {
-    const pv_visits = (extended_pv_visits || {}).pvVisits || []
+    const {pvVisits, uptodate_len} = extended_pv_visits || {}
+    const pv_visits = pvVisits || []
     const movenums = num_sort(h.movenums), mn0 = movenums[0], mc = mn0 - 1
     const bw = h.thin_movenums ? ['rgba(0,0,0,0.2)', 'rgba(255,255,255,0.3)'] :
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
@@ -551,6 +552,11 @@ function draw_movenums(h, xy, radius, extended_pv_visits, g) {
     const inevitability = true_or(pv0 && pv && (pv / pv0), 1), min_rad_coef = 0.3
     const rad_coef = clip(Math.sqrt(inevitability), min_rad_coef)
     draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
+    // "obsolete" mark
+    if (truep(uptodate_len) && (mn0 === uptodate_len + 1)) {
+        g.strokeStyle = "rgba(255,0,0,0.5)"; g.lineWidth = 3
+        x_shape_around(xy, radius, g)
+    }
 }
 
 function draw_tag(tag, xy, radius, g) {draw_text_on_stone(tag, BLUE, xy, radius, g)}
