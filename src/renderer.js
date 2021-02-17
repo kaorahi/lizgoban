@@ -277,6 +277,9 @@ function keep_selected_variation_maybe(suggest) {
     const sticky = any_selected_suggest(); if (!sticky) {return}
     const merge_sticky = (orig, kept) => {
         const {pv, pvVisits, was_top} = kept
+        const uptodate_len = common_header_length(orig.pv, pv, true)
+        pvVisits && orig.pvVisits &&
+            replace_header(pvVisits, orig.pvVisits.slice(0, uptodate_len))
         merge(orig, {pv, pvVisits, was_top})
     }
     const s = suggest.find(z => z.move === sticky.move)
