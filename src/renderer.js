@@ -1156,14 +1156,14 @@ function orig_showing_until(canvas) {
     const retval = accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
     return truep(retval) && D.clip_init_len(retval)
 }
-const update_showing_until = skip_too_frequent_requests(orig_update_showing_until)
+const update_showing_until = skip_too_frequent_requests(immediately_update_showing_until)
 function increment_showing_until(inc) {
     const mc = R.move_count, cur = finite_or(showing_until(), mc)
     const target = true_or(cur, mc) + inc
     tentatively_showing_until = Math.min(clip_init_len(target), R.history_length)
     update_showing_until()
 }
-function orig_update_showing_until() {
+function immediately_update_showing_until() {
     const su_and_mcfs = showing_until_etc()
     const [cur, _] = su_and_mcfs, changed = checker_for_showing_until.is_changed(cur)
     if (!changed) {return}
