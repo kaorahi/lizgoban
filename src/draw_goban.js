@@ -145,7 +145,7 @@ function draw_goban_with_expected_variation(canvas, options) {
 
 function draw_goban_with_future_moves(canvas, options) {
     const title = 'succeeding moves', pv_len = 15
-    const pv = R.future_moves.slice(0, Math.max(keyboard_moves.length, pv_len))
+    const pv = R.future_moves.slice(0, Math.max(options.keyboard_moves_len, pv_len))
     draw_goban_with_given_variation(canvas, pv, [], title, options)
 }
 
