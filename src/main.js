@@ -351,6 +351,8 @@ function goto_previous_or_next_something(backwardp) {
 /////////////////////////////////////////////////
 // another source of change: menu
 
+let force_normal_menu_p = false
+
 function update_menu() {mac_p() ? update_app_menu() : update_window_menu()}
 function update_app_menu() {
     const win = electron.BrowserWindow.getFocusedWindow() || get_windows()[0]
@@ -360,7 +362,9 @@ function update_window_menu() {
     get_windows().forEach(win => win.setMenu(menu_for_window(win)))
 }
 function menu_for_window(win) {
-    return Menu.buildFromTemplate(safe_menu_maybe() || menu_template(win))
+    const safe_menu = safe_menu_maybe(); !safe_menu && (force_normal_menu_p = false)
+    const menu = !force_normal_menu_p && safe_menu || menu_template(win)
+    return Menu.buildFromTemplate(menu)
 }
 
 function safe_menu_maybe() {
@@ -369,18 +373,34 @@ function safe_menu_maybe() {
     // So, avoid submenu in doubtful cases.
     const f = (label, accelerator, click) => ({label, accelerator, click})
     const help_menu = f('Help', undefined, help)
+    // in autoanalysis
     const auto = auto_analyzing_or_playing() && [
         f('Stop(Esc)', 'Esc', () => {stop_auto(); update_all()}),
         f('Skip(Ctrl+E)', 'Ctrl+E', skip_auto),
         help_menu,
     ]
+    // in initalization
+    const restore = () => {
+        toast('Canceled.'); cancel_tuning(); AI.restore(); update_all()
+    }
+    const force_normal_menu = () => {
+        toast('Engine is not ready.'); force_normal_menu_p = true; update_window_menu()
+    }
+    const fallback = win => {
+        const message = `
+If you are in trouble, you may find some hints in the startup log.
+
+Really start LizGoban with no engine? (not recommended)
+`
+        ask_game_info(win)
+        ask_choice(message, ['OK'], force_normal_menu)
+    }
+    const cancel = (_, win) => empty(AI.info_for_restore()) ? fallback(win) : restore()
     const wait = !AI.engine_info().current.is_ready && [
-        f('Cancel(Esc)', 'Esc', () => {
-            toast('Canceled.'); cancel_tuning(); AI.restore(); update_all()
-        }),
-        f('Info(Ctrl+I)', 'Ctrl+I', (_, win) => ask_game_info(win)),
+        f('Cancel(Esc)', 'Esc', cancel),
         help_menu,
     ]
+    // either
     return auto || wait
 }
 
