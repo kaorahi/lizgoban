@@ -122,13 +122,17 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     variation.forEach((move, k) => {
         const b = xor(bturn, k % 2 === 1), w = !b
         const [pv0, pv] = (suggest.pvVisits || []).slice(k - 1, k + 1)
-        merge_stone_at(move, displayed_stones, {
+        const supplementary_info = suggested_variation_p && {
+            inevitability: pv0 && pv && (pv / pv0),
+            obsolete_pv_p: (k === suggest.uptodate_len),
+        }
+        const pv_stone = {
             stone: true, black: b, white: w,
             variation: true, movenums: [k + 1],
             variation_last: k === variation.length - 1, is_vague: k >= reliable_moves,
-            inevitability: suggested_variation_p && pv0 && pv && (pv / pv0),
-            obsolete_pv_p: suggested_variation_p && (k === suggest.uptodate_len),
-        })
+            ...(supplementary_info || {}),
+        }
+        merge_stone_at(move, displayed_stones, pv_stone)
     })
     const new_pv_move = suggested_variation_p &&
           (suggest.new_pv || [])[suggest.uptodate_len]
