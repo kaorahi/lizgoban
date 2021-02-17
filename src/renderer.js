@@ -1070,8 +1070,7 @@ document.onkeydown = e => {
     case "p": case "C-P": play_pass(e); break;
     case "Enter": play_it(e.shiftKey ? 5 : 1); break;
     case "`": f(play_it, false, true); break;
-    case ",": f(play_moves, keyboard_moves[0] ? keyboard_moves :
-                (R.suggest[0] || {}).pv); break;
+    case ",": f(play_moves, (any_selected_suggest() || R.suggest[0] || {}).pv); break;
     case ";": m('let_me_think_next', R.board_type); break;
     case "Home": m('undo_to_start'); break;
     case "End": m('redo_to_end'); break;
