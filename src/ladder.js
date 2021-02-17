@@ -14,7 +14,7 @@ function ladder_branches(game, stones) {
     const ladder = orig_ladder ||
           try_ladder(null, last_seen_ladder_prop, game.move_count, stones)
     if (!ladder) {return set_last_ladder_branches([])}
-    last_ladder_prop = ladder && ladder.prop
+    last_ladder_prop = ladder.prop
     const {moves} = ladder, ladder_game = game.shallow_copy()
     ladder_game.delete_future()
     ladder_game.trial = true
