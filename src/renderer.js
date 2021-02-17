@@ -119,7 +119,10 @@ function show_dialog(name, selected) {
     Q(name).style.visibility = "visible"; Q(`${name} ${selected || "input"}`).select()
 }
 function hide_dialog() {
-    document.querySelectorAll(".dialog").forEach(d => d.style.visibility = "hidden")
+    const selector = '.dialog:not([style*="visibility: hidden"])'
+    const opened = document.querySelectorAll(selector)
+    opened.forEach(d => d.style.visibility = "hidden")
+    return !empty(opened)
 }
 
 function play_moves(moves) {
@@ -973,7 +976,7 @@ document.onkeydown = e => {
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
     const escape = (key === "Escape" || key === "C-["), target = e.target
-    escape && (hide_dialog(), set_analysis_region(null))
+    escape && (hide_dialog() && f(do_nothing), set_analysis_region(null))
     switch (key === "Enter" && target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "generic_input_dialog_input": submit_generic_input_dialog(); return
