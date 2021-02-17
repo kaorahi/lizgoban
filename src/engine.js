@@ -126,7 +126,7 @@ function create_leelaz () {
             ['pvVisits', 'kata-analyze 1 pvVisits true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
         ]
-        const do_check = table => table.map(a => check_supported(...a))
+        const do_check = table => table.forEach(a => check_supported(...a))
         do_check(checks)
         leelaz('lizgoban_stop_startup_log', () => {is_in_startup = false})
         do_check(checks_without_startup_log)
