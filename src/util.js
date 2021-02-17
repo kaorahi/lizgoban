@@ -36,6 +36,9 @@ E.array2hash = a => {
     // array2hash(['a', 3, 'b', 1, 'c', 4]) ==> {a: 3, b: 1, c: 4}
     const h = {}; a.forEach((x, i) => (i % 2 === 0) && (h[x] = a[i + 1])); return h
 }
+E.pick_keys = (h, ...keys) => {
+    const picked = {}; keys.forEach(k => picked[k] = h[k]); return picked
+}
 E.safely = (proc, ...args) => {try {return proc(...args)} catch(e) {return null}}
 E.mac_p = () => (process.platform === 'darwin')
 E.leelaz_komi = 7.5
