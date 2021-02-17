@@ -789,7 +789,7 @@ function draw_mapping_text(mapping_to_winrate_bar, margin, canvas, g) {
     // main text
     g.fillStyle = RED
     g.textAlign = at < 10 ? 'left' : at < 90 ? 'center' : 'right'
-    fill_text(g, fontsize, text, canvas.width * at / 100, y)
+    fill_text(g, fontsize, text, canvas.width * clip(at / 100, 0, 1), y)
     // subtext
     const [sub_at, sub_align] = at > 50 ? [0, 'left'] : [100, 'right']
     g.fillStyle = 'rgba(255,0,0,0.5)'; g.textAlign = sub_align
