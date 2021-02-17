@@ -1071,6 +1071,12 @@ document.onkeydown = e => {
 }
 
 document.onkeyup = e => {
+    // cancel keep_selected_variation_maybe() by almost any keyup
+    // (ex.) keeping "2" key down, push and release control key to update
+    // displayed variation
+    // (caution!) Just after release of control key, keydown of "2" key is fired
+    // without e.repeat. It causes a race condition with
+    // ipc.on('render', ...) that is called by the following main('unset_busy').
     const {key} = e, clearp = tag_letters.includes(key) || key === "Shift"
     const reset_kb_moves_p = (to_i(key) > 0 || key === "0" || clearp)
     reset_keyboard_tag();
@@ -1086,12 +1092,6 @@ document.onkeyup = e => {
     }
     clearp && clear_tentatively_showing_until()
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
-    // cancel keep_selected_variation_maybe() by any keyup
-    // (ex.) keeping "2" key down, push and release control key to update
-    // displayed variation
-    // (caution!) Just after release of control key, keydown of "2" key is fired
-    // without e.repeat. It causes a race condition with
-    // ipc.on('render', ...) that is called by the following main('unset_busy').
     main('unset_busy')
     update_showing_until()
 }
