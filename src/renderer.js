@@ -538,11 +538,11 @@ function goto_idx_maybe(idx, another_board) {
 }
 function duplicate_if(x) {x && main('duplicate_sequence')}
 
-const [unset_busy_layter] = deferred_procs([() => main('unset_busy'), 100])
+const [unset_busy_later] = deferred_procs([() => main('unset_busy'), 100])
 
 const wheel_enabled = [main_canvas, sub_canvas, winrate_graph_canvas]
 wheel_enabled.forEach(c => c.addEventListener("wheel", e => {
-    (e.deltaY !== 0) && (e.preventDefault(), main('busy', e.deltaY < 0 ? 'undo' : 'redo'), unset_busy_layter())
+    (e.deltaY !== 0) && (e.preventDefault(), main('busy', e.deltaY < 0 ? 'undo' : 'redo'), unset_busy_later())
 }))
 
 let is_stone_clicked = false
