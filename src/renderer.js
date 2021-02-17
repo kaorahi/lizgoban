@@ -1118,7 +1118,7 @@ function set_keyboard_tag_maybe(key) {
     const data = [...tags.filter(preferred), ...tags].find(included)
     data && (data.move_count !== old) &&
         ((keyboard_tag_move_count = data.move_count),
-         update_showing_until(), update_goban())
+         update_showing_until())
 }
 function reset_keyboard_tag() {keyboard_tag_move_count = null; update_showing_until()}
 const checker_for_showing_until = change_detector()
