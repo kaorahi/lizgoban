@@ -275,8 +275,12 @@ function update_body_color() {
 function keep_selected_variation_maybe(suggest) {
     if (empty(suggest)) {return}; suggest[0].was_top = true
     const sticky = any_selected_suggest(); if (!sticky) {return}
-    const {move, pv, pvVisits, was_top} = sticky, s = suggest.find(z => z.move === move)
-    s ? merge(s, {pv, pvVisits, was_top}) : suggest.push(sticky)  // can't happen?
+    const merge_sticky = (orig, kept) => {
+        const {pv, pvVisits, was_top} = kept
+        merge(orig, {pv, pvVisits, was_top})
+    }
+    const s = suggest.find(z => z.move === sticky.move)
+    s ? merge_sticky(s, sticky) : suggest.push(sticky)  // can't happen?
 }
 function clear_selected_variation() {R.suggest = []}  // fixme: overkill
 
