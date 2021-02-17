@@ -128,11 +128,11 @@ function create_leelaz () {
         ]
         const do_check = table => table.map(a => check_supported(...a))
         do_check(checks)
+        leelaz('lizgoban_stop_startup_log', () => {is_in_startup = false})
+        do_check(checks_without_startup_log)
         // clear_leelaz_board for restart
         // komi may be changed tentatively in set_board before check of engine type
         const after_all_checks = () => {
-            is_in_startup = false
-            do_check(checks_without_startup_log)
             clear_leelaz_board(); is_katago() || (komi = leelaz_komi)
             // KataGo's default komi can be 6.5 etc. depending on "rules" in gtp.cfg.
             leelaz(`komi ${komi}`)  // force KataGo to use our komi
