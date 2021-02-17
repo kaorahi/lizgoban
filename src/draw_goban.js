@@ -130,6 +130,9 @@ function draw_goban_with_variation(canvas, suggest, opts) {
             obsolete_pv_p: suggested_variation_p && (k === suggest.uptodate_len),
         })
     })
+    const new_pv_move = suggested_variation_p &&
+          (suggest.new_pv || [])[suggest.uptodate_len]
+    new_pv_move && merge_stone_at(new_pv_move, displayed_stones, {new_pv_p: true})
     mark_unexpected_p && set_expected_stone_for_variation(e, v, displayed_stones)
     const mapping_to_winrate_bar = mapping_text(suggest, opts)
     draw_goban(canvas, displayed_stones,
@@ -557,9 +560,10 @@ function draw_movenums(h, xy, radius, g) {
 }
 
 function draw_pv_changes(h, xy, radius, g) {
-    if (!h.obsolete_pv_p) {return}
+    if (!(h.obsolete_pv_p || h.new_pv_p)) {return}
     g.strokeStyle = "rgba(255,0,0,0.5)"; g.lineWidth = 3
-    x_shape_around(xy, radius, g)
+    h.obsolete_pv_p && x_shape_around(xy, radius, g)
+    h.new_pv_p && diamond_around(xy, radius * 0.7, g)
 }
 
 function draw_tag(tag, xy, radius, g) {draw_text_on_stone(tag, BLUE, xy, radius, g)}

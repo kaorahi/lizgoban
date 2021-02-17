@@ -276,12 +276,12 @@ function keep_selected_variation_maybe(suggest) {
     if (empty(suggest)) {return}; suggest[0].was_top = true
     const sticky = any_selected_suggest(); if (!sticky) {return}
     const merge_sticky = (orig, kept) => {
-        const {pv, pvVisits, was_top} = kept
+        const {pv, pvVisits, was_top} = kept, new_pv = orig.pv
         const obsolete_visits = kept.obsolete_visits || (pvVisits && pvVisits[0]) || 0
-        const uptodate_len = common_header_length(orig.pv, pv, true)
+        const uptodate_len = common_header_length(new_pv, pv, true)
         pvVisits && orig.pvVisits &&
             replace_header(pvVisits, orig.pvVisits.slice(0, uptodate_len))
-        merge(orig, {pv, pvVisits, was_top, obsolete_visits, uptodate_len})
+        merge(orig, {pv, pvVisits, was_top, obsolete_visits, uptodate_len, new_pv})
     }
     const s = suggest.find(z => z.move === sticky.move)
     s ? merge_sticky(s, sticky) : suggest.push(sticky)  // can't happen?
