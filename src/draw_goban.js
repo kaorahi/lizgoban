@@ -391,6 +391,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
             draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g)
         if (R.busy) {return}
         h.suggest && draw_suggest(h, xy, stone_radius, large_font_p, g)
+        draw_pv_changes(h, xy, stone_radius, g)
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_next_p && h.branches && draw_branches(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
@@ -553,11 +554,12 @@ function draw_movenums(h, xy, radius, g) {
     const min_rad_coef = 0.3
     const rad_coef = clip(Math.sqrt(true_or(h.inevitability, 1)), min_rad_coef)
     draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
-    // "obsolete" mark
-    if (h.obsolete_pv_p) {
-        g.strokeStyle = "rgba(255,0,0,0.5)"; g.lineWidth = 3
-        x_shape_around(xy, radius, g)
-    }
+}
+
+function draw_pv_changes(h, xy, radius, g) {
+    if (!h.obsolete_pv_p) {return}
+    g.strokeStyle = "rgba(255,0,0,0.5)"; g.lineWidth = 3
+    x_shape_around(xy, radius, g)
 }
 
 function draw_tag(tag, xy, radius, g) {draw_text_on_stone(tag, BLUE, xy, radius, g)}
