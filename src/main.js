@@ -184,6 +184,7 @@ const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
+    enable_menu,
 }
 const api = {
     ...simple_api,
@@ -353,6 +354,11 @@ function goto_previous_or_next_something(backwardp) {
 
 let force_normal_menu_p = false
 
+// to ignore accelerators (e.g. Shift+N) on input forms in custom dialogs
+let the_menu_enabled_p = true
+function enable_menu(bool) {the_menu_enabled_p = bool}
+function menu_enabled_p() {return the_menu_enabled_p}
+
 function update_menu() {mac_p() ? update_app_menu() : update_window_menu()}
 function update_app_menu() {
     const win = electron.BrowserWindow.getFocusedWindow() || get_windows()[0]
@@ -407,7 +413,7 @@ Really start LizGoban with no engine? (not recommended)
 function menu_template(win) {
     const menu = (label, submenu) =>
           ({label, submenu: submenu.filter(truep)})
-    const exec = (...fs) => ((...a) => fs.forEach(f => f && f(...a)))
+    const exec = (...fs) => ((...a) => menu_enabled_p() && fs.forEach(f => f && f(...a)))
     const update = () => update_all()
     const ask_sec = replaying => ((this_item, win) => ask_auto_play_sec(win, replaying))
     const item = (label, accelerator, click, standalone_only, enabled, keep_auto) =>
@@ -600,8 +606,9 @@ function stone_style_submenu() {
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
     const toggle_it = () => toggle_stored(key)
+    const do_it = (...a) => {(on_click || toggle_it)(...a); update_all()}
     return {label, accelerator, type: 'checkbox', checked: get_stored(key),
-            click: (...a) => {(on_click || toggle_it)(...a); update_all()}}
+            click: (...a) => menu_enabled_p() && do_it(...a)}
 }
 
 function toggle_stored(key) {

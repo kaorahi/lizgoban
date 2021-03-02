@@ -117,14 +117,16 @@ function set_game_info() {
 
 function show_dialog(name, selected) {
     Q(name).style.visibility = "visible"; Q(`${name} ${selected || "input"}`).select()
+    main('enable_menu', false)
 }
 function shown_dialogs() {
     return document.querySelectorAll('.dialog:not([style*="visibility: hidden"])')
 }
 function hide_dialog() {
-    const opened = shown_dialogs()
+    const opened = shown_dialogs(); if (empty(opened)) {return false}
     opened.forEach(d => d.style.visibility = "hidden")
-    return !empty(opened)
+    main('enable_menu', true)
+    return true
 }
 
 function play_moves(moves) {
