@@ -406,7 +406,7 @@ Really start LizGoban with no engine? (not recommended)
 
 function menu_template(win) {
     const menu = (label, submenu) =>
-          ({label, submenu: submenu.filter(truep), enabled: !empty(submenu)})
+          ({label, submenu: submenu.filter(truep)})
     const exec = (...fs) => ((...a) => fs.forEach(f => f && f(...a)))
     const update = () => update_all()
     const ask_sec = replaying => ((this_item, win) => ask_auto_play_sec(win, replaying))
