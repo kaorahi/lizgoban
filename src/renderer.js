@@ -118,9 +118,11 @@ function set_game_info() {
 function show_dialog(name, selected) {
     Q(name).style.visibility = "visible"; Q(`${name} ${selected || "input"}`).select()
 }
+function shown_dialogs() {
+    return document.querySelectorAll('.dialog:not([style*="visibility: hidden"])')
+}
 function hide_dialog() {
-    const selector = '.dialog:not([style*="visibility: hidden"])'
-    const opened = document.querySelectorAll(selector)
+    const opened = shown_dialogs()
     opened.forEach(d => d.style.visibility = "hidden")
     return !empty(opened)
 }
