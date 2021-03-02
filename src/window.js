@@ -46,7 +46,7 @@ function get_new_window(file_name, opt) {
 }
 
 const webPreferences = {
-    nodeIntegration: true, enableRemoteModule: true,
+    nodeIntegration: true,
     worldSafeExecuteJavaScript: true, contextIsolation: false,
 }
 function new_window(default_board_type) {
