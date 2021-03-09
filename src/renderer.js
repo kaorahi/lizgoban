@@ -139,7 +139,10 @@ function play_moves(moves) {
 function stop_match() {main('stop_match', R.window_id)}
 
 function alert_comment() {
-    const comment = Q('#comment').textContent; comment ? alert(comment) : wink()
+    const popup = str => {
+        electron.clipboard.writeText(str); alert(str); toast('copied to clipboard', 1000)
+    }
+    const comment = Q('#comment').textContent; comment ? popup(comment) : wink()
 }
 
 function main(channel, ...args) {ipc.send(channel, ...args)}
