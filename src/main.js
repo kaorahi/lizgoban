@@ -469,16 +469,14 @@ function menu_template(win) {
         {label: 'Trial board', type: 'checkbox', checked: game.trial,
          accelerator: 'Shift+I', click: exec(toggle_trial, update)},
         sep,
-        menu('Flip / rotate / etc.',
-             ['half_turn', false, 'horizontal_flip', 'vertical_flip', false,
-              'clockwise_rotation', 'counterclockwise_rotation']
-             .map(key => key ? item(key.replace(/_/g, ' '), undefined,
-                                    () => transform_board(key)) : sep).concat(
-                                        sep,
-                                        item('resize to 19x19 (bottom left)', undefined,
-                                             resize_to_19x19)
-                                    )
-            ),
+        menu('Flip / rotate / etc.', [
+            ...(['half_turn', false, 'horizontal_flip', 'vertical_flip', false,
+                 'clockwise_rotation', 'counterclockwise_rotation']
+                .map(key => key ? item(key.replace(/_/g, ' '), undefined,
+                                       () => transform_board(key)) : sep)),
+            sep,
+            item('resize to 19x19 (bottom left)', undefined, resize_to_19x19),
+        ]),
         item(`Komi (${game.get_komi()})`, undefined, () => ask_komi(win)),
         menu(`Rule (${get_gorule()})`, AI.is_gorule_supported() ? gorule_submenu() : []),
         item('Info', 'CmdOrCtrl+I', () => ask_game_info(win)),
