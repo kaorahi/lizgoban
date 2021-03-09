@@ -469,11 +469,15 @@ function menu_template(win) {
         {label: 'Trial board', type: 'checkbox', checked: game.trial,
          accelerator: 'Shift+I', click: exec(toggle_trial, update)},
         sep,
-        menu('Flip / rotate',
+        menu('Flip / rotate / etc.',
              ['half_turn', false, 'horizontal_flip', 'vertical_flip', false,
               'clockwise_rotation', 'counterclockwise_rotation']
              .map(key => key ? item(key.replace(/_/g, ' '), undefined,
-                                    () => transform_board(key)) : sep)
+                                    () => transform_board(key)) : sep).concat(
+                                        sep,
+                                        item('resize to 19x19 (bottom left)', undefined,
+                                             resize_to_19x19)
+                                    )
             ),
         item(`Komi (${game.get_komi()})`, undefined, () => ask_komi(win)),
         menu(`Rule (${get_gorule()})`, AI.is_gorule_supported() ? gorule_submenu() : []),
@@ -1123,6 +1127,10 @@ function tag_or_untag() {
 function transform_board(key) {
     // set dummy endstate for cheating set_tentative_endstate_maybe()
     game.transform(key); game.ref_current().endstate = [[]]
+}
+function resize_to_19x19() {
+    // use SGF to clear recorded analysis
+    read_sgf(game.shallow_copy({board_size: 19}).to_sgf(), null, true)
 }
 function save_q_and_a_images() {
     const pre = 'qa', format = {pre, sep: '_', post: ''}, dir = exercise_dir()
