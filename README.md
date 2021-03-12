@@ -280,6 +280,9 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
 * Insert a black (white) stone by b(w)+click.
 * Add pair Go to "File" menu and `preset` in `config.json`.
+* Add "resize to 19x19" into "Flip..." in "Edit" menu.
+* Copy SGF comments to the clipboard when they are clicked.
+* Accelerate quick overview.
 * Automatically mark ladder breakers as "=" and [show the continuation of the ladder](https://github.com/kaorahi/lizgoban/issues/63) by "=" key (experimental).
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
 

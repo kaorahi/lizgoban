@@ -2,6 +2,18 @@
 
 # Release notes
 
+## LizGoban 0.6.0-pre2
+
+* Accelerate quick overview.
+* Improve ladder detector with liberty check.
+* Add pair Go to "File" menu and `preset` in `config.json`.
+* Add "resize to 19x19" into "Flip..." in "Edit" menu.
+* Show X mark on suggested variations when it is updated in the background.
+* Copy SGF comments to the clipboard when they are clicked.
+* Fix minor bugs.
+
+# (Previous versions)
+
 ## LizGoban 0.6.0-pre1
 
 * Upgrade KataGo to [1.8.0](https://github.com/lightvector/KataGo/releases/tag/v1.8.0).
