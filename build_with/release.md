@@ -37,7 +37,7 @@ Incompatibilities:
 
 ### To use it on 64bit Windows immediately
 
-Just download the all-in-one package (`LizGoban-*_win_*.zip`), extract it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
+Just download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
 
 * [KataGo 1.8.0](https://github.com/lightvector/KataGo/releases/tag/v1.8.0) (eigen, eigenavx2, opencl) + [15 blocks network](https://d3dndmfyhecmj0.cloudfront.net/g170/neuralnets/index.html) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
 
@@ -48,7 +48,7 @@ You can switch KataGo versions (CPU, modern CPU, GPU) by [Preset] menu in LizGob
 If you want to use other engines, network files, options, ...
 
 1. Prepare engines (Leela Zero and/or KataGo) and their network files (aka. weights, models) by yourself, if necessary.
-2. Download and extract the same all-in-one package as above.
+2. Download and unzip the same all-in-one package as above.
 3. Copy sample/config.json to the same folder as `LizGoban *.exe` and edit it. See README for its format.
 
 ### To use it on other platforms (Mac, Linux, ...) or Windows with more flexible configuration
