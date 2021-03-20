@@ -2,22 +2,11 @@
 
 # Release notes
 
-## LizGoban 0.6.0-pre2
+## LizGoban 0.6.0
 
-* Accelerate quick overview.
-* Improve ladder detector with liberty check.
-* Add pair Go to "File" menu and `preset` in `config.json`.
-* Add "resize to 19x19" into "Flip..." in "Edit" menu.
-* Show X mark on suggested variations when it is updated in the background.
-* Copy SGF comments to the clipboard when they are clicked.
-* Fix minor bugs.
-
-# (Previous versions)
-
-## LizGoban 0.6.0-pre1
-
-* Upgrade KataGo to [1.8.0](https://github.com/lightvector/KataGo/releases/tag/v1.8.0).
+* Upgrade KataGo to [1.8.1](https://github.com/lightvector/KataGo/releases/tag/v1.8.1).
 * Indicate inevitability of each move by its font size in suggested variations (KataGo only).
+* Show X mark on suggested variations when it is updated in the background.
 * Improve loading of nested SGFs, e.g. [AlphaGo Games](https://deepmind.com/alphago-games-english), so that we can read them conveniently:
   * Push the corresponding key (d, e, ...) for each branch (d, e, ... in dotted squares) to preview its sequence with comments.
   * Click one of branches (or hit Enter key in the above preview) to watch it in another trial board.
@@ -28,8 +17,13 @@
 * Slightly improve Tsumego frame (boundary, analysis region).
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
 * Insert a black (white) stone by b(w)+click.
+* Add pair Go to "File" menu and `preset` in `config.json`.
+* Add "resize to 19x19" into "Flip..." in "Edit" menu.
+* Copy SGF comments to the clipboard when they are clicked.
+* Accelerate quick overview.
 * Automatically mark ladder breakers as "=" and [show the continuation of the ladder](https://github.com/kaorahi/lizgoban/issues/63) by "=" key (experimental).
 * Experimentally support [external control of LizGoban](https://github.com/kaorahi/lizgoban/issues/61) from another program.
+* Fix minor bugs.
 
 Incompatibilities:
 
@@ -39,7 +33,7 @@ Incompatibilities:
 
 Just download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
 
-* [KataGo 1.8.0](https://github.com/lightvector/KataGo/releases/tag/v1.8.0) (eigen, eigenavx2, opencl) + [15 blocks network](https://d3dndmfyhecmj0.cloudfront.net/g170/neuralnets/index.html) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
+* [KataGo 1.8.1](https://github.com/lightvector/KataGo/releases/tag/v1.8.1) (eigen, eigenavx2, opencl) + [15 blocks network](https://d3dndmfyhecmj0.cloudfront.net/g170/neuralnets/index.html) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
 
 You can switch KataGo versions (CPU, modern CPU, GPU) by [Preset] menu in LizGoban. The first run of the GPU version may take a long time (1 hour on a low-spec machine, for example) for its initial tuning.
 
