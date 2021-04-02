@@ -5,6 +5,23 @@
  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'">
  <title>SGF from Image</title>
  <script defer src="sgf_from_image.js"></script>
+ <style type="text/css">
+  td {padding-left: 2em;}
+  input {width: 3em;}
+  input[type="range"] {width: 30vw;}
+  .color_sample {border: solid lightgray 1px; padding: none;}
+  #tuning_container {
+   display: flex; justify-content: space-around; position: sticky; bottom: 1em;
+  }
+  #tuning {
+   display: inline-block;
+   margin: 1em;
+   background: rgba(240,240,255,0.7);
+   opacity: 0.8;
+   border: solid 2px blue; border-radius: 1em;
+   padding: 0.5em;
+  }
+ </style>
 </head>
 
 <body>
@@ -13,40 +30,93 @@
 
 <div class="standalone">
  <h1>SGF from Image</h1>
- This is a semiautomatic converter from diagram images of the game Go (Weiqi, Baduk) to SGF format. Copy your image and paste it onto this page by Ctrl-V.
+ <p>Semiautomatic converter from diagram images of the game Go (Weiqi, Baduk) to SGF format</p>
+ <p>
+  <textarea id="sgf" cols="80" rows="3" readonly style="resize: none;" placeholder="Paste images here by right-click. Drag/drop or Ctrl-V also work anywhere."></textarea>
+  <button id="copy_to_clipboard" onclick="update_sgf()">copy to clipboard</button>
+ </p>
 </div>
 
 <div>
  <button id="reset" onclick="reset()" style="margin-right: 1vmin">reset</button>
- <span id="stage0">click 1-1 (corner)</span> →
- <span id="stage1">click 2-2</span> →
- <span id="stage2">click the limit grid</span> →
- <span id="done" style="padding-bottom: 0.5vmin">
-  <span class="standalone">Done! (copied to clipboard)</span>
-  <button class="electron" id="ok" onclick="finish_electron()">OK</button>
+ <span style="color: gray;">
+  <span id="stage0">click 1-1 (corner)</span> →
+  <span id="stage1">click 2-2</span> →
+  <span id="stage2">click the limit grid</span> →
+  <span id="done" style="padding-bottom: 0.5vmin">
+   <span class="standalone">Done! (copied to clipboard) / </span>
+   <span>Click wrong detection, if any.</span>
+   <button class="electron" id="ok" onclick="finish_electron()">OK</button>
+  </span>
  </span>
  <span class="electron" style="margin-left: 10vmin">...or <button onclick="load_demo()">Try demo</button></span>
 </div>
 
 <div id="image_box" style="margin-top: 2vmin;">
- <canvas id="image_canvas" style="border: solid black 1px;"></canvas>
- <canvas id="overlay" style="position: absolute;"></canvas>
+ <canvas id="image_canvas" style="border: solid 1px black; background: gray;"></canvas>
+ <canvas id="binarized_canvas" style="position: absolute; background: rgba(0,255,0,0.1);"></canvas>
+ <canvas id="overlay_canvas" style="position: absolute;"></canvas>
 </div>
 
-<div class="standalone" style="margin-top: 2vmin;">
- <textarea id="sgf" cols="80" rows="3" readonly></textarea>
- <button onclick="update_sgf()">copy to clipboard</button>
-</div>
-
-<div>
+<p>
  Hint: In Step 2, click somewhere outside the board around 1-1 instead of clicking 2-2 if you want to capture the whole 19x19 board.
-</div>
+</p>
 
-<div style="color: lightgray;">
- <span id="debug_color" style="border: solid lightgray 1px; padding: none;">　</span>
- <span id="debug_rgba"></span>
- <span id="debug_dark"></span>
- <span id="debug_misc"></span>
+<button id="toggle_tuning" onclick="toggle_tuning()">parameter tuning...</button>
+
+<p class="standalone">
+ <span style="color: gray;">
+ This page is part of <a href="https://github.com/kaorahi/lizgoban">LizGoban</a> project.
+ <a href="https://github.com/kaorahi/lizgoban/blob/master/LICENSE.txt">License (GPL3)</a>
+ </span>
+ <span style="color: lightgray; margin-left: 3em;">
+  <span id="debug_color" class="color_sample">　</span>
+  <span id="debug_rgba"></span>
+  <span id="debug_dark"></span>
+  <span id="debug_misc"></span>
+ </span>
+ <span></span>
+</p>
+
+<div id="tuning_container">
+<div id="tuning">
+ <h2>Parameters <button onclick="reset_param()">revert to default</button></h2>
+ <table>
+  <tr>
+   <td>
+    Brightness of "dark" pixel
+    <span id="dark_sample1" class="color_sample">　</span>
+    (Try this first!)
+   </td>
+   <td>
+    <input id="dark" class="percent"></input>
+   </td>
+  </tr>
+  <tr>
+   <td></td>
+   <td style="text-align: right;">
+    (Verify:
+    <button id="binarize" onclick="binarize_image()">binarize</button>
+    <button id="unbinarize" onclick="draw_image()">unbinarize</button>
+    )
+   </td>
+  </tr>
+  <tr>
+   <td>Width of detection area (Narrow this for glossy stones.)</td>
+   <td><input id="detection_width" class="percent"></input></td>
+  </tr>
+  <tr>
+   <td>Ratio of "dark" pixels in black stone</td><td><input id="dark_ratio_black" class="percent"></td>
+  </tr>
+  <tr>
+   <td>Ratio of "dark" pixels in white stone</td><td><input id="dark_ratio_white" class="percent"></td>
+  </tr>
+ </table>
+ <p class="standalone">You can use browser bookmarks to record these parameters.</p>
+ <p style="text-align: center;">
+  <button onclick="toggle_tuning()" style="width: 30%;">close</button>
+ </p>
+</div>
 </div>
 
 </body>

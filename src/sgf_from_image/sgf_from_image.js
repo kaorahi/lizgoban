@@ -5,37 +5,124 @@
 ///////////////////////////////////////////
 // global state
 
-let xy_11 = null
-let xy_22 = null
-let xy_mn = null
+let xy_11 = null, xy_22 = null, xy_mn = null
 let coord_signs = [0, 0]
-let color_stones = {black: [], white: []}
+let guessed_board = []
 let cw = 0, ch = 0
 let img = null
 let prev_scale = 1
+let is_tuning = false
+
+///////////////////////////////////////////
+// parameters
+
+const default_param = {
+    // all parameters are "percents"
+    dark: 50,
+    dark_ratio_black: 80,
+    dark_ratio_white: 1,
+    detection_width: 30,
+}
+let param = {...default_param}
+function reset_param() {param = {...default_param}; update_forms(); read_param()}
+
+const grid_state_name = ['black', 'white', 'empty']
+const [BLACK, WHITE, EMPTY] = grid_state_name
+
+///////////////////////////////////////////
+// parameters UI
+
+function update_forms() {
+    each_key_value(param, (key, val) => {
+        Q(`#${key}`).value = Q(`#${slider_id_for(key)}`).value = val
+    })
+}
+
+function update_sample_colors() {
+    const set_color = (id, r, g, b) => {
+        const coef = 1 / (r + g + b) * 255 * 3 * param.dark / 100
+        const rgb = [r, g, b].map(z => Math.min(to_i(z * coef), 255))
+        Q(id).style.background = `rgb(${rgb.join(',')})`
+    }
+    const sample_colors = [
+        ['#dark_sample1', 1, 1, 1],
+    ]
+    sample_colors.forEach(a => set_color(...a))
+}
+
+function read_param(temporary) {
+    each_key_value(param, (key, _) => {
+        const val = to_f(Q(`#${key}`).value); if (isNaN(val)) {return}
+        param[key] = val
+    })
+    draw(0, 0)
+    stage() === -1 && estimate(temporary)
+    !temporary && (update_forms(), set_url_from_param())
+    update_sample_colors()
+}
+
+function slider_id_for(id) {return `${id}_slider`}
+
+Q_all('input.percent').forEach(input => {
+    const attr = {min: '0', max: '100', step: 'any'}
+    const input_id = input.getAttribute('id')
+    const percent = create_after(input, 'span'); percent.textContent = '%'
+    const slider = create_after(percent, 'input')
+    Object.assign(input, {type: 'number'}, attr)
+    Object.assign(slider, {type: 'range', id: slider_id_for(input_id)}, attr)
+    slider.value = input.value
+    const chain = (from, to) =>
+          from.addEventListener('input', e => {to.value = from.value})
+    chain(slider, input); chain(input, slider)
+})
+
+set_param_from_url()
+update_forms()
+update_sample_colors()
+
+Q_all('input').forEach(elem => {
+    elem.oninput = () => read_param(true)
+    elem.onchange = () => read_param(false)
+})
+
+function toggle_tuning() {is_tuning = !is_tuning; update_tuning()}
+function update_tuning() {
+    show_if(is_tuning, '#tuning')
+    show_if(!is_tuning, '#toggle_tuning')
+    is_tuning && window.scroll(0, Q('body').scrollHeight)
+}
+
+update_tuning()
 
 ///////////////////////////////////////////
 // init
 
-window.onresize = () => {set_size(); draw_image()}
-window.resizeTo(window.screen.width, window.screen.height)
+window.onresize = () => {set_size()}
+window.resizeTo(window.screen.width * 0.95, window.screen.height * 0.95)
 
-const image_canvas = Q('#image_canvas'), overlay_canvas = Q('#overlay')
-const [image_ctx, overlay_ctx] =
-      [image_canvas, overlay_canvas].map(c => c.getContext('2d'))
+const [image_canvas, binarized_canvas, overlay_canvas] =
+      ['#image_canvas', '#binarized_canvas', '#overlay_canvas'].map(Q)
+const [image_ctx, binarized_ctx, overlay_ctx] =
+      [image_canvas, binarized_canvas, overlay_canvas].map(c => c.getContext('2d'))
 
 function set_size() {
     const {clientWidth, clientHeight} = Q('#measure')
     cw = to_i(clientWidth * 0.9), ch = to_i(clientHeight * 0.9)
     set_canvas_size(image_canvas, cw, ch)
-    set_overlay(overlay_canvas, image_canvas)
+    draw_image()
+    reset()
 }
+function set_overlay_size() {
+    set_overlay(binarized_canvas, image_canvas)
+    set_overlay(overlay_canvas, image_canvas)
+    draw(0, 0)
+}
+new ResizeObserver(set_overlay_size).observe(image_canvas)
 
 set_size()
 
 const listener = {mousemove, mousedown}
-Object.keys(listener).forEach(key =>
-    overlay_canvas.addEventListener(key, listener[key]))
+each_key_value(listener, (key, val) => overlay_canvas.addEventListener(key, val))
 
 function load_demo() {load_image('demo.png')}
 load_demo()
@@ -71,7 +158,9 @@ function stage() {return [xy_11, xy_22, xy_mn].findIndex(a => !a)}
 function reset() {
     xy_11 = xy_22 = xy_mn = null
     coord_signs = [0, 0]
-    Object.values(color_stones).forEach(a => a.splice(0))
+    guessed_board = []
+    set_sgf_form('')
+    Q('#copy_to_clipboard').disabled = true
     draw(0, 0)
 }
 
@@ -85,11 +174,11 @@ function mousemove(e) {
 function mousedown(e) {
     const xy = event_xy(e)
     const valid2 = (a, b) => (a[0] !== b[0] || a[1] !== b[1])
-    console.log([xy_11, xy])
     switch (stage()) {
     case 0: xy_11 = xy; break
     case 1: valid2(xy_11, xy) ? (xy_22 = xy) : wink(); break
     case 2: xy_mn = xy; estimate(); break
+    case -1: edit_guess(...xy); break
     }
     draw(...xy)
 }
@@ -105,11 +194,12 @@ function event_xy(e) {
 
 function draw(x, y) {
     const s = stage()
-    const f = [draw0, draw1, draw2][s]; f && f(x, y, overlay_ctx)
+    const f = [draw_guess, draw0, draw1, draw2][s + 1]; f && f(x, y, overlay_ctx)
     const guide = ['#done', '#stage0', '#stage1', '#stage2']
     guide.forEach((sel, k) => {
         const {style} = Q(sel) || {style: {}}, current = (k === s + 1)
         style.borderBottom = current ? 'solid 0.5vmin blue' : 'none'
+        style.color = current ? 'black' : 'gray'
     })
     Q('#reset').disabled = (s === 0)
     Q('#ok').disabled = (s !== -1)
@@ -125,83 +215,115 @@ function draw0(x, y, g) {
 
 function draw1(x, y, g) {
     const style = 'rgba(0,255,0,0.2)'
-    const [x1, y1] = xy_11, [dx, dy] = [x - x1, y - y1]
-    draw_grids(x1, y1, 19, 19, dx, dy, style, g)
+    const {x1, y1, dx, dy, radius} = grid_params([x, y])
+    draw_grids(x1, y1, 19, 19, dx, dy, radius, style, g)
 }
 
 function draw2(x, y, g) {
     const style = 'rgba(0,0,255,0.2)'
-    const {x1, y1, mx, ny, dx, dy} = grid_params([x, y])
-    draw_grids(x1, y1, mx, ny, dx, dy, style, g)
+    const {x1, y1, mx, ny, dx, dy, radius} = grid_params([x, y])
+    draw_grids(x1, y1, mx, ny, dx, dy, radius, style, g)
 }
 
-function kth(k, z1, dz) {return z1 + dz * k}
+///////////////////////////////////////////
+// draw result
 
-function draw_grids(x1, y1, mx, ny, dx, dy, style, g) {
+function draw_guess(cx, cy) {
+    const {radius, each_grid} = grid_params()
+    const square_mark_radius = radius * 0.6
+    const circle_mark_radius = square_mark_radius * 4 / Math.PI
+    const g = overlay_ctx
+    const drawer = (marker, mark_radius, style) => (x, y) => {
+        g.fillStyle = style; marker(g, x, y, mark_radius)
+    }
+    const draw_base = drawer(fill_square, radius, 'rgba(128,128,128,0.3)')
+    const draw_black = drawer(fill_square, square_mark_radius, 'rgba(0,255,0,0.7)')
+    const draw_white = drawer(fill_circle, circle_mark_radius, 'rgba(255,0,255,0.7)')
+    const draw_for_color = {black: draw_black, white: draw_white}
+    const draw_at_grid = (i, j, x, y) => {
+        const f = draw_for_color[guessed_board[i][j]]; draw_base(x, y); f && f(x, y)
+    }
+    clear(g); each_grid(draw_at_grid)
+    draw_cursor(cx, cy)
+}
+
+function draw_cursor(x, y) {
+    const {radius, xy_for, ij_for, valid_ij} = grid_params()
+    const g = overlay_ctx
+    g.strokeStyle = 'rgba(255, 0, 0, 1)', g.lineWidth = radius * 0.3
+    const [i, j] = ij_for(x, y), [gx, gy] = xy_for(i, j)
+    valid_ij(i, j) && square(g, gx, gy, radius + g.lineWidth / 2)
+}
+
+///////////////////////////////////////////
+// drawing util
+
+function kth(k, z1, dz) {return z1 + dz * k}
+function k_for(z, z1, dz) {return Math.round((z - z1) / dz)}
+
+function draw_grids(x1, y1, mx, ny, dx, dy, radius, style, g) {
     const [xmax, ymax] = [kth(mx - 1, x1, dx), kth(ny - 1, y1, dy)]
-    const radius = Math.min(...[dx, dy].map(Math.abs)) * 0.25
     clear(g)
     g.strokeStyle = style; g.lineCap = 'square'
     g.lineWidth = radius * 2
-    for (let k = 0; k < mx; k++) {
+    seq(mx).forEach(k => {
         const xk = kth(k, x1, dx); line(g, xk, y1, xk, ymax)
-    }
-    for (let k = 0; k < ny; k++) {
+    })
+    seq(ny).forEach(k => {
         const yk = kth(k, y1, dy); line(g, x1, yk, xmax, yk)
-    }
+    })
 }
 
 function grid_params(xy) {
-    const [x, y] = xy_mn || xy, [x2, y2] = xy_22 || xy_mn, [x1, y1] = xy_11 || xy_22
+    const [x, y] = xy_mn || xy, [x2, y2] = xy_22 || xy_mn || xy, [x1, y1] = xy_11 || xy_22
     const num_grids = ([z1, z2, z]) =>
           Math.min(19, Math.round((z - z1) / (z2 - z1)) + 1)
     const [mx0, ny0] = [[x1, x2, x], [y1, y2, y]].map(num_grids)
     const [mx, ny] = (mx0 >= 1 && ny0 >= 1) ? [mx0, ny0] : [19, 19]
     const [dx, dy] = [(x - x1) / (mx - 1), (y - y1) / (ny - 1)]
-    const radius = Math.min(...[dx, dy].map(Math.abs)) * 0.25
-    return {x1, y1, mx, ny, dx, dy, radius}
+    const radius = Math.min(...[dx, dy].map(Math.abs)) * param.detection_width / 200
+    const is = seq(mx), js = seq(ny)
+    const xy_for = (i, j) => [kth(i, x1, dx), kth(j, y1, dy)]
+    const ij_for = (x, y) => [k_for(x, x1, dx), k_for(y, y1, dy)]
+    const valid_ij = (i, j) => (0 <= i && i < mx && 0 <= j && j < ny)
+    const each_grid = f => is.forEach(i => js.forEach(j => f(i, j, ...xy_for(i, j))))
+    return {x1, y1, mx, ny, dx, dy, radius, is, js, xy_for, ij_for, valid_ij, each_grid}
 }
 
 ///////////////////////////////////////////
 // estimate (whole board)
 
-function estimate() {
-    const g = overlay_ctx
-    const {x1, y1, mx, ny, dx, dy, radius} = grid_params()
+function estimate(temporary) {
+    const {dx, dy, radius, is, each_grid} = grid_params()
+    guessed_board = is.map(() => [])
     coord_signs = [dx, dy].map(Math.sign)
-    const xy_for = ([i, j]) => [kth(i, x1, dx), kth(j, y1, dy)]
-    const draw_mark = (ij, marker, mark_radius) =>
-          marker(g, ...xy_for(ij), mark_radius)
-    // store guess (+ indicate checked areas)
-    const push_stone = (color, ij) => {
-        const a = color_stones[color]; a && a.push(ij)
-    }
-    clear(g)
-    g.fillStyle = 'rgba(128,128,128,0.3)'
-    for (let i = 0; i < mx; i++) {
-        for (let j = 0; j < ny; j++) {
-            const ij = [i, j]
-            push_stone(guess_color(...xy_for(ij), radius), ij)
-            draw_mark(ij, fill_square, radius)
-        }
-    }
-    // show guess
-    const square_mark_radius = radius * 0.6
-    const circle_mark_radius = square_mark_radius * 4 / Math.PI
-    const draw_guess = (color, marker, mark_radius) =>
-          color_stones[color].forEach(ij => draw_mark(ij, marker, mark_radius))
-    g.fillStyle = 'rgba(0,255,0,0.7)'
-    draw_guess('black', fill_square, square_mark_radius)
-    g.fillStyle = 'rgba(255,0,255,0.7)'
-    draw_guess('white', fill_circle, circle_mark_radius)
-    // generate SGF
-    !electron && update_sgf()
+    each_grid((i, j, x, y) => (guessed_board[i][j] = guess_color(x, y, radius)))
+    const dummy = -777; update_guess(dummy, dummy, temporary, temporary)
 }
 
-function update_sgf() {
-    const sgf = (Q('#sgf') || {}).textContent = get_sgf()
-    navigator.clipboard.writeText(sgf)
-    wink()
+function update_guess(x, y, silent, temporary) {
+    draw_guess(x, y)
+    update_sgf(silent, temporary)
+}
+
+function edit_guess(x, y) {
+    const {ij_for, valid_ij} = grid_params(), [i, j] = ij_for(x, y)
+    if (!valid_ij(i, j)) {return}
+    const old_guess = guessed_board[i][j], a = grid_state_name
+    const next = (a.indexOf(old_guess) + 1) % a.length
+    guessed_board[i][j] = a[next]
+    update_guess(x, y, true)
+}
+
+function set_sgf_form(sgf) {(Q('#sgf') || {}).textContent = sgf}
+
+function update_sgf(silent, temporary) {
+    if (electron) {return}
+    const sgf = get_sgf()
+    set_sgf_form(sgf)
+    Q('#copy_to_clipboard').disabled = false
+    !temporary && navigator.clipboard.writeText(sgf)
+    !silent && wink()
 }
 
 ///////////////////////////////////////////
@@ -209,35 +331,37 @@ function update_sgf() {
 
 function guess_color(x0, y0, radius) {
     if (radius < 1) {return null}
-    const guess = [[0.9, 'black'], [1e-3, 'misc'], [0, 'white']]
     let pixels = 0, dark_pixels = 0
     for (let x = x0 - radius; x < x0 + radius; x++) {
         for (let y = y0 - radius; y < y0 + radius; y++) {
             pixels++; is_dark(rgba256_at(x, y)) && dark_pixels++
         }
     }
-    const dark_ratio = dark_pixels / pixels
-    return (guess.find(([threshold, _]) => dark_ratio >= threshold) || [])[1]
+    const dark_percent = dark_pixels / pixels * 100
+    return dark_percent >= param.dark_ratio_black ? BLACK :
+        dark_percent <= param.dark_ratio_white ? WHITE : EMPTY
 }
 
-function is_dark([r, g, b, _]) {
-    const dark_rgb_sum = 300
-    return r + g + b <= dark_rgb_sum
-}
+function is_dark(rgba) {return brightness(rgba) <= param.dark / 100}
+
+function brightness([r, g, b, _]) {return (r + g + b) / (255 * 3)}
 
 ///////////////////////////////////////////
 // SGF
 
 function get_sgf() {
     // ex. (;SZ[19]AB[bc][bd][cc][db][dc]AW[be][bg][cd][ce][dd][eb][ec][ed][gb])
+    if (!guessed_board) {return ''}
     const sgfpos_name = "abcdefghijklmnopqrs"
     const header = '(;SZ[19]', footer = ')'
+    const sgfpos = (k, sign) => sgfpos_name[sign > 0 ? k : 19 - k - 1]
+    const [si, sj] = coord_signs
+    const coords = (i, j) => '[' + sgfpos(i, si) + sgfpos(j, sj) + ']'
+    const grids =
+          guessed_board.flatMap((row, i) => row.map((color, j) => [color, i, j]))
     const body = (color, prop) => {
-        const a = color_stones[color]; if (a.length === 0) {return ''}
-        const sgfpos = (k, sign) => sgfpos_name[sign > 0 ? k : 19 - k - 1]
-        const [si, sj] = coord_signs
-        const coords = ([i, j]) => '[' + sgfpos(i, si) + sgfpos(j, sj) + ']'
-        return (a.length === 0) ? '' : (prop + a.map(coords).join(''))
+        const s = grids.map(([c, i, j]) => (c === color ? coords(i, j) : '')).join('')
+        return (s === '') ? '' : (prop + s)
     }
     return header + body('black', 'AB') + body('white', 'AW') + footer
 }
@@ -312,6 +436,8 @@ function load_image_file(file) {
 }
 
 function draw_image() {
+    if (!img) {return}
+    cancel_binarize()
     const {width, height} = img
     const mag = Math.min(cw / width, ch / height) * canvas_scale()
     const to_size = [width, height].map(z => to_i(z * mag))
@@ -320,7 +446,34 @@ function draw_image() {
     img.style.display = 'none'
 }
 
-function rgba256_at(x, y) {return image_ctx.getImageData(x, y, 1, 1).data}
+function rgba256_at(x, y) {
+    return image_ctx.getImageData(x, y, 1, 1).data
+}
+
+let binarizing = false
+function binarize_image() {
+    // setTimeout for showing progress
+    if (binarizing) {return}
+    binarizing = Q('#binarize').disabled = true; Q('#unbinarize').disabled = false
+    const g = binarized_ctx
+    clear(g)
+    reveal_elem(binarized_canvas)
+    let x = 0
+    const f = () => {
+        for (let y = 0; y < ch; y++) {
+            if (!binarizing) {return}
+            g.fillStyle = is_dark(rgba256_at(x, y)) ? 'black' : 'white'
+            fill_square(g, x, y, 1)
+        }
+        ++x < cw && setTimeout(f, 0)
+    }
+    f()
+}
+function cancel_binarize() {
+    binarizing = Q('#binarize').disabled = false; Q('#unbinarize').disabled = true
+    hide('#binarized_canvas')
+}
+cancel_binarize()
 
 ///////////////////////////////////////////
 // drag & drop
@@ -356,19 +509,51 @@ window.addEventListener("paste", e => {
 })
 
 ///////////////////////////////////////////
+// URL
+
+function set_param_from_url() {
+    const p = new URLSearchParams(location.search)
+    p.forEach((value, key) => {param[key] = to_f(value)})
+}
+
+function set_url_from_param() {
+    const p = new URLSearchParams('');
+    each_key_value(param, (key, val) => p.append(key, val))
+    const url = location.protocol + '//' + location.host + location.pathname + '?' + p.toString();
+    history.replaceState(null, document.title, url);
+}
+
+///////////////////////////////////////////
 // util
 
-function Q(x) {return document.querySelector(x)}
-function Q_all(x) {return document.querySelectorAll(x)}
-function hide(x) {Q_all(x).forEach(elem => elem.style.display = 'none')}
+function Q(selector) {return document.querySelector(selector)}
+function Q_all(selector) {return document.querySelectorAll(selector)}
+function hide(selector) {show_if(false, selector)}
+function show_if(bool, selector) {
+    Q_all(selector).forEach(elem => show_elem_if(bool, elem))
+}
+function show_elem_if(bool, elem) {elem.style.display = bool ? '' : 'none'}
+function reveal_elem(elem) {show_elem_if(true, elem)}
+function create_after(elem, tag) {
+    const new_elem = document.createElement(tag)
+    elem.parentNode.insertBefore(new_elem, elem.nextSibling)
+    return new_elem
+}
 
 function to_i(x) {return x | 0}
+function to_f(x) {return x - 0}
 function each_key_value(h, f){Object.keys(h).forEach(k => f(k, h[k]))}
 function each_value(h, f){each_key_value(h, (_, v) => f(v))}  // for non-array
+
+// seq(3) = [ 0, 1, 2 ]
+function seq(n){return [...Array(n)].map((_, i) => i)}
 
 function clear(ctx) {const c = ctx.canvas; ctx.clearRect(0, 0, c.width, c.height)}
 function line(ctx, x1, y1, x2, y2) {
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke()
+}
+function square(ctx, x, y, r) {
+    ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.stroke()
 }
 function fill_square(ctx, x, y, r) {
     ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.fill()
@@ -389,6 +574,6 @@ function draw_debug(x, y) {
     const c = rgba256_at(x, y)
     const rgba = `rgba(${c.slice(0, 3).join(',')},${(c[3] / 255).toFixed(2)})`
     Q('#debug_color').style.background = Q('#debug_rgba').textContent = rgba
-    Q('#debug_dark').textContent = is_dark(c) ? 'dark' : 'light'
-    Q('#debug_misc').textContent = window.devicePixelRatio
+    Q('#debug_dark').textContent = `bright=${to_i(brightness(c) * 100)}%(${is_dark(c) ? 'dark' : 'light'})`
+    // Q('#debug_misc').textContent = window.devicePixelRatio
 }
