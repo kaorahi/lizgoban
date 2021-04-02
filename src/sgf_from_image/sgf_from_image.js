@@ -124,6 +124,7 @@ const listener = {mousemove, mousedown}
 each_key_value(listener, (key, val) => overlay_canvas.addEventListener(key, val))
 
 load_image('demo.png')
+hide('#loading'); show_if(true, '#main')
 
 ///////////////////////////////////////////
 // electron
