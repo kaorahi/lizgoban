@@ -1752,7 +1752,7 @@ function copy_sgf_to_clipboard(cache_suggestions_p) {
 }
 function paste_sgf_or_url_from_clipboard() {
     if (!clipboard.readImage().isEmpty()) {open_clipboard_image(); return}
-    const s = clipboard.readText(); s.startsWith('http') ? open_url(s) : read_sgf(s)
+    const s = clipboard.readText(); s.match('^(file|https?)://') ? open_url(s) : read_sgf(s)
 }
 
 function open_sgf_etc() {open_sgf_etc_in(option_path('sgf_dir'))}
