@@ -289,7 +289,8 @@ function keep_selected_variation_maybe(suggest) {
     if (empty(suggest)) {return}; suggest[0].was_top = true
     const sticky = any_selected_suggest(); if (!sticky) {return}
     const merge_sticky = (orig, kept) => {
-        const {pv, was_top} = kept, pvVisits = kept.pvVisits.slice(), new_pv = orig.pv
+        const {pv, was_top} = kept, pvVisits = kept.pvVisits && kept.pvVisits.slice()
+        const new_pv = orig.pv
         const obsolete_visits = kept.obsolete_visits || (pvVisits && pvVisits[0]) || 0
         const uptodate_len = common_header_length(new_pv, pv, true)
         pvVisits && orig.pvVisits &&
