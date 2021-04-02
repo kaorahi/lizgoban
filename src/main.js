@@ -1552,13 +1552,14 @@ function update_state(keep_suggest_p) {
     }
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
-    const {face_image_rule} = option
+    const {face_image_rule, pv_trail_max_suggestions} = option
     update_exercise_metadata()
     P.set_and_render(!keep_suggest_p, {
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule, exercise_metadata,
         showing_bturn, subboard_stones_suggest,
+        pv_trail_max_suggestions,
     }, more)
 }
 function subboard_stones_suggest_for(su, prev_su) {

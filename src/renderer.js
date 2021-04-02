@@ -46,6 +46,7 @@ const R = {
     image_paths: null, image: null, stone_image_p: true, board_image_p: true,
     stone_style: '2D',
     exercise_metadata: {},
+    pv_trail_max_suggestions: 0,
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null

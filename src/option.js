@@ -31,6 +31,7 @@ const default_option = {
     record_note_to_SGF: false,
     auto_overview: true,
     repl: false,
+    pv_trail_max_suggestions: 0,
 }
 const option = {}
 let white_preset = []

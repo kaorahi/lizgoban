@@ -275,13 +275,13 @@ const score_bar_fitter = make_center_fitter(5)
 /////////////////////////////////////////////////
 // pv trail
 
-const pv_trail_power_of = 2, pv_trail_max_suggestions = 10
+const pv_trail_power_of = 2
 let pv_trail; clear_pv_trail()
 
 function clear_pv_trail() {pv_trail = {}}
 
 function update_pv_trail() {
-    R.suggest.slice(0, pv_trail_max_suggestions).forEach(update_pv_trail_sub)
+    R.suggest.slice(0, R.pv_trail_max_suggestions).forEach(update_pv_trail_sub)
 }
 
 function update_pv_trail_sub(suggest) {
