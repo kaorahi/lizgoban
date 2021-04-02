@@ -1794,7 +1794,8 @@ function read_sgf(sgf_str, filename, internally) {
         start_quick_overview()
 }
 
-function open_url(url) {
+function open_url(url) {ask_choice(`Open ${url}`, ['OK'], _ => open_url_sub(url))}
+function open_url_sub(url) {
     // image
     const image_p = safely(() => (new URL(url)).pathname.match(/(jpg|jpeg|gif|png)$/i))
     if (image_p) {clipboard.writeText(url); open_clipboard_image(); return}
@@ -1809,7 +1810,7 @@ function open_url(url) {
         res.on('end', () => {read_sgf(str); update_all()})
     }
     const protocol = url.startsWith('https') ? https : http
-    ask_choice(`Open ${url}`, ['OK'], _ => protocol.get(url, on_get))
+    protocol.get(url, on_get)
 }
 
 // personal exercise book
