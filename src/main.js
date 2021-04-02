@@ -459,7 +459,7 @@ function menu_template(win) {
     const edit_menu = menu('Edit', [
         item('Copy SGF', 'CmdOrCtrl+Shift+C', () => copy_sgf_to_clipboard(false), true),
         item('Copy SGF with analysis', 'CmdOrCtrl+C', () => copy_sgf_to_clipboard(true), true),
-        item('Paste SGF or URL', 'CmdOrCtrl+V', paste_sgf_or_url_from_clipboard, true),
+        item('Paste (SGF, URL, image)', 'CmdOrCtrl+V', paste_sgf_or_url_from_clipboard, true),
         sep,
         item('Delete board', 'CmdOrCtrl+X', cut_sequence, true),
         item('Undelete board', 'CmdOrCtrl+Z', uncut_sequence, true,
@@ -1082,6 +1082,19 @@ function open_help(file_name) {
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
     ]
     const opt = {webPreferences}
+    get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
+}
+function open_clipboard_image() {
+    const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}
+    const menu = [
+        {label: 'File', submenu: [{role: 'close'}]},
+        {label: 'View',
+         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
+        ...(app.isPackaged ? [] : [debug]),
+    ]
+    const size = get_windows()[0].getSize()
+    const opt = {webPreferences, width: size[0], height: size[1]}
+    const file_name = 'sgf_from_image/sgf_from_image.html'
     get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
 }
 function info_text() {
@@ -1736,6 +1749,7 @@ function copy_sgf_to_clipboard(cache_suggestions_p) {
     clipboard.writeText(game.to_sgf(cache_suggestions_p)); wink()
 }
 function paste_sgf_or_url_from_clipboard() {
+    if (!clipboard.readImage().isEmpty()) {open_clipboard_image(); return}
     const s = clipboard.readText(); s.startsWith('http') ? open_url(s) : read_sgf(s)
 }
 
