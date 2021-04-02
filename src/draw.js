@@ -25,8 +25,10 @@ const {
     target_move, set_target_move,
 } = require('./draw_goban.js')
 
-const {draw_winrate_bar_sub, update_winrate_trail, score_bar_fitter, get_winrate_trail}
-      = require('./draw_winrate_bar.js')
+const {
+    draw_winrate_bar_sub, update_winrate_trail, score_bar_fitter,
+    get_pv_trail_for, get_winrate_trail,
+} = require('./draw_winrate_bar.js')
 function draw_winrate_bar(...args) {draw_winrate_bar_sub(target_move(), ...args)}
 
 const {draw_winrate_graph} = require('./draw_winrate_graph.js')
@@ -191,6 +193,7 @@ module.exports = {
     draw_goban_with_subboard_stones_suggest,
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
+    get_pv_trail_for,
     update_winrate_trail, clear_canvas, is_next_move, latest_move,
     target_move, set_target_move,
 }

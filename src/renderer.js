@@ -174,6 +174,7 @@ function render_now() {
     setq('#history_length', ' (' + D.max_movenum() + ')')
     update_displayed_comment()
     D.update_winrate_trail()
+    alter_suggest_by_pv_trail()
     update_goban()
 }
 
@@ -302,6 +303,36 @@ function keep_selected_variation_maybe(suggest) {
 function clear_selected_variation() {R.suggest = []}  // fixme: overkill
 
 /////////////////////////////////////////////////
+// pv trail
+
+let showing_pv_trail; stop_showing_pv_trail()
+function showing_pv_trail_p() {return !!showing_pv_trail}
+globalize({showing_pv_trail_p})
+function stop_showing_pv_trail() {showing_pv_trail = null}
+function increment_showing_pv_trail(delta) {
+    const [move, k] = showing_pv_trail ||
+          [(any_selected_suggest() || {}).move, null]
+    if (!move) {return}
+    const a = D.get_pv_trail_for(move); if (empty(a)) {return}
+    const new_k = clip(true_or(k, a.length) + delta, 0)
+    showing_pv_trail = (new_k < a.length) && [move, new_k]
+    alter_suggest_by_pv_trail(); update_goban()
+}
+function alter_suggest_by_pv_trail() {
+    if (!showing_pv_trail) {return}
+    const [move, k] = showing_pv_trail || []
+    const suggest_elem_from_trail = D.get_pv_trail_for(move)[k]
+    move && suggest_elem_from_trail &&
+        replace_suggest_elem(R.suggest, suggest_elem_from_trail)
+}
+function replace_suggest_elem(suggest, elem) {
+    const {move} = elem
+    const pos = suggest.findIndex(h => h.move === move); if (pos < 0) {return}
+    const {new_pv, pv} = suggest[pos]
+    suggest[pos] = {...elem, new_pv: new_pv || pv}
+}
+
+/////////////////////////////////////////////////
 // draw parts
 
 // set option "main_canvas_p" etc. for d(canvas, opts)
@@ -325,12 +356,14 @@ function with_opts(d, opts) {
 }
 
 const ignore_mouse = {handle_mouse_on_goban: ignore_mouse_on_goban}
-const draw_main = with_opts(D.draw_main_goban)
+const pv_trail_color_opts = () =>
+      showing_pv_trail_p() ? {trial_p: 'ref'} : {}
+const draw_main = with_opts(D.draw_main_goban, pv_trail_color_opts)
 const draw_sub = with_opts((...args) => {
     const sss_p = R.subboard_stones_suggest && !hover_on_subboard_p()
     const draw = sss_p ? D.draw_goban_with_subboard_stones_suggest : D.draw_main_goban
     draw(...args)
-})
+}, pv_trail_color_opts)
 const draw_pv = with_opts((...args) => {
     R.subboard_stones_suggest ? D.draw_goban_with_subboard_stones_suggest(...args) :
         truep(showing_until()) ? D.draw_raw_goban(...args) :
@@ -381,6 +414,7 @@ function update_first_board_canvas(canvas) {
 function already_showing_pv_p() {
     const target = D.target_move(), {move, was_top} = any_selected_suggest() || {}
     return target && (move === target) && was_top && !showing_branch_p()
+        && !showing_pv_trail_p()
 }
 
 /////////////////////////////////////////////////
@@ -628,7 +662,7 @@ function set_hovered(move, count, canvas) {
         set_hovered_move_count(hovered_move)
     hovered_board_canvas = canvas
     const changed = (hovered_move !== old_move) || (hovered_move_count !== old_count)
-    changed && update_goban()
+    changed && (stop_showing_pv_trail(), update_goban())
 }
 function set_hovered_move_count(move) {
     const count = move && latest_move_count_for_idx(move2idx(move))
@@ -1047,6 +1081,8 @@ document.onkeydown = e => {
     case "A-k": shrink_analysis_region_to('up'); return
     case "A-l": shrink_analysis_region_to('right'); return
     case "A-[": update_analysis_region(null); return
+    case "M-z": increment_showing_pv_trail(-1); break;
+    case "M-x": increment_showing_pv_trail(+1); break;
     // (for safe_menu)
     case "B": m('toggle_stored', 'expand_winrate_bar'); return
     case "E": m('toggle_stored', 'show_endstate'); return
@@ -1128,6 +1164,7 @@ function set_keyboard_moves(h, silent) {
 }
 function reset_keyboard_moves(silent) {
     const done = reset_branch_moves_maybe()
+    stop_showing_pv_trail()
     keyboard_moves = []; showing_branch = null; silent || done || update_goban()
 }
 
