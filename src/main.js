@@ -565,6 +565,9 @@ function menu_template(win) {
         {label: 'REPL', type: 'checkbox', checked: repl_p(), click: toggle_repl},
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
+        sep,
+        {role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'},
+        sep,
         {role: 'toggleDevTools'},
     ])
     const help_menu = menu('Help', [
