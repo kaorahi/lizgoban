@@ -160,6 +160,11 @@ function draw_goban_with_future_moves(canvas, options) {
     draw_goban_with_given_variation(canvas, pv, [], title, options)
 }
 
+function draw_goban_with_original_pv(canvas, options) {
+    const pv_pair = get_original_and_shown_pv()
+    draw_goban_with_given_variation_sub(canvas, ...pv_pair, options)
+}
+
 function draw_goban_with_given_variation(canvas, pv, expected_pv, title, options) {
     const opts = {...options, draw_visits_p: `  ${title}`, trial_p: 'ref'}
     draw_goban_with_given_variation_sub(canvas, pv, expected_pv, opts)
@@ -931,6 +936,7 @@ module.exports = {
     draw_goban_with_expected_variation,
     draw_goban_with_future_moves,
     draw_goban_with_subboard_stones_suggest,
+    draw_goban_with_original_pv,
     draw_endstate_goban,
     draw_thumbnail_goban,
     draw_zone_color_chart,

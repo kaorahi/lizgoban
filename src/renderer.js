@@ -332,6 +332,13 @@ function replace_suggest_elem(suggest, elem) {
     suggest[pos] = {...elem, new_pv: new_pv || pv}
 }
 
+function get_original_and_shown_pv() {
+    const [move, k] = showing_pv_trail || []
+    const h = R.suggest.find(s => s.move === move) || {}
+    return [h.new_pv || [], h.pv || []]
+}
+globalize({get_original_and_shown_pv})
+
 /////////////////////////////////////////////////
 // draw parts
 
@@ -366,6 +373,7 @@ const draw_sub = with_opts((...args) => {
 }, pv_trail_color_opts)
 const draw_pv = with_opts((...args) => {
     R.subboard_stones_suggest ? D.draw_goban_with_subboard_stones_suggest(...args) :
+        showing_pv_trail_p() ? D.draw_goban_with_original_pv(...args) :
         truep(showing_until()) ? D.draw_raw_goban(...args) :
         showing_branch_p() ? D.draw_goban_with_future_moves(...args) :
         already_showing_pv_p() ? draw_another(...args) :

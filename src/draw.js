@@ -21,6 +21,7 @@ const {
     draw_goban_with_expected_variation,
     draw_goban_with_future_moves,
     draw_goban_with_subboard_stones_suggest,
+    draw_goban_with_original_pv,
     draw_endstate_goban, draw_thumbnail_goban, draw_zone_color_chart,
     target_move, set_target_move,
 } = require('./draw_goban.js')
@@ -191,6 +192,7 @@ module.exports = {
     draw_goban_with_expected_variation,
     draw_goban_with_future_moves,
     draw_goban_with_subboard_stones_suggest,
+    draw_goban_with_original_pv,
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
     get_pv_trail_for,
