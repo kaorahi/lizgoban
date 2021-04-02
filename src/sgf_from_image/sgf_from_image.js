@@ -332,7 +332,9 @@ function grid_params(xy) {
 ///////////////////////////////////////////
 // estimate (whole board)
 
-function estimate(temporary) {
+const estimate = skip_too_frequent_requests(do_estimate)
+
+function do_estimate(temporary) {
     const {dx, dy, radius, is, each_grid} = grid_params()
     guessed_board = is.map(() => [])
     coord_signs = [dx, dy].map(Math.sign)
@@ -525,6 +527,16 @@ function vec_add(a, delta) {a.forEach((_, k) => {a[k] += delta[k]})}
 
 // seq(3) = [ 0, 1, 2 ]
 function seq(n){return [...Array(n)].map((_, i) => i)}
+
+function skip_too_frequent_requests(f) {
+    let latest_request = null
+    const do_latest = () => {f(...latest_request); latest_request = null}
+    return (...args) => {
+        const idle = !latest_request; latest_request = args
+        idle && setTimeout(do_latest)  // executed in the next event cycle
+        // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout
+    }
+}
 
 function Q(selector) {return document.querySelector(selector)}
 function Q_all(selector) {return document.querySelectorAll(selector)}
