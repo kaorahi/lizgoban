@@ -981,7 +981,8 @@ const arrow_keys = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"]
 document.onkeydown = e => {
     const until = showing_until()  // before unset_stone_is_clicked()
     arrow_keys.includes(e.key) || unset_stone_is_clicked()
-    const key = (e.ctrlKey ? 'C-' : '') + (e.altKey ? 'A-' : '') + e.key
+    const prefix = mod => e[`${mod}Key`] ? `${mod[0].toUpperCase()}-` : ''
+    const key = ['ctrl', 'alt', 'meta'].map(prefix).join('') + e.key
     const f = (g, ...a) => (e.preventDefault(), g(...a)), m = (...a) => f(main, ...a)
     // GROUP 1: for input forms
     const escape = (key === "Escape" || key === "C-["), target = e.target
