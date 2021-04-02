@@ -1086,10 +1086,12 @@ function open_help(file_name) {
 }
 function open_clipboard_image() {
     const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}
+    const usage = {label: 'Usage', click: () => open_image_url('demo.png')}
     const menu = [
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
+        {label: 'Help', submenu: [usage]},
         ...(app.isPackaged ? [] : [debug]),
     ]
     const size = get_windows()[0].getSize()
@@ -1802,7 +1804,7 @@ function open_url(url) {
 function open_url_sub(url, u) {
     // image
     const image_p = u.pathname.match(/(jpg|jpeg|gif|png)$/i)
-    if (image_p) {clipboard.writeText(url); open_clipboard_image(); return}
+    if (image_p) {open_image_url(url); return}
     // SGF
     const on_get = res => {
         if (res.statusCode !== 200) {
@@ -1820,6 +1822,7 @@ function open_url_sub(url, u) {
     default: toast(`Unsupported protocol: ${url}`); break;
     }
 }
+function open_image_url(url) {clipboard.writeText(url); open_clipboard_image()}
 
 // personal exercise book
 
