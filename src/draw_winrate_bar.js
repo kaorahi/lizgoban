@@ -273,6 +273,30 @@ function make_center_fitter(step) {
 const score_bar_fitter = make_center_fitter(5)
 
 /////////////////////////////////////////////////
+// pv trail
+
+const pv_trail_power_of = 2, pv_trail_max_suggestions = 10
+let pv_trail; clear_pv_trail()
+
+function clear_pv_trail() {pv_trail = {}}
+
+function update_pv_trail() {
+    R.suggest.slice(0, pv_trail_max_suggestions).forEach(update_pv_trail_sub)
+}
+
+function update_pv_trail_sub(suggest) {
+    const {visits} = suggest; if (visits === 0) {return}
+    const record = ref_or_create(pv_trail, suggest.move, [])
+    const last_recorded_visits = (last(record) || {}).visits || 0
+    const ready = visits > last_recorded_visits * pv_trail_power_of
+    const keys = [
+        'move', 'order', 'visits', 'winrate', 'score_without_komi',
+        'prior', 'pv', 'pvVisits',
+    ]
+    ready && record.push(pick_keys(suggest, ...keys))
+}
+
+/////////////////////////////////////////////////
 // winrate trail
 
 const winrate_trail_max_length = 50
@@ -282,7 +306,7 @@ const winrate_trail_engine_checker = change_detector()
 let winrate_trail, winrate_trail_move_count = 0, winrate_trail_visits = 0
 clear_winrate_trail()
 
-function clear_winrate_trail() {winrate_trail = {}}
+function clear_winrate_trail() {winrate_trail = {}; clear_pv_trail()}
 
 function update_winrate_trail() {
     if (!R.winrate_trail || !truep(R.visits)) {return}
@@ -303,6 +327,7 @@ function update_winrate_trail() {
         s.searched === 0 && trail.shift()
         trail.unshift(s); thin_winrate_trail(trail)
     })
+    update_pv_trail()
 }
 
 function thin_winrate_trail(trail) {
@@ -351,5 +376,6 @@ function winrate_trail_searched(suggest) {
 
 module.exports = {
     draw_winrate_bar_sub, update_winrate_trail, score_bar_fitter,
+    get_pv_trail_for: move => pv_trail[move] || [],
     get_winrate_trail: () => winrate_trail,
 }
