@@ -279,7 +279,10 @@ const winrate_trail_max_length = 50
 const winrate_trail_max_suggestions = 10
 const winrate_trail_limit_relative_visits = 0.3
 const winrate_trail_engine_checker = change_detector()
-let winrate_trail = {}, winrate_trail_move_count = 0, winrate_trail_visits = 0
+let winrate_trail, winrate_trail_move_count = 0, winrate_trail_visits = 0
+clear_winrate_trail()
+
+function clear_winrate_trail() {winrate_trail = {}}
 
 function update_winrate_trail() {
     if (!R.winrate_trail || !truep(R.visits)) {return}
@@ -288,7 +291,7 @@ function update_winrate_trail() {
     const new_trail_p =
           winrate_trail_move_count !== R.move_count || total_visits_increase < 0 ||
           (R.engine_id && winrate_trail_engine_checker.is_changed(R.engine_id))
-    new_trail_p && (winrate_trail = {});
+    new_trail_p && clear_winrate_trail();
     [winrate_trail_move_count, winrate_trail_visits] = [R.move_count, R.visits]
     R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
         const fake_suggest_elem_p = (s.order < 0); if (fake_suggest_elem_p) {return}
