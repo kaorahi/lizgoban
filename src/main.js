@@ -1795,6 +1795,10 @@ function read_sgf(sgf_str, filename, internally) {
 }
 
 function open_url(url) {
+    // image
+    const image_p = safely(() => (new URL(url)).pathname.match(/(jpg|jpeg|gif|png)$/i))
+    if (image_p) {clipboard.writeText(url); open_clipboard_image(); return}
+    // SGF
     const on_get = res => {
         if (res.statusCode !== 200) {
             show_error(`Failed to get ${url}`); res.resume(); return

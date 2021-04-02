@@ -45,8 +45,13 @@ load_demo()
 
 let electron; try {electron = require('electron')} catch {}
 
-electron && load_image(electron.clipboard.readImage().toDataURL())
+electron && initialize_electron()
 hide(electron ? '.standalone' : '.electron')
+
+function initialize_electron() {
+    const {clipboard} = electron
+    load_image(clipboard.readText() || clipboard.readImage().toDataURL())
+}
 
 function finish_electron() {
     if (!electron) {return}
