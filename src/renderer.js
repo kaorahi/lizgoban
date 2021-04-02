@@ -1276,19 +1276,28 @@ function cancel_alt_up_maybe(e) {
 /////////////////////////////////////////////////
 // drag and drop
 
-function read_sgf_file(file) {
+function read_dropped_file(type, file) {
+    // assume SGF
     const r = new FileReader()
     r.onload = e => main('read_sgf', e.target.result)
     r.readAsText(file)
 }
 
 function drag_and_drop_handler(func) {
-    return e => {const dt = e.dataTransfer; e.preventDefault(); dt.files && func(dt)}
+    return e => {e.preventDefault(); func(e.dataTransfer)}
 }
 
 function when_dropped(dt) {
-    const text = dt.getData('text/plain')
-    text ? main('open_url', text) : each_value(dt.files, read_sgf_file)
+    each_value(dt.items, item => {
+        const {kind, type} = item
+        switch (kind) {
+        case 'string':
+            type.match('^text/uri-list') &&
+                item.getAsString(text => main('open_url', text))
+            break;
+        case 'file': read_dropped_file(type, item.getAsFile()); break
+        }
+    })
 }
 
 window.ondragover = drag_and_drop_handler(dt => {dt.dropEffect = "copy"})
