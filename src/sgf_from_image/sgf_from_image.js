@@ -12,6 +12,7 @@ let cw = 0, ch = 0
 let img = null
 let prev_scale = 1
 let is_tuning = false
+let last_xy = [0, 0]
 
 ///////////////////////////////////////////
 // parameters
@@ -100,24 +101,20 @@ update_tuning()
 window.onresize = () => {set_size()}
 window.resizeTo(window.screen.width * 0.95, window.screen.height * 0.95)
 
-const [image_canvas, binarized_canvas, overlay_canvas] =
-      ['#image_canvas', '#binarized_canvas', '#overlay_canvas'].map(Q)
-const [image_ctx, binarized_ctx, overlay_ctx] =
-      [image_canvas, binarized_canvas, overlay_canvas].map(c => c.getContext('2d'))
+const image_box = Q('#image_box')
+const canvases = ['#image_canvas', '#binarized_canvas', '#overlay_canvas'].map(Q)
+const [image_canvas, binarized_canvas, overlay_canvas] = canvases
+const [image_ctx, binarized_ctx, overlay_ctx] = canvases.map(c => c.getContext('2d'))
 
 function set_size() {
-    const {clientWidth, clientHeight} = Q('#measure')
+    const {clientWidth, clientHeight} = Q('html')
     cw = to_i(clientWidth * 0.9), ch = to_i(clientHeight * 0.9)
-    set_canvas_size(image_canvas, cw, ch)
+    set_style_size(image_box, cw, ch)
+    canvases.forEach(c => {copy_position(image_box, c); set_canvas_size(c, cw, ch)})
     draw_image()
     reset()
 }
-function set_overlay_size() {
-    set_overlay(binarized_canvas, image_canvas)
-    set_overlay(overlay_canvas, image_canvas)
-    draw(0, 0)
-}
-new ResizeObserver(set_overlay_size).observe(image_canvas)
+new ResizeObserver(set_size).observe(image_box)
 
 set_size()
 
@@ -152,7 +149,14 @@ function finish_electron() {
 // 2 = 2-2 was clicked
 // -1 = finished
 
-function stage() {return [xy_11, xy_22, xy_mn].findIndex(a => !a)}
+function xy_all() {return [xy_11, xy_22, xy_mn]}
+
+function stage() {return xy_all().findIndex(a => !a)}
+
+function last_set_xy() {
+    const xys = xy_all(), s = stage(), k = s >= 0 ? (s - 1) : xys.length - 1
+    return xys[k]
+}
 
 function reset() {
     xy_11 = xy_22 = xy_mn = null
@@ -183,9 +187,45 @@ function mousedown(e) {
 }
 
 function event_xy(e) {
+    if (!e) {return last_xy}
     const x0 = e.layerX, y0 = e.layerY
     const scale = canvas_scale(), x = x0 * scale, y = y0 * scale
-    return [x, y]
+    return (last_xy = [x, y])
+}
+
+///////////////////////////////////////////
+// keyboard control
+
+document.onkeydown = e => {
+    let delta = arrow_key_vec(e); if (!delta) {return}
+    e.preventDefault(); fine_tune(delta, e.ctrlKey)
+}
+document.onkeyup = e => {stage() === -1 && arrow_key_vec(e) && estimate()}
+
+function arrow_key_vec(e) {
+    const vec = {
+        ArrowLeft: [-1, 0], ArrowRight: [+1, 0], ArrowUp: [0, -1], ArrowDown: [0, +1]
+    }
+    return !is_input_area(e) && vec[e.key]
+}
+function is_input_area(e) {return ['INPUT', 'TEXTAREA'].includes(e.target.tagName)}
+
+function fine_tune(delta, force_estimate) {
+    const xy = last_set_xy(); if (!xy) {return}
+    const done = (stage() === -1), {mx, ny} = done ? grid_params() : {}
+    vec_add(xy, delta)
+    done && force_num_grids(mx, ny)
+    done && force_estimate ? estimate(true) : mousemove()
+    const g = overlay_ctx
+    g.strokeStyle = 'blue'; g.lineWidth = 1; cross_line(...xy, g)
+}
+
+function force_num_grids(m, n) {
+    const f = (grids, k) => {
+        const [z1, z] = [xy_11[k], xy_mn[k]]
+        xy_22[k] = z1 + (z - z1) / (grids - 1)
+    }
+    [m, n].map(f)
 }
 
 ///////////////////////////////////////////
@@ -205,11 +245,9 @@ function draw(x, y) {
 }
 
 function draw0(x, y, g) {
-    const scale = canvas_scale()
     clear(g)
     g.strokeStyle = 'rgba(255,0,0,1)'; g.lineWidth = 1
-    line(g, x, 0, x, ch * scale)
-    line(g, 0, y, cw * scale, y)
+    cross_line(x, y, g)
 }
 
 function draw1(x, y, g) {
@@ -240,11 +278,14 @@ function draw_guess(cx, cy) {
     const draw_white = drawer(fill_circle, circle_mark_radius, 'rgba(255,0,255,0.7)')
     const draw_for_color = {black: draw_black, white: draw_white}
     const draw_at_grid = (i, j, x, y) => {
-        const f = draw_for_color[guessed_board[i][j]]; draw_base(x, y); f && f(x, y)
+        const f = draw_for_color[guessed_board_color(i, j)]
+        draw_base(x, y); f && f(x, y)
     }
     clear(g); each_grid(draw_at_grid)
     draw_cursor(cx, cy)
 }
+
+function guessed_board_color(i, j) {return (guessed_board[i] || [])[j]}
 
 function draw_cursor(x, y) {
     const {radius, xy_for, ij_for, valid_ij} = grid_params()
@@ -275,10 +316,10 @@ function draw_grids(x1, y1, mx, ny, dx, dy, radius, style, g) {
 
 function grid_params(xy) {
     const [x, y] = xy_mn || xy, [x2, y2] = xy_22 || xy_mn || xy, [x1, y1] = xy_11 || xy_22
-    const num_grids = ([z1, z2, z]) =>
-          Math.min(19, Math.round((z - z1) / (z2 - z1)) + 1)
+    const num_grids = ([z1, z2, z]) => (z - z1) / (z2 - z1) + 1
+    const digitize = z => Math.max(2, Math.min(Math.round(z), 19))
     const [mx0, ny0] = [[x1, x2, x], [y1, y2, y]].map(num_grids)
-    const [mx, ny] = (mx0 >= 1 && ny0 >= 1) ? [mx0, ny0] : [19, 19]
+    const [mx, ny] = (mx0 >= 1 && ny0 >= 1) ? [mx0, ny0].map(digitize) : [19, 19]
     const [dx, dy] = [(x - x1) / (mx - 1), (y - y1) / (ny - 1)]
     const radius = Math.min(...[dx, dy].map(Math.abs)) * param.detection_width / 200
     const is = seq(mx), js = seq(ny)
@@ -366,58 +407,6 @@ function get_sgf() {
 }
 
 ///////////////////////////////////////////
-// canvas util
-// (copied from https://github.com/kaorahi/lizgoban)
-
-function canvas_scale(){
-    const scale = window.devicePixelRatio, changed = (prev_scale !== scale)
-    prev_scale = scale
-    changed && set_size()
-    return scale
-}
-
-function set_canvas_size(canvas, width, height) {
-    const [w0, h0] = [width, height].map(to_i)
-    const [w, h] = [w0, h0].map(z => to_i(z * canvas_scale()))
-    if (w === canvas.width && h === canvas.height) {return false}
-    canvas.style.width = `${w0}px`; canvas.style.height = `${h0}px`
-    canvas.width = w; canvas.height = h
-    return true
-}
-
-function set_overlay(canvas, orig) {
-    // // https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-    // const hidden = (orig.offsetParent == null)
-    // canvas.style.display = hidden ? 'none' : ''; if (hidden) {return}
-    copy_canvas_size(canvas, orig)
-    set_relative_canvas_position(canvas, orig)
-}
-
-function copy_canvas_size(canvas, orig) {
-    set_canvas_size(canvas, ...get_canvas_size(orig))
-}
-
-function get_canvas_size(canvas) {
-    const scale = canvas_scale()
-    return [canvas.width / scale, canvas.height / scale]
-}
-
-function set_relative_canvas_position(canvas, orig, shift_x, shift_y) {
-    const rect = orig.getBoundingClientRect()
-    // "canvas.style.position === 'absolute'" does not work
-    const absolute_p = true
-    const set_without_margin = ([xy, wh, scroll, shift]) => {
-        const margin = (rect[wh] - orig[wh] / canvas_scale()) / 2
-        const scroll_maybe = (absolute_p ? window[scroll] : 0)
-        const pos = rect[xy] + scroll_maybe + (shift ? shift(rect[wh]) : margin)
-        canvas.style[xy] = `${pos}px`
-    }
-    const args = [['left', 'width', 'scrollX', shift_x],
-                  ['top', 'height', 'scrollY', shift_y]]
-    args.forEach(set_without_margin)
-}
-
-///////////////////////////////////////////
 // image
 
 function load_image(url) {
@@ -456,21 +445,25 @@ function binarize_image() {
     binarizing = Q('#binarize').disabled = true; Q('#unbinarize').disabled = false
     const g = binarized_ctx
     clear(g)
-    reveal_elem(binarized_canvas)
+    // dare to use opacity to show/hide canvas because
+    // "hidden = true" or "display = 'none'" caused trouble in Chrome
+    // for progress animation.
+    binarized_canvas.style.opacity = 1
+    const scale = canvas_scale()
     let x = 0
     const f = () => {
-        for (let y = 0; y < ch; y++) {
+        for (let y = 0; y < ch * scale; y++) {
             if (!binarizing) {return}
             g.fillStyle = is_dark(rgba256_at(x, y)) ? 'black' : 'white'
             fill_square(g, x, y, 1)
         }
-        ++x < cw && setTimeout(f, 0)
+        ++x < cw * scale && setTimeout(f, 0)
     }
-    f()
+    setTimeout(f, 100)
 }
 function cancel_binarize() {
     binarizing = Q('#binarize').disabled = false; Q('#unbinarize').disabled = true
-    hide('#binarized_canvas')
+    binarized_canvas.style.opacity = 0
 }
 cancel_binarize()
 
@@ -525,31 +518,60 @@ function set_url_from_param() {
 ///////////////////////////////////////////
 // util
 
+function to_i(x) {return x | 0}
+function to_f(x) {return x - 0}
+function each_key_value(h, f){Object.keys(h).forEach(k => f(k, h[k]))}
+function each_value(h, f){each_key_value(h, (_, v) => f(v))}  // for non-array
+function vec_add(a, delta) {a.forEach((_, k) => {a[k] += delta[k]})}
+
+// seq(3) = [ 0, 1, 2 ]
+function seq(n){return [...Array(n)].map((_, i) => i)}
+
 function Q(selector) {return document.querySelector(selector)}
 function Q_all(selector) {return document.querySelectorAll(selector)}
 function hide(selector) {show_if(false, selector)}
 function show_if(bool, selector) {
-    Q_all(selector).forEach(elem => show_elem_if(bool, elem))
+    Q_all(selector).forEach(elem => elem.style.display = bool ? '' : 'none')
 }
-function show_elem_if(bool, elem) {elem.style.display = bool ? '' : 'none'}
-function reveal_elem(elem) {show_elem_if(true, elem)}
 function create_after(elem, tag) {
     const new_elem = document.createElement(tag)
     elem.parentNode.insertBefore(new_elem, elem.nextSibling)
     return new_elem
 }
 
-function to_i(x) {return x | 0}
-function to_f(x) {return x - 0}
-function each_key_value(h, f){Object.keys(h).forEach(k => f(k, h[k]))}
-function each_value(h, f){each_key_value(h, (_, v) => f(v))}  // for non-array
-
-// seq(3) = [ 0, 1, 2 ]
-function seq(n){return [...Array(n)].map((_, i) => i)}
+function set_style_px(elem, key, val){elem.style[key] = `${val}px`}
+function set_style_size(elem, width, height) {
+    each_key_value({width, height}, (k, v) => set_style_px(elem, k, v))
+}
+function copy_position(from, to) {
+    const rect = from.getBoundingClientRect()
+    const args = [['left', 'width', 'scrollX'],
+                  ['top', 'height', 'scrollY']]
+    const set_pos = ([xy, wh, scroll]) => {
+        const pos = rect[xy] + window[scroll]
+        set_style_px(to, xy, pos)
+    }
+    args.forEach(set_pos)
+}
+function canvas_scale(){
+    const scale = window.devicePixelRatio, changed = (prev_scale !== scale)
+    prev_scale = scale
+    changed && set_size()
+    return scale
+}
+function set_canvas_size(canvas, width, height) {
+    set_style_size(canvas, width, height)
+    const [w, h] = [width, height].map(z => to_i(z * canvas_scale()))
+    canvas.width = w; canvas.height = h
+}
 
 function clear(ctx) {const c = ctx.canvas; ctx.clearRect(0, 0, c.width, c.height)}
 function line(ctx, x1, y1, x2, y2) {
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke()
+}
+function cross_line(x, y, g) {
+    const scale = canvas_scale()
+    line(g, x, 0, x, ch * scale); line(g, 0, y, cw * scale, y)
 }
 function square(ctx, x, y, r) {
     ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.stroke()
@@ -566,7 +588,7 @@ function wink() {
     // const keyframes = [{scale: 1}, {scale: 0.8}, {scale: 1}]
     const keyframes = [{opacity: 1}, {opacity: 0.3}, {opacity: 1}]
     last_wink_animation && last_wink_animation.finish()
-    last_wink_animation = Q('#image_box').animate(keyframes, 200)
+    last_wink_animation = image_box.animate(keyframes, 200)
 }
 
 function draw_debug(x, y) {
