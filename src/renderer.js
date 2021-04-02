@@ -1277,10 +1277,17 @@ function cancel_alt_up_maybe(e) {
 // drag and drop
 
 function read_dropped_file(type, file) {
-    // assume SGF
-    const r = new FileReader()
-    r.onload = e => main('read_sgf', e.target.result)
-    r.readAsText(file)
+    const read = (reader, proc) => {
+        const r = new FileReader()
+        r.onload = e => proc(e.target.result); r[reader](file)
+    }
+    const paste_image = dataURL => {
+        const {clipboard, nativeImage} = electron
+        clipboard.writeImage(nativeImage.createFromDataURL(dataURL))
+        main('paste_sgf_or_url_from_clipboard')
+    }
+    type.match('^image/') ? read('readAsDataURL', paste_image) :
+        read('readAsText', sgf => main('read_sgf', sgf))
 }
 
 function drag_and_drop_handler(func) {
