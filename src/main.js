@@ -1803,7 +1803,7 @@ function open_url(url) {
 }
 function open_url_sub(url, u) {
     // image
-    const image_p = u.pathname.match(/(jpg|jpeg|gif|png)$/i)
+    const image_p = u.pathname.match(/(jpg|jpeg|gif|png|webp)$/i)
     if (image_p) {open_image_url(url); return}
     // SGF
     const on_get = res => {
