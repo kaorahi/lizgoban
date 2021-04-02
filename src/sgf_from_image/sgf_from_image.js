@@ -14,6 +14,8 @@ let prev_scale = 1
 let is_tuning = false
 let last_xy = [0, 0]
 
+const sentinel = null
+
 ///////////////////////////////////////////
 // parameters
 
@@ -57,7 +59,7 @@ function read_param(temporary) {
         param[key] = val
     })
     draw(0, 0)
-    stage() === -1 && estimate(temporary)
+    stage() === 3 && estimate(temporary)
     !temporary && (update_forms(), set_url_from_param())
     update_sample_colors()
 }
@@ -147,16 +149,13 @@ function finish_electron() {
 // 0 = initial
 // 1 = 1-1 was clicked
 // 2 = 2-2 was clicked
-// -1 = finished
+// 3 = finished
 
-function xy_all() {return [xy_11, xy_22, xy_mn]}
+function xy_all() {return [xy_11, xy_22, xy_mn, sentinel]}
 
 function stage() {return xy_all().findIndex(a => !a)}
 
-function last_set_xy() {
-    const xys = xy_all(), s = stage(), k = s >= 0 ? (s - 1) : xys.length - 1
-    return xys[k]
-}
+function last_set_xy() {return xy_all()[stage() - 1]}
 
 function reset() {
     xy_11 = xy_22 = xy_mn = null
@@ -181,7 +180,7 @@ function mousedown(e) {
     case 0: xy_11 = xy; break
     case 1: valid2(xy_11, xy) ? (xy_22 = xy) : wink(); break
     case 2: xy_mn = xy; estimate(); break
-    case -1: edit_guess(...xy); break
+    case 3: edit_guess(...xy); break
     }
     draw(...xy)
 }
@@ -200,7 +199,7 @@ document.onkeydown = e => {
     let delta = arrow_key_vec(e); if (!delta) {return}
     e.preventDefault(); fine_tune(delta, e.ctrlKey)
 }
-document.onkeyup = e => {stage() === -1 && arrow_key_vec(e) && estimate()}
+document.onkeyup = e => {stage() === 3 && arrow_key_vec(e) && estimate()}
 
 function arrow_key_vec(e) {
     const vec = {
@@ -212,7 +211,7 @@ function is_input_area(e) {return ['INPUT', 'TEXTAREA'].includes(e.target.tagNam
 
 function fine_tune(delta, force_estimate) {
     const xy = last_set_xy(); if (!xy) {return}
-    const done = (stage() === -1), {mx, ny} = done ? grid_params() : {}
+    const done = (stage() === 3), {mx, ny} = done ? grid_params() : {}
     vec_add(xy, delta)
     done && force_num_grids(mx, ny)
     done && force_estimate ? estimate(true) : mousemove()
@@ -233,15 +232,15 @@ function force_num_grids(m, n) {
 
 function draw(x, y) {
     const s = stage()
-    const f = [draw_guess, draw0, draw1, draw2][s + 1]; f && f(x, y, overlay_ctx)
-    const guide = ['#done', '#stage0', '#stage1', '#stage2']
+    const f = [draw0, draw1, draw2, draw_guess][s]; f && f(x, y, overlay_ctx)
+    const guide = ['#stage0', '#stage1', '#stage2', '#done']
     guide.forEach((sel, k) => {
-        const {style} = Q(sel) || {style: {}}, current = (k === s + 1)
+        const {style} = Q(sel) || {style: {}}, current = (k === s)
         style.borderBottom = current ? 'solid 0.5vmin blue' : 'none'
         style.color = current ? 'black' : 'gray'
     })
     Q('#reset').disabled = (s === 0)
-    Q('#ok').disabled = (s !== -1)
+    Q('#ok').disabled = (s !== 3)
 }
 
 function draw0(x, y, g) {
