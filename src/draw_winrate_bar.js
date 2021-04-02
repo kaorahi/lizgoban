@@ -296,7 +296,7 @@ function update_winrate_trail() {
     R.suggest.slice(0, winrate_trail_max_suggestions).forEach(s => {
         const fake_suggest_elem_p = (s.order < 0); if (fake_suggest_elem_p) {return}
         const move = s.move, wt = winrate_trail
-        const trail = wt[move] || (wt[move] = []), len = trail.length
+        const trail = ref_or_create(wt, move, []), len = trail.length
         const relative_visits = s.visits / R.max_visits, total_visits = R.visits
         merge(s, {relative_visits, total_visits})
         len > 0 && (s.searched = (s.visits - trail[0].visits) / total_visits_increase)
