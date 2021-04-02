@@ -161,9 +161,12 @@ function draw_goban_with_future_moves(canvas, options) {
 }
 
 function draw_goban_with_given_variation(canvas, pv, expected_pv, title, options) {
-    const variation_expected = [pv, expected_pv]
-    const opts = {...options, variation_expected,
-                  draw_visits_p: `  ${title}`, trial_p: 'ref'}
+    const opts = {...options, draw_visits_p: `  ${title}`, trial_p: 'ref'}
+    draw_goban_with_given_variation_sub(canvas, pv, expected_pv, opts)
+}
+
+function draw_goban_with_given_variation_sub(canvas, pv, expected_pv, options) {
+    const opts = {...options, variation_expected: [pv, expected_pv]}
     draw_readonly_goban_with_variation(canvas, {}, opts)
 }
 
