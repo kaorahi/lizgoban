@@ -1794,23 +1794,31 @@ function read_sgf(sgf_str, filename, internally) {
         start_quick_overview()
 }
 
-function open_url(url) {ask_choice(`Open ${url}`, ['OK'], _ => open_url_sub(url))}
-function open_url_sub(url) {
+function open_url(url) {
+    const u = safely(() => (new URL(url))), open = () => open_url_sub(url, u)
+    if (!u) {show_error(`broken URL: ${url}`); return}
+    u.protocol === 'file:' ? open() : ask_choice(`Open ${url}`, ['OK'], open)
+}
+function open_url_sub(url, u) {
     // image
-    const image_p = safely(() => (new URL(url)).pathname.match(/(jpg|jpeg|gif|png)$/i))
+    const image_p = u.pathname.match(/(jpg|jpeg|gif|png)$/i)
     if (image_p) {clipboard.writeText(url); open_clipboard_image(); return}
     // SGF
     const on_get = res => {
         if (res.statusCode !== 200) {
-            show_error(`Failed to get ${url}`); res.resume(); return
+            toast(`Failed to get ${url}`); res.resume(); return
         }
         let str = ''
         res.setEncoding('utf8')
         res.on('data', chunk => {str += chunk})
         res.on('end', () => {read_sgf(str); update_all()})
     }
-    const protocol = url.startsWith('https') ? https : http
-    protocol.get(url, on_get)
+    switch (u.protocol) {
+    case 'https:': https.get(url, on_get); break;
+    case 'http:': http.get(url, on_get); break;
+    case 'file:': load_sgf_etc(u.pathname); break;
+    default: toast(`Unsupported protocol: ${url}`); break;
+    }
 }
 
 // personal exercise book
