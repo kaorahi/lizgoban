@@ -316,9 +316,18 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
 
 function fix_fox_sgf(game) {
     // ad hoc fix for Fox SGF
+    // ref. src/cpp/dataio/sgf.cpp in KataGo 1.8.1
+    const komi_table = [
+        // [[given_komi, ...], correct_komi]
+        [[325, 650], 6.5],
+        [[375, 750], 7.5],
+        [[350, 700], 7],
+    ]
+    const katago_komi = (komi_table.find(a => a[0].includes(game.komi)) || [])[1]
     // ref. https://github.com/sanderland/katrain/issues/177
-    game.komi = (game.handicaps >= 1) ? 0.5 :
-        (["chinese", "cn"].includes(game.sgf_gorule.toLowerCase)) ? 7.5 : 6.5
+    const katrain_komi = (game.handicaps >= 1) ? 0.5 :
+          (["chinese", "cn"].includes(game.sgf_gorule.toLowerCase)) ? 7.5 : 6.5
+    game.komi = true_or(katago_komi, katrain_komi)
 }
 
 function history_from_sabaki_nodes(nodes, komi, cache_suggestions_p) {
