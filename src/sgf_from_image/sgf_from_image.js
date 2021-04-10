@@ -67,7 +67,7 @@ function read_param(temporary) {
 function slider_id_for(id) {return `${id}_slider`}
 
 Q_all('input.percent').forEach(input => {
-    const attr = {min: '0', max: '100', step: 'any'}
+    const attr = {min: '0', max: '100', step: '0.1'}
     const input_id = input.getAttribute('id')
     const percent = create_after(input, 'span'); percent.textContent = '%'
     const slider = create_after(percent, 'input')
