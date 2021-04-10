@@ -22,7 +22,7 @@ const sentinel = null
 const default_param = {
     // all parameters are "percents"
     assume_gray_as_dark: 40,
-    assume_gray_as_light: 30,
+    assume_gray_as_light: 40,
     allow_outliers_in_black: 40,
     allow_outliers_in_white: 1,
     detection_width: 40,
