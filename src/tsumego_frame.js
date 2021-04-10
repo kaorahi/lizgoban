@@ -138,9 +138,9 @@ function put_ko_threat(stones, size, frame_range,
     const aa = pattern.split(/\n/).filter(identity).map(s => s.split(''))
     const width = aa[0].length, height = aa.length
     const put =  (ch, i, j) => {
-        if (inside_p(i, j, frame_range)) {return}
         const conv = ([k, normal_p, len]) => (normal_p ? 0 : size - len) + k
         const ij = [[i, top_p, height], [j, left_p, width]].map(conv)
+        if (inside_p(...ij, frame_range)) {return}
         const black = xor(black_to_attack_p, ch === 'O'), empty = (ch === '.')
         put_stone(stones, size, ...ij, black, empty)
     }
