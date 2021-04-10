@@ -333,7 +333,11 @@ function grid_params(xy) {
 ///////////////////////////////////////////
 // estimate (whole board)
 
-const estimate = skip_too_frequent_requests(do_estimate)
+function estimate(temporary) {
+    const f = temporary ? estimate_soon : do_estimate; f(temporary)
+}
+
+const estimate_soon = skip_too_frequent_requests(do_estimate)
 
 function do_estimate(temporary) {
     const {dx, dy, radius, is, each_grid} = grid_params()
