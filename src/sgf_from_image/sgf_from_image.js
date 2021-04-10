@@ -21,10 +21,10 @@ const sentinel = null
 
 const default_param = {
     // all parameters are "percents"
-    dark: 40,
-    light: 70,
-    dark_ratio_black: 60,
-    light_ratio_white: 99,
+    assume_gray_as_dark: 40,
+    assume_gray_as_light: 30,
+    allow_outliers_in_black: 40,
+    allow_outliers_in_white: 1,
     detection_width: 40,
 }
 let param = {...default_param}
@@ -48,8 +48,8 @@ function update_sample_colors() {
         Q(id).style.background = `rgb(${c},${c},${c})`
     }
     const sample_colors = [
-        ['#dark_sample', param.dark],
-        ['#light_sample', param.light],
+        ['#dark_sample', param.assume_gray_as_dark],
+        ['#light_sample', 100 - param.assume_gray_as_light],
     ]
     sample_colors.forEach(a => set_color(...a))
 }
@@ -386,13 +386,14 @@ function guess_color(x0, y0, radius) {
     }
     const sum = counts.reduce((a, c) => a + c)
     const almost = (k, percent) => counts[k] / sum * 100 >= percent
-    return almost(0, param.dark_ratio_black) ? BLACK :
-        almost(2, param.light_ratio_white) ? WHITE : EMPTY
+    return almost(0, 100 - param.allow_outliers_in_black) ? BLACK :
+        almost(2, 100 - param.allow_outliers_in_white) ? WHITE : EMPTY
 }
 
 function ternarize(rgba) {
     const bri = brightness(rgba) * 100
-    return bri <= param.dark ? 0 : bri >= param.light ? 2 : 1
+    return bri <= param.assume_gray_as_dark ? 0 :
+        bri >= 100 - param.assume_gray_as_light ? 2 : 1
 }
 
 function brightness([r, g, b, _]) {return (r + g + b) / (255 * 3)}
