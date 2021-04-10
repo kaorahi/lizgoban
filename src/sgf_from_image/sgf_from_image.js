@@ -386,9 +386,11 @@ function guess_color(x0, y0, radius) {
         }
     }
     const sum = counts.reduce((a, c) => a + c)
-    const almost = (k, percent) => counts[k] / sum * 100 >= percent
-    const stone_color = almost(0, 100 - param.allow_outliers_in_black) ? BLACK :
-        almost(2, 100 - param.allow_outliers_in_white) ? WHITE : EMPTY
+    const [dark, medium, light] = counts.map(c => c / sum * 100)
+    const almost = (percent, allowed_outliers) => 100 - percent <= allowed_outliers
+    const stone_color =
+          almost(dark, param.allow_outliers_in_black) ? BLACK :
+          almost(light, param.allow_outliers_in_white) ? WHITE : EMPTY
     return {stone_color}
 }
 
