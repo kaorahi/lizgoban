@@ -21,10 +21,11 @@ const sentinel = null
 
 const default_param = {
     // all parameters are "percents"
-    dark: 50,
-    dark_ratio_black: 80,
-    dark_ratio_white: 1,
-    detection_width: 30,
+    assume_gray_as_dark: 40,
+    assume_gray_as_light: 40,
+    allow_outliers_in_black: 40,
+    allow_outliers_in_white: 1,
+    detection_width: 40,
 }
 let param = {...default_param}
 function reset_param() {param = {...default_param}; update_forms(); read_param()}
@@ -42,13 +43,13 @@ function update_forms() {
 }
 
 function update_sample_colors() {
-    const set_color = (id, r, g, b) => {
-        const coef = 1 / (r + g + b) * 255 * 3 * param.dark / 100
-        const rgb = [r, g, b].map(z => Math.min(to_i(z * coef), 255))
-        Q(id).style.background = `rgb(${rgb.join(',')})`
+    const set_color = (id, percent) => {
+        const c = 255 * percent / 100
+        Q(id).style.background = `rgb(${c},${c},${c})`
     }
     const sample_colors = [
-        ['#dark_sample1', 1, 1, 1],
+        ['#dark_sample', param.assume_gray_as_dark],
+        ['#light_sample', 100 - param.assume_gray_as_light],
     ]
     sample_colors.forEach(a => set_color(...a))
 }
@@ -67,7 +68,7 @@ function read_param(temporary) {
 function slider_id_for(id) {return `${id}_slider`}
 
 Q_all('input.percent').forEach(input => {
-    const attr = {min: '0', max: '100', step: 'any'}
+    const attr = {min: '0', max: '100', step: '0.1'}
     const input_id = input.getAttribute('id')
     const percent = create_after(input, 'span'); percent.textContent = '%'
     const slider = create_after(percent, 'input')
@@ -104,9 +105,9 @@ window.onresize = () => {set_size()}
 window.resizeTo(window.screen.width * 0.95, window.screen.height * 0.95)
 
 const image_box = Q('#image_box')
-const canvases = ['#image_canvas', '#binarized_canvas', '#overlay_canvas'].map(Q)
-const [image_canvas, binarized_canvas, overlay_canvas] = canvases
-const [image_ctx, binarized_ctx, overlay_ctx] = canvases.map(c => c.getContext('2d'))
+const canvases = ['#image_canvas', '#digitized_canvas', '#overlay_canvas'].map(Q)
+const [image_canvas, digitized_canvas, overlay_canvas] = canvases
+const [image_ctx, digitized_ctx, overlay_ctx] = canvases.map(c => c.getContext('2d'))
 
 function set_size() {
     const {clientWidth, clientHeight} = Q('html')
@@ -285,7 +286,8 @@ function draw_guess(cx, cy) {
     draw_cursor(cx, cy)
 }
 
-function guessed_board_color(i, j) {return (guessed_board[i] || [])[j]}
+function guessed_board_color(i, j) {return guessed_board_at(i, j).stone_color}
+function guessed_board_at(i, j) {return (guessed_board[i] || [])[j] || {}}
 
 function draw_cursor(x, y) {
     const {radius, xy_for, ij_for, valid_ij} = grid_params()
@@ -333,7 +335,11 @@ function grid_params(xy) {
 ///////////////////////////////////////////
 // estimate (whole board)
 
-const estimate = skip_too_frequent_requests(do_estimate)
+function estimate(temporary) {
+    const f = temporary ? estimate_soon : do_estimate; f(temporary)
+}
+
+const estimate_soon = skip_too_frequent_requests(do_estimate)
 
 function do_estimate(temporary) {
     const {dx, dy, radius, is, each_grid} = grid_params()
@@ -351,9 +357,9 @@ function update_guess(x, y, silent, temporary) {
 function edit_guess(x, y) {
     const {ij_for, valid_ij} = grid_params(), [i, j] = ij_for(x, y)
     if (!valid_ij(i, j)) {return}
-    const old_guess = guessed_board[i][j], a = grid_state_name
+    const old_guess = guessed_board_color(i, j), a = grid_state_name
     const next = (a.indexOf(old_guess) + 1) % a.length
-    guessed_board[i][j] = a[next]
+    guessed_board_at(i, j).stone_color = a[next]
     update_guess(x, y, true)
 }
 
@@ -373,18 +379,26 @@ function update_sgf(silent, temporary) {
 
 function guess_color(x0, y0, radius) {
     if (radius < 1) {return null}
-    let pixels = 0, dark_pixels = 0
+    let counts = [0, 0, 0]
     for (let x = x0 - radius; x < x0 + radius; x++) {
         for (let y = y0 - radius; y < y0 + radius; y++) {
-            pixels++; is_dark(rgba256_at(x, y)) && dark_pixels++
+            counts[ternarize(rgba256_at(x, y))]++
         }
     }
-    const dark_percent = dark_pixels / pixels * 100
-    return dark_percent >= param.dark_ratio_black ? BLACK :
-        dark_percent <= param.dark_ratio_white ? WHITE : EMPTY
+    const sum = counts.reduce((a, c) => a + c)
+    const [dark, medium, light] = counts.map(c => c / sum * 100)
+    const almost = (percent, allowed_outliers) => 100 - percent <= allowed_outliers
+    const stone_color =
+          almost(dark, param.allow_outliers_in_black) ? BLACK :
+          almost(light, param.allow_outliers_in_white) ? WHITE : EMPTY
+    return {stone_color, dark, medium, light}
 }
 
-function is_dark(rgba) {return brightness(rgba) <= param.dark / 100}
+function ternarize(rgba) {
+    const bri = brightness(rgba) * 100
+    return bri <= param.assume_gray_as_dark ? 0 :
+        bri >= 100 - param.assume_gray_as_light ? 2 : 1
+}
 
 function brightness([r, g, b, _]) {return (r + g + b) / (255 * 3)}
 
@@ -400,7 +414,7 @@ function get_sgf() {
     const [si, sj] = coord_signs
     const coords = (i, j) => '[' + sgfpos(i, si) + sgfpos(j, sj) + ']'
     const grids =
-          guessed_board.flatMap((row, i) => row.map((color, j) => [color, i, j]))
+          guessed_board.flatMap((row, i) => row.map(({stone_color}, j) => [stone_color, i, j]))
     const body = (color, prop) => {
         const s = grids.map(([c, i, j]) => (c === color ? coords(i, j) : '')).join('')
         return (s === '') ? '' : (prop + s)
@@ -427,7 +441,7 @@ function load_image_file(file) {
 
 function draw_image() {
     if (!img) {return}
-    cancel_binarize()
+    cancel_digitize()
     const {width, height} = img
     const mag = Math.min(cw / width, ch / height) * canvas_scale()
     const to_size = [width, height].map(z => to_i(z * mag))
@@ -441,33 +455,33 @@ function rgba256_at(x, y) {
 }
 
 let binarizing = false
-function binarize_image() {
+function digitize_image() {
     // setTimeout for showing progress
     if (binarizing) {return}
-    binarizing = Q('#binarize').disabled = true; Q('#unbinarize').disabled = false
-    const g = binarized_ctx
+    binarizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
+    const g = digitized_ctx
     clear(g)
     // dare to use opacity to show/hide canvas because
     // "hidden = true" or "display = 'none'" caused trouble in Chrome
     // for progress animation.
-    binarized_canvas.style.opacity = 1
+    digitized_canvas.style.opacity = 1
     const scale = canvas_scale()
     let x = 0
     const f = () => {
         for (let y = 0; y < ch * scale; y++) {
             if (!binarizing) {return}
-            g.fillStyle = is_dark(rgba256_at(x, y)) ? 'black' : 'white'
+            g.fillStyle = ['black', 'orange', 'white'][ternarize(rgba256_at(x, y))]
             fill_square(g, x, y, 1)
         }
         ++x < cw * scale && setTimeout(f, 0)
     }
     setTimeout(f, 100)
 }
-function cancel_binarize() {
-    binarizing = Q('#binarize').disabled = false; Q('#unbinarize').disabled = true
-    binarized_canvas.style.opacity = 0
+function cancel_digitize() {
+    binarizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
+    digitized_canvas.style.opacity = 0
 }
-cancel_binarize()
+cancel_digitize()
 
 ///////////////////////////////////////////
 // drag & drop
@@ -604,9 +618,20 @@ function wink() {
 }
 
 function draw_debug(x, y) {
-    const c = rgba256_at(x, y)
+    const c = rgba256_at(x, y), digitized = ['dark', 'medium', 'light']
     const rgba = `rgba(${c.slice(0, 3).join(',')},${(c[3] / 255).toFixed(2)})`
     Q('#debug_color').style.background = Q('#debug_rgba').textContent = rgba
-    Q('#debug_dark').textContent = `bright=${to_i(brightness(c) * 100)}%(${is_dark(c) ? 'dark' : 'light'})`
+    Q('#debug_dark').textContent = `bright=${to_i(brightness(c) * 100)}%(${digitized[ternarize(c)]})`
+    Q('#debug_guess').textContent = debug_guess(x, y)
     // Q('#debug_misc').textContent = window.devicePixelRatio
+}
+
+function debug_guess(x, y) {
+    if (stage() !== 3) {return ''}
+    const {ij_for, valid_ij} = grid_params(), [i, j] = ij_for(x, y)
+    if (!valid_ij(i, j)) {return ''}
+    const {stone_color, dark, medium, light} = guessed_board_at(i, j)
+    const format = z => (typeof z === 'number') ? z.toFixed(0) : '?'
+    const ratio = [dark, medium, light].map(format).join(':')
+    return `D:M:L=${ratio}(${stone_color || 'empty'})`
 }

@@ -7,6 +7,10 @@
  <script defer src="sgf_from_image.js"></script>
  <style type="text/css">
   td {padding-left: 2em;}
+  td.title {padding-left: 0em; font-weight: bold;}
+  .major_param {}
+  .minor_param:before {content: "(";}
+  .minor_param:after {content: ")";}
   canvas, #image_box {margin: 0px; padding: 0px; border: solid 1px rgba(0,0,0,0);}
   canvas {position: absolute}
   input {width: 3em;}
@@ -58,7 +62,7 @@
 
 <div id="image_box" style="margin: 0px; padding: 0px;">
  <canvas id="image_canvas" style="background: gray;"></canvas>
- <canvas id="binarized_canvas" style="background: rgba(0,255,0,0.1);"></canvas>
+ <canvas id="digitized_canvas" style="background: rgba(0,255,0,0.1);"></canvas>
  <canvas id="overlay_canvas" style="border: solid 1px black;"></canvas>
 </div>
 
@@ -73,6 +77,7 @@
  <span id="debug_color" class="color_sample">　</span>
  <span id="debug_rgba"></span>
  <span id="debug_dark"></span>
+ <span id="debug_guess"></span>
  <span id="debug_misc"></span>
 </span>
 </p>
@@ -88,34 +93,44 @@
 <div id="tuning">
  <h2>Parameters <button onclick="reset_param()">revert to default</button></h2>
  <table>
+  <tr><td class="title">Empty grid ↔ Black stone</td><td></td></tr>
   <tr>
-   <td>
-    Brightness of "dark" pixel
-    <span id="dark_sample1" class="color_sample">　</span>
-    (Try this first!)
+   <td class="major_param">
+    Assume gray as "dark"
+    <span id="dark_sample" class="color_sample">　</span>
    </td>
    <td>
-    <input id="dark" class="percent"></input>
+    <input id="assume_gray_as_dark" class="percent"></input>
    </td>
   </tr>
   <tr>
-   <td></td>
+   <td class="minor_param">Allow non-"dark" in black</td><td><input id="allow_outliers_in_black" class="percent"></td>
+  </tr>
+  <tr><td class="title">Empty grid ↔ White stone</td><td></td></tr>
+  <tr>
+   <td class="major_param">
+    Assume gray as "light"
+    <span id="light_sample" class="color_sample">　</span>
+   </td>
+   <td>
+    <input id="assume_gray_as_light" class="percent"></input>
+   </td>
+  </tr>
+  <tr>
+   <td class="minor_param">Allow non-"light" in white</td><td><input id="allow_outliers_in_white" class="percent"></td>
+  </tr>
+  <tr>
+   <td class="title">Misc.</td>
    <td style="text-align: right;">
-    (Verify:
-    <button id="binarize" onclick="binarize_image()">binarize</button>
-    <button id="unbinarize" onclick="draw_image()">unbinarize</button>
+    (Verify "dark/medium/light":
+    <button id="digitize" onclick="digitize_image()">digitize</button>
+    <button id="undigitize" onclick="draw_image()">undigitize</button>
     )
    </td>
   </tr>
   <tr>
-   <td>Width of detection area (Narrow this for glossy stones.)</td>
+   <td class="major_param">Width of detection area</td>
    <td><input id="detection_width" class="percent"></input></td>
-  </tr>
-  <tr>
-   <td>Ratio of "dark" pixels in black stone</td><td><input id="dark_ratio_black" class="percent"></td>
-  </tr>
-  <tr>
-   <td>Ratio of "dark" pixels in white stone</td><td><input id="dark_ratio_white" class="percent"></td>
   </tr>
  </table>
  <p class="standalone">Use browser bookmarks to record these parameters.</p>
