@@ -7,6 +7,7 @@
  <script defer src="sgf_from_image.js"></script>
  <style type="text/css">
   td {padding-left: 2em;}
+  .major_param {font-weight: bold;}
   canvas, #image_box {margin: 0px; padding: 0px; border: solid 1px rgba(0,0,0,0);}
   canvas {position: absolute}
   input {width: 3em;}
@@ -58,7 +59,7 @@
 
 <div id="image_box" style="margin: 0px; padding: 0px;">
  <canvas id="image_canvas" style="background: gray;"></canvas>
- <canvas id="binarized_canvas" style="background: rgba(0,255,0,0.1);"></canvas>
+ <canvas id="digitized_canvas" style="background: rgba(0,255,0,0.1);"></canvas>
  <canvas id="overlay_canvas" style="border: solid 1px black;"></canvas>
 </div>
 
@@ -89,33 +90,41 @@
  <h2>Parameters <button onclick="reset_param()">revert to default</button></h2>
  <table>
   <tr>
-   <td>
+   <td class="major_param">
+    <span id="dark_sample" class="color_sample">　</span>
     Brightness of "dark" pixel
-    <span id="dark_sample1" class="color_sample">　</span>
-    (Try this first!)
    </td>
    <td>
     <input id="dark" class="percent"></input>
    </td>
   </tr>
   <tr>
+   <td class="major_param">
+    <span id="light_sample" class="color_sample">　</span>
+    Brightness of "light" pixel
+   </td>
+   <td>
+    <input id="light" class="percent"></input>
+   </td>
+  </tr>
+  <tr>
    <td></td>
    <td style="text-align: right;">
     (Verify:
-    <button id="binarize" onclick="binarize_image()">binarize</button>
-    <button id="unbinarize" onclick="draw_image()">unbinarize</button>
+    <button id="digitize" onclick="digitize_image()">digitize</button>
+    <button id="undigitize" onclick="draw_image()">undigitize</button>
     )
    </td>
   </tr>
   <tr>
-   <td>Width of detection area (Narrow this for glossy stones.)</td>
+   <td>Width of detection area</td>
    <td><input id="detection_width" class="percent"></input></td>
   </tr>
   <tr>
    <td>Ratio of "dark" pixels in black stone</td><td><input id="dark_ratio_black" class="percent"></td>
   </tr>
   <tr>
-   <td>Ratio of "dark" pixels in white stone</td><td><input id="dark_ratio_white" class="percent"></td>
+   <td>Ratio of "light" pixels in white stone</td><td><input id="light_ratio_white" class="percent"></td>
   </tr>
  </table>
  <p class="standalone">Use browser bookmarks to record these parameters.</p>

@@ -21,10 +21,11 @@ const sentinel = null
 
 const default_param = {
     // all parameters are "percents"
-    dark: 50,
-    dark_ratio_black: 80,
-    dark_ratio_white: 1,
-    detection_width: 30,
+    dark: 40,
+    light: 70,
+    dark_ratio_black: 60,
+    light_ratio_white: 99,
+    detection_width: 40,
 }
 let param = {...default_param}
 function reset_param() {param = {...default_param}; update_forms(); read_param()}
@@ -42,13 +43,13 @@ function update_forms() {
 }
 
 function update_sample_colors() {
-    const set_color = (id, r, g, b) => {
-        const coef = 1 / (r + g + b) * 255 * 3 * param.dark / 100
-        const rgb = [r, g, b].map(z => Math.min(to_i(z * coef), 255))
-        Q(id).style.background = `rgb(${rgb.join(',')})`
+    const set_color = (id, percent) => {
+        const c = 255 * percent / 100
+        Q(id).style.background = `rgb(${c},${c},${c})`
     }
     const sample_colors = [
-        ['#dark_sample1', 1, 1, 1],
+        ['#dark_sample', param.dark],
+        ['#light_sample', param.light],
     ]
     sample_colors.forEach(a => set_color(...a))
 }
@@ -104,9 +105,9 @@ window.onresize = () => {set_size()}
 window.resizeTo(window.screen.width * 0.95, window.screen.height * 0.95)
 
 const image_box = Q('#image_box')
-const canvases = ['#image_canvas', '#binarized_canvas', '#overlay_canvas'].map(Q)
-const [image_canvas, binarized_canvas, overlay_canvas] = canvases
-const [image_ctx, binarized_ctx, overlay_ctx] = canvases.map(c => c.getContext('2d'))
+const canvases = ['#image_canvas', '#digitized_canvas', '#overlay_canvas'].map(Q)
+const [image_canvas, digitized_canvas, overlay_canvas] = canvases
+const [image_ctx, digitized_ctx, overlay_ctx] = canvases.map(c => c.getContext('2d'))
 
 function set_size() {
     const {clientWidth, clientHeight} = Q('html')
@@ -377,18 +378,22 @@ function update_sgf(silent, temporary) {
 
 function guess_color(x0, y0, radius) {
     if (radius < 1) {return null}
-    let pixels = 0, dark_pixels = 0
+    let counts = [0, 0, 0]
     for (let x = x0 - radius; x < x0 + radius; x++) {
         for (let y = y0 - radius; y < y0 + radius; y++) {
-            pixels++; is_dark(rgba256_at(x, y)) && dark_pixels++
+            counts[ternarize(rgba256_at(x, y))]++
         }
     }
-    const dark_percent = dark_pixels / pixels * 100
-    return dark_percent >= param.dark_ratio_black ? BLACK :
-        dark_percent <= param.dark_ratio_white ? WHITE : EMPTY
+    const sum = counts.reduce((a, c) => a + c)
+    const almost = (k, percent) => counts[k] / sum * 100 >= percent
+    return almost(0, param.dark_ratio_black) ? BLACK :
+        almost(2, param.light_ratio_white) ? WHITE : EMPTY
 }
 
-function is_dark(rgba) {return brightness(rgba) <= param.dark / 100}
+function ternarize(rgba) {
+    const bri = brightness(rgba) * 100
+    return bri <= param.dark ? 0 : bri >= param.light ? 2 : 1
+}
 
 function brightness([r, g, b, _]) {return (r + g + b) / (255 * 3)}
 
@@ -431,7 +436,7 @@ function load_image_file(file) {
 
 function draw_image() {
     if (!img) {return}
-    cancel_binarize()
+    cancel_digitize()
     const {width, height} = img
     const mag = Math.min(cw / width, ch / height) * canvas_scale()
     const to_size = [width, height].map(z => to_i(z * mag))
@@ -445,33 +450,33 @@ function rgba256_at(x, y) {
 }
 
 let binarizing = false
-function binarize_image() {
+function digitize_image() {
     // setTimeout for showing progress
     if (binarizing) {return}
-    binarizing = Q('#binarize').disabled = true; Q('#unbinarize').disabled = false
-    const g = binarized_ctx
+    binarizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
+    const g = digitized_ctx
     clear(g)
     // dare to use opacity to show/hide canvas because
     // "hidden = true" or "display = 'none'" caused trouble in Chrome
     // for progress animation.
-    binarized_canvas.style.opacity = 1
+    digitized_canvas.style.opacity = 1
     const scale = canvas_scale()
     let x = 0
     const f = () => {
         for (let y = 0; y < ch * scale; y++) {
             if (!binarizing) {return}
-            g.fillStyle = is_dark(rgba256_at(x, y)) ? 'black' : 'white'
+            g.fillStyle = ['black', 'orange', 'white'][ternarize(rgba256_at(x, y))]
             fill_square(g, x, y, 1)
         }
         ++x < cw * scale && setTimeout(f, 0)
     }
     setTimeout(f, 100)
 }
-function cancel_binarize() {
-    binarizing = Q('#binarize').disabled = false; Q('#unbinarize').disabled = true
-    binarized_canvas.style.opacity = 0
+function cancel_digitize() {
+    binarizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
+    digitized_canvas.style.opacity = 0
 }
-cancel_binarize()
+cancel_digitize()
 
 ///////////////////////////////////////////
 // drag & drop
@@ -608,9 +613,9 @@ function wink() {
 }
 
 function draw_debug(x, y) {
-    const c = rgba256_at(x, y)
+    const c = rgba256_at(x, y), digitized = ['dark', 'medium', 'light']
     const rgba = `rgba(${c.slice(0, 3).join(',')},${(c[3] / 255).toFixed(2)})`
     Q('#debug_color').style.background = Q('#debug_rgba').textContent = rgba
-    Q('#debug_dark').textContent = `bright=${to_i(brightness(c) * 100)}%(${is_dark(c) ? 'dark' : 'light'})`
+    Q('#debug_dark').textContent = `bright=${to_i(brightness(c) * 100)}%(${digitized[ternarize(c)]})`
     // Q('#debug_misc').textContent = window.devicePixelRatio
 }
