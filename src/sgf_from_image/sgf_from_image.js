@@ -286,7 +286,8 @@ function draw_guess(cx, cy) {
     draw_cursor(cx, cy)
 }
 
-function guessed_board_color(i, j) {return (guessed_board[i] || [])[j]}
+function guessed_board_color(i, j) {return guessed_board_at(i, j).stone_color}
+function guessed_board_at(i, j) {return (guessed_board[i] || [])[j] || {}}
 
 function draw_cursor(x, y) {
     const {radius, xy_for, ij_for, valid_ij} = grid_params()
@@ -356,9 +357,9 @@ function update_guess(x, y, silent, temporary) {
 function edit_guess(x, y) {
     const {ij_for, valid_ij} = grid_params(), [i, j] = ij_for(x, y)
     if (!valid_ij(i, j)) {return}
-    const old_guess = guessed_board[i][j], a = grid_state_name
+    const old_guess = guessed_board_color(i, j), a = grid_state_name
     const next = (a.indexOf(old_guess) + 1) % a.length
-    guessed_board[i][j] = a[next]
+    guessed_board_at(i, j).stone_color = a[next]
     update_guess(x, y, true)
 }
 
@@ -386,8 +387,9 @@ function guess_color(x0, y0, radius) {
     }
     const sum = counts.reduce((a, c) => a + c)
     const almost = (k, percent) => counts[k] / sum * 100 >= percent
-    return almost(0, 100 - param.allow_outliers_in_black) ? BLACK :
+    const stone_color = almost(0, 100 - param.allow_outliers_in_black) ? BLACK :
         almost(2, 100 - param.allow_outliers_in_white) ? WHITE : EMPTY
+    return {stone_color}
 }
 
 function ternarize(rgba) {
@@ -410,7 +412,7 @@ function get_sgf() {
     const [si, sj] = coord_signs
     const coords = (i, j) => '[' + sgfpos(i, si) + sgfpos(j, sj) + ']'
     const grids =
-          guessed_board.flatMap((row, i) => row.map((color, j) => [color, i, j]))
+          guessed_board.flatMap((row, i) => row.map(({stone_color}, j) => [stone_color, i, j]))
     const body = (color, prop) => {
         const s = grids.map(([c, i, j]) => (c === color ? coords(i, j) : '')).join('')
         return (s === '') ? '' : (prop + s)
