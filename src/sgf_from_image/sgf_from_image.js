@@ -391,7 +391,7 @@ function guess_color(x0, y0, radius) {
     const stone_color =
           almost(dark, param.allow_outliers_in_black) ? BLACK :
           almost(light, param.allow_outliers_in_white) ? WHITE : EMPTY
-    return {stone_color}
+    return {stone_color, dark, medium, light}
 }
 
 function ternarize(rgba) {
@@ -622,5 +622,16 @@ function draw_debug(x, y) {
     const rgba = `rgba(${c.slice(0, 3).join(',')},${(c[3] / 255).toFixed(2)})`
     Q('#debug_color').style.background = Q('#debug_rgba').textContent = rgba
     Q('#debug_dark').textContent = `bright=${to_i(brightness(c) * 100)}%(${digitized[ternarize(c)]})`
+    Q('#debug_guess').textContent = debug_guess(x, y)
     // Q('#debug_misc').textContent = window.devicePixelRatio
+}
+
+function debug_guess(x, y) {
+    if (stage() !== 3) {return ''}
+    const {ij_for, valid_ij} = grid_params(), [i, j] = ij_for(x, y)
+    if (!valid_ij(i, j)) {return ''}
+    const {stone_color, dark, medium, light} = guessed_board_at(i, j)
+    const format = z => (typeof z === 'number') ? z.toFixed(0) : '?'
+    const ratio = [dark, medium, light].map(format).join(':')
+    return `D:M:L=${ratio}(${stone_color || 'empty'})`
 }
