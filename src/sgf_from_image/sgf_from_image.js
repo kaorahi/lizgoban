@@ -380,12 +380,14 @@ function update_sgf(silent, temporary) {
 function guess_color(x0, y0, radius) {
     if (radius < 1) {return null}
     let counts = [0, 0, 0]
+    const {width, height} = image_canvas
+    const inside = (x, y) => (0 <= x) && (x < width) && (0 <= y) && (y < height)
     for (let x = x0 - radius; x < x0 + radius; x++) {
         for (let y = y0 - radius; y < y0 + radius; y++) {
-            counts[ternarize(rgba256_at(x, y))]++
+            inside(x, y) && counts[ternarize(rgba256_at(x, y))]++
         }
     }
-    const sum = counts.reduce((a, c) => a + c)
+    const sum = Math.max(1, counts.reduce((a, c) => a + c))
     const [dark, medium, light] = counts.map(c => c / sum * 100)
     const almost = (percent, allowed_outliers) => 100 - percent <= allowed_outliers
     const stone_color =
