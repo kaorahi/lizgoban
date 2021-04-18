@@ -4,6 +4,30 @@
  <meta charset="UTF-8" />
  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'">
  <title>SGF from Image</title>
+
+ <script defer src="../../node_modules/twgl.js/dist/4.x/twgl.js"></script>
+ <!-- <script defer src="twgl.min.js"></script> -->
+ <script id="digitize_vertex_shader" type="non-js">
+  attribute vec4 position;
+  void main () {
+    gl_Position = position;
+  }
+ </script>
+ <script id="digitize_fragment_shader" type="non-js">
+  precision mediump float;
+  uniform sampler2D texture;
+  uniform float width, height, dark, light;
+  void main() {
+    vec2 coord = vec2(gl_FragCoord.x / width, 1.0 - gl_FragCoord.y / height);
+    vec4 p = texture2D(texture, coord);
+    float bright = (p.r + p.g + p.b) / 3.0;
+    vec4 medium_color = vec4(1, 0.5, 0, 1);
+    gl_FragColor = (p.a == 0.0) ? medium_color :
+                   (bright <= dark) ? vec4(0, 0, 0, 1) :
+                   (bright >= light) ? vec4(1, 1, 1, 1) : medium_color;
+  }
+ </script>
+
  <script defer src="perspective.js"></script>
  <script defer src="sgf_from_image.js"></script>
  <style type="text/css">

@@ -117,7 +117,7 @@ window.resizeTo(window.screen.width * 0.95, window.screen.height * 0.95)
 const image_box = Q('#image_box')
 const canvases = ['#image_canvas', '#digitized_canvas', '#overlay_canvas'].map(Q)
 const [image_canvas, digitized_canvas, overlay_canvas] = canvases
-const [image_ctx, digitized_ctx, overlay_ctx] = canvases.map(c => c.getContext('2d'))
+const [image_ctx, overlay_ctx] = [image_canvas, overlay_canvas].map(c => c.getContext('2d'))
 
 function set_size() {
     const {clientWidth, clientHeight} = Q('html')
@@ -514,28 +514,39 @@ const digitize_image_soon = skip_too_frequent_requests(digitize_image)
 
 function digitize_image() {
     digitizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
-    const digitized_rgba = [[0, 0, 0, 255], [255, 128, 0, 255], [255, 255, 255, 255]]
-    const g = digitized_ctx
-    clear(g)
+    const dark = param.assume_gray_as_dark / 100
+    const light = 1 - param.assume_gray_as_light / 100
+    gl_digitize(image_canvas, digitized_canvas, dark, light)
     // dare to use opacity to show/hide canvas because
     // "hidden = true" or "display = 'none'" caused trouble in Chrome
     // for progress animation.
     digitized_canvas.style.opacity = 1
-    const {width, height} = image_canvas
-    const dst = g.createImageData(width, height)
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-            const k = image_data_index(x, y), src_rgba = rgba256_at(x, y)
-            digitized_rgba[ternarize(src_rgba)].forEach((v, d) => {dst.data[k + d] = v})
-        }
-    }
-    g.putImageData(dst, 0, 0)
 }
 function cancel_digitize() {
     digitizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
     digitized_canvas.style.opacity = 0
 }
 cancel_digitize()
+
+// (ref)
+// https://stackoverflow.com/questions/35309300/how-to-render-images-in-webgl-from-arraybuffer
+// http://www.quabr.com/64682286/twgl-js-trouble-loading-texture-using-es6-modules
+// https://jameshfisher.com/2017/10/06/webgl-loading-an-image/
+function gl_digitize(src_canvas, dest_canvas, dark, light) {
+    // assume same size canvases
+    const gl = dest_canvas.getContext('webgl')
+    const shaders = ['digitize_vertex_shader', 'digitize_fragment_shader']
+    const programInfo = twgl.createProgramInfo(gl, shaders)
+    const arrays = {position: {numComponents: 2, data: [-1,-1, 1,-1, -1,1, 1,1]}}
+    const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
+    const texture = twgl.createTexture(gl, {src: src_canvas})
+    const {width, height} = src_canvas
+    const uniforms = {texture, width, height, dark, light}
+    gl.useProgram(programInfo.program)
+    twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
+    twgl.setUniforms(programInfo, uniforms)
+    twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLE_STRIP)
+}
 
 ///////////////////////////////////////////
 // drag & drop
