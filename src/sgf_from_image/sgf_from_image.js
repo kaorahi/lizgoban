@@ -460,6 +460,10 @@ function draw_image() {
     clear(image_ctx)
     image_ctx.drawImage(img, 0, 0, width, height, 0, 0, ...to_size)
     img.style.display = 'none'
+    update_image_data()
+}
+
+function update_image_data() {
     image_data =
         image_ctx.getImageData(0, 0, image_canvas.width, image_canvas.height).data
 }
