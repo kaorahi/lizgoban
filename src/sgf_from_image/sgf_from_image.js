@@ -199,7 +199,7 @@ function event_xy(e) {
 
 document.onkeydown = e => {
     let delta = arrow_key_vec(e); if (!delta) {return}
-    e.preventDefault(); fine_tune(delta, e.ctrlKey)
+    e.preventDefault(); fine_tune(delta, true)
 }
 document.onkeyup = e => {stage() === 3 && arrow_key_vec(e) && estimate()}
 
