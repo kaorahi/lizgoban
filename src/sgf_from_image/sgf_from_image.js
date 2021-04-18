@@ -395,6 +395,7 @@ function guess_color(x0, y0, radius) {
 }
 
 function ternarize(rgba) {
+    const [r, g, b, a] = rgba; if (!a) {return 1}
     const bri = brightness(rgba) * 100
     return bri <= param.assume_gray_as_dark ? 0 :
         bri >= 100 - param.assume_gray_as_light ? 2 : 1
