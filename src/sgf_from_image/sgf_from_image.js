@@ -466,26 +466,23 @@ function image_data_index(x, y) {
 
 let digitizing = false
 function digitize_image() {
-    // setTimeout for showing progress
-    if (digitizing) {return}
     digitizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
+    const digitized_rgba = [[0, 0, 0, 255], [255, 128, 0, 255], [255, 255, 255, 255]]
     const g = digitized_ctx
     clear(g)
     // dare to use opacity to show/hide canvas because
     // "hidden = true" or "display = 'none'" caused trouble in Chrome
     // for progress animation.
     digitized_canvas.style.opacity = 1
-    const scale = canvas_scale()
-    let x = 0
-    const f = () => {
-        for (let y = 0; y < ch * scale; y++) {
-            if (!binarizing) {return}
-            g.fillStyle = ['black', 'orange', 'white'][ternarize(rgba256_at(x, y))]
-            fill_square(g, x, y, 1)
+    const {width, height} = image_canvas
+    const dst = g.createImageData(width, height)
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+            const k = image_data_index(x, y), src_rgba = rgba256_at(x, y)
+            digitized_rgba[ternarize(src_rgba)].forEach((v, d) => {dst.data[k + d] = v})
         }
-        ++x < cw * scale && setTimeout(f, 0)
     }
-    setTimeout(f, 100)
+    g.putImageData(dst, 0, 0)
 }
 function cancel_digitize() {
     digitizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
