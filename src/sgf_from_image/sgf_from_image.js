@@ -44,18 +44,6 @@ function update_forms() {
     })
 }
 
-function update_sample_colors() {
-    const set_color = (id, percent) => {
-        const c = 255 * percent / 100
-        Q(id).style.background = `rgb(${c},${c},${c})`
-    }
-    const sample_colors = [
-        ['#dark_sample', param.assume_gray_as_dark],
-        ['#light_sample', 100 - param.assume_gray_as_light],
-    ]
-    sample_colors.forEach(a => set_color(...a))
-}
-
 function read_param(elem, temporary) {
     each_key_value(param, (key, _) => {
         const val = to_f(Q(`#${key}`).value); if (isNaN(val)) {return}
@@ -64,7 +52,6 @@ function read_param(elem, temporary) {
     draw(0, 0)
     stage() === 3 && estimate(temporary)
     !temporary && (update_forms(), set_url_from_param())
-    update_sample_colors()
     digitizing && (!elem || is_digitizer_elem(elem)) && digitize_image_soon()
 }
 
@@ -88,7 +75,6 @@ Q_all('input.percent').forEach(input => {
 
 set_param_from_url()
 update_forms()
-update_sample_colors()
 
 Q_all('input').forEach(elem => {
     elem.oninput = () => read_param(elem, true)
