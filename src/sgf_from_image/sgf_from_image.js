@@ -93,7 +93,7 @@ function toggle_tuning() {is_tuning = !is_tuning; update_tuning()}
 function update_tuning() {
     show_if(is_tuning, '#tuning')
     show_if(!is_tuning, '#toggle_tuning')
-    is_tuning && window.scroll(0, Q('body').scrollHeight)
+    is_tuning && window.scrollTo({top: Q('body').scrollHeight, behavior: 'smooth' })
 }
 
 update_tuning()
