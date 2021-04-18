@@ -470,7 +470,10 @@ function rgba256_at(x, y) {
 }
 
 function image_data_index(x, y) {
-    return (Math.round(x) + Math.round(y) * image_canvas.width) * 4
+    x = Math.round(x); y = Math.round(y)
+    const {width, height} = image_canvas
+    const inside = 0 <= x && x < width && 0 <= y && y < height
+    return inside ? (x + y * width) * 4 : -1
 }
 
 const digitize_image_soon = skip_too_frequent_requests(digitize_image)
