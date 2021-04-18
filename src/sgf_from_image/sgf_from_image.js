@@ -516,11 +516,11 @@ function digitize_image() {
     digitizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
     const dark = param.assume_gray_as_dark / 100
     const light = 1 - param.assume_gray_as_light / 100
-    gl_digitize(image_canvas, digitized_canvas, dark, light)
     // dare to use opacity to show/hide canvas because
     // "hidden = true" or "display = 'none'" caused trouble in Chrome
     // for progress animation.
-    digitized_canvas.style.opacity = 1
+    gl_digitize(image_canvas, digitized_canvas, dark, light) ?
+        (digitized_canvas.style.opacity = 1) : (cancel_digitize(), hide('#digitizer'))
 }
 function cancel_digitize() {
     digitizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
@@ -534,7 +534,7 @@ cancel_digitize()
 // https://jameshfisher.com/2017/10/06/webgl-loading-an-image/
 function gl_digitize(src_canvas, dest_canvas, dark, light) {
     // assume same size canvases
-    const gl = dest_canvas.getContext('webgl')
+    const gl = dest_canvas.getContext('webgl'); if (!gl) {return false}
     const shaders = ['digitize_vertex_shader', 'digitize_fragment_shader']
     const programInfo = twgl.createProgramInfo(gl, shaders)
     const arrays = {position: {numComponents: 2, data: [-1,-1, 1,-1, -1,1, 1,1]}}
@@ -546,6 +546,7 @@ function gl_digitize(src_canvas, dest_canvas, dark, light) {
     twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
     twgl.setUniforms(programInfo, uniforms)
     twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLE_STRIP)
+    return true
 }
 
 ///////////////////////////////////////////
