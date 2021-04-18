@@ -478,9 +478,13 @@ function draw_image() {
     cancel_digitize()
     const {width, height} = img
     const mag = Math.min(cw / width, ch / height) * canvas_scale()
-    const to_size = [width, height].map(z => to_i(z * mag))
+    const [to_w, to_h] = [width, height].map(z => to_i(z * mag))
+    const centering = (to, full) => Math.round((full - to) / 2)
     clear(image_ctx)
-    image_ctx.drawImage(img, 0, 0, width, height, 0, 0, ...to_size)
+    image_ctx.drawImage(img, 0, 0, width, height,
+                        centering(to_w, image_canvas.width),
+                        centering(to_h, image_canvas.height),
+                        to_w, to_h)
     img.style.display = 'none'
     update_image_data()
     Q('#revert_image').disabled = true
