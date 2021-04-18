@@ -602,9 +602,7 @@ function cross_line(x, y, g) {
 function square(ctx, x, y, r) {
     ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.stroke()
 }
-function fill_square(ctx, x, y, r) {
-    ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.fill()
-}
+function fill_square(ctx, x, y, r) {ctx.fillRect(x - r, y - r, r * 2, r * 2)}
 function fill_circle(ctx, x, y, r) {
     ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fill()
 }
