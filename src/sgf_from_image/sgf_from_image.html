@@ -4,6 +4,7 @@
  <meta charset="UTF-8" />
  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'">
  <title>SGF from Image</title>
+ <script defer src="perspective.js"></script>
  <script defer src="sgf_from_image.js"></script>
  <style type="text/css">
   td {padding-left: 2em;}
@@ -69,6 +70,7 @@
 <p>
  Use cursor keys after each click for fine tuning.
  Instead of clicking 2-2 in Step 2, click somewhere outside the board around 1-1 to capture the whole 19x19 board.
+ To correct tilt/perspective images, shift+click the top right corner and other three corners of the board counterclockwise before Step 1. <button id="revert_image" onclick="revert_to_original_image()">Revert</button>
 </p>
 
 <p>

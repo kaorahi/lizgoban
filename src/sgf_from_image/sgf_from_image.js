@@ -14,6 +14,7 @@ let prev_scale = 1
 let is_tuning = false
 let digitizing = false
 let last_xy = [0, 0]
+let perspective_corners = []
 
 const sentinel = null
 
@@ -174,6 +175,7 @@ function reset() {
     guessed_board = []
     set_sgf_form('')
     Q('#copy_to_clipboard').disabled = true
+    reset_perspective_corners()
     draw(0, 0)
 }
 
@@ -187,6 +189,7 @@ function mousemove(e) {
 function mousedown(e) {
     const xy = event_xy(e)
     const valid2 = (a, b) => (a[0] !== b[0] || a[1] !== b[1])
+    if (e.shiftKey) {try_perspective_transformation(xy); return}
     switch (stage()) {
     case 0: xy_11 = xy; break
     case 1: valid2(xy_11, xy) ? (xy_22 = xy) : wink(); break
@@ -207,6 +210,7 @@ function event_xy(e) {
 // keyboard control
 
 document.onkeydown = e => {
+    // e.key === 'Escape' && (reset_perspective_corners(), draw())
     let delta = arrow_key_vec(e); if (!delta) {return}
     e.preventDefault(); fine_tune(delta, true)
 }
@@ -250,7 +254,7 @@ function draw(x, y) {
         style.borderBottom = current ? 'solid 0.5vmin blue' : 'none'
         style.color = current ? 'black' : 'gray'
     })
-    Q('#reset').disabled = (s === 0)
+    Q('#reset').disabled = (s === 0 && perspective_corners.length === 0)
     Q('#ok').disabled = (s !== 3)
 }
 
@@ -258,6 +262,24 @@ function draw0(x, y, g) {
     clear(g)
     g.strokeStyle = 'rgba(255,0,0,1)'; g.lineWidth = 1
     cross_line(x, y, g)
+    draw_perspective_corners(x, y, g)
+}
+
+function draw_perspective_corners(x, y, g) {
+    g.save(); g.lineCap = 'round'
+    const thick = 5, pc = perspective_corners, xys = [...pc, [x, y]]
+    const draw_last_edge = () => line(g, x, y, ...pc[0])
+    const draw_area = () => {
+        g.fillStyle = 'rgba(0,255,255,0.3)'; g.beginPath(); g.moveTo(...pc[3])
+        pc.forEach(point => g.lineTo(...point)); g.fill()
+    }
+    g.strokeStyle = 'rgba(0,255,255,0.5)'; g.lineWidth = thick
+    xys.forEach((xy, k) => (k > 0) && line(g, ...xys[k - 1], ...xy))
+    switch (pc.length) {
+    case 3: g.strokeStyle = 'rgba(0,0,255,0.5)'; draw_last_edge(); break
+    case 4: draw_last_edge(); draw_area(); break
+    }
+    g.restore()
 }
 
 function draw1(x, y, g) {
@@ -461,6 +483,7 @@ function draw_image() {
     image_ctx.drawImage(img, 0, 0, width, height, 0, 0, ...to_size)
     img.style.display = 'none'
     update_image_data()
+    Q('#revert_image').disabled = true
 }
 
 function update_image_data() {
@@ -553,6 +576,55 @@ function set_url_from_param() {
     each_key_value(param, (key, val) => p.append(key, val))
     const url = location.protocol + '//' + location.host + location.pathname + '?' + p.toString();
     history.replaceState(null, document.title, url);
+}
+
+///////////////////////////////////////////
+// perspective transformation
+
+function try_perspective_transformation(xy) {
+    if (stage() !== 0) {return}
+    const pc = perspective_corners
+    pc.push(xy); draw(...xy)
+    if (pc.length < 4) {return}
+    const u = Math.min(image_canvas.width, image_canvas.height)
+    const a = u * 0.05, b = u * 0.95
+    const uv1234 = pc
+    transform_image([b, a], [a, a], [a, b], [b, b], ...uv1234)
+}
+
+function reset_perspective_corners() {perspective_corners = []}
+
+function revert_to_original_image() {draw_image(); reset()}
+
+function transform_image(...args) {
+    const g = image_ctx, {width, height} = image_canvas
+    g.fillStyle = 'rgba(255,255,255,0.7)'
+    g.fillRect(0, 0, width, height)
+    g.font = '20vmin Arial'
+    g.fillStyle = 'blue'
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    image_ctx.fillText('Transforming...', width * 0.5, height * 0.5)
+    const wait_millisec = 100
+    setTimeout(() => transform_image_soon(...args), wait_millisec)
+}
+
+const transform_image_soon = skip_too_frequent_requests(do_transform_image)
+
+function do_transform_image(...args) {
+    const inv_mapper = perspective_transformer(...args)
+    const {width, height} = image_canvas, g = image_ctx
+    const dst = g.createImageData(width, height)
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+            const k = image_data_index(x, y)
+            const src_rgba = rgba256_at(...inv_mapper([x, y]))
+            src_rgba.forEach((v, d) => {dst.data[k + d] = v})
+        }
+    }
+    g.putImageData(dst, 0, 0)
+    update_image_data()
+    reset()
+    Q('#revert_image').disabled = false
 }
 
 ///////////////////////////////////////////
