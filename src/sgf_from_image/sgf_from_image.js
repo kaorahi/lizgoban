@@ -454,11 +454,11 @@ function rgba256_at(x, y) {
     return image_ctx.getImageData(x, y, 1, 1).data
 }
 
-let binarizing = false
+let digitizing = false
 function digitize_image() {
     // setTimeout for showing progress
-    if (binarizing) {return}
-    binarizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
+    if (digitizing) {return}
+    digitizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
     const g = digitized_ctx
     clear(g)
     // dare to use opacity to show/hide canvas because
@@ -478,7 +478,7 @@ function digitize_image() {
     setTimeout(f, 100)
 }
 function cancel_digitize() {
-    binarizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
+    digitizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
     digitized_canvas.style.opacity = 0
 }
 cancel_digitize()
