@@ -167,7 +167,10 @@ function xy_all() {return [xy_11, xy_22, xy_mn, sentinel]}
 
 function stage() {return xy_all().findIndex(a => !a)}
 
-function last_set_xy() {return xy_all()[stage() - 1]}
+function last_set_xy() {
+    const s = stage(), pc = perspective_corners
+    return s === 0 ? pc[pc.length - 1] : xy_all()[s - 1]
+}
 
 function reset() {
     xy_11 = xy_22 = xy_mn = null
