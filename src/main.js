@@ -566,6 +566,8 @@ function menu_template(win) {
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
         sep,
+        item('Import diagram image', undefined, open_demo_image),
+        sep,
         {role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'},
         sep,
         {role: 'toggleDevTools'},
@@ -1086,7 +1088,7 @@ function open_help(file_name) {
 }
 function open_clipboard_image() {
     const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}
-    const usage = {label: 'Usage', click: () => open_image_url('demo.png')}
+    const usage = {label: 'Usage', click: open_demo_image}
     const menu = [
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
@@ -1099,6 +1101,7 @@ function open_clipboard_image() {
     const file_name = 'sgf_from_image/sgf_from_image.html'
     get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
 }
+function open_demo_image() {open_image_url('demo.png')}
 function info_text() {
     const f = (label, s) => s ?
           `<${label}>\n` + JSON.stringify(s) + '\n\n' : ''
