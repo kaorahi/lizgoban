@@ -27,6 +27,7 @@ const default_param = {
     assume_gray_as_light: 40,
     allow_outliers_in_black: 40,
     allow_outliers_in_white: 1,
+    consider_reddish_stone: 30,
     detection_width: 40,
 }
 let param = {...default_param}
@@ -56,7 +57,9 @@ function read_param(elem, temporary) {
 }
 
 // fixme: dirty!
-function is_digitizer_elem(elem) {return (elem.id || '').match(/^assume_gray_as/)}
+function is_digitizer_elem(elem) {
+    return (elem.id || '').match(/^(assume_gray_as|consider_reddish_stone)/)
+}
 
 function slider_id_for(id) {return `${id}_slider`}
 
@@ -417,13 +420,15 @@ function guess_color(x0, y0, radius) {
 }
 
 function ternarize(rgba) {
-    const [r, g, b, a] = rgba; if (!a) {return 1}
-    const bri = brightness(rgba) * 100
-    return bri <= param.assume_gray_as_dark ? 0 :
+    const [r, g, b, a] = rgba, bri = brightness(rgba) * 100
+    return !a ? 1 :
+        redness(rgba) * 100 > param.consider_reddish_stone ? 1 :
+        bri <= param.assume_gray_as_dark ? 0 :
         bri >= 100 - param.assume_gray_as_light ? 2 : 1
 }
 
 function brightness([r, g, b, _]) {return (r + g + b) / (255 * 3)}
+function redness([r, g, b, _]) {return (r - b) / 255}
 
 ///////////////////////////////////////////
 // SGF
@@ -502,10 +507,11 @@ function digitize_image() {
     digitizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
     const dark = param.assume_gray_as_dark / 100
     const light = 1 - param.assume_gray_as_light / 100
+    const reddish = param.consider_reddish_stone / 100
     // dare to use opacity to show/hide canvas because
     // "hidden = true" or "display = 'none'" caused trouble in Chrome
     // for progress animation.
-    gl_digitize(image_canvas, digitized_canvas, dark, light) ?
+    gl_digitize(image_canvas, digitized_canvas, dark, light, reddish) ?
         (digitized_canvas.style.opacity = 1) : (cancel_digitize(), hide('#digitizer'))
 }
 function cancel_digitize() {
@@ -518,7 +524,7 @@ cancel_digitize()
 // https://stackoverflow.com/questions/35309300/how-to-render-images-in-webgl-from-arraybuffer
 // http://www.quabr.com/64682286/twgl-js-trouble-loading-texture-using-es6-modules
 // https://jameshfisher.com/2017/10/06/webgl-loading-an-image/
-function gl_digitize(src_canvas, dest_canvas, dark, light) {
+function gl_digitize(src_canvas, dest_canvas, dark, light, reddish) {
     // assume same size canvases
     const gl = dest_canvas.getContext('webgl'); if (!gl) {return false}
     const shaders = ['digitize_vertex_shader', 'digitize_fragment_shader']
@@ -527,7 +533,7 @@ function gl_digitize(src_canvas, dest_canvas, dark, light) {
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
     const texture = twgl.createTexture(gl, {src: src_canvas})
     const {width, height} = src_canvas
-    const uniforms = {texture, width, height, dark, light}
+    const uniforms = {texture, width, height, dark, light, reddish}
     gl.useProgram(programInfo.program)
     twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
     twgl.setUniforms(programInfo, uniforms)

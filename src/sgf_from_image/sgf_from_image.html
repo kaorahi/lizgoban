@@ -16,13 +16,15 @@
  <script id="digitize_fragment_shader" type="non-js">
   precision mediump float;
   uniform sampler2D texture;
-  uniform float width, height, dark, light;
+  uniform float width, height, dark, light, reddish;
   void main() {
     vec2 coord = vec2(gl_FragCoord.x / width, 1.0 - gl_FragCoord.y / height);
     vec4 p = texture2D(texture, coord);
     float bright = (p.r + p.g + p.b) / 3.0;
-    vec4 medium_color = vec4(1, 0.5, 0, 1);
+    float redness = p.r - p.b;
+    vec4 medium_color = vec4(0.7, 0.7, 1, 1);
     gl_FragColor = (p.a == 0.0) ? medium_color :
+                   (redness > reddish) ? vec4(1, 0.5, 0, 1) :
                    (bright <= dark) ? vec4(0, 0, 0, 1) :
                    (bright >= light) ? vec4(1, 1, 1, 1) : medium_color;
   }
@@ -33,9 +35,6 @@
  <style type="text/css">
   td {padding-left: 2em;}
   td.title {padding-left: 0em; font-weight: bold;}
-  .major_param {}
-  .minor_param:before {content: "(";}
-  .minor_param:after {content: ")";}
   canvas, #image_box {margin: 0px; padding: 0px; border: solid 1px rgba(0,0,0,0);}
   canvas {position: absolute}
   input {width: 3em;}
@@ -118,46 +117,41 @@
 <div id="tuning">
  <h2>Parameters <button onclick="reset_param()">revert to default</button></h2>
  <table>
-  <tr><td class="title">Empty grid ↔ Black stone</td><td></td></tr>
+  <tr><td class="title">Image</td></tr>
   <tr>
-   <td class="major_param">
-    Assume gray as "dark"
-   </td>
-   <td>
-    <input id="assume_gray_as_dark" class="percent"></input>
-   </td>
+   <td>Orange ↔ Monochrome</td>
+   <td><input id="consider_reddish_stone" class="percent"></td>
   </tr>
   <tr>
-   <td class="minor_param">Allow non-"dark" in black</td><td><input id="allow_outliers_in_black" class="percent"></td>
-  </tr>
-  <tr><td class="title">Empty grid ↔ White stone</td><td></td></tr>
-  <tr>
-   <td class="major_param">
-    Assume gray as "light"
-   </td>
-   <td>
-    <input id="assume_gray_as_light" class="percent"></input>
-   </td>
+   <td>Gray ↔ Black</td>
+   <td><input id="assume_gray_as_dark" class="percent"></input></td>
   </tr>
   <tr>
-   <td class="minor_param">Allow non-"light" in white</td><td><input id="allow_outliers_in_white" class="percent"></td>
+   <td>Gray ↔ White</td>
+   <td><input id="assume_gray_as_light" class="percent"></input></td>
   </tr>
   <tr>
-   <td class="title">Misc.</td>
+   <td class="title">Detection</td>
    <td id="digitizer" style="text-align: right;">
-    (Verify "dark/medium/light":
     <button id="digitize" onclick="digitize_image()">digitize</button>
     <button id="undigitize" onclick="cancel_digitize()">undigitize</button>
-    )
    </td>
   </tr>
   <tr>
-   <td class="major_param">Width of detection area</td>
+   <td>Noise in black stone</td>
+   <td><input id="allow_outliers_in_black" class="percent"></td>
+  </tr>
+  <tr>
+   <td>Noise in white stone</td>
+   <td><input id="allow_outliers_in_white" class="percent"></td>
+  </tr>
+  <tr>
+   <td>Width of detection area</td>
    <td><input id="detection_width" class="percent"></input></td>
   </tr>
  </table>
  <p class="standalone">Use browser bookmarks to record these parameters.</p>
- <p style="text-align: center;">
+ <p style="display: flex; justify-content: space-around;">
   <button onclick="toggle_tuning()" style="width: 30%;">close</button>
  </p>
 </div>
