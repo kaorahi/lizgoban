@@ -590,10 +590,14 @@ function try_perspective_transformation(xy) {
     const pc = perspective_corners
     pc.push(xy); draw(...xy)
     if (pc.length < 4) {return}
-    const u = Math.min(image_canvas.width, image_canvas.height)
-    const a = u * 0.05, b = u * 0.95
-    const uv1234 = pc
-    transform_image([b, a], [a, a], [a, b], [b, b], ...uv1234)
+    const {width, height} = image_canvas, u = Math.min(width, height) * 0.9
+    const both_ends = full => {
+        const centering = (to, full) => Math.round((full - to) / 2)
+        const z1 = centering(u, full), z2 = full - z1
+        return [z1, z2]
+    }
+    const [[left, right], [top, bottom]] = [width, height].map(both_ends)
+    transform_image([right, top], [left, top], [left, bottom], [right, bottom], ...pc)
 }
 
 function reset_perspective_corners() {perspective_corners = []}
