@@ -54,7 +54,7 @@ function update_sample_colors() {
     sample_colors.forEach(a => set_color(...a))
 }
 
-function read_param(temporary) {
+function read_param(elem, temporary) {
     each_key_value(param, (key, _) => {
         const val = to_f(Q(`#${key}`).value); if (isNaN(val)) {return}
         param[key] = val
@@ -63,7 +63,11 @@ function read_param(temporary) {
     stage() === 3 && estimate(temporary)
     !temporary && (update_forms(), set_url_from_param())
     update_sample_colors()
+    digitizing && (!elem || is_digitizer_elem(elem)) && digitize_image_soon()
 }
+
+// fixme: dirty!
+function is_digitizer_elem(elem) {return (elem.id || '').match(/^assume_gray_as/)}
 
 function slider_id_for(id) {return `${id}_slider`}
 
@@ -85,8 +89,8 @@ update_forms()
 update_sample_colors()
 
 Q_all('input').forEach(elem => {
-    elem.oninput = () => read_param(true)
-    elem.onchange = () => read_param(false)
+    elem.oninput = () => read_param(elem, true)
+    elem.onchange = () => read_param(elem, false)
 })
 
 function toggle_tuning() {is_tuning = !is_tuning; update_tuning()}
@@ -463,6 +467,8 @@ function rgba256_at(x, y) {
 function image_data_index(x, y) {
     return (Math.round(x) + Math.round(y) * image_canvas.width) * 4
 }
+
+const digitize_image_soon = skip_too_frequent_requests(digitize_image)
 
 let digitizing = false
 function digitize_image() {
