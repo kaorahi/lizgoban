@@ -9,7 +9,7 @@ let xy_11 = null, xy_22 = null, xy_mn = null
 let coord_signs = [0, 0]
 let guessed_board = []
 let cw = 0, ch = 0
-let img = null
+let img = null, image_data = []
 let prev_scale = 1
 let is_tuning = false
 let last_xy = [0, 0]
@@ -451,10 +451,17 @@ function draw_image() {
     clear(image_ctx)
     image_ctx.drawImage(img, 0, 0, width, height, 0, 0, ...to_size)
     img.style.display = 'none'
+    image_data =
+        image_ctx.getImageData(0, 0, image_canvas.width, image_canvas.height).data
 }
 
 function rgba256_at(x, y) {
-    return image_ctx.getImageData(x, y, 1, 1).data
+    const k = image_data_index(x, y), a = image_data.slice(k, k + 4)
+    return a.length === 4 ? a : [0, 0, 0, 0]
+}
+
+function image_data_index(x, y) {
+    return (Math.round(x) + Math.round(y) * image_canvas.width) * 4
 }
 
 let digitizing = false
