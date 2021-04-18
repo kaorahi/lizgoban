@@ -12,6 +12,7 @@ let cw = 0, ch = 0
 let img = null, image_data = []
 let prev_scale = 1
 let is_tuning = false
+let digitizing = false
 let last_xy = [0, 0]
 
 const sentinel = null
@@ -95,12 +96,16 @@ Q_all('input').forEach(elem => {
 
 function toggle_tuning() {is_tuning = !is_tuning; update_tuning()}
 function update_tuning() {
+    update_tuning_internally()
+    is_tuning ? digitize_image_soon() : cancel_digitize()
+}
+function update_tuning_internally() {
     show_if(is_tuning, '#tuning')
     show_if(!is_tuning, '#toggle_tuning')
     is_tuning && window.scrollTo({top: Q('body').scrollHeight, behavior: 'smooth' })
 }
 
-update_tuning()
+update_tuning_internally()
 
 ///////////////////////////////////////////
 // init
@@ -470,7 +475,6 @@ function image_data_index(x, y) {
 
 const digitize_image_soon = skip_too_frequent_requests(digitize_image)
 
-let digitizing = false
 function digitize_image() {
     digitizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
     const digitized_rgba = [[0, 0, 0, 255], [255, 128, 0, 255], [255, 255, 255, 255]]
