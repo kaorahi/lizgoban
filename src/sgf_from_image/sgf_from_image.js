@@ -9,10 +9,12 @@ let xy_11 = null, xy_22 = null, xy_mn = null
 let coord_signs = [0, 0]
 let guessed_board = []
 let cw = 0, ch = 0
-let img = null
+let img = null, image_data = []
 let prev_scale = 1
 let is_tuning = false
+let digitizing = false
 let last_xy = [0, 0]
+let perspective_corners = []
 
 const sentinel = null
 
@@ -25,6 +27,7 @@ const default_param = {
     assume_gray_as_light: 40,
     allow_outliers_in_black: 40,
     allow_outliers_in_white: 1,
+    consider_reddish_stone: 30,
     detection_width: 40,
 }
 let param = {...default_param}
@@ -42,19 +45,7 @@ function update_forms() {
     })
 }
 
-function update_sample_colors() {
-    const set_color = (id, percent) => {
-        const c = 255 * percent / 100
-        Q(id).style.background = `rgb(${c},${c},${c})`
-    }
-    const sample_colors = [
-        ['#dark_sample', param.assume_gray_as_dark],
-        ['#light_sample', 100 - param.assume_gray_as_light],
-    ]
-    sample_colors.forEach(a => set_color(...a))
-}
-
-function read_param(temporary) {
+function read_param(elem, temporary) {
     each_key_value(param, (key, _) => {
         const val = to_f(Q(`#${key}`).value); if (isNaN(val)) {return}
         param[key] = val
@@ -62,7 +53,12 @@ function read_param(temporary) {
     draw(0, 0)
     stage() === 3 && estimate(temporary)
     !temporary && (update_forms(), set_url_from_param())
-    update_sample_colors()
+    digitizing && (!elem || is_digitizer_elem(elem)) && digitize_image_soon()
+}
+
+// fixme: dirty!
+function is_digitizer_elem(elem) {
+    return (elem.id || '').match(/^(assume_gray_as|consider_reddish_stone)/)
 }
 
 function slider_id_for(id) {return `${id}_slider`}
@@ -82,21 +78,24 @@ Q_all('input.percent').forEach(input => {
 
 set_param_from_url()
 update_forms()
-update_sample_colors()
 
 Q_all('input').forEach(elem => {
-    elem.oninput = () => read_param(true)
-    elem.onchange = () => read_param(false)
+    elem.oninput = () => read_param(elem, true)
+    elem.onchange = () => read_param(elem, false)
 })
 
 function toggle_tuning() {is_tuning = !is_tuning; update_tuning()}
 function update_tuning() {
+    update_tuning_internally()
+    is_tuning ? digitize_image_soon() : cancel_digitize()
+}
+function update_tuning_internally() {
     show_if(is_tuning, '#tuning')
     show_if(!is_tuning, '#toggle_tuning')
-    is_tuning && window.scroll(0, Q('body').scrollHeight)
+    is_tuning && window.scrollTo({top: Q('body').scrollHeight, behavior: 'smooth' })
 }
 
-update_tuning()
+update_tuning_internally()
 
 ///////////////////////////////////////////
 // init
@@ -107,7 +106,7 @@ window.resizeTo(window.screen.width * 0.95, window.screen.height * 0.95)
 const image_box = Q('#image_box')
 const canvases = ['#image_canvas', '#digitized_canvas', '#overlay_canvas'].map(Q)
 const [image_canvas, digitized_canvas, overlay_canvas] = canvases
-const [image_ctx, digitized_ctx, overlay_ctx] = canvases.map(c => c.getContext('2d'))
+const [image_ctx, overlay_ctx] = [image_canvas, overlay_canvas].map(c => c.getContext('2d'))
 
 function set_size() {
     const {clientWidth, clientHeight} = Q('html')
@@ -157,7 +156,10 @@ function xy_all() {return [xy_11, xy_22, xy_mn, sentinel]}
 
 function stage() {return xy_all().findIndex(a => !a)}
 
-function last_set_xy() {return xy_all()[stage() - 1]}
+function last_set_xy() {
+    const s = stage(), pc = perspective_corners
+    return s === 0 ? pc[pc.length - 1] : xy_all()[s - 1]
+}
 
 function reset() {
     xy_11 = xy_22 = xy_mn = null
@@ -165,6 +167,7 @@ function reset() {
     guessed_board = []
     set_sgf_form('')
     Q('#copy_to_clipboard').disabled = true
+    reset_perspective_corners()
     draw(0, 0)
 }
 
@@ -178,6 +181,7 @@ function mousemove(e) {
 function mousedown(e) {
     const xy = event_xy(e)
     const valid2 = (a, b) => (a[0] !== b[0] || a[1] !== b[1])
+    if (e.shiftKey) {try_perspective_transformation(xy); return}
     switch (stage()) {
     case 0: xy_11 = xy; break
     case 1: valid2(xy_11, xy) ? (xy_22 = xy) : wink(); break
@@ -198,8 +202,9 @@ function event_xy(e) {
 // keyboard control
 
 document.onkeydown = e => {
+    // e.key === 'Escape' && (reset_perspective_corners(), draw())
     let delta = arrow_key_vec(e); if (!delta) {return}
-    e.preventDefault(); fine_tune(delta, e.ctrlKey)
+    e.preventDefault(); fine_tune(delta, true)
 }
 document.onkeyup = e => {stage() === 3 && arrow_key_vec(e) && estimate()}
 
@@ -241,7 +246,7 @@ function draw(x, y) {
         style.borderBottom = current ? 'solid 0.5vmin blue' : 'none'
         style.color = current ? 'black' : 'gray'
     })
-    Q('#reset').disabled = (s === 0)
+    Q('#reset').disabled = (s === 0 && perspective_corners.length === 0)
     Q('#ok').disabled = (s !== 3)
 }
 
@@ -249,6 +254,24 @@ function draw0(x, y, g) {
     clear(g)
     g.strokeStyle = 'rgba(255,0,0,1)'; g.lineWidth = 1
     cross_line(x, y, g)
+    draw_perspective_corners(x, y, g)
+}
+
+function draw_perspective_corners(x, y, g) {
+    g.save(); g.lineCap = 'round'
+    const thick = 5, pc = perspective_corners, xys = [...pc, [x, y]]
+    const draw_last_edge = () => line(g, x, y, ...pc[0])
+    const draw_area = () => {
+        g.fillStyle = 'rgba(0,255,255,0.3)'; g.beginPath(); g.moveTo(...pc[3])
+        pc.forEach(point => g.lineTo(...point)); g.fill()
+    }
+    g.strokeStyle = 'rgba(0,255,255,0.5)'; g.lineWidth = thick
+    xys.forEach((xy, k) => (k > 0) && line(g, ...xys[k - 1], ...xy))
+    switch (pc.length) {
+    case 3: g.strokeStyle = 'rgba(0,0,255,0.5)'; draw_last_edge(); break
+    case 4: draw_last_edge(); draw_area(); break
+    }
+    g.restore()
 }
 
 function draw1(x, y, g) {
@@ -380,12 +403,14 @@ function update_sgf(silent, temporary) {
 function guess_color(x0, y0, radius) {
     if (radius < 1) {return null}
     let counts = [0, 0, 0]
+    const {width, height} = image_canvas
+    const inside = (x, y) => (0 <= x) && (x < width) && (0 <= y) && (y < height)
     for (let x = x0 - radius; x < x0 + radius; x++) {
         for (let y = y0 - radius; y < y0 + radius; y++) {
-            counts[ternarize(rgba256_at(x, y))]++
+            inside(x, y) && counts[ternarize(rgba256_at(x, y))]++
         }
     }
-    const sum = counts.reduce((a, c) => a + c)
+    const sum = Math.max(1, counts.reduce((a, c) => a + c))
     const [dark, medium, light] = counts.map(c => c / sum * 100)
     const almost = (percent, allowed_outliers) => 100 - percent <= allowed_outliers
     const stone_color =
@@ -395,12 +420,15 @@ function guess_color(x0, y0, radius) {
 }
 
 function ternarize(rgba) {
-    const bri = brightness(rgba) * 100
-    return bri <= param.assume_gray_as_dark ? 0 :
+    const [r, g, b, a] = rgba, bri = brightness(rgba) * 100
+    return !a ? 1 :
+        redness(rgba) * 100 > param.consider_reddish_stone ? 1 :
+        bri <= param.assume_gray_as_dark ? 0 :
         bri >= 100 - param.assume_gray_as_light ? 2 : 1
 }
 
 function brightness([r, g, b, _]) {return (r + g + b) / (255 * 3)}
+function redness([r, g, b, _]) {return (r - b) / 255}
 
 ///////////////////////////////////////////
 // SGF
@@ -444,44 +472,74 @@ function draw_image() {
     cancel_digitize()
     const {width, height} = img
     const mag = Math.min(cw / width, ch / height) * canvas_scale()
-    const to_size = [width, height].map(z => to_i(z * mag))
+    const [to_w, to_h] = [width, height].map(z => to_i(z * mag))
+    const centering = (to, full) => Math.round((full - to) / 2)
     clear(image_ctx)
-    image_ctx.drawImage(img, 0, 0, width, height, 0, 0, ...to_size)
+    image_ctx.drawImage(img, 0, 0, width, height,
+                        centering(to_w, image_canvas.width),
+                        centering(to_h, image_canvas.height),
+                        to_w, to_h)
     img.style.display = 'none'
+    update_image_data()
+    Q('#revert_image').disabled = true
+}
+
+function update_image_data() {
+    image_data =
+        image_ctx.getImageData(0, 0, image_canvas.width, image_canvas.height).data
 }
 
 function rgba256_at(x, y) {
-    return image_ctx.getImageData(x, y, 1, 1).data
+    const k = image_data_index(x, y), a = image_data.slice(k, k + 4)
+    return a.length === 4 ? a : [0, 0, 0, 0]
 }
 
-let binarizing = false
+function image_data_index(x, y) {
+    x = Math.round(x); y = Math.round(y)
+    const {width, height} = image_canvas
+    const inside = 0 <= x && x < width && 0 <= y && y < height
+    return inside ? (x + y * width) * 4 : -1
+}
+
+const digitize_image_soon = skip_too_frequent_requests(digitize_image)
+
 function digitize_image() {
-    // setTimeout for showing progress
-    if (binarizing) {return}
-    binarizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
-    const g = digitized_ctx
-    clear(g)
+    digitizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
+    const dark = param.assume_gray_as_dark / 100
+    const light = 1 - param.assume_gray_as_light / 100
+    const reddish = param.consider_reddish_stone / 100
     // dare to use opacity to show/hide canvas because
     // "hidden = true" or "display = 'none'" caused trouble in Chrome
     // for progress animation.
-    digitized_canvas.style.opacity = 1
-    const scale = canvas_scale()
-    let x = 0
-    const f = () => {
-        for (let y = 0; y < ch * scale; y++) {
-            if (!binarizing) {return}
-            g.fillStyle = ['black', 'orange', 'white'][ternarize(rgba256_at(x, y))]
-            fill_square(g, x, y, 1)
-        }
-        ++x < cw * scale && setTimeout(f, 0)
-    }
-    setTimeout(f, 100)
+    gl_digitize(image_canvas, digitized_canvas, dark, light, reddish) ?
+        (digitized_canvas.style.opacity = 1) : (cancel_digitize(), hide('#digitizer'))
 }
 function cancel_digitize() {
-    binarizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
+    digitizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
     digitized_canvas.style.opacity = 0
 }
 cancel_digitize()
+
+// (ref)
+// https://stackoverflow.com/questions/35309300/how-to-render-images-in-webgl-from-arraybuffer
+// http://www.quabr.com/64682286/twgl-js-trouble-loading-texture-using-es6-modules
+// https://jameshfisher.com/2017/10/06/webgl-loading-an-image/
+function gl_digitize(src_canvas, dest_canvas, dark, light, reddish) {
+    // assume same size canvases
+    const gl = dest_canvas.getContext('webgl'); if (!gl) {return false}
+    const shaders = ['digitize_vertex_shader', 'digitize_fragment_shader']
+    const programInfo = twgl.createProgramInfo(gl, shaders)
+    const arrays = {position: {numComponents: 2, data: [-1,-1, 1,-1, -1,1, 1,1]}}
+    const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
+    const texture = twgl.createTexture(gl, {src: src_canvas})
+    const {width, height} = src_canvas
+    const uniforms = {texture, width, height, dark, light, reddish}
+    gl.useProgram(programInfo.program)
+    twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
+    twgl.setUniforms(programInfo, uniforms)
+    twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLE_STRIP)
+    return true
+}
 
 ///////////////////////////////////////////
 // drag & drop
@@ -529,6 +587,59 @@ function set_url_from_param() {
     each_key_value(param, (key, val) => p.append(key, val))
     const url = location.protocol + '//' + location.host + location.pathname + '?' + p.toString();
     history.replaceState(null, document.title, url);
+}
+
+///////////////////////////////////////////
+// perspective transformation
+
+function try_perspective_transformation(xy) {
+    if (stage() !== 0) {return}
+    const pc = perspective_corners
+    pc.push(xy); draw(...xy)
+    if (pc.length < 4) {return}
+    const {width, height} = image_canvas, u = Math.min(width, height) * 0.9
+    const both_ends = full => {
+        const centering = (to, full) => Math.round((full - to) / 2)
+        const z1 = centering(u, full), z2 = full - z1
+        return [z1, z2]
+    }
+    const [[left, right], [top, bottom]] = [width, height].map(both_ends)
+    transform_image([right, top], [left, top], [left, bottom], [right, bottom], ...pc)
+}
+
+function reset_perspective_corners() {perspective_corners = []}
+
+function revert_to_original_image() {draw_image(); reset()}
+
+function transform_image(...args) {
+    const g = image_ctx, {width, height} = image_canvas
+    g.fillStyle = 'rgba(255,255,255,0.7)'
+    g.fillRect(0, 0, width, height)
+    g.font = '20vmin Arial'
+    g.fillStyle = 'blue'
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    image_ctx.fillText('Transforming...', width * 0.5, height * 0.5)
+    const wait_millisec = 100
+    setTimeout(() => transform_image_soon(...args), wait_millisec)
+}
+
+const transform_image_soon = skip_too_frequent_requests(do_transform_image)
+
+function do_transform_image(...args) {
+    const inv_mapper = perspective_transformer(...args)
+    const {width, height} = image_canvas, g = image_ctx
+    const dst = g.createImageData(width, height)
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+            const k = image_data_index(x, y)
+            const src_rgba = rgba256_at(...inv_mapper([x, y]))
+            src_rgba.forEach((v, d) => {dst.data[k + d] = v})
+        }
+    }
+    g.putImageData(dst, 0, 0)
+    update_image_data()
+    reset()
+    Q('#revert_image').disabled = false
 }
 
 ///////////////////////////////////////////
@@ -602,9 +713,7 @@ function cross_line(x, y, g) {
 function square(ctx, x, y, r) {
     ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.stroke()
 }
-function fill_square(ctx, x, y, r) {
-    ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.fill()
-}
+function fill_square(ctx, x, y, r) {ctx.fillRect(x - r, y - r, r * 2, r * 2)}
 function fill_circle(ctx, x, y, r) {
     ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fill()
 }
