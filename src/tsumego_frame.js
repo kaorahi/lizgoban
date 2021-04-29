@@ -15,7 +15,7 @@ function tsumego_frame(stones, komi, black_to_play_p, ko_p) {
     const region_pos = pick_all(filled_stones, 'tsumego_frame_region_mark')
     const analysis_region = !empty(region_pos) &&
           aa_transpose(region_pos).slice(0, 2).map(range)
-    const validate = region => region.every(([a, b]) => a < b) && region
+    const validate = region => (region || []).every(([a, b]) => a < b) && region
     return [fill, validate(analysis_region)]
 }
 
