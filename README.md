@@ -43,6 +43,7 @@ with lots of original gimmicks.
 * Save/load analyses to/from SGF in Lizzie-compatible format
 * Restriction of analysis region like KaTrain
 * Free editing of stones in the middle of a game
+* Import stone positions from diagram images like [img2sgf](https://github.com/hanysz/img2sgf)
 * [Experimental] Use your favorite images for the board and the stones
 
 ### Original features
@@ -279,6 +280,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Slightly improve Tsumego frame (boundary, analysis region).
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
 * Insert a black (white) stone by b(w)+click.
+* Add import of diagram images by Ctrl+V ("Paste" in "Edit" menu). [[Solve tsumego pictures (demo)]](https://github.com/kaorahi/lizgoban/issues/68) [[Online version of "SGF from Image"]](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html)
 * Add pair Go to "File" menu and `preset` in `config.json`.
 * Add "resize to 19x19" into "Flip..." in "Edit" menu.
 * Copy SGF comments to the clipboard when they are clicked.

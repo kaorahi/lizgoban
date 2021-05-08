@@ -2,6 +2,18 @@
 
 # Release notes
 
+## LizGoban 0.6.1
+
+* Add import of diagram images.
+
+You can copy a diagram image and paste it onto LizGoban by Ctrl+V (Edit > Paste) or drag & drop to import the positions of the stones.
+
+This is very low-tech. You may need parameter tuning or manual correction for photographic/reflective images and marked/numbered/glossy stones. But it is still usable for many tsumego pictures on the Internet and many YouTube screenshots. You can also try [[Online version of "SGF from Image"]](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html).
+
+* Fix minor bugs.
+
+# (Previous versions)
+
 ## LizGoban 0.6.0
 
 * Upgrade KataGo to [1.8.1](https://github.com/lightvector/KataGo/releases/tag/v1.8.1).
