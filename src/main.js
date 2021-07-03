@@ -1087,6 +1087,12 @@ function open_help(file_name) {
     get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
 }
 function open_clipboard_image() {
+    // window
+    const size = get_windows()[0].getSize()
+    const opt = {webPreferences, width: size[0], height: size[1]}
+    const file_name = 'sgf_from_image/sgf_from_image.html'
+    const win = get_new_window(file_name, opt)
+    // menu
     const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}
     const usage = {label: 'Usage', click: open_demo_image}
     const menu = [
@@ -1096,10 +1102,8 @@ function open_clipboard_image() {
         {label: 'Help', submenu: [usage]},
         ...(app.isPackaged ? [] : [debug]),
     ]
-    const size = get_windows()[0].getSize()
-    const opt = {webPreferences, width: size[0], height: size[1]}
-    const file_name = 'sgf_from_image/sgf_from_image.html'
-    get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
+    // init
+    win.setMenu(Menu.buildFromTemplate(menu))
 }
 function open_demo_image() {open_image_url('demo.png')}
 function info_text() {
