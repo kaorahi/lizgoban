@@ -39,9 +39,13 @@
   canvas {position: absolute}
   input {width: 3em;}
   input[type="range"] {width: 30vw;}
+  #header {
+   position: sticky; top: 0; z-index: 1;
+   background: #eeeeff;
+  }
   #tuning_container {
    display: flex; justify-content: space-around;
-   position: sticky; bottom: 1em;
+   position: sticky; bottom: 1em; z-index: 1;
    pointer-events: none;
   }
   #tuning {
@@ -69,7 +73,7 @@
  </p>
 </div>
 
-<p>
+<p id="header">
  <button id="reset" onclick="reset()" style="margin-right: 1vmin">reset</button>
  <span style="color: gray;">
   <span id="stage0">click 1-1 (corner)</span> →
