@@ -1095,11 +1095,12 @@ function open_clipboard_image() {
     // menu
     const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}
     const usage = {label: 'Usage', click: open_demo_image}
+    const tips = {label: 'Tips', click: () => win.webContents.send('scroll_to_bottom')}
     const menu = [
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
-        {label: 'Help', submenu: [usage]},
+        {label: 'Help', submenu: [usage, tips]},
         ...(app.isPackaged ? [] : [debug]),
     ]
     // init
