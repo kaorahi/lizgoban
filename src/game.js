@@ -316,6 +316,7 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
 
 function fix_fox_sgf(game) {
     // ad hoc fix for Fox SGF
+    const reasonable = Math.abs(game.komi) < 50; if (reasonable) {return}
     // ref. src/cpp/dataio/sgf.cpp in KataGo 1.8.1
     const komi_table = [
         // [[given_komi, ...], correct_komi]
