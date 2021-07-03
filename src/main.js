@@ -1095,7 +1095,7 @@ function open_clipboard_image() {
     // menu
     const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}
     const usage = {label: 'Usage', click: open_demo_image}
-    const tips = {label: 'Tips', click: () => win.webContents.send('scroll_to_bottom')}
+    const tips = {label: 'Tips', click: () => win.webContents.send('highlight_tips')}
     const menu = [
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',

@@ -136,7 +136,7 @@ hide(electron ? '.standalone' : '.electron')
 
 function initialize_electron() {
     const {clipboard, ipcRenderer} = electron
-    ipcRenderer.on('scroll_to_bottom', scroll_to_bottom)
+    ipcRenderer.on('highlight_tips', highlight_tips)
     load_image(clipboard.readText() || clipboard.readImage().toDataURL())
 }
 
@@ -144,6 +144,16 @@ function finish_electron() {
     if (!electron) {return}
     electron.ipcRenderer.send('read_sgf', get_sgf())
     window.close()
+}
+
+function highlight_tips() {
+    scroll_to_bottom()
+    const keyframes = {
+        transform: ['translateY(-100vh) scale(10)', 'none', 'none'],
+        background: ['yellow', 'yellow', 'none'],
+        offset: [0, 0.05, 1],
+    }
+    Q('#tips').animate(keyframes, 10 * 1000)
 }
 
 ///////////////////////////////////////////
