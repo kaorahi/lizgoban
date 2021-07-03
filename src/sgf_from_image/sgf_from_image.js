@@ -743,9 +743,11 @@ function wink() {
 
 function draw_debug(x, y) {
     const c = rgba256_at(x, y), digitized = ['dark', 'medium', 'light']
+    const p = ([label, f]) => `${label}=${to_i(f(c) * 100)}%`
     const rgba = `rgba(${c.slice(0, 3).join(',')},${(c[3] / 255).toFixed(2)})`
+    const red_bright = [['red', redness], ['bright', brightness]].map(p).join(' ')
     Q('#debug_color').style.background = Q('#debug_rgba').textContent = rgba
-    Q('#debug_dark').textContent = `bright=${to_i(brightness(c) * 100)}%(${digitized[ternarize(c)]})`
+    Q('#debug_dark').textContent = `${red_bright} (${digitized[ternarize(c)]})`
     Q('#debug_guess').textContent = debug_guess(x, y)
     // Q('#debug_misc').textContent = window.devicePixelRatio
 }
