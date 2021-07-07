@@ -764,7 +764,7 @@ function toggle_auto_analyze(visits) {
         start_auto_analyze(visits)
 }
 function start_auto_analyze(visits, steps, on_finish) {
-    if (!AI.engine_info().is_ready) {return}
+    if (!AI.engine_info().current.is_ready) {return}
     set_auto_analysis_signed_visits(visits); auto_analysis_steps = steps || 1
     on_auto_analyze_finished = on_finish || pause
     rewind_maybe(); resume()
