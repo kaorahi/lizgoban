@@ -5,6 +5,8 @@ let the_target_move = null
 function target_move() {return the_target_move}
 function set_target_move(move) {the_target_move = move}
 
+const max_font_for_goban_message = 1 / 20
+
 /////////////////////////////////////////////////
 // various gobans
 
@@ -213,7 +215,10 @@ function draw_endstate_goban(canvas, options) {
 }
 
 function draw_thumbnail_goban(canvas, stones, trial_p) {
-    const opts = {draw_last_p: true, draw_next_p: true, pausing_p: trial_p}
+    const opts = {
+        draw_last_p: true, draw_next_p: true, pausing_p: trial_p,
+        draw_coordinates_p: 'never',
+    }
     const displayed_stones = copy_stones_for_display(stones)
     each_stone(displayed_stones, h => h.stone && (h.displayed_tag = h.tag))
     draw_goban(canvas, displayed_stones, opts)
@@ -234,11 +239,13 @@ function draw_goban(canvas, stones, opts) {
     } = opts || {}
     const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
     const large_font_p = !main_canvas_p
-    const font_unit = Math.min(margin, canvas.height / 20)
+    const font_unit = Math.min(margin, canvas.height * max_font_for_goban_message)
     // draw
     draw_board(hm, pausing_p, trial_p, canvas, g)
     draw_grid(unit, idx2coord, g)
-    draw_coordinates_p && draw_coordinates(unit, idx2coord, g)
+    const coordp = (draw_coordinates_p !== 'never') &&
+          (draw_coordinates_p || R.always_show_coordinates)
+    coordp && draw_coordinates(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(draw_visits_p, font_unit, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
@@ -862,7 +869,10 @@ function draw_zone_color_chart(canvas) {
 
 function goban_params(canvas) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    const margin = Math.min(w, h) / (board_size() + 1), hm = margin / 2
+    const extra_margin =
+          R.always_show_coordinates ? max_font_for_goban_message * 0.5 : 0
+    const margin = Math.min(w, h) * (1 / (board_size() + 1) + extra_margin)
+    const hm = margin / 2
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0], half_unit = unit / 2
     return {w, h, g, margin, hm, idx2coord, coord2idx, unit, half_unit}

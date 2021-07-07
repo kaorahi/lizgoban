@@ -496,6 +496,7 @@ function menu_template(win) {
         sep,
         menu('Stone', stone_style_submenu()),
         store_toggler_menu_item('Lizzie style', 'lizzie_style'),
+        store_toggler_menu_item('Coordinates', 'always_show_coordinates'),
         store_toggler_menu_item('Expand winrate bar', 'expand_winrate_bar', 'Shift+B'),
         ...insert_if(AI.katago_p(),
                      store_toggler_menu_item('Score bar', 'score_bar', 'Shift+C')),

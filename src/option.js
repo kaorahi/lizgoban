@@ -111,6 +111,7 @@ const image_paths = [
 // renderer state
 const default_for_stored_key = {
     lizzie_style: true, expand_winrate_bar: false, score_bar: true,
+    always_show_coordinates: false,
     let_me_think: false, show_endstate: true, gorule: default_gorule,
     stone_image_p: true, board_image_p: true, stone_style: '3D',
     use_cached_suggest_p: true,
