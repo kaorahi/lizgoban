@@ -804,12 +804,14 @@ function start_auto_play(strategy, sec, count) {
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
 }
 function try_auto_play(force_next) {
+    const proc = {
+        replay: () => do_as_auto_play(redoable(), redo),
+        best: () => try_play_best(...auto_play_weaken),
+    }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
-    auto_play_ready() &&
-        (auto_playing_strategy === 'replay' ? try_auto_replay() : try_play_best(...auto_play_weaken))
+    auto_play_ready() && proc()
     update_let_me_think(true)
 }
-function try_auto_replay() {do_as_auto_play(redoable(), redo)}
 function auto_play_ready() {
     return !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
