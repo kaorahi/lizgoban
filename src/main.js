@@ -685,7 +685,7 @@ function preset_menu_for_recent(menu_tools) {
 }
 
 function apply_preset(rule, win) {
-    const stored = ['stone_style']
+    const stored = ['stone_style', 'random_opening_p']
     stored.forEach(key => (rule[key] !== undefined) && set_stored(key, rule[key]))
     const {empty_board, board_type, match, rules, handicap, komi} = rule
     empty_board && !game.is_empty() && new_empty_board()
