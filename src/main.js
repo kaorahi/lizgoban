@@ -870,6 +870,7 @@ function stop_match(window_id) {
 function set_match_param(weaken) {
     let m
     auto_play_weaken =
+        (weaken === 'diverse') ? ['random_opening'] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
         []
