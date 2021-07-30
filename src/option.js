@@ -123,6 +123,7 @@ const default_for_stored_key = {
     let_me_think: false, show_endstate: true, gorule: default_gorule,
     stone_image_p: true, board_image_p: true, stone_style: '3D',
     use_cached_suggest_p: true,
+    random_opening_p: false,
     komi_for_new_game: leelaz_komi, komi_for_new_handicap_game: handicap_komi,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)

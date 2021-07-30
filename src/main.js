@@ -512,7 +512,9 @@ function menu_template(win) {
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('Silent replay', undefined,
              (this_item, win) => ask_auto_redo_sec(win), true),
+        sep,
         item('AI vs. AI', 'Shift+P', ask_sec(false), true),
+        store_toggler_menu_item('...Random opening', 'random_opening_p'),
         sep,
         item('Next something', '>', goto_next_something),
         item('Previous something', '<', goto_previous_something),
@@ -833,7 +835,8 @@ function ask_auto_play_sec(win, replaying) {
     generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
 }
 function submit_auto_play_or_replay(sec, replaying) {
-    const strategy = replaying ? 'replay' : 'random_opening'
+    const rand_p = store.get('random_opening_p')
+    const strategy = replaying ? 'replay' : rand_p ? 'random_opening' : 'best'
     default_auto_play_sec = sec; start_auto_play(strategy, sec, Infinity)
 }
 function submit_auto_play(sec) {submit_auto_play_or_replay(sec, false)}
