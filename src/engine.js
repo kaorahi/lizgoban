@@ -94,7 +94,9 @@ function create_leelaz () {
         if (!is_supported('kata-raw-nn')) {return false}
         const receiver = given_receiver || (h => {
             if (!h) {return}
-            const {whiteWin, whiteLead, whiteOwnership, policy, policyPass} = h
+            const {
+                whiteWin, whiteLead, whiteOwnership, policy, policyPass,
+            } = h
             const conv_gen = base =>
                   a => a.map(z => to_s(bturn ? base - z : z)).join(' ')
             const [conv0, conv1] = [0, 1].map(conv_gen)
