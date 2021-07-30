@@ -159,7 +159,7 @@ function set_renderer_state(...args) {
     const move_history = [{}, ...game.map(z => ({
         move: z.move, is_black: z.is_black, ko_state: z.ko_state,
         ambiguity: z.ambiguity,
-        shorttermScoreError: z.shorttermScoreError,
+        shorttermScoreError: M.plot_shorttermScoreError_p() && z.shorttermScoreError,
     }))]
     const different_engine_for_white_p = AI.leelaz_for_white_p()
     merge(R, {move_count, init_len, busy, long_busy,

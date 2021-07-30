@@ -127,6 +127,7 @@ globalize({  // for powered_goban.js
         branch_at, ladder_branches,
         tuning_message: () => tuning_message,
         plot_order_p: () => option.plot_order_p,
+        plot_shorttermScoreError_p: () => option.plot_shorttermScoreError_p,
     }
 })
 const P = require('./powered_goban.js')
