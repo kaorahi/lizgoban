@@ -971,6 +971,11 @@ function random_opening_move() {
     const top_visits = Math.max(...suggest.map(s => s.visits))
     const log = (selected, label, val) => selected !== best && debug_log(`random_opening_move: movenum=${movenum + 1}, order=${selected.order}, ${label}=${JSON.stringify(val)}, visits=${selected.visits}, w_loss=${best.winrate - selected.winrate}, s_loss=${best.scoreMean - selected.scoreMean}`)
     // main
+    if (movenum <= param.prior_until_movenum) {
+        const selected = weighted_random_choice(suggest, s => s.prior)
+        log(selected, 'prior', selected.prior)
+        return selected.move
+    }
     if (Math.random() > discount) {return best.move}
     const admissible = s => {
         if (s === best) {return true}

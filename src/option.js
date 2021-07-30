@@ -33,6 +33,7 @@ const default_option = {
     repl: false,
     pv_trail_max_suggestions: 0,
     random_opening: {
+        prior_until_movenum: 6,
         random_until_movenum: 40,
         max_order: 10,
         relative_visits: 0.02,
