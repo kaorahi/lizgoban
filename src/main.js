@@ -792,10 +792,11 @@ stop_auto_analyze()
 
 // auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
 let last_auto_play_time = 0, default_auto_play_sec = 1
-function start_auto_play(replaying, sec, count) {
+function start_auto_play(strategy, sec, count) {
+    const replaying = (strategy === 'replay')
     if (replaying && sec < 0) {start_auto_redo(sec); return}
     // var
-    auto_playing_strategy = replaying ? 'replay' : 'best'
+    auto_playing_strategy = strategy
     auto_play_sec = true_or(sec, -1)
     truep(count) && (auto_play_count = count)
     // proc
@@ -829,7 +830,7 @@ function ask_auto_play_sec(win, replaying) {
     generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
 }
 function submit_auto_play_or_replay(sec, replaying) {
-    default_auto_play_sec = sec; start_auto_play(replaying, sec, Infinity)
+    default_auto_play_sec = sec; start_auto_play(replaying ? 'replay' : 'best', sec, Infinity)
 }
 function submit_auto_play(sec) {submit_auto_play_or_replay(sec, false)}
 function submit_auto_replay(sec) {submit_auto_play_or_replay(sec, true)}
@@ -867,7 +868,7 @@ function set_match_param(weaken) {
 }
 function auto_play_in_match(sec, count) {
     pondering_in_match = !pausing
-    start_auto_play(false, sec, count || 1)
+    start_auto_play('best', sec, count || 1)
 }
 let the_auto_moves_in_match = 1
 function get_auto_moves_in_match() {return clip(the_auto_moves_in_match, 1)}
@@ -921,7 +922,7 @@ function start_auto_redo(sec) {
 // play against leelaz
 
 function play_best(n, weaken_method, ...weaken_args) {
-    start_auto_play(false); increment_auto_play_count(n)
+    start_auto_play('best'); increment_auto_play_count(n)
     try_play_best(weaken_method, ...weaken_args)
 }
 function play_weak(percent) {
