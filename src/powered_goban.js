@@ -142,7 +142,7 @@ function set_renderer_state(...args) {
     const previous_suggest = !su_p && get_previous_suggest()
     const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
     const winrate_trail = !su_p
-    const max_visits = clip(Math.max(...(R.suggest || []).filter(orig_suggest_p).map(h => h.visits)), 1)
+    const max_visits = clip(Math.max(...orig_suggest().map(h => h.visits)), 1)
     const progress = M.auto_progress()
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
@@ -192,6 +192,8 @@ function add_next_played_move_as_fake_suggest() {
     // destructive R.suggest.push(fake_suggest_elem) is wrong!
     R.suggest = [...R.suggest, fake_suggest_elem]
 }
+
+function orig_suggest() {return (R.suggest || []).filter(orig_suggest_p)}
 
 /////////////////////////////////////////////////
 // endstate
@@ -562,6 +564,7 @@ module.exports = {
     // renderer
     set_and_render,
     // util
+    orig_suggest,
     update_info_in_stones, add_next_mark_to_stones,
     get_initial_b_winrate, add_info_to_stones, renew_game,
     set_ambiguity_etc_in_game,

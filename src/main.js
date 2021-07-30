@@ -779,9 +779,8 @@ function set_auto_analysis_signed_visits(visits) {
 }
 function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
 function auto_analysis_progress() {
-    return !auto_analyzing() ? -1 :
-        (!R.suggest || !R.suggest[0]) ? 0 :
-        R.suggest[0].visits / auto_analysis_visits()
+    const best = P.orig_suggest()[0]
+    return !auto_analyzing() ? -1 : !best ? 0 : best.visits / auto_analysis_visits()
 }
 function auto_analysis_visits() {return Math.abs(auto_analysis_signed_visits)}
 function backward_auto_analysis_p() {return auto_analysis_signed_visits < 0}
@@ -811,7 +810,7 @@ function try_auto_play(force_next) {
 }
 function try_auto_replay() {do_as_auto_play(redoable(), redo)}
 function auto_play_ready() {
-    return !empty(R.suggest) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
+    return !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
 function do_as_auto_play(playable, proc) {
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
@@ -936,7 +935,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     // try_play_best('random_leelaz', 30)
     // try_play_best('lose_score', 0.1)
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
-    if (empty(R.suggest)) {return}
+    if (empty(P.orig_suggest())) {return}
     // comment
     const comment = `by ${AI.engine_info().current.preset_label_text}`
     const play_com = m => play(m, 'never_redo', null, comment)
@@ -956,7 +955,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     }
     do_as_auto_play(move !== 'pass', play_it)
 }
-function best_move() {return R.suggest[0].move}
+function best_move() {return P.orig_suggest()[0].move}
 function weak_move(weaken_percent) {
     // (1) Converge winrate to 0 with move counts
     // (2) Occasionally play good moves with low probability
@@ -1002,8 +1001,9 @@ function weak_move_by_score(average_losing_points) {
     return selected.move
 }
 function weak_move_candidates() {
-    const too_small_visits = R.suggest[0].visits * 0.02
-    return R.suggest.filter(s => s.visits > too_small_visits)
+    const suggest = P.orig_suggest()
+    const too_small_visits = (suggest[0] || {}).visits * 0.02
+    return suggest.filter(s => s.visits > too_small_visits)
 }
 
 /////////////////////////////////////////////////
