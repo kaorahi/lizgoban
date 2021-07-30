@@ -434,7 +434,7 @@ function menu_template(win) {
                  (this_item, win) => stop_match(window_prop(win).window_id), true) :
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
         item('Pair Go match', undefined,
-             (this_item, win) => start_match(win, 3), true, !R.in_match),
+             (this_item, win) => start_match(win, 3), true, !(R.in_match && R.in_pair_go)),
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
         item('Save SGF with analysis...', 'CmdOrCtrl+S', () => save_sgf(true), true),
