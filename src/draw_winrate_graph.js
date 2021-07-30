@@ -271,6 +271,7 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
     }
     const plot_each = (z, s) => [
         ['ambiguity', '#800', 1],
+        ['shorttermScoreError', '#444', 10],
     ].forEach(a => plot(z, s, ...a))
     R.move_history.forEach(plot_each)
 }

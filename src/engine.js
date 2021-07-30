@@ -96,6 +96,7 @@ function create_leelaz () {
             if (!h) {return}
             const {
                 whiteWin, whiteLead, whiteOwnership, policy, policyPass,
+                shorttermScoreError,
             } = h
             const conv_gen = base =>
                   a => a.map(z => to_s(bturn ? base - z : z)).join(' ')
@@ -106,7 +107,7 @@ function create_leelaz () {
             const k = argmin_by(extended_policy, p => isNaN(p) ? Infinity : - p)
             const move = idx2move(Math.floor(k / bsize), k % bsize) || 'pass'
             const prior = to_s(extended_policy[k]), pv = move
-            const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
+            const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} shorttermScoreError ${true_or(shorttermScoreError, -1)} pv ${pv} ownership ${ownership}`
             suggest_reader_maybe(fake_suggest)
         })
         leelaz('kata-raw-nn 0', on_multiline_response_at_once(on_kata_raw_nn_response(receiver)))
@@ -543,7 +544,10 @@ function parse_analyze(s, bturn, komi, katago_p) {
     // winrate is NaN if suggest = []
     add_order('visits', 'visits_order')
     add_order('winrate', 'winrate_order')
-    return {suggest, visits, b_winrate, score_without_komi, ownership, komi}
+    const {shorttermScoreError} = (suggest || [])[0] || {}
+    const more = truep(shorttermScoreError) ?
+          {shorttermScoreError: to_f(shorttermScoreError)} : {}
+    return {suggest, visits, b_winrate, score_without_komi, ownership, komi, ...more}
 }
 
 // (sample of leelaz output for "lz-analyze 10")
