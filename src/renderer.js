@@ -30,7 +30,7 @@ const R = {
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
     future_moves: [],
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
-    in_match: false,
+    in_match: false, in_pair_go: null,
     hide_suggest: false,
     expand_winrate_bar: false, let_me_think: false, score_bar: false,
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',
@@ -173,6 +173,7 @@ function render_now() {
     setq('#black_hama', R.black_hama)
     setq('#white_hama', R.white_hama)
     setq('#history_length', ' (' + D.max_movenum() + ')')
+    setq('#every_n_moves', R.in_pair_go)
     update_displayed_comment()
     D.update_winrate_trail()
     alter_suggest_by_pv_trail()
@@ -1336,10 +1337,14 @@ function update_button_etc(availability) {
     f('stop_auto')
     f('trial')
     const in_match = in_match_p(), serious = in_match_p(true)
+    const pair_go_p = (R.in_pair_go === 'pair_go')
+    const anomalous_pair_go_p = R.in_pair_go && !pair_go_p
     update_ui_element('.show_in_match', in_match)
     update_ui_element('.hide_in_match', !in_match)
     update_ui_element('.show_in_serious_match', serious)
     update_ui_element('.hide_in_serious_match', !serious)
+    update_ui_element('.show_in_pair_go', pair_go_p)
+    update_ui_element('.show_in_anomalous_pair_go', anomalous_pair_go_p)
     update_ui_element('.show_in_exercise', !!R.exercise_metadata)
     update_ui_element('.katago_only', R.is_katago)
 }

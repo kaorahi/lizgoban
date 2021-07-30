@@ -1579,6 +1579,8 @@ function update_state(keep_suggest_p) {
     const subboard_stones_suggest = prev_su && prev_su.suggest && {
         ...subboard_stones_suggest_for(su, prev_su), gain: cur.gain,
     }
+    const amm = get_auto_moves_in_match()
+    const in_pair_go = R.in_match && (amm !== 1) && (amm === 3 ? 'pair_go' : amm)
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
     const {face_image_rule, pv_trail_max_suggestions} = option
@@ -1588,6 +1590,7 @@ function update_state(keep_suggest_p) {
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule, exercise_metadata,
         showing_bturn, subboard_stones_suggest,
+        in_pair_go,
         pv_trail_max_suggestions,
     }, more)
 }
