@@ -264,13 +264,15 @@ function draw_winrate_graph_ko_fight(sr2coord, g) {
 
 function draw_winrate_graph_ambiguity(sr2coord, g) {
     const radius = 2
-    g.fillStyle = "#800"
-    const plot = (ambiguity, s) => {
-        if (!truep(ambiguity)) {return}
-        const [x, y] = sr2coord(s, ambiguity)
-        fill_square_around([x, y], radius, g)
+    const plot = (z, s, key, style, scale) => {
+        const val = z[key]; if (!truep(val)) {return}
+        const [x, y] = sr2coord(s, val * scale)
+        g.fillStyle = style; fill_square_around([x, y], radius, g)
     }
-    R.move_history.forEach((z, s) => plot(z.ambiguity, s))
+    const plot_each = (z, s) => [
+        ['ambiguity', '#800', 1],
+    ].forEach(a => plot(z, s, ...a))
+    R.move_history.forEach(plot_each)
 }
 
 function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
