@@ -32,6 +32,13 @@ const default_option = {
     auto_overview: true,
     repl: false,
     pv_trail_max_suggestions: 0,
+    random_opening: {
+        random_until_movenum: 40,
+        max_order: 10,
+        relative_visits: 0.02,
+        winrate_loss: 1.0,
+        score_loss: 1.0,
+    },
 }
 const option = {}
 let white_preset = []

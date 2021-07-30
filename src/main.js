@@ -807,6 +807,7 @@ function try_auto_play(force_next) {
     const proc = {
         replay: () => do_as_auto_play(redoable(), redo),
         best: () => try_play_best(...auto_play_weaken),
+        random_opening: () => try_play_best('random_opening'),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() && proc()
@@ -832,7 +833,8 @@ function ask_auto_play_sec(win, replaying) {
     generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
 }
 function submit_auto_play_or_replay(sec, replaying) {
-    default_auto_play_sec = sec; start_auto_play(replaying ? 'replay' : 'best', sec, Infinity)
+    const strategy = replaying ? 'replay' : 'random_opening'
+    default_auto_play_sec = sec; start_auto_play(strategy, sec, Infinity)
 }
 function submit_auto_play(sec) {submit_auto_play_or_replay(sec, false)}
 function submit_auto_replay(sec) {submit_auto_play_or_replay(sec, true)}
@@ -946,6 +948,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const move =
           weaken_method === 'random_candidate' ? weak_move(...weaken_args) :
           weaken_method === 'lose_score' ? weak_move_by_score(...weaken_args) :
+          weaken_method === 'random_opening' ? random_opening_move(...weaken_args) :
           best_move()
     const pass_maybe =
           () => AI.peek_value('pass', value => {
@@ -959,6 +962,31 @@ function try_play_best(weaken_method, ...weaken_args) {
     do_as_auto_play(move !== 'pass', play_it)
 }
 function best_move() {return P.orig_suggest()[0].move}
+function random_opening_move() {
+    // const
+    const param = option.random_opening
+    const movenum = game.move_count - game.init_len
+    const discount = clip(1 - movenum / param.random_until_movenum, 0)
+    const suggest = P.orig_suggest(), best = suggest[0]
+    const top_visits = Math.max(...suggest.map(s => s.visits))
+    const log = (selected, label, val) => selected !== best && debug_log(`random_opening_move: movenum=${movenum + 1}, order=${selected.order}, ${label}=${JSON.stringify(val)}, visits=${selected.visits}, w_loss=${best.winrate - selected.winrate}, s_loss=${best.scoreMean - selected.scoreMean}`)
+    // main
+    if (Math.random() > discount) {return best.move}
+    const admissible = s => {
+        if (s === best) {return true}
+        const ok = (key, limit, sign) =>
+              (best[key] - s[key]) * (sign || 1) < param[limit] * discount
+        const o_ok = ok('order', 'max_order', -1)
+        const w_ok = ok('winrate', 'winrate_loss')
+        const s_ok = !truep(best.scoreMean) || ok('scoreMean', 'score_loss')
+        const v_ok = s.visits >= top_visits * param.relative_visits
+        return o_ok && w_ok && s_ok && v_ok
+    }
+    const candidates = suggest.filter(admissible), uniform = () => 1
+    const selected = weighted_random_choice(candidates, uniform)
+    log(selected, 'candidates', candidates.map(h => h.order))
+    return selected.move
+}
 function weak_move(weaken_percent) {
     // (1) Converge winrate to 0 with move counts
     // (2) Occasionally play good moves with low probability
