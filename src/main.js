@@ -947,8 +947,13 @@ function try_play_best(weaken_method, ...weaken_args) {
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     if (empty(P.orig_suggest())) {return}
     // comment
-    const comment = `by ${AI.engine_info().current.preset_label_text}`
-    const play_com = m => play(m, 'never_redo', null, comment)
+    const play_com = m => {
+        const base = `by ${AI.engine_info().current.preset_label_text}`
+        const {order} = P.orig_suggest().find(s => s.move === m) || {}
+        const more = (truep(order) && order > 0) ? [`(order = ${order + 1})`] : []
+        const comment = [base, ...more].join(' ')
+        play(m, 'never_redo', null, comment)
+    }
     // move
     const move =
           weaken_method === 'random_candidate' ? weak_move(...weaken_args) :
