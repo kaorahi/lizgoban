@@ -85,7 +85,7 @@ let game; set_game(create_game_with_gorule(store.get('gorule', default_gorule)))
 let sequence = [game], sequence_cursor = 0
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 let auto_analysis_steps = 1
-let auto_play_sec = 0, auto_replaying = false
+let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null
 
@@ -795,17 +795,17 @@ let last_auto_play_time = 0, default_auto_play_sec = 1
 function start_auto_play(replaying, sec, count) {
     if (replaying && sec < 0) {start_auto_redo(sec); return}
     // var
-    auto_replaying = replaying
+    auto_playing_strategy = replaying ? 'replay' : 'best'
     auto_play_sec = true_or(sec, -1)
     truep(count) && (auto_play_count = count)
     // proc
-    auto_replaying && rewind_maybe()
+    replaying && rewind_maybe()
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
 }
 function try_auto_play(force_next) {
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() &&
-        (auto_replaying ? try_auto_replay() : try_play_best(...auto_play_weaken))
+        (auto_playing_strategy === 'replay' ? try_auto_replay() : try_play_best(...auto_play_weaken))
     update_let_me_think(true)
 }
 function try_auto_replay() {do_as_auto_play(redoable(), redo)}
