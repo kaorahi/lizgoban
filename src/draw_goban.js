@@ -351,7 +351,7 @@ function draw_pv_visits(extended_pv_visits, margin, idx2coord, g) {
     // pv_visits
     let prev_y = - Infinity
     const draw_text = (v, k) => {
-        const [_, y] = idx2coord((1 - v / v0) * (bsize - 1), 0)
+        const [ , y] = idx2coord((1 - v / v0) * (bsize - 1), 0)
         const major = y - prev_y > fontsize; prev_y = y
         !stringp(k) && (g.fillStyle = major ? VAGUE_BLACK : PALE_BLACK)
         fill_text(g, fontsize, to_s(k), x, y, maxwidth)

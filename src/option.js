@@ -108,7 +108,7 @@ function resolve_engine_path(given_leelaz_command) {
 
 // images
 const face_image_paths =
-      (option.face_image_rule || []).flatMap(([_, b, w]) => [[b, b], [w, w]])
+      (option.face_image_rule || []).flatMap(([ , b, w]) => [[b, b], [w, w]])
 const image_paths = [
     ['black_stone', 'black.png', true],
     ['white_stone', 'white.png', true],

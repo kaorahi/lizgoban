@@ -96,7 +96,7 @@ function draw_winrate_graph_show_until(show_until, w, fontsize,
 
 function draw_winrate_graph_future(w, fontsize, sr2coord, sq2coord, g) {
     const [x, y] = sr2coord(clip_init_len(R.move_count), 50)
-    const [_, y_base] = sr2coord(R.init_len, 0)
+    const [ , y_base] = sr2coord(R.init_len, 0)
     const paint = (dx, l_alpha, r_alpha, y0, y1) => {
         const c = a => `rgba(255,255,255,${a})`
         const grad = side_gradation(x, x + dx,
@@ -239,7 +239,7 @@ function draw_score_text(w, to_r, sr2coord, g) {
 }
 
 function draw_no_score(w, sr2coord, fontsize, g) {
-    const x = w / 2, [_, y] = sr2coord(R.init_len, 50)
+    const x = w / 2, [ , y] = sr2coord(R.init_len, 50)
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'bottom'
     g.fillStyle = GRAY; fill_text(g, fontsize, "no score estimation", x, y)
@@ -344,7 +344,7 @@ function draw_winrate_graph_order(sr2coord, g) {
 
 function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
     const unit_r = 10, s0 = clip_init_len(0)
-    const [x0, y0] = sr2coord(s0, 0), [_, y1] = sr2coord(s0, unit_r)
+    const [x0, y0] = sr2coord(s0, 0), [ , y1] = sr2coord(s0, unit_r)
     const maxwidth = x0 * 0.8, fontsize = Math.min((y0 - y1) * 1.7, maxwidth)
     const to_xy = r => [x_maybe || maxwidth, sr2coord(s0, r)[1]]
     const to_text = r => to_s(Math.round(r2val(r)))
@@ -369,7 +369,7 @@ function draw_winrate_graph_barchart(key, mag, rgb, upside_down, sr2coord, g) {
     const conv = upside_down ? (val => 100 - val) : identity
     const to_r = val => conv(clip(val * mag, 0, 100))
     const threshold = num_sort(values.filter(truep)).slice(-10)[0]
-    const [_, base_y] = sr2coord(clip_init_len(0), upside_down ? 100 : 0)
+    const [ , base_y] = sr2coord(clip_init_len(0), upside_down ? 100 : 0)
     const plotter = (x, y, s, g) => {
         const [line_width, alpha] = values[s] >= threshold ? [1, 0.5] : [1, 0.5]
         g.strokeStyle = `rgba(${rgb},${alpha})`; g.lineWidth = line_width
