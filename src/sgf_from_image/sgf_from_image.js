@@ -92,7 +92,7 @@ function update_tuning() {
 function update_tuning_internally() {
     show_if(is_tuning, '#tuning')
     show_if(!is_tuning, '#toggle_tuning')
-    is_tuning && window.scrollTo({top: Q('body').scrollHeight, behavior: 'smooth' })
+    is_tuning && scroll_to_bottom()
 }
 
 update_tuning_internally()
@@ -135,7 +135,8 @@ electron && initialize_electron()
 hide(electron ? '.standalone' : '.electron')
 
 function initialize_electron() {
-    const {clipboard} = electron
+    const {clipboard, ipcRenderer} = electron
+    ipcRenderer.on('highlight_tips', highlight_tips)
     load_image(clipboard.readText() || clipboard.readImage().toDataURL())
 }
 
@@ -143,6 +144,16 @@ function finish_electron() {
     if (!electron) {return}
     electron.ipcRenderer.send('read_sgf', get_sgf())
     window.close()
+}
+
+function highlight_tips() {
+    scroll_to_bottom()
+    const keyframes = {
+        transform: ['translateY(-100vh) scale(10)', 'none', 'none'],
+        background: ['yellow', 'yellow', 'none'],
+        offset: [0, 0.05, 1],
+    }
+    Q('#tips').animate(keyframes, 10 * 1000)
 }
 
 ///////////////////////////////////////////
@@ -427,8 +438,8 @@ function ternarize(rgba) {
         bri >= 100 - param.assume_gray_as_light ? 2 : 1
 }
 
-function brightness([r, g, b, _]) {return (r + g + b) / (255 * 3)}
-function redness([r, g, b, _]) {return (r - b) / 255}
+function brightness([r, g, b, ]) {return (r + g + b) / (255 * 3)}
+function redness([r, g, b, ]) {return (r - b) / 255}
 
 ///////////////////////////////////////////
 // SGF
@@ -718,6 +729,10 @@ function fill_circle(ctx, x, y, r) {
     ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fill()
 }
 
+function scroll_to_bottom() {
+    window.scrollTo({top: Q('body').scrollHeight, behavior: 'smooth' })
+}
+
 let last_wink_animation = null
 function wink() {
     // const keyframes = [{scale: 1}, {scale: 0.8}, {scale: 1}]
@@ -728,9 +743,11 @@ function wink() {
 
 function draw_debug(x, y) {
     const c = rgba256_at(x, y), digitized = ['dark', 'medium', 'light']
+    const p = ([label, f]) => `${label}=${to_i(f(c) * 100)}%`
     const rgba = `rgba(${c.slice(0, 3).join(',')},${(c[3] / 255).toFixed(2)})`
+    const red_bright = [['red', redness], ['bright', brightness]].map(p).join(' ')
     Q('#debug_color').style.background = Q('#debug_rgba').textContent = rgba
-    Q('#debug_dark').textContent = `bright=${to_i(brightness(c) * 100)}%(${digitized[ternarize(c)]})`
+    Q('#debug_dark').textContent = `${red_bright} (${digitized[ternarize(c)]})`
     Q('#debug_guess').textContent = debug_guess(x, y)
     // Q('#debug_misc').textContent = window.devicePixelRatio
 }

@@ -38,9 +38,14 @@
   canvas {position: absolute}
   input {width: 3em;}
   input[type="range"] {width: 30vw;}
+  #header {
+   position: sticky; top: 0; z-index: 1;
+   padding: 0.6vmin;
+   background: #eeeeff;
+  }
   #tuning_container {
    display: flex; justify-content: space-around;
-   position: sticky; bottom: 1em;
+   position: sticky; bottom: 1em; z-index: 1;
    pointer-events: none;
   }
   #tuning {
@@ -49,6 +54,18 @@
    border: solid 2px blue; border-radius: 1em;
    margin: 1em; padding: 0.5em;
    pointer-events: auto;
+  }
+  .bstone {
+   width: 0.8em; height: 0.8em; background-color: black; border: solid 1px black;
+   border-radius: 50%; display: inline-block; margin: 0; padding: 0;
+  }
+  .wstone {
+   width: 0.8em; height: 0.8em; background-color: white; border: solid 1px black;
+   border-radius: 50%; display: inline-block; margin: 0; padding: 0;
+  }
+  .dotrect {
+   width: 0.8em; height: 0.8em; background-color: none; border: dashed 1px black;
+   display: inline-block; margin: 0; padding: 0;
   }
  </style>
 </head>
@@ -68,7 +85,7 @@
  </p>
 </div>
 
-<p>
+<p id="header">
  <button id="reset" onclick="reset()" style="margin-right: 1vmin">reset</button>
  <span style="color: gray;">
   <span id="stage0">click 1-1 (corner)</span> →
@@ -88,7 +105,7 @@
  <canvas id="overlay_canvas" style="border: solid 1px black;"></canvas>
 </div>
 
-<p>
+<p id="tips">
  Use cursor keys after each click for fine tuning.
  Instead of clicking 2-2 in Step 2, click somewhere outside the board around 1-1 to capture the whole 19x19 board.
  To correct tilt/perspective images, shift+click the top right corner and other three corners of the board counterclockwise before Step 1. <button id="revert_image" onclick="revert_to_original_image()">revert</button>
@@ -118,15 +135,15 @@
  <table>
   <tr><td class="title">Image</td></tr>
   <tr>
-   <td>Orange ↔ Monochrome ⬤◯</td>
+   <td>Orange ↔ Monochrome <span class="bstone"></span><span class="wstone"></span></td>
    <td><input id="consider_reddish_stone" class="percent"></td>
   </tr>
   <tr>
-   <td>Gray ↔ Black ⬤</td>
+   <td>Gray ↔ Black <span class="bstone"></span></td>
    <td><input id="assume_gray_as_dark" class="percent"></input></td>
   </tr>
   <tr>
-   <td>Gray ↔ White ◯</span></td>
+   <td>Gray ↔ White <span class="wstone"></span></td>
    <td><input id="assume_gray_as_light" class="percent"></input></td>
   </tr>
   <tr>
@@ -137,15 +154,15 @@
    </td>
   </tr>
   <tr>
-   <td>Noise in black stone ⬤</span></td>
+   <td>Noise in black stone <span class="bstone"></span></td>
    <td><input id="allow_outliers_in_black" class="percent"></td>
   </tr>
   <tr>
-   <td>Noise in white stone ◯</span></td>
+   <td>Noise in white stone <span class="wstone"></span></td>
    <td><input id="allow_outliers_in_white" class="percent"></td>
   </tr>
   <tr>
-   <td>Width of detection area ⬚</td>
+   <td>Width of detection area <span class="dotrect"></span></td>
    <td><input id="detection_width" class="percent"></input></td>
   </tr>
  </table>
