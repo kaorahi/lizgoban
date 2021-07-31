@@ -780,7 +780,7 @@ function take_thumbnail_of_stones(stones, proc, trail_p) {
 let reusable_canvas = null
 function generate_board_image_blob(drawing_func, callback, mime_type, quality) {
     // note: main_canvas can be rectangular by "x" key
-    const [size, _] = get_canvas_size(main_canvas)
+    const [size, ] = get_canvas_size(main_canvas)
     const canvas = reusable_canvas || document.createElement("canvas")
     const my_callback = blob => {callback(blob); reusable_canvas = canvas}
     reusable_canvas = null
@@ -1236,7 +1236,7 @@ function increment_showing_until(inc) {
 }
 function immediately_update_showing_until() {
     const su_and_mcfs = showing_until_etc()
-    const [cur, _] = su_and_mcfs, changed = checker_for_showing_until.is_changed(cur)
+    const [cur, ] = su_and_mcfs, changed = checker_for_showing_until.is_changed(cur)
     if (!changed) {return}
     // Caution: JSON.stringify(Infinity) === 'null'
     main('set_showing_until', ...su_and_mcfs)

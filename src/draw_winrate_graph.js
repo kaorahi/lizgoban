@@ -225,7 +225,7 @@ function draw_score_text(w, to_r, sr2coord, g) {
     if (!truep(score_without_komi)) {return}
     const score = score_without_komi - R.komi
     const wr = winrate_text_geom()
-    const [x0, _] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
+    const [x0, ] = wr.here, {normal, ymax} = wr, unit = wr.unit * 0.75
     const [x, y] = sr2coord(s, to_r(score))
     const my_ymax = (ymax < sr2coord(s, 100)[1]) ? sr2coord(s, 0)[1] : ymax
     const here = [x0, clip(y + 2 * unit, unit, my_ymax - unit)]

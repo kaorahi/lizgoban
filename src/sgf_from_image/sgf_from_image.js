@@ -438,8 +438,8 @@ function ternarize(rgba) {
         bri >= 100 - param.assume_gray_as_light ? 2 : 1
 }
 
-function brightness([r, g, b, _]) {return (r + g + b) / (255 * 3)}
-function redness([r, g, b, _]) {return (r - b) / 255}
+function brightness([r, g, b, ]) {return (r + g + b) / (255 * 3)}
+function redness([r, g, b, ]) {return (r - b) / 255}
 
 ///////////////////////////////////////////
 // SGF
