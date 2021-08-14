@@ -282,6 +282,8 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Insert a black (white) stone by b(w)+click.
 * Add import of diagram images by Ctrl+V ("Paste" in "Edit" menu). [[Solve tsumego pictures (demo)]](https://github.com/kaorahi/lizgoban/issues/68) [[Online version of "SGF from Image"]](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html)
 * Add pair Go to "File" menu and `preset` in `config.json`.
+* Add "Random opening" into Tool menu for AI vs. AI (and "diverse" strategy in Match vs. AI) for more various openings.
+* Add "Coordinates" into View menu.
 * Add "resize to 19x19" into "Flip..." in "Edit" menu.
 * Copy SGF comments to the clipboard when they are clicked.
 * Accelerate quick overview.

@@ -2,13 +2,17 @@
 
 # Release notes
 
+## LizGoban 0.6.3
+
+* Add "Coordinates" into View menu.
+* Add "Random opening" into Tool menu for AI vs. AI (and "diverse" strategy in Match vs. AI) for more various openings.
+
+# (Previous versions)
+
 ## LizGoban 0.6.2
 
 * Upgrade KataGo to [1.9.1](https://github.com/lightvector/KataGo/releases/tag/v1.9.1).
-
 * Modify UI of image import very slightly.
-
-# (Previous versions)
 
 ## LizGoban 0.6.1
 
