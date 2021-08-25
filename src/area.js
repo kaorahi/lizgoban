@@ -116,7 +116,8 @@ function cluster_characteristics(id, ijs, grid, color, stones) {
     }
     const f = ([i, j]) => {
         const ow = grid[i][j].ownership, sign = color === 'black' ? 1 : -1
-        const te = stones ? ow - sign * clip(ow * stone_sign(i, j), 0) : ow
+        const my_stone_p = stones && (stone_sign(i, j) === sign)
+        const te = my_stone_p ? 0 : ow
         return [ow, te, i * ow, j * ow]
     }
     const [ownership_sum, territory_sum, i_sum, j_sum] = ijs.map(f).reduce(sum, zero)
