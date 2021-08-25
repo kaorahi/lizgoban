@@ -114,10 +114,17 @@ function cluster_characteristics(id, ijs, grid, color, stones) {
     const stone_sign = (i, j) => {
         const s = stones[i][j]; return !s.stone ? 0 : s.black ? 1 : -1
     }
+    const interior = (i, j, sign) => {
+        const outside_grid = {ownership: 0}
+        const ownership_at = idx => (aa_ref(grid, ...idx) || outside_grid).ownership
+        const opposite_color_p = idx => (ownership_at(idx) * sign < 0)
+        return !around_idx([i, j]).find(opposite_color_p)
+    }
     const f = ([i, j]) => {
         const ow = grid[i][j].ownership, sign = color === 'black' ? 1 : -1
         const my_stone_p = stones && (stone_sign(i, j) === sign)
-        const te = my_stone_p ? 0 : ow
+        const territory_p = !my_stone_p && interior(i, j, sign)
+        const te = territory_p ? ow : 0
         return [ow, te, i * ow, j * ow]
     }
     const [ownership_sum, territory_sum, i_sum, j_sum] = ijs.map(f).reduce(sum, zero)
