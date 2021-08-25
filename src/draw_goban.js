@@ -461,8 +461,8 @@ function draw_endstate_clusters(boundary_p, unit, idx2coord, g) {
     const past_p = past_endstate_p(boundary_p)
     const cs = (past_p ? R.prev_endstate_clusters : R.endstate_clusters) || []
     const area_sum = sum(cs.map(cluster => {
-        const {color, type, ownership_sum, selfstone_sum, center_idx} = cluster
-        const signed_area_count = Math.round(ownership_sum - selfstone_sum)
+        const {color, type, ownership_sum, territory_sum, center_idx} = cluster
+        const signed_area_count = Math.round(territory_sum)
         const area_count = Math.sign(ownership_sum) * signed_area_count
         if (area_count < 1) {return 0}
         boundary_p && draw_endstate_boundary(cluster, unit, idx2coord, g)
