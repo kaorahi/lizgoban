@@ -29,7 +29,6 @@ const default_option = {
     face_image_rule: null,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     record_note_to_SGF: false,
-    auto_overview: true,
     repl: false,
     pv_trail_max_suggestions: 0,
     random_opening: {
@@ -124,6 +123,7 @@ const default_for_stored_key = {
     stone_image_p: true, board_image_p: true, stone_style: '3D',
     use_cached_suggest_p: true,
     random_opening_p: false,
+    auto_overview: true,
     komi_for_new_game: leelaz_komi, komi_for_new_handicap_game: handicap_komi,
 }
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)

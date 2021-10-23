@@ -513,6 +513,7 @@ function menu_template(win) {
     ])
     const tool_menu = menu('Tool', [
         item('Quick overview', 'Shift+V', start_quick_overview, true),
+        store_toggler_menu_item('... Auto overview', 'auto_overview'),
         item('Auto replay', 'Shift+A', ask_sec(true), true),
         item('Silent replay', undefined,
              (this_item, win) => ask_auto_redo_sec(win), true),
@@ -691,7 +692,7 @@ function preset_menu_for_recent(menu_tools) {
 }
 
 function apply_preset(rule, win) {
-    const stored = ['stone_style', 'random_opening_p']
+    const stored = ['stone_style', 'random_opening_p', 'auto_overview']
     stored.forEach(key => (rule[key] !== undefined) && set_stored(key, rule[key]))
     const {empty_board, board_type, match, rules, handicap, komi} = rule
     empty_board && !game.is_empty() && new_empty_board()
@@ -1858,9 +1859,10 @@ function read_sgf(sgf_str, filename, internally) {
     }
     const trunk = new_games[0]
     const common_props = {sgf_file: filename || "", brothers: new_games}
+    const auto_p = store.get('auto_overview')
     new_games.forEach(g => merge(g, common_props, {trial: g !== trunk}))
     trunk.merge_common_header(game); backup_and_replace_game(trunk)
-    interactive && option.auto_overview && !AI.leelaz_for_white_p() &&
+    interactive && auto_p && !AI.leelaz_for_white_p() &&
         start_quick_overview()
 }
 
