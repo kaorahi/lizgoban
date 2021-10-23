@@ -242,6 +242,8 @@ function draw_goban(canvas, stones, opts) {
     const font_unit = Math.min(margin, canvas.height * max_font_for_goban_message)
     // draw
     draw_board(hm, pausing_p, trial_p, canvas, g)
+    draw_endstate_p && !hide_endstate_p() && !draw_endstate_value_p &&
+        draw_endstate_on_board(stones || R.stones, unit, idx2coord, g)
     draw_grid(unit, idx2coord, g)
     const coordp = (draw_coordinates_p !== 'never') &&
           (draw_coordinates_p || R.always_show_coordinates)
@@ -390,6 +392,15 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
     fill_circle(xy, radius, g)
 }
 
+function draw_endstate_on_board(stones, unit, idx2coord, g) {
+    const f = (h, idx) => {
+        if (!h.endstate) {return}
+        const xy = idx2coord(...idx), radius = unit / 2
+        draw_endstate(h.endstate, xy, radius, g)
+    }
+    each_stone(stones, f)
+}
+
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
@@ -406,9 +417,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                              stone_radius, g)
         return
     }
-    // (1) ownership, (2) halo, (3) shadow, (4) stone etc. in this order
-    draw_endstate_p && !hide_endstate_p() &&
-        each_coord((h, xy, idx) => draw_endstate(h.endstate, xy, stone_radius, g))
+    // (1) halo, (2) shadow, (3) stone etc. in this order
     R.lizzie_style && !R.busy &&
         each_coord((h, xy, idx) => draw_halo_lizzie(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
