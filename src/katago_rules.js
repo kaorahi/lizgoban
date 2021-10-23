@@ -19,8 +19,10 @@ const name_table = [
 
 const katago_supported_rules = name_table.map(a => a[0])
 
-function katago_rule_from_sgf_rule(sgf_rule) {
-    if (!sgf_rule) {return null}
+const guessed_rule_from_komi = {6.5: 'japanese', 7.5: 'chinese'}
+
+function katago_rule_from_sgf_rule(sgf_rule, komi) {
+    if (!sgf_rule) {return guessed_rule_from_komi[komi]}
     const normalize = s => s.toLowerCase().replace(/[-_ ]/g, '')  // for robustness
     const target = normalize(sgf_rule)
     const hit = name_table.find(a => a.map(normalize).includes(target))

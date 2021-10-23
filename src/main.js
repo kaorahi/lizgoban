@@ -67,8 +67,9 @@ function create_games_from_sgf_internal(sgf_str, cache_suggestions_p) {
     const too_many_games = 30
     const gs = GAME.create_games_from_sgf(sgf_str, cache_suggestions_p)
     const set_gorule = new_game => {
+        const {sgf_gorule, komi} = new_game
         new_game.gorule =
-            katago_rule_from_sgf_rule(new_game.sgf_gorule) || get_gorule(true)
+            katago_rule_from_sgf_rule(sgf_gorule, komi) || get_gorule(true)
     }
     // set 9x9 engine before cooking 9x9 games so that cached suggestions
     // are loaded correctly
