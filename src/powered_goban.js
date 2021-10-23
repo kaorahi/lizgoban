@@ -156,11 +156,12 @@ function set_renderer_state(...args) {
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
     const invalid_endstate_p =
           (endstate_clusters.length === 1 && endstate_clusters[0].ownership_sum === 0)
-    const move_history = [{}, ...game.map(z => ({
-        move: z.move, is_black: z.is_black, ko_state: z.ko_state,
-        ambiguity: z.ambiguity,
-        shorttermScoreError: M.plot_shorttermScoreError_p() && z.shorttermScoreError,
-    }))]
+    const move_history_keys = [
+        'move', 'is_black', 'ko_state', 'ambiguity',
+        M.plot_shorttermScoreError_p() && 'shorttermScoreError',
+    ].filter(truep)
+    const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
+    const move_history = [{}, ...game.map(get_move_history)]
     const different_engine_for_white_p = AI.leelaz_for_white_p()
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
