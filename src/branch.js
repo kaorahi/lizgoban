@@ -17,10 +17,11 @@ function add_branch(move_count, another_game) {
 
 function branch_at(move_count) {return branch_structure[move_count]}
 function update_branch_for(game, all_games) {
-    const hist = game.array_until(Infinity), {init_len} = game
+    const hist = game.array_until(Infinity), {init_len, brothers} = game
     const add = gm => {
         const c = gm.strictly_common_header_length(hist)
-        c > init_len && add_branch(c, gm)
+        const branch_p = (c > init_len) || brothers.includes(gm)
+        branch_p && add_branch(c, gm)
     }
     clear_branch(); all_games.forEach(gm => (gm === game) || add(gm))
 }
