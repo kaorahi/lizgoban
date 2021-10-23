@@ -116,13 +116,13 @@ function cluster_characteristics(id, ijs, grid, color, stones) {
     }
     const f = ([i, j]) => {
         const ow = grid[i][j].ownership, sign = color === 'black' ? 1 : -1
-        const ss = stones ? sign * clip(ow * stone_sign(i, j), 0) : 0
-        return [ow, ss, i * ow, j * ow]
+        const te = stones ? ow - sign * clip(ow * stone_sign(i, j), 0) : ow
+        return [ow, te, i * ow, j * ow]
     }
-    const [ownership_sum, selfstone_sum, i_sum, j_sum] = ijs.map(f).reduce(sum, zero)
+    const [ownership_sum, territory_sum, i_sum, j_sum] = ijs.map(f).reduce(sum, zero)
     const center_idx = [i_sum, j_sum].map(z => z / ownership_sum)
     const boundary = boundary_of(id, ijs, grid)
-    return {ownership_sum, selfstone_sum, center_idx, boundary}
+    return {ownership_sum, territory_sum, center_idx, boundary}
 }
 
 function boundary_of(id, ijs, grid) {
