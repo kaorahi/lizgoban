@@ -275,6 +275,7 @@ function draw_board(hm, pausing_p, trial_p, canvas, g) {
 }
 
 function draw_board_by_image(w, h, hm, pausing_p, trial_p, g) {
+    g.clearRect(0, 0, w, h)
     g.drawImage(R.image.board, 0, 0, w, h)
     g.strokeStyle = g.fillStyle = 'rgba(0,0,0,0.3)'; g.lineWidth = 2 * hm
     pausing_p && fill_rect([0, 0], [w, h], g)
