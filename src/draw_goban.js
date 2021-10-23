@@ -195,7 +195,8 @@ function draw_goban_with_subboard_stones_suggest(canvas, options) {
 }
 
 function draw_endstate_goban(canvas, options) {
-    const past_p = past_endstate_p(options.draw_endstate_value_p)
+    const draw_endstate_value_p = R.show_endstate && options.draw_endstate_value_p
+    const past_p = past_endstate_p(draw_endstate_value_p)
     const scores = winrate_history_values_of('score_without_komi')
     const {show_until} = options, mc = R.move_count
     const default_mc = R.move_count - R.endstate_diff_interval
@@ -204,8 +205,7 @@ function draw_endstate_goban(canvas, options) {
     const past_text = (d_i, es) =>
           `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
           (truep(es) ? `  score = ${f2s(es - R.komi)}` : '')
-    const common = {read_only: true, draw_endstate_p: R.show_endstate,
-                    draw_endstate_diff_p: R.show_endstate}
+    const common = {read_only: true, draw_endstate_value_p}
     const current = {draw_visits_p: true, draw_next_p: true}
     const past = {draw_visits_p: past_text(R.move_count - past_mc, past_score)}
     const opts = {...common, ...(options || {}), ...(past_p ? past : current),
@@ -242,7 +242,7 @@ function draw_goban(canvas, stones, opts) {
     const font_unit = Math.min(margin, canvas.height * max_font_for_goban_message)
     // draw
     draw_board(hm, pausing_p, trial_p, canvas, g)
-    draw_endstate_p && !hide_endstate_p() && !draw_endstate_value_p &&
+    draw_endstate_p && !hide_endstate_p() &&
         draw_endstate_on_board(stones || R.stones, unit, idx2coord, g)
     draw_grid(unit, idx2coord, g)
     const coordp = (draw_coordinates_p !== 'never') &&
@@ -251,7 +251,7 @@ function draw_goban(canvas, stones, opts) {
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
     draw_visits_p && draw_visits(draw_visits_p, font_unit, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
-    mapping_to_winrate_bar && !(draw_endstate_value_p && draw_endstate_p) &&
+    mapping_to_winrate_bar && !draw_endstate_value_p &&
         draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
     pv_visits && draw_pv_visits(pv_visits, font_unit, idx2coord, g)
     const drawp = {
@@ -261,7 +261,7 @@ function draw_goban(canvas, stones, opts) {
     }
     draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
-    draw_endstate_p && !hide_endstate_clusters_p() &&
+    !hide_endstate_clusters_p() && (draw_endstate_p || draw_endstate_value_p) &&
         draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     analysis_region && draw_analysis_region(analysis_region, unit, idx2coord, g)
     // mouse events
@@ -412,7 +412,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
           draw_expected_mark(h, xy, exp_p, stone_radius, g)
     const each_coord =
           proc => each_stone(stones, (h, idx) => proc(h, idx2coord(...idx), idx))
-    if (draw_endstate_value_p && draw_endstate_p) {
+    if (draw_endstate_value_p) {
         const past_p = past_endstate_p(draw_endstate_value_p)
         draw_endstate_stones(each_coord, past_p, cheap_shadow_p, show_until,
                              stone_radius, g)
