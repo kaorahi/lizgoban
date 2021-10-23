@@ -221,10 +221,11 @@ function api_handler(channel, handler, busy) {
     }
 }
 function apply_api(channel, handler, args) {
+    const silently = ['ladder_is_seen']
     const keep_board = ['toggle_pause', !is_busy() && 'unset_busy', 'set_showing_until']
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
-    handler(...args); update_all(whether(keep_board))
+    handler(...args); whether(silently) || update_all(whether(keep_board))
 }
 
 function simple_or_normal_api_handler(channel, handler) {

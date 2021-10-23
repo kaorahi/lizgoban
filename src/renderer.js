@@ -1064,7 +1064,7 @@ document.onkeydown = e => {
     to_i(key) > 0 && (challenging ? m('play_weak', to_i(key) * 10) :
                       f(set_keyboard_moves_maybe, to_i(key) - 1))
     key.length === 1 && tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
-    key === ladder_tag_letter && m('ladder_is_seen')
+    key === ladder_tag_letter && main('ladder_is_seen')
     switch (key) {
     case "b": m('force_color_to_play', true); return
     case "w": m('force_color_to_play', false); return
