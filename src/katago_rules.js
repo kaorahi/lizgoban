@@ -8,7 +8,7 @@ const name_table = [
     ['chinese', 'Chinese'],
     ['chinese-ogs'],
     ['chinese-kgs'],
-    ['japanese', 'Japanese'],
+    ['japanese', 'Japanese', 'jp'],
     ['korean', 'Korean'],
     ['stone-scoring'],
     ['aga', 'AGA'],
