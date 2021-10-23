@@ -153,7 +153,7 @@ fs.access(option.sabaki_command, null,
 
 // app
 
-app.on('ready', () => {
+app.whenReady().then(() => {
     const first_preset = option.preset[0]
     if (!restart_leelaz_by_preset(first_preset, true)) {return}
     apply_preset(first_preset, new_window('double_boards'))
