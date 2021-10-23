@@ -869,10 +869,10 @@ function draw_zone_color_chart(canvas) {
 
 function goban_params(canvas) {
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
-    const extra_margin =
-          R.always_show_coordinates ? max_font_for_goban_message * 0.5 : 0
-    const margin = Math.min(w, h) * (1 / (board_size() + 1) + extra_margin)
-    const hm = margin / 2
+    const size = Math.min(w, h), extra_margin_p = R.always_show_coordinates
+    const extra_margin = extra_margin_p ? size * max_font_for_goban_message * 0.5 : 0
+    const margin = size * (1 / (board_size() + 1)) + extra_margin
+    const hm = extra_margin_p ? extra_margin : margin / 2
     const [idx2coord, coord2idx] = idx2coord_translator_pair(canvas, margin, margin, true)
     const unit = idx2coord(0, 1)[0] - idx2coord(0, 0)[0], half_unit = unit / 2
     return {w, h, g, margin, hm, idx2coord, coord2idx, unit, half_unit}
