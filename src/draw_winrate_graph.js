@@ -124,20 +124,21 @@ function draw_winrate_graph_curve(sr2coord, g) {
 }
 
 function draw_winrate_graph_curve_for(winrate_history, style, sr2coord, g) {
-    let prev = null, cur = null
     const draw_predict = (r, s, p) => {
         g.strokeStyle = YELLOW; g.lineWidth = 1; line(sr2coord(s, r), sr2coord(s, p), g)
     }
-    winrate_history.forEach((h, s) => {
-        if (!truep(h.r)) {return}
-        const thin = (style === 'rest')
+    const draw1 = (prev_xy, h, s) => {
+        if (!truep(h.r)) {return prev_xy}
+        const thin = (style === 'rest'), xy = sr2coord(s, h.r)
         truep(h.predict) && !thin && draw_predict(h.r, s, h.predict)
         g.strokeStyle = thin ? PALE_BLUE : style ? style :
             isNaN(h.move_eval) ? GRAY : h.pass ? PALE_BLUE :
             (h.move_eval < 0) ? "#e00" : (s > 1 && !truep(h.predict)) ? "#ff0" : "#0c2"
         g.lineWidth = (thin ? 1 : 3)
-        cur = sr2coord(s, h.r); prev && line(prev, cur, g); prev = cur
-    })
+        prev_xy && line(prev_xy, xy, g)
+        return xy
+    }
+    winrate_history.reduce(draw1, null)
 }
 
 function draw_winrate_graph_current(g) {
