@@ -2,12 +2,23 @@
 
 # Release notes
 
+## LizGoban 0.7.0-pre1
+
+* Add "Auto overview" into Tool menu so that one can turn it off.
+* Slightly improve bogus territory counts.
+* Guess the rule from komi if RU (rule) property is missing in SGF.
+* Fix SSL issue on Let's Encrypt. ([ref](https://github.com/electron/electron/issues/31212) [ref](https://github.com/electron/electron/pull/31213))
+
+Incompatibilities:
+
+* Upgrade libraries (Electron 15, etc.). So you may need to do "npm install" again.
+
+# (Previous versions)
+
 ## LizGoban 0.6.3
 
 * Add "Coordinates" into View menu.
 * Add "Random opening" into Tool menu for AI vs. AI (and "diverse" strategy in Match vs. AI) for more various openings.
-
-# (Previous versions)
 
 ## LizGoban 0.6.2
 
