@@ -404,8 +404,7 @@ function draw_wr_graph(canvas) {
     const endstate_at = showing_endstate_value_p() && R.prev_endstate_clusters &&
           (R.move_count - R.endstate_diff_interval)
     const until = finite_or(showing_until(), endstate_at)
-    D.draw_winrate_graph(canvas,
-                         until, handle_mouse_on_winrate_graph)
+    D.draw_winrate_graph(canvas, until, handle_mouse_on_winrate_graph)
 }
 
 function draw_wr_bar(canvas) {
