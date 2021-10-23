@@ -249,6 +249,8 @@ function draw_goban(canvas, given_stones, opts) {
     if (!hide_endstate_p()) {
         draw_endstate_p &&
             draw_endstate_on_board(stones, unit, idx2coord, g)
+        past_endstate_p(draw_endstate_value_p) &&
+            draw_endstate_past_on_board(stones, unit, idx2coord, g)
         draw_endstate_stdev_p &&
             draw_endstate_stdev_on_board(stones, unit, idx2coord, g)
     }
@@ -405,6 +407,10 @@ function draw_endstate_on_board(stones, unit, idx2coord, g) {
     draw_endstate_on_board_gen(stones, 'endstate', draw_endstate, unit, idx2coord, g)
 }
 
+function draw_endstate_past_on_board(stones, unit, idx2coord, g) {
+    draw_endstate_on_board_gen(stones, 'endstate_diff', draw_endstate, unit, idx2coord, g)
+}
+
 function draw_endstate_stdev_on_board(stones, unit, idx2coord, g) {
     draw_endstate_on_board_gen(stones, 'endstate_stdev', draw_endstate_stdev, unit, idx2coord, g)
 }
@@ -467,7 +473,6 @@ function draw_endstate_stones(each_coord, past_p, cheap_shadow_p,
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
         const stone_p = h.stone
-        past_p && draw_endstate(h.endstate_diff, xy, stone_radius, g)
         stone_p && draw_stone(h, xy, stone_radius, true, false, g)
         past_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_endstate_value(h, past_p, sign, xy, stone_radius, g)
