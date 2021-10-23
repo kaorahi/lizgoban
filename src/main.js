@@ -43,7 +43,8 @@ const {
     random_exercise_chooser, recent_exercise_chooser, recently_seen_exercises_in,
 } = require('./exercise.js')(exercise_mtime)
 const {tsumego_frame} = require('./tsumego_frame.js')
-const {ladder_branches, ladder_is_seen, last_ladder_branches} = require('./ladder.js')
+const {ladder_branches, ladder_is_seen, last_ladder_branches}
+      = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
 

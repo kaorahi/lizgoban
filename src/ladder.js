@@ -39,12 +39,14 @@ function missing_moves(cur_stones, prop) {
     const in_ladder_quadrant = (i, j) => front(i, i0, i_sign) && front(j, j0, j_sign)
     const missing = (h, i, j) => !in_ladder_quadrant(i, j) &&
           h && h.stone && !(aa_ref(cur_stones, i, j) || {}).stone
-    const move_for = (h, i, j) => ({
-        move: idx2move(i, j), is_black: h.black, move_count: h.move_count
-    })
+    const move_for = (h, i, j) => make_ladder_move(i, j, h.black, h.move_count)
     const pick = (h, i, j) => missing(h, i, j) && move_for(h, i, j)
     const unsorted_moves = aa_map(stones, pick).flat().filter(truep)
     return sort_by_key(unsorted_moves, 'move_count')
+}
+
+function make_ladder_move(i, j, is_black, move_count) {
+    return {move: idx2move(i, j), is_black, move_count}
 }
 
 function ladder_is_seen() {last_seen_ladder_prop = last_ladder_prop}
@@ -105,7 +107,7 @@ function try_ladder(ladder, prop, move_count, stones) {
     const {moves} = ladder || (ladder = new_ladder(prop))
     const hit = stopped(idx, is_black, u, v, stones)
     if (hit) {return moves.length <= too_short ? null : (record_hit(moves, hit), ladder)}
-    ladder.moves.push({move: idx2move(...idx), is_black, move_count})
+    ladder.moves.push(make_ladder_move(...idx, is_black, move_count))
     const [offset, next_uv] = attack_p ? [idx_minus(v, u), [u, v]] : [v, [v, u]]
     const next_idx = idx_plus(idx, offset)
     const next_prop = new_prop(next_idx, !is_black, !attack_p, ...next_uv, stones)
