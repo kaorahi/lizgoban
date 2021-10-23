@@ -272,8 +272,9 @@ function draw_goban(canvas, stones, opts) {
 function draw_board(hm, pausing_p, trial_p, canvas, g) {
     const {width, height} = canvas
     const image_p = R.board_image_p && !!(R.image || {}).board
-    image_p ? draw_board_by_image(width, height, hm, pausing_p, trial_p, g) :
-        draw_board_by_paint(width, height, hm, pausing_p, trial_p, g)
+    const p = pausing_p && !R.keep_bright_board
+    image_p ? draw_board_by_image(width, height, hm, p, trial_p, g) :
+        draw_board_by_paint(width, height, hm, p, trial_p, g)
 }
 
 function draw_board_by_image(w, h, hm, pausing_p, trial_p, g) {

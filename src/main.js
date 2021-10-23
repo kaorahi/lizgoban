@@ -569,6 +569,8 @@ function menu_template(win) {
         {label: 'REPL', type: 'checkbox', checked: repl_p(), click: toggle_repl},
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
+        {label: 'Keep bright board', type: 'checkbox', checked: R.keep_bright_board,
+         click: () => {R.keep_bright_board = !R.keep_bright_board; update_all()}},
         sep,
         item('Import diagram image', undefined, open_demo_image),
         sep,
