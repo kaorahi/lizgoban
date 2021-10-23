@@ -247,12 +247,13 @@ function draw_goban(canvas, given_stones, opts) {
     // draw
     draw_board(hm, pausing_p, trial_p, canvas, g)
     if (!hide_endstate_p()) {
+        const args = [stones, unit, idx2coord, g]
         draw_endstate_p &&
-            draw_endstate_on_board(stones, unit, idx2coord, g)
+            draw_endstate_on_board(...args)
         past_endstate_p(draw_endstate_value_p) &&
-            draw_endstate_past_on_board(stones, unit, idx2coord, g)
+            draw_endstate_past_on_board(...args)
         draw_endstate_stdev_p &&
-            draw_endstate_stdev_on_board(stones, unit, idx2coord, g)
+            draw_endstate_stdev_on_board(...args)
     }
     draw_grid(unit, idx2coord, g)
     const coordp = (draw_coordinates_p !== 'never') &&
@@ -403,19 +404,16 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
     fill_circle(xy, radius, g)
 }
 
-function draw_endstate_on_board(stones, unit, idx2coord, g) {
-    draw_endstate_on_board_gen(stones, 'endstate', draw_endstate, unit, idx2coord, g)
+function draw_endstate_on_board(...args) {
+    draw_endstate_on_board_gen('endstate', draw_endstate, ...args)
 }
-
-function draw_endstate_past_on_board(stones, unit, idx2coord, g) {
-    draw_endstate_on_board_gen(stones, 'endstate_diff', draw_endstate, unit, idx2coord, g)
+function draw_endstate_past_on_board(...args) {
+    draw_endstate_on_board_gen('endstate_diff', draw_endstate, ...args)
 }
-
-function draw_endstate_stdev_on_board(stones, unit, idx2coord, g) {
-    draw_endstate_on_board_gen(stones, 'endstate_stdev', draw_endstate_stdev, unit, idx2coord, g)
+function draw_endstate_stdev_on_board(...args) {
+    draw_endstate_on_board_gen('endstate_stdev', draw_endstate_stdev, ...args)
 }
-
-function draw_endstate_on_board_gen(stones, key, proc, unit, idx2coord, g) {
+function draw_endstate_on_board_gen(key, proc, stones, unit, idx2coord, g) {
     const f = (h, idx) => {
         if (!h.endstate) {return}
         const xy = idx2coord(...idx), radius = unit / 2, val = h[key]
