@@ -227,7 +227,7 @@ function draw_thumbnail_goban(canvas, stones, trial_p) {
 /////////////////////////////////////////////////
 // generic goban
 
-function draw_goban(canvas, stones, opts) {
+function draw_goban(canvas, given_stones, opts) {
     const {
         draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
         pausing_p, trial_p,
@@ -240,10 +240,13 @@ function draw_goban(canvas, stones, opts) {
     const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
     const large_font_p = !main_canvas_p
     const font_unit = Math.min(margin, canvas.height * max_font_for_goban_message)
+    const stones = given_stones || R.stones
     // draw
     draw_board(hm, pausing_p, trial_p, canvas, g)
-    draw_endstate_p && !hide_endstate_p() &&
-        draw_endstate_on_board(stones || R.stones, unit, idx2coord, g)
+    if (!hide_endstate_p()) {
+        draw_endstate_p &&
+            draw_endstate_on_board(stones, unit, idx2coord, g)
+    }
     draw_grid(unit, idx2coord, g)
     const coordp = (draw_coordinates_p !== 'never') &&
           (draw_coordinates_p || R.always_show_coordinates)
@@ -259,7 +262,7 @@ function draw_goban(canvas, stones, opts) {
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
         hovered_move, show_until,
     }
-    draw_on_board(stones || R.stones, drawp, unit, idx2coord, g)
+    draw_on_board(stones, drawp, unit, idx2coord, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     !hide_endstate_clusters_p() && (draw_endstate_p || draw_endstate_value_p) &&
         draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
@@ -394,10 +397,14 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 }
 
 function draw_endstate_on_board(stones, unit, idx2coord, g) {
+    draw_endstate_on_board_gen(stones, 'endstate', draw_endstate, unit, idx2coord, g)
+}
+
+function draw_endstate_on_board_gen(stones, key, proc, unit, idx2coord, g) {
     const f = (h, idx) => {
         if (!h.endstate) {return}
-        const xy = idx2coord(...idx), radius = unit / 2
-        draw_endstate(h.endstate, xy, radius, g)
+        const xy = idx2coord(...idx), radius = unit / 2, val = h[key]
+        truep(val) && proc(val, xy, radius, g)
     }
     each_stone(stones, f)
 }
