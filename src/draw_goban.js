@@ -147,7 +147,8 @@ function draw_goban_with_variation(canvas, suggest, opts) {
 }
 
 function draw_goban_with_principal_variation(canvas, options) {
-    draw_readonly_goban_with_variation(canvas, R.suggest[0] || {}, options)
+    const opt = {draw_endstate_stdev_p: R.show_endstate, ...options}
+    draw_readonly_goban_with_variation(canvas, R.suggest[0] || {}, opt)
 }
 
 function draw_goban_with_expected_variation(canvas, options) {
@@ -205,7 +206,8 @@ function draw_endstate_goban(canvas, options) {
     const past_text = (d_i, es) =>
           `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
           (truep(es) ? `  score = ${f2s(es - R.komi)}` : '')
-    const common = {read_only: true, draw_endstate_value_p}
+    const common = {read_only: true, draw_endstate_value_p,
+                    draw_endstate_stdev_p: draw_endstate_value_p && !past_p}
     const current = {draw_visits_p: true, draw_next_p: true}
     const past = {draw_visits_p: past_text(R.move_count - past_mc, past_score)}
     const opts = {...common, ...(options || {}), ...(past_p ? past : current),
@@ -233,6 +235,7 @@ function draw_goban(canvas, given_stones, opts) {
         pausing_p, trial_p,
         draw_loss_p, draw_coordinates_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
+        draw_endstate_stdev_p,
         read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
         hovered_move, show_until, analysis_region,
         main_canvas_p, handle_mouse_on_goban,
@@ -246,6 +249,8 @@ function draw_goban(canvas, given_stones, opts) {
     if (!hide_endstate_p()) {
         draw_endstate_p &&
             draw_endstate_on_board(stones, unit, idx2coord, g)
+        draw_endstate_stdev_p &&
+            draw_endstate_stdev_on_board(stones, unit, idx2coord, g)
     }
     draw_grid(unit, idx2coord, g)
     const coordp = (draw_coordinates_p !== 'never') &&
@@ -398,6 +403,10 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
 
 function draw_endstate_on_board(stones, unit, idx2coord, g) {
     draw_endstate_on_board_gen(stones, 'endstate', draw_endstate, unit, idx2coord, g)
+}
+
+function draw_endstate_stdev_on_board(stones, unit, idx2coord, g) {
+    draw_endstate_on_board_gen(stones, 'endstate_stdev', draw_endstate_stdev, unit, idx2coord, g)
 }
 
 function draw_endstate_on_board_gen(stones, key, proc, unit, idx2coord, g) {
@@ -782,6 +791,12 @@ function draw_endstate(endstate, xy, radius, g) {
     if (!truep(endstate)) {return}
     const c = (endstate >= 0) ? 64 : 255, alpha = Math.abs(endstate) * 0.7
     g.fillStyle = `rgba(${c},${c},${c},${alpha})`
+    fill_square_around(xy, radius, g)
+}
+
+function draw_endstate_stdev(endstate_stdev, xy, radius, g) {
+    const thickness = 0.5, alpha = Math.abs(endstate_stdev) * thickness
+    g.fillStyle = `rgba(255,0,0,${alpha})`
     fill_square_around(xy, radius, g)
 }
 

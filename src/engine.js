@@ -77,6 +77,7 @@ function create_leelaz () {
             is_katago() ? 'kata-analyze' : 'lz-analyze',
             `interval ${arg.analyze_interval_centisec}`,
             is_katago() && ownership_p && 'ownership true',
+            is_supported('ownershipStdev') && ownership_p && 'ownershipStdev true',
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
             is_supported('pvVisits') && 'pvVisits true',
             is_supported('allow') && analysis_region_string(),
@@ -127,6 +128,7 @@ function create_leelaz () {
             ['endstate', 'endstate_map'],
             ['kata-raw-nn', 'kata-raw-nn 0'],
             ['pvVisits', 'kata-analyze 1 pvVisits true'],
+            ['ownershipStdev', 'kata-analyze 1 ownershipStdev true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
         ]
         const do_check = table => table.forEach(a => check_supported(...a))
@@ -524,8 +526,12 @@ function hash(str) {
 const top_suggestions = 5
 
 function parse_analyze(s, bturn, komi, katago_p) {
-    const [i_str, o_str] = s.split(/\s*ownership\s*/)
+    const split_pattern = /\b(?=^dummy_header|ownership|ownershipStdev)\b/
+    const splitted = `dummy_header ${s}`.split(split_pattern)
+    const part = aa2hash(splitted.map(str => str.trim().split(/(?<=^\S+)\s+/)))
+    const {dummy_header: i_str, ownership: o_str, ownershipStdev: o_stdev_str} = part
     const ownership = ownership_parser(o_str, bturn)
+    const ownership_stdev = ownership_parser(o_stdev_str, true)
     const parser = (z, k) => suggest_parser(z, k, bturn, komi, katago_p)
     const unsorted_suggest =
           i_str.split(/info/).slice(1).map(parser).filter(truep)
@@ -547,7 +553,7 @@ function parse_analyze(s, bturn, komi, katago_p) {
     const {shorttermScoreError} = (suggest || [])[0] || {}
     const more = truep(shorttermScoreError) ?
           {shorttermScoreError: to_f(shorttermScoreError)} : {}
-    return {suggest, visits, b_winrate, score_without_komi, ownership, komi, ...more}
+    return {suggest, visits, b_winrate, score_without_komi, ownership, ownership_stdev, komi, ...more}
 }
 
 // (sample of leelaz output for "lz-analyze 10")

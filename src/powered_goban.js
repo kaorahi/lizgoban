@@ -53,7 +53,7 @@ function endstate_handler(h) {
         // need add_endstate_to_history before add_endstate_to_stones
         // because update_endstate_diff depends on game.ref_current().endstate
         leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
-        add_endstate_to_stones(R.stones, R.endstate, leelaz_move_count, update_p)
+        add_endstate_to_stones(R.stones, R.endstate, null, leelaz_move_count, update_p)
         set_endstate_uptodate(R.endstate, leelaz_move_count)
     }
     set_renderer_state(h)
@@ -63,7 +63,7 @@ function endstate_handler(h) {
 // keys1: required. individual plot for each engine.
 const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 // keys2: optional. single global plot.
-const suggest_keys2 = ['endstate', 'score_without_komi', 'shorttermScoreError']
+const suggest_keys2 = ['endstate', 'endstate_stdev', 'score_without_komi', 'shorttermScoreError']
 
 const too_small_prior = 1e-3
 function suggest_handler(h) {
@@ -72,6 +72,7 @@ function suggest_handler(h) {
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
     h.ownership && (h.endstate = endstate_from_ownership(h.ownership))
+    h.ownership_stdev && (h.endstate_stdev = endstate_from_ownership(h.ownership_stdev))
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
     const cur_by_engine = cur.by[engine_id]
     const prefer_cached_p = cur_by_engine.visits > h.visits &&
@@ -91,8 +92,8 @@ function suggest_handler(h) {
     !prefer_cached_p && copy_vals(suggest_keys2, cur_by_engine)
     game.engines[engine_id] = true; game.current_engine = engine_id
     // if current engine is Leela Zero, recall ownerships by KataGo
-    const {endstate, score_without_komi} = {...cur, ...preferred_h}
-    R.show_endstate && add_endstate_to_stones(R.stones, endstate, mc, true)
+    const {endstate, endstate_stdev, score_without_komi} = {...cur, ...preferred_h}
+    R.show_endstate && add_endstate_to_stones(R.stones, endstate, endstate_stdev, mc, true)
     endstate && set_endstate_uptodate(endstate)
     // is_endstate_drawable is true if...
     // (1) ownership is given here, or
@@ -240,7 +241,7 @@ function change_endstate_diff_target(proc) {
 }
 
 function set_tentative_endstate_maybe() {
-    const {endstate} = game.ref_current(), pausing = M.is_pausing()
+    const {endstate, endstate_stdev} = game.ref_current(), pausing = M.is_pausing()
     const update_p = endstate, dummy_p = endstate && empty(endstate[0])
     const reuse_p = !M.is_busy() && is_endstate_nearly_uptodate(pausing ? 0 : 20)
     update_p ? set_endstate_uptodate(endstate) :
@@ -248,11 +249,13 @@ function set_tentative_endstate_maybe() {
     const es = recall_endstate()
     const immediately = update_p && (pausing || get_showing_until())
     tentatively_add_endstate_to_stones(R.stones, es, immediately)
+    add_endstate_stdev_to_stones(R.stones, endstate_stdev)
     R.is_endstate_drawable = !!es && !dummy_p
 }
 
-function add_endstate_to_stones(stones, endstate, move_count, update_diff_p) {
+function add_endstate_to_stones(stones, endstate, endstate_stdev, move_count, update_diff_p) {
     // if (!endstate) {return}
+    add_endstate_stdev_to_stones(stones, endstate_stdev)
     purely_add_endstate_to_stones(stones, endstate)
     update_diff_p && update_endstate_diff(endstate)
     merge(game.ref(move_count), get_ambiguity_etc(stones, endstate, game, move_count))
@@ -268,6 +271,12 @@ function purely_add_endstate_to_stones(stones, endstate, immediately) {
     const aa = lagged_endstate.update_all(M.is_busy() ? null : endstate)
     aa_each(stones, (s, i, j) => {
         s.endstate = aa_ref(immediately ? endstate : aa, i, j)
+    })
+}
+
+function add_endstate_stdev_to_stones(stones, endstate_stdev) {
+    endstate_stdev && aa_each(stones, (s, i, j) => {
+        s.endstate_stdev = aa_ref(endstate_stdev, i, j)
     })
 }
 
