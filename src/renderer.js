@@ -14,7 +14,6 @@ const {save_blob} = require('./image_exporter.js')
 
 // canvas
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
-const additional_graph_canvas = Q('#additional_graph')
 const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate_graph')
 const graph_overlay_canvas = Q('#graph_overlay')
 const visits_trail_canvas = Q('#visits_trail_canvas')
@@ -405,7 +404,7 @@ function draw_wr_graph(canvas) {
     const endstate_at = showing_endstate_value_p() && R.prev_endstate_clusters &&
           (R.move_count - R.endstate_diff_interval)
     const until = finite_or(showing_until(), endstate_at)
-    D.draw_winrate_graph(canvas, additional_graph_canvas,
+    D.draw_winrate_graph(canvas,
                          until, handle_mouse_on_winrate_graph)
 }
 
@@ -902,9 +901,7 @@ function set_all_canvas_size() {
     const main_board_size = main_board_max_size *
           (R.expand_winrate_bar && !wr_only ? 0.85 : 1)
     const main_board_height = wr_only ? main_board_max_size * 0.85 : main_board_size
-    const additional_graph_height = 0
-    // const additional_graph_height = wr_only ? main_board_height : 0
-    const winrate_bar_height = main_size - main_board_height - additional_graph_height
+    const winrate_bar_height = main_size - main_board_height
     const sub_board_max_height = h =>
           h * (portrait_p() ? 1 : wr_only ? 0.5 : h < 1000 ? 0.55 : 1)
     const sub_board_size =
@@ -914,10 +911,7 @@ function set_all_canvas_size() {
     const winrate_graph_height = main_board_max_size * 0.25
     const winrate_graph_width = (wr_only && !double_boards_p()) ?
           winrate_graph_height : rest_size * main_board_ratio
-    Q('#additional_graph_div').style.display = "none"
-    // Q('#additional_graph_div').style.display = (wr_only ? "block" : "none")
     set_canvas_size(main_canvas, main_board_size, main_board_height)
-    set_canvas_size(additional_graph_canvas, main_board_size, additional_graph_height)
     set_canvas_size(winrate_bar_canvas, main_board_size, winrate_bar_height)
     is_sub_canvas_resized = set_canvas_square_size(sub_canvas, sub_board_size)
     set_canvas_size(winrate_graph_canvas, winrate_graph_width, winrate_graph_height)
