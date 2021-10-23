@@ -46,7 +46,17 @@ function missing_moves(cur_stones, prop) {
 }
 
 function make_ladder_move(i, j, is_black, move_count) {
-    return {move: idx2move(i, j), is_black, move_count}
+    return {move: idx2move(i, j), is_ladder_move: true, is_black, move_count}
+}
+
+function cancel_ladder_hack(game) {
+    game.forEach((h, k) => {
+        if (!h.is_ladder_move) {return}
+        delete h.is_ladder_move
+        delete h.ladder_hit
+        h.move_count = k + 1
+        h.tag && (h.tag = h.tag.replace(ladder_tag_letter, game.new_tag_maybe(true, null)))
+    })
 }
 
 function ladder_is_seen() {last_seen_ladder_prop = last_ladder_prop}
@@ -270,4 +280,5 @@ module.exports = {
     ladder_branches,
     ladder_is_seen,
     last_ladder_branches: () => last_ladder_branches,
+    cancel_ladder_hack,
 }

@@ -43,7 +43,7 @@ const {
     random_exercise_chooser, recent_exercise_chooser, recently_seen_exercises_in,
 } = require('./exercise.js')(exercise_mtime)
 const {tsumego_frame} = require('./tsumego_frame.js')
-const {ladder_branches, ladder_is_seen, last_ladder_branches}
+const {ladder_branches, ladder_is_seen, last_ladder_branches, cancel_ladder_hack}
       = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
@@ -1445,9 +1445,11 @@ function switch_to_game(another_game, move_count) {
 function switch_to_game_id(id, move_count) {
     const llb = last_ladder_branches()
     const bs = [...sequences_and_brothers(), ...llb]
-    const another_game = bs.find(g => g.id === id)
-    const mc = llb.includes(another_game) ? Infinity : move_count
-    another_game && switch_to_game(another_game, mc)
+    const another_game = bs.find(g => g.id === id); if (!another_game) {return}
+    const ladder_p = llb.includes(another_game)
+    const mc = ladder_p ? Infinity : move_count
+    ladder_p && cancel_ladder_hack(another_game)
+    switch_to_game(another_game, mc)
 }
 
 let cut_first_p = false
