@@ -266,6 +266,17 @@ Please note that this feature is experimental and API etc. may be changed in fut
 
 ## <a name="Changes"></a>Major changes
 
+### 0.7.*
+
+* Support the new feature ["ownershipStdev"](https://github.com/lightvector/KataGo/pull/500) in KataGo 1.10.0 (red backgrounds in the subboard), that looks like a heatmap of "KataGo's eye tracking".
+* Add "Auto overview" into Tool menu so that one can turn it off.
+* Slightly improve bogus territory counts.
+* Guess the rule from komi if RU (rule) property is missing in SGF.
+
+Incompatibilities:
+
+* Upgrade libraries (Electron 15, etc.). So you may need to do "npm install" again.
+
 ### 0.6.*
 
 * Indicate inevitability of each move by its font size in suggested variations (KataGo only).
