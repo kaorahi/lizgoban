@@ -2,6 +2,11 @@
 
 # Release notes
 
+## LizGoban 0.7.0-pre2
+
+* Upgrade KataGo to [1.10.0](https://github.com/lightvector/KataGo/releases/tag/v1.10.0).
+* Support the new feature ["ownershipStdev"](https://github.com/lightvector/KataGo/pull/500) in KataGo 1.10.0 (red backgrounds in the subboard), that looks like a heatmap of "KataGo's eye tracking".
+
 ## LizGoban 0.7.0-pre1
 
 * Add "Auto overview" into Tool menu so that one can turn it off.
