@@ -19,6 +19,7 @@ function create_leelaz () {
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
     let startup_log = [], is_in_startup = true
     let analysis_region = null, instant_analysis_p = false
+    let obtained_pda_policy = null
 
     // game state
     let move_count = 0, bturn = true
@@ -70,8 +71,32 @@ function create_leelaz () {
     const set_instant_analysis = instant_p =>
           // need to start kata-analyze again if instant_p is turned off
           (instant_analysis_p = instant_p) || (is_ready && pondering && start_analysis())
-    const start_analysis = () =>
-          (instant_analysis_p && kata_raw_nn()) || start_analysis_actually()
+    const start_analysis = () => {
+        obtained_pda_policy = null;
+        (instant_analysis_p && kata_raw_nn()) ||
+            start_analysis_after_raw_nn() || start_analysis_actually()
+    }
+    const pda_for_checking_policy_aggressiveness = 2.0
+    const start_analysis_after_raw_nn = () => {
+        const args = [
+            ['aggressive_policy', +1],
+            // ['default_policy', 0],
+            ['defensive_policy', -1],
+        ]
+        const call_nn = ([key, sign], cont) => {
+            const receiver = h => {
+                if (!h) {return}
+                obtained_pda_policy || (obtained_pda_policy = {})
+                obtained_pda_policy[key] = h.policy
+                cont()
+            }
+            kata_raw_nn(receiver, pda_for_checking_policy_aggressiveness * sign)
+        }
+        const call = ([first, ...rest], proc, post_proc) =>
+              first ? proc(first, () => call(rest, proc, post_proc)) : post_proc()
+        call(args, call_nn, start_analysis_actually)
+        return true
+    }
     const start_analysis_actually = () => {
         pondering && leelaz([
             is_katago() ? 'kata-analyze' : 'lz-analyze',
@@ -91,7 +116,7 @@ function create_leelaz () {
         arg.endstate_handler && is_supported('endstate') && leelaz('endstate_map')
     }
 
-    const kata_raw_nn = given_receiver => {
+    const kata_raw_nn = (given_receiver, pda) => {
         if (!is_supported('kata-raw-nn')) {return false}
         const receiver = given_receiver || (h => {
             if (!h) {return}
@@ -111,7 +136,17 @@ function create_leelaz () {
             const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} shorttermScoreError ${true_or(shorttermScoreError, -1)} pv ${pv} ownership ${ownership}`
             suggest_reader_maybe(fake_suggest)
         })
-        leelaz('kata-raw-nn 0', on_multiline_response_at_once(on_kata_raw_nn_response(receiver)))
+        // CAUTION:
+        // - use not 'kata-set-param' but update_kata_pda for change detection
+        // - use dummy command 'lizgoban_*' to avoid automatic update_kata_pda
+        // - use command name '*_kata-raw-nn' for remove(pondering_command_p)
+        const proc = () => {
+            const on_response =
+                  on_multiline_response_at_once(on_kata_raw_nn_response(receiver))
+            update_kata_pda(pda)
+            send_task_to_leelaz_sub({command: 'kata-raw-nn 0', on_response})
+        }
+        leelaz(`lizgoban_kata-raw-nn PDA=${pda}`, proc)
         return true
     }
 
@@ -233,8 +268,8 @@ function create_leelaz () {
     // aggressive
     const kata_pda_param = 'playoutDoublingAdvantage'
     const kata_pda_checker = change_detector(0.0)
-    const kata_pda_command_maybe = () => {
-        const pda = kata_pda_supported() && kata_pda_for_this_turn()
+    const kata_pda_command_maybe = given_pda => {
+        const pda = kata_pda_supported() && true_or(given_pda, kata_pda_for_this_turn())
         return truep(pda) && kata_pda_checker.is_changed(pda) &&
             `kata-set-param ${kata_pda_param} ${pda}`
     }
@@ -330,8 +365,8 @@ function create_leelaz () {
         pondering_command_p(task) && update_kata_pda()
         send_task_to_leelaz_sub(task)
     }
-    const update_kata_pda = () => {
-        const command = kata_pda_command_maybe()
+    const update_kata_pda = given_pda => {
+        const command = kata_pda_command_maybe(given_pda)
         command && send_task_to_leelaz_sub({command})
     }
     const send_task_to_leelaz_sub = task => {
@@ -365,7 +400,7 @@ function create_leelaz () {
     const up_to_date_response = () => {return last_response_id >= last_command_id}
 
     const command_matcher = re => (task => task.command.match(re))
-    const pondering_command_p = command_matcher(/^((lz|kata)-analyze|kata-raw-nn)/)
+    const pondering_command_p = command_matcher(/((lz|kata)-analyze|kata-raw-nn)/)
     const endstate_command_p = command_matcher(/^endstate_map/)
     const peek_command_p = command_matcher(/play.*undo/)
     const changer_command_p = command_matcher(/play|undo|clear_board/)
@@ -423,7 +458,7 @@ function create_leelaz () {
 
     const suggest_reader = (s) => {
         const f = arg.suggest_handler; if (!f) {return}
-        const h = parse_analyze(s, bturn, komi, is_katago())
+        const h = parse_analyze(s, bturn, komi, is_katago(), obtained_pda_policy)
         const engine_id = get_engine_id()
         merge(h, {engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits)})
         f(h)
@@ -525,7 +560,7 @@ function hash(str) {
 
 const top_suggestions = 5
 
-function parse_analyze(s, bturn, komi, katago_p) {
+function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     const split_pattern = /\b(?=^dummy_header|ownership|ownershipStdev)\b/
     const splitted = `dummy_header ${s}`.split(split_pattern)
     const part = aa2hash(splitted.map(str => str.trim().split(/(?<=^\S+)\s+/)))
@@ -551,10 +586,21 @@ function parse_analyze(s, bturn, komi, katago_p) {
     // winrate is NaN if suggest = []
     add_order('visits', 'visits_order')
     add_order('winrate', 'winrate_order')
+    const pda_order_keys = [
+        ['aggressive_policy', 'aggressive_policy_order'],
+        ['defensive_policy', 'defensive_policy_order'],
+    ]
+    pda_policy && (suggest.forEach(h => (append_pda_policy(h, pda_policy))),
+                   pda_order_keys.forEach(a => add_order(...a)))
     const {shorttermScoreError} = best_suggest
     const more = truep(shorttermScoreError) ?
           {shorttermScoreError: to_f(shorttermScoreError)} : {}
     return {suggest, visits, b_winrate, score_without_komi, ownership, ownership_stdev, komi, ...more}
+}
+
+function append_pda_policy(h, pda_policy) {
+    const bsize = board_size(), [i, j] = move2idx(h.move), k = i * bsize + j
+    each_key_value(pda_policy, (key, val) => h[key] = val[k])
 }
 
 // (sample of leelaz output for "lz-analyze 10")
