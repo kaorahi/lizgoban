@@ -45,7 +45,7 @@ function tsumego_frame_stones(stones, komi, black_to_play_p, ko_p) {
         return flip(fill(flip(stones)))
     }
     // put outside stones
-    const end = size - 1, margin = 2
+    const margin = 2
     const i0 = imin - margin, i1 = imax + margin, j0 = jmin - margin, j1 = jmax + margin
     const frame_range = [i0, i1, j0, j1]
     const black_to_attack_p = guess_black_to_attack([top, bottom, left, right], size)
