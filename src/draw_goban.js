@@ -715,6 +715,7 @@ function draw_suggest(h, xy, radius, large_font_p, g) {
 }
 
 function draw_top_pda_policy(h, [x, y], radius, g) {
+    if (R.lizzie_style) {return}
     const f = if_top_pda_policy(h, fill_triangle_around, fill_rev_triangle_around)
     if (!f) {return}
     const q = radius / 2, cx = x - radius + q, cy = y - radius + q
@@ -787,9 +788,12 @@ function draw_suggestion_order_gen(lizzie, h, [x, y], radius, color, large_font_
     const [fontsize, d] = (lizzie ? small : large_font_p ? huge : either(large, normal))
           .map(c => c * radius)
     const w = fontsize, x0 = x + d + w / 2, y0 = y - d - w / 2
+    const lizzie_mark =
+          if_top_pda_policy(h, fill_triangle_around, fill_rev_triangle_around)
     g.save()
     g.fillStyle = BLUE
-    lizzie && fill_rect([x + d, y - d - w], [x + d + w, y - d], g)
+    lizzie && (lizzie_mark ? lizzie_mark([x0, y0], w * 0.8, g) :
+               fill_rect([x + d, y - d - w], [x + d + w, y - d], g))
     g.fillStyle = lizzie ? WHITE : either_champ ? RED : color
     g.textAlign = 'center'; g.textBaseline = 'middle'
     fill_text_with_modifier(g, font_modifier, fontsize, h.data.order + 1, x0, y0, w)
