@@ -79,25 +79,24 @@ function succeeding_ladder(game, stones) {
     const valid = (recent_two_moves.length === 2) && recent_two_moves.every(truep) &&
           xor(...recent_two_moves.map(m => m.is_black))
     if (!valid) {return null}
-    const args = [recent_two_moves, move_count + 1, stones]
+    const args = [last(recent_two_moves), move_count + 1, stones]
     return try_to_escape(...args) || try_to_capture(...args)
 }
 
-function try_to_escape(recent_two_moves, move_count, stones) {
-    const [escape_move, attack_move] = recent_two_moves
-    const matched = match_pattern(attack_move, escape_pattern, escape_liberty_pattern, stones)
-    if (!matched) {return null}
-    const [uv, next_idx] = matched
-    const prop = new_prop(next_idx, escape_move.is_black, false, ...uv, stones)
-    return try_ladder(null, prop, move_count, stones)
+function try_to_escape(recent_move, move_count, stones) {
+    return try_to_escape_or_capture(recent_move, move_count, stones,
+                                    escape_pattern, escape_liberty_pattern, false)
 }
-
-function try_to_capture(recent_two_moves, move_count, stones) {
-    const [attack_move, escape_move] = recent_two_moves
-    const matched = match_pattern(escape_move, attack_pattern, attack_liberty_pattern, stones)
+function try_to_capture(recent_move, move_count, stones) {
+    return try_to_escape_or_capture(recent_move, move_count, stones,
+                                    attack_pattern, attack_liberty_pattern, true)
+}
+function try_to_escape_or_capture(recent_move, move_count, stones,
+                                  pattern, liberty_pattern, attack_p) {
+    const matched = match_pattern(recent_move, pattern, liberty_pattern, stones)
     if (!matched) {return null}
     const [uv, next_idx] = matched
-    const prop = new_prop(next_idx, attack_move.is_black, true, ...uv, stones)
+    const prop = new_prop(next_idx, !recent_move.is_black, attack_p, ...uv, stones)
     return try_ladder(null, prop, move_count, stones)
 }
 
