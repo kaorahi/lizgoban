@@ -536,6 +536,7 @@ function parse_analyze(s, bturn, komi, katago_p) {
     const unsorted_suggest =
           i_str.split(/info/).slice(1).map(parser).filter(truep)
     const suggest = sort_by_key(unsorted_suggest, 'order')
+    const best_suggest = suggest[0] || {}
     const top_suggest = suggest.slice(0, top_suggestions)
     const visits = sum(suggest.map(h => h.visits))
     const [wsum, top_visits, scsum] =
@@ -543,14 +544,14 @@ function parse_analyze(s, bturn, komi, katago_p) {
           .reduce(([ws, vs, scs], [w, v, sc]) => [ws + w * v, vs + v, scs + sc * v],
                   [0, 0, 0])
     const winrate = wsum / top_visits, b_winrate = bturn ? winrate : 100 - winrate
-    const score_without_komi = truep((suggest[0] || {}).score_without_komi)
+    const score_without_komi = truep(best_suggest.score_without_komi)
           && (scsum / top_visits)
     const add_order = (sort_key, order_key) => sort_by_key(suggest, sort_key)
           .reverse().forEach((h, i) => (h[order_key] = i))
     // winrate is NaN if suggest = []
     add_order('visits', 'visits_order')
     add_order('winrate', 'winrate_order')
-    const {shorttermScoreError} = (suggest || [])[0] || {}
+    const {shorttermScoreError} = best_suggest
     const more = truep(shorttermScoreError) ?
           {shorttermScoreError: to_f(shorttermScoreError)} : {}
     return {suggest, visits, b_winrate, score_without_komi, ownership, ownership_stdev, komi, ...more}
