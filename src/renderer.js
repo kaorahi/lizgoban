@@ -753,9 +753,6 @@ const max_sequence_length_for_thumbnail = 50  // for safety
 
 // (1) record thumbnail
 
-// To avoid wrong thumbnail recording,
-// we require "no command" intervals before and *after* screenshot.
-
 const thumbnail_deferring_millisec = 500
 
 const [try_thumbnail] =
