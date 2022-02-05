@@ -105,15 +105,12 @@ function try_ladder(prop, move_count, stones) {
     return continue_ladder(new_ladder(prop), prop, move_count, stones)
 }
 function continue_ladder(ladder, prop, move_count, stones) {
-    const {idx, is_black, attack_p, u, v} = prop
+    const {idx, is_black, u, v} = prop
     const {moves} = ladder
     const hit = stopped(idx, is_black, u, v, stones)
     if (hit) {return moves.length <= too_short ? null : (record_hit(moves, hit), ladder)}
     ladder.moves.push(make_ladder_move(...idx, is_black, move_count))
-    const [offset, next_uv] = attack_p ? [idx_minus(v, u), [u, v]] : [v, [v, u]]
-    const next_idx = idx_plus(idx, offset)
-    const next_prop = new_prop(next_idx, !is_black, !attack_p, ...next_uv, stones)
-    return continue_ladder(ladder, next_prop, move_count + 1, stones)
+    return continue_ladder(ladder, next_prop(prop, stones), move_count + 1, stones)
 }
 
 function stopped(idx, is_black, u, v, stones) {
@@ -125,6 +122,13 @@ function stopped(idx, is_black, u, v, stones) {
 
 function record_hit(moves, idx) {
     merge(moves[0], {ladder_hit: idx2move(...idx) || 'nowhere', tag: ladder_tag_letter})
+}
+
+function next_prop(prop, stones) {
+    const {idx, is_black, attack_p, u, v} = prop
+    const [offset, next_uv] = attack_p ? [idx_minus(v, u), [u, v]] : [v, [v, u]]
+    const next_idx = idx_plus(idx, offset)
+    return new_prop(next_idx, !is_black, !attack_p, ...next_uv, stones)
 }
 
 //////////////////////////////////////
