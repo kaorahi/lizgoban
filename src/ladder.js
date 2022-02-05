@@ -2,7 +2,9 @@
 
 const {has_liberty} = require('./rule.js')
 
-const too_short = 5
+// "too_short = 4" means that the ladder continuation is disabled at the move 84 in
+// https://katagotraining.org/media/games/kata1/versus/kata1-b40c256-s9226359552-d2246551327/2021-12-26/6E0A8DCE646900788EE82DF229D51E18.sgf
+const too_short = 4
 
 // wrap into array for convenience
 
