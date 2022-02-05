@@ -71,6 +71,7 @@ with lots of original gimmicks.
 * Real-time display of area counts by KataGo
 * Analysis of gains and losses in recent moves on the board that reveals overlooked side effects
 * Larger fonts for inevitable moves in the suggested variation
+* Marks for the preferred moves by aggressive/defensive AI
 * Highlighting of unexpected good moves that are overlooked by engines
 * Detection of inconsistency between analyses before/after a move as a check of their reliability
 * Additional plots
@@ -269,6 +270,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 ### 0.7.*
 
 * Support the new feature ["ownershipStdev"](https://github.com/lightvector/KataGo/pull/500) in KataGo 1.10.0 (red backgrounds in the subboard), that looks like a heatmap of "KataGo's eye tracking".
+* Show the preferred moves by aggressive/defensive AI. (small blue up/down triangle)
 * Add "Auto overview" into Tool menu so that one can turn it off.
 * Slightly improve bogus territory counts.
 * Slightly improve ladder continuation.
