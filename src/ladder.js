@@ -258,8 +258,10 @@ function stone_or_border(idx, stones) {
     return pred_or_border(idx, stones, h => !h || h.stone)
 }
 function color_stone_or_border(idx, black, stones) {
-    return pred_or_border(idx, stones, h => !h || (h.stone && !xor(h.black, black)))
+    return pred_or_border(idx, stones, h => !h || color_stone_p(h, black))
 }
+
+function color_stone_p(h, black) {return h && h.stone && !xor(h.black, black)}
 
 // internal
 
