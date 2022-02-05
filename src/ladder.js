@@ -86,29 +86,20 @@ function succeeding_ladder(game, stones) {
 
 function try_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
     const [escape_move, attack_move] = recent_two_moves
-    const dame = dame_around(e_idx, stones)
-    const valid = touch_p(e_idx, a_idx) && (dame.length === 1)
-    if (!valid) {return null}
-    const [next_idx] = dame
-    const u = idx_minus(a_idx, e_idx), v = idx_minus(next_idx, e_idx)
-    const matched = check_pattern_around(e_idx, escape_pattern, escape_liberty_pattern,
-                                         recent_two_moves, stones, u, v)
-    const prop = new_prop(next_idx, escape_move.is_black, false, u, v, stones)
-    return matched && try_ladder(null, prop, move_count, stones)
+    const matched = match_pattern(attack_move, escape_pattern, escape_liberty_pattern, stones)
+    if (!matched) {return null}
+    const [uv, next_idx] = matched
+    const prop = new_prop(next_idx, escape_move.is_black, false, ...uv, stones)
+    return try_ladder(null, prop, move_count, stones)
 }
 
 function try_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
     const [attack_move, escape_move] = recent_two_moves
-    const dame = dame_around(e_idx, stones)
-    const keima = dame.filter(ij => keima_p(ij, a_idx))
-    const valid = kosumi_p(e_idx, a_idx) && (dame.length === 2) && (keima.length === 1)
-    if (!valid) {return null}
-    const [next_idx] = keima
-    const u = idx_minus(next_idx, e_idx), v = idx_plus(idx_minus(a_idx, e_idx), u)
-    const matched = check_pattern_around(e_idx, attack_pattern, attack_liberty_pattern,
-                                         recent_two_moves, stones, u, v)
-    const prop = new_prop(next_idx, attack_move.is_black, true, u, v, stones)
-    return matched && try_ladder(null, prop, move_count, stones)
+    const matched = match_pattern(escape_move, attack_pattern, attack_liberty_pattern, stones)
+    if (!matched) {return null}
+    const [uv, next_idx] = matched
+    const prop = new_prop(next_idx, attack_move.is_black, true, ...uv, stones)
+    return try_ladder(null, prop, move_count, stones)
 }
 
 function try_ladder(ladder, prop, move_count, stones) {
@@ -139,8 +130,8 @@ function record_hit(moves, idx) {
 // pattern match
 
 // (in pattern)
-// 1, 2: recent two moves
-// 3: next move (not used at present)
+// 1, 2: recent two moves (1 can be a past move actually)
+// 3: next move
 // X, O: same color stone as 1, 2, respectively
 // .: empty
 // S, x, o: "X or O", "X or .", "O or ."
@@ -161,7 +152,7 @@ function split_pattern(pat) {
 }
 
 const attack_pattern = split_pattern(`
-SO1
+?S1
 X2.
 x3.
 `)
@@ -173,34 +164,56 @@ const attack_liberty_pattern = split_pattern(`
 `)
 
 const escape_pattern = split_pattern(`
-SXO
-O13
-o2.
+?SO
+S13
+?2?
 `)
 
 const escape_liberty_pattern = split_pattern(`
 ??3
-2a?
-???
+?a?
+?3?
 `)
 
-function check_pattern_around(idx, pattern, liberty_pattern, recent_two_moves,
-                              stones, u, v) {
-    const [m1, m2] = recent_two_moves
-    const [color1, color2] = recent_two_moves.map(m => m.is_black)
-    const ij_from_offset = (p, q) =>
-          idx_plus(idx, idx_plus(idx_mul(p, u), idx_mul(q, v)))
-    const ij_from_ab = (a, b) => ij_from_offset(a - 1, b - 1)
+// (bug) This @ is detected as a ladder move.
+// XOO
+// OX.
+// X@.
+// (;SZ[19]KM[6.5];B[dd];W[ed];B[ec];W[dc];B[de];W[eb];B[fd])
+
+const uv_candidates = seq(8).map(k => {
+    const [flip_u, flip_v, swap_uv] = [1, 2, 4].map(mask => mask & k)
+    const sign = flip => flip ? +1 : -1
+    const u = [sign(flip_u), 0], v = [0, sign(flip_v)]
+    return swap_uv ? [v, u] : [u, v]
+})
+
+function match_pattern(recent_move, pattern, liberty_pattern, stones) {
+    const {move, is_black} = recent_move
+    const recent_move_idx = move2idx(move), recent_move_color = is_black
+    const shift_pq = idx_mul(-1, get_pattern_offset(pattern, '2'))
+    const hit_p = uv =>
+          match_pattern_sub(recent_move_idx, recent_move_color, shift_pq, uv,
+                            pattern, liberty_pattern, stones)
+    const found_uv = uv_candidates.find(hit_p); if (!found_uv) {return null}
+    const next_offset = idx_plus(shift_pq, get_pattern_offset(pattern, '3'))
+    const next_idx = ij_plus_pq(recent_move_idx, next_offset, found_uv)
+    return [found_uv, next_idx]
+}
+
+function match_pattern_sub(recent_move_idx, recent_move_color, shift_pq, uv,
+                           pattern, liberty_pattern, stones) {
+    const color2 = recent_move_color, color1 = !color2
+    const pattern_center_idx = ij_plus_pq(recent_move_idx, shift_pq, uv)
+    const ij_from_ab = (a, b) => ij_plus_pq(pattern_center_idx, [a - 1, b - 1], uv)
     const check = (c, a, b) => {
-        const ij = ij_from_ab(a, b), move = idx2move(...ij)
+        const ij = ij_from_ab(a, b)
         const h = aa_ref(stones, ...ij); if (!h) {return false}
         const {stone, black} = h
         const [is_color1, is_color2] = [color1, color2].map(col => !xor(black, col))
         switch (c) {
-        case '1': return move === m1.move
-        case '2': return move === m2.move
-        case 'X': return stone && is_color1
-        case 'O': return stone && is_color2
+        case 'X': case '1': return stone && is_color1
+        case 'O': case '2': return stone && is_color2
         case 'x': return !stone || is_color1
         case 'o': return !stone || is_color2
         case 'S': return stone
@@ -220,6 +233,15 @@ function check_pattern_around(idx, pattern, liberty_pattern, recent_two_moves,
     }
     const match_p = (pat, chk) => aa_map(pat, chk).flat().every(truep)
     return match_p(pattern, check) && match_p(liberty_pattern, check_liberty)
+}
+
+function get_pattern_offset(pattern, letter) {
+    const scanned = aa_map(pattern, (z, a, b) => (z === letter) && [a, b])
+    return scanned.flat().find(truep).map(k => k - 1)
+}
+
+function ij_plus_pq(ij, [p, q], [u, v]) {
+    return idx_plus(ij, idx_plus(idx_mul(p, u), idx_mul(q, v)))
 }
 
 //////////////////////////////////////
@@ -256,22 +278,13 @@ function idx_plus(a, b) {return idx_trans_map(a, b, (p, q) => p + q)}
 function idx_mul(coef, a) {return a.map(z => coef * z)}
 // function idx_minus(a, b) {return idx_plus(a, idx_mul(-1, b))}
 function idx_minus(a, b) {return idx_trans_map(a, b, (p, q) => p - q)}
-function idx_diff(a, b) {return idx_minus(a, b).map(Math.abs)}
+// function idx_diff(a, b) {return idx_minus(a, b).map(Math.abs)}
 // function idx_eq(a, b) {return !idx_diff(a, b).some(identity)}
 function idx_eq(a, b) {return idx_trans_map(a, b, (p, q) => p === q).every(identity)}
-
-function touch_p(a, b) {return is_idx_diff(a, b, [0, 1])}
-function kosumi_p(a, b) {return is_idx_diff(a, b, [1, 1])}
-function keima_p(a, b) {return is_idx_diff(a, b, [1, 2])}
-
-function dame_around(idx, stones) {
-    return around_idx(idx).filter(ij => dame_p(aa_ref(stones, ...ij)))
-}
 
 // internal
 
 function idx_trans_map(a, b, f) {return aa_transpose([a, b]).map(ary => f(...ary))}
-function is_idx_diff(a, b, diff) {return idx_eq(idx_diff(a, b).sort(), diff)}
 
 //////////////////////////////////////
 // exports
