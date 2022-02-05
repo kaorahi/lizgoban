@@ -543,8 +543,6 @@ function menu_template(win) {
                        accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
         menu('Experimental...', [
             obsolete_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
-            ...insert_if(AI.katago_p(),
-                         store_toggler_menu_item('Show aggressive/defensive', 'show_aggressive_defensive')),
             sep,
             item("Tsumego frame", 'Shift+f',
                  () => add_tsumego_frame(), true, game.move_count > 0),
@@ -1304,7 +1302,7 @@ function warn_disabled_cache() {
 function set_board() {
     set_AI_board_size_maybe(game.board_size)
     const hist = P.set_board(game)
-    AI.set_board(hist, game.get_komi(), get_gorule(), R.show_endstate, aggressive(), get_stored('show_aggressive_defensive'))
+    AI.set_board(hist, game.get_komi(), get_gorule(), R.show_endstate, aggressive())
     AI.switch_leelaz(); update_let_me_think(true)
 }
 function set_AI_board_size_maybe(bsize) {

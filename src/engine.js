@@ -14,7 +14,6 @@ function create_leelaz () {
 
     let leelaz_process, arg, base_engine_id, is_ready = false, ownership_p = false
     let aggressive = ''  // '', 'b', 'w'
-    let aggressive_defensive_p = false
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
@@ -75,8 +74,7 @@ function create_leelaz () {
     const start_analysis = () => {
         obtained_pda_policy = null;
         (instant_analysis_p && kata_raw_nn()) ||
-            (aggressive_defensive_p && start_analysis_after_raw_nn()) ||
-            start_analysis_actually()
+            start_analysis_after_raw_nn() || start_analysis_actually()
     }
     const pda_for_checking_policy_aggressiveness = 2.0
     const start_analysis_after_raw_nn = () => {
@@ -187,7 +185,7 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
-    const set_board = (history, new_komi, new_gorule, new_ownership_p, new_aggressive, new_aggressive_defensive_p) => {
+    const set_board = (history, new_komi, new_gorule, new_ownership_p, new_aggressive) => {
         if (is_in_startup) {return}
         change_board_size(board_size())
         let update_kata_p = false
@@ -204,10 +202,6 @@ function create_leelaz () {
         update_kata(gorule, new_gorule, 'kata-set-rules', z => {gorule = z})
         ownership_p = update_kata(ownership_p, new_ownership_p)
         aggressive = update_kata(aggressive, kata_pda_supported() ? new_aggressive : '')
-        // send "name" to call "kata-analyze" again
-        aggressive_defensive_p =
-            update_kata(aggressive_defensive_p, new_aggressive_defensive_p, null,
-                        () => stop_analysis())
         if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
