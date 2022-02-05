@@ -62,7 +62,7 @@ with lots of original gimmicks.
 * Play against weakened engines in several ways (Note: [KaTrain](https://github.com/sanderland/katrain/) has nicer features in this field now.)
 * Play pair Go, "you & KataGo" vs. Leela Zero, etc.
 * [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
-* [Experimental] [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically.
+* [Experimental] [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically. Enjoy watching [Ladder fight!](https://www.reddit.com/r/baduk/comments/llk8cj/ladder_fight/)
 * [Experimental] [External control of GUI](https://github.com/kaorahi/lizgoban/issues/61) from another program
 
 ### Original visualizations
@@ -271,6 +271,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Support the new feature ["ownershipStdev"](https://github.com/lightvector/KataGo/pull/500) in KataGo 1.10.0 (red backgrounds in the subboard), that looks like a heatmap of "KataGo's eye tracking".
 * Add "Auto overview" into Tool menu so that one can turn it off.
 * Slightly improve bogus territory counts.
+* Slightly improve ladder continuation.
 * Guess the rule from komi if RU (rule) property is missing in SGF.
 
 Incompatibilities:
