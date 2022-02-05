@@ -280,7 +280,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 
 Incompatibilities:
 
-* Upgrade libraries (Electron 15, etc.). So you may need to do "npm install" again.
+* Upgrade libraries (Electron 17, etc.). So you may need to do "npm install" again.
 
 ### 0.6.*
 
