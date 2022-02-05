@@ -1,9 +1,9 @@
 // coordinates converter
 
-// idx [i][j] of array: [0][0] = left top, [0][18] = right top
-// coord (x, y) on canvas: (0, 0) = left top, (width, 0) = right top
-// move: "A19" = left top, "T19" = right top
-// sgfpos: "aa" = left top, "sa" = right top
+// idx [i][j] of array: [0][0] = top left, [0][18] = top right
+// coord (x, y) on canvas: (0, 0) = top left, (width, 0) = top right
+// move: "A19" = top left, "T19" = top right
+// sgfpos: "aa" = top left, "sa" = top right
 
 /////////////////////////////////////////////////
 // board_size

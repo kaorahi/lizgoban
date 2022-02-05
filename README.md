@@ -285,7 +285,7 @@ Incompatibilities:
 * Improve loading of nested SGFs, e.g. [AlphaGo Games](https://deepmind.com/alphago-games-english), so that we can read them conveniently:
   * Push the corresponding key (d, e, ...) for each branch (d, e, ... in dotted squares) to preview its sequence with comments.
   * Click one of branches (or hit Enter key in the above preview) to watch it in another trial board.
-  * Click "x" mark at the right top of the board to close it and return to the main branch.
+  * Click "x" mark at the top right of the board to close it and return to the main branch.
 * Implement side by side comparisons of the principal variation and the actual succeeding moves, etc.
 * Add stars to personal exercise book. Starred exercises will appear more often.
 * Support restriction of analysis region by Alt+drag like [KaTrain](https://github.com/sanderland/katrain/).
