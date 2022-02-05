@@ -102,7 +102,8 @@ function try_to_escape_or_capture(recent_move, move_count, stones,
 
 function try_ladder(prop, move_count, stones) {
     if (!prop) {return null}
-    return continue_ladder(new_ladder(prop), prop, move_count, stones)
+    const actual_prop = skip_existing_stones(prop, stones)  // for last_seen_ladder_prop
+    return continue_ladder(new_ladder(prop), actual_prop, move_count, stones)
 }
 function continue_ladder(ladder, prop, move_count, stones) {
     const {idx, is_black, u, v} = prop
@@ -111,6 +112,12 @@ function continue_ladder(ladder, prop, move_count, stones) {
     if (hit) {return moves.length <= too_short ? null : (record_hit(moves, hit), ladder)}
     ladder.moves.push(make_ladder_move(...idx, is_black, move_count))
     return continue_ladder(ladder, next_prop(prop), move_count + 1, stones)
+}
+
+function skip_existing_stones(prop, stones) {
+    const {idx, is_black} = prop
+    const existing = color_stone_p(aa_ref(stones, ...idx), is_black)
+    return existing ? skip_existing_stones(next_prop(prop), stones) : prop
 }
 
 function stopped(idx, is_black, u, v, stones) {
