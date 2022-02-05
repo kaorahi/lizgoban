@@ -33,7 +33,7 @@ function missing_moves(cur_stones, prop) {
     // ..XO...   ? = in_ladder_quadrant
     // ...????
     // ...????
-    const {idx, u, v, stones} = prop
+    const {idx, u, v, orig_stones} = prop
     const [i0, j0] = idx, [i_sign, j_sign] = idx_plus(u, v)
     const front = (k, k0, sign) => (k - k0) * sign >= 0
     const in_ladder_quadrant = (i, j) => front(i, i0, i_sign) && front(j, j0, j_sign)
@@ -41,7 +41,7 @@ function missing_moves(cur_stones, prop) {
           h && h.stone && !(aa_ref(cur_stones, i, j) || {}).stone
     const move_for = (h, i, j) => make_ladder_move(i, j, h.black, h.move_count)
     const pick = (h, i, j) => missing(h, i, j) && move_for(h, i, j)
-    const unsorted_moves = aa_map(stones, pick).flat().filter(truep)
+    const unsorted_moves = aa_map(orig_stones, pick).flat().filter(truep)
     return sort_by_key(unsorted_moves, 'move_count')
 }
 
@@ -66,8 +66,8 @@ function ladder_is_seen() {last_seen_ladder_prop = last_ladder_prop}
 
 function new_ladder(prop) {return {moves: [], prop}}
 
-function new_prop(idx, is_black, attack_p, u, v, stones) {
-    return {idx, is_black, attack_p, u, v, stones}
+function new_prop(idx, is_black, attack_p, u, v, orig_stones) {
+    return {idx, is_black, attack_p, u, v, orig_stones}
 }
 
 //////////////////////////////////////
@@ -124,11 +124,11 @@ function record_hit(moves, idx) {
     merge(moves[0], {ladder_hit: idx2move(...idx) || 'nowhere', tag: ladder_tag_letter})
 }
 
-function next_prop(prop, stones) {
+function next_prop(prop, orig_stones) {
     const {idx, is_black, attack_p, u, v} = prop
     const [offset, next_uv] = attack_p ? [idx_minus(v, u), [u, v]] : [v, [v, u]]
     const next_idx = idx_plus(idx, offset)
-    return new_prop(next_idx, !is_black, !attack_p, ...next_uv, stones)
+    return new_prop(next_idx, !is_black, !attack_p, ...next_uv, orig_stones)
 }
 
 //////////////////////////////////////
