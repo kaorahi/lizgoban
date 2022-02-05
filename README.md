@@ -122,6 +122,8 @@ Start LizGoban as
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
+Never set `reportAnalysisWinratesAs` and `playoutDoublingAdvantagePla` in your *.cfg.
+
 #### To configure LizGoban:
 
 Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or later.
