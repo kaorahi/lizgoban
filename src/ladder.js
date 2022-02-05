@@ -79,12 +79,11 @@ function succeeding_ladder(game, stones) {
     const valid = (recent_two_moves.length === 2) && recent_two_moves.every(truep) &&
           xor(...recent_two_moves.map(m => m.is_black))
     if (!valid) {return null}
-    const indices = recent_two_moves.map(m => move2idx(m.move))
-    const args = [recent_two_moves, indices, move_count + 1, stones]
+    const args = [recent_two_moves, move_count + 1, stones]
     return try_to_escape(...args) || try_to_capture(...args)
 }
 
-function try_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
+function try_to_escape(recent_two_moves, move_count, stones) {
     const [escape_move, attack_move] = recent_two_moves
     const matched = match_pattern(attack_move, escape_pattern, escape_liberty_pattern, stones)
     if (!matched) {return null}
@@ -93,7 +92,7 @@ function try_to_escape(recent_two_moves, [e_idx, a_idx], move_count, stones) {
     return try_ladder(null, prop, move_count, stones)
 }
 
-function try_to_capture(recent_two_moves, [a_idx, e_idx], move_count, stones) {
+function try_to_capture(recent_two_moves, move_count, stones) {
     const [attack_move, escape_move] = recent_two_moves
     const matched = match_pattern(escape_move, attack_pattern, attack_liberty_pattern, stones)
     if (!matched) {return null}
