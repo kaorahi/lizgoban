@@ -12,7 +12,7 @@ function set_last_ladder_branches(bs) {return last_ladder_branches = bs}
 function ladder_branches(game, stones) {
     const orig_ladder = succeeding_ladder(game, stones)
     const ladder = orig_ladder ||
-          try_ladder(null, last_seen_ladder_prop, game.move_count, stones)
+          try_ladder(last_seen_ladder_prop, game.move_count, stones)
     if (!ladder) {return set_last_ladder_branches([])}
     last_ladder_prop = ladder.prop
     const {moves} = ladder, ladder_game = game.shallow_copy()
@@ -97,20 +97,23 @@ function try_to_escape_or_capture(recent_move, move_count, stones,
     if (!matched) {return null}
     const [uv, next_idx] = matched
     const prop = new_prop(next_idx, !recent_move.is_black, attack_p, ...uv, stones)
-    return try_ladder(null, prop, move_count, stones)
+    return try_ladder(prop, move_count, stones)
 }
 
-function try_ladder(ladder, prop, move_count, stones) {
+function try_ladder(prop, move_count, stones) {
     if (!prop) {return null}
+    return continue_ladder(new_ladder(prop), prop, move_count, stones)
+}
+function continue_ladder(ladder, prop, move_count, stones) {
     const {idx, is_black, attack_p, u, v} = prop
-    const {moves} = ladder || (ladder = new_ladder(prop))
+    const {moves} = ladder
     const hit = stopped(idx, is_black, u, v, stones)
     if (hit) {return moves.length <= too_short ? null : (record_hit(moves, hit), ladder)}
     ladder.moves.push(make_ladder_move(...idx, is_black, move_count))
     const [offset, next_uv] = attack_p ? [idx_minus(v, u), [u, v]] : [v, [v, u]]
     const next_idx = idx_plus(idx, offset)
     const next_prop = new_prop(next_idx, !is_black, !attack_p, ...next_uv, stones)
-    return try_ladder(ladder, next_prop, move_count + 1, stones)
+    return continue_ladder(ladder, next_prop, move_count + 1, stones)
 }
 
 function stopped(idx, is_black, u, v, stones) {
