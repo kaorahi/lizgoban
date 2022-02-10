@@ -122,7 +122,6 @@ const stored_keys_spec = [
     ['expand_winrate_bar', false, 'Expanded winrate bar'],
     ['score_bar', true, 'Score bar (KataGo only)'],
     ['show_endstate', true, 'Ownerships (KataGo only)'],
-    ['show_territory_count', true, 'Territory counts (KataGo only)'],
     ['lizzie_style', true, 'Lizzie style'],
     ['let_me_think', false, 'Let me think first'],
     ['auto_overview', true, 'Auto overview'],
