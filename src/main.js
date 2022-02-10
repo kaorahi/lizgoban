@@ -18,6 +18,7 @@ const PATH = require('path'), fs = require('fs')
 
 const {
     option, option_path, image_paths, white_preset,
+    preference_spec,
     default_for_stored_key, stored_keys_for_renderer,
     keep_backward_compatibility_of_stone_style,
 } = require('./option.js')
@@ -268,6 +269,11 @@ each_key_value({
 
 ipc.on('app_version', e => (e.returnValue = app.getVersion()))
 
+ipc.on('get_preferences',
+       e => (e.returnValue =
+             preference_spec.map(([key, label]) => [key, get_stored(key), label])))
+ipc.on('set_preference', (e, key, val) => {set_stored(key, val); update_all()})
+
 // update after every command
 
 function update_all(keep_board) {
@@ -484,6 +490,8 @@ function menu_template(win) {
         item(`Komi (${game.get_komi()})`, undefined, () => ask_komi(win)),
         menu(`Rule (${get_gorule()})`, AI.is_gorule_supported() ? gorule_submenu() : []),
         item('Info', 'CmdOrCtrl+I', () => ask_game_info(win)),
+        sep,
+        item('Preferences', 'CmdOrCtrl+,', open_preference),
     ])
     const view_menu = menu('View', [
         board_type_menu_item('Two boards A (main+PV)', 'double_boards', win),
@@ -1140,6 +1148,16 @@ function open_help(file_name) {
     ]
     const opt = {webPreferences}
     get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
+}
+function open_preference() {
+    const menu = [
+        {label: 'File', submenu: [{role: 'close'}]},
+        {label: 'View',
+         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
+        !app.isPackaged && {label: 'Debug', submenu: [{role: 'toggleDevTools'}]},
+    ].filter(truep)
+    const w = get_new_window('preference_window.html', {webPreferences})
+    w.setMenu(Menu.buildFromTemplate(menu))
 }
 function open_clipboard_image() {
     // window

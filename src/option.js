@@ -116,16 +116,27 @@ const image_paths = [
 ].map(([key, name, working_dir_p]) => [key, working_dir_p ? PATH.resolve(option.working_dir, name) : default_path_for(name)]).filter(([key, path]) => fs.existsSync(path))
 
 // renderer state
-const default_for_stored_key = {
-    lizzie_style: true, expand_winrate_bar: false, score_bar: true,
-    always_show_coordinates: false,
-    let_me_think: false, show_endstate: true, gorule: default_gorule,
-    stone_image_p: true, board_image_p: true, stone_style: '3D',
-    use_cached_suggest_p: true,
-    random_opening_p: false,
-    auto_overview: true,
-    komi_for_new_game: leelaz_komi, komi_for_new_handicap_game: handicap_komi,
-}
+const stored_keys_spec = [
+    // [key, default value, preference label],
+    ['always_show_coordinates', false, 'Coordinates'],
+    ['expand_winrate_bar', false, 'Expanded winrate bar'],
+    ['score_bar', true, 'Score bar (KataGo only)'],
+    ['show_endstate', true, 'Ownerships (KataGo only)'],
+    ['lizzie_style', true, 'Lizzie style'],
+    ['let_me_think', false, 'Let me think first'],
+    ['auto_overview', true, 'Auto overview'],
+    ['random_opening_p', false, 'Random opening'],
+    ['gorule', default_gorule, null],
+    ['stone_image_p', true, null],
+    ['board_image_p', true, null],
+    ['stone_style', '3D', null],
+    ['use_cached_suggest_p', true, null],
+    ['komi_for_new_game', leelaz_komi, null],
+    ['komi_for_new_handicap_game', handicap_komi, null],
+]
+const preference_spec =
+      stored_keys_spec.map(([k, , label]) => label && [k, label]).filter(truep)
+const default_for_stored_key = aa2hash(stored_keys_spec.map(([k, v, ]) => [k, v]))
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 function keep_backward_compatibility_of_stone_style(get_stored, set_stored) {
     const rename = [['paint', '2D'], ['flat', '2.5D'], ['dome', '3D'], ['face', 'Face']]
@@ -141,6 +152,7 @@ module.exports = {
     option_path,
     image_paths,
     white_preset,
+    preference_spec,
     default_for_stored_key,
     stored_keys_for_renderer,
     keep_backward_compatibility_of_stone_style,

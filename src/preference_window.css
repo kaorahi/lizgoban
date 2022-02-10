@@ -1,0 +1,18 @@
+html, body {
+    height: 100%;
+    margin: 0 0.5em;
+    padding: 0;
+}
+
+body {
+    display: flex; flex-direction: column;
+    color: black; background: white;
+}
+
+.item:hover {
+    color: black; background: #8f8;
+}
+
+footer {
+    margin-top: auto; padding: 1em; text-align: center;
+}
