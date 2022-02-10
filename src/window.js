@@ -48,7 +48,6 @@ function get_new_window(file_name, opt) {
 const webPreferences = {
     nodeIntegration: true,
     contextIsolation: false,
-    nativeWindowOpen: false,
 }
 function new_window(default_board_type) {
     const window_id = ++last_window_id, conf_key = 'window.id' + window_id
