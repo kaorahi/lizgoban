@@ -93,6 +93,7 @@ function draw_goban_with_suggest(canvas, opts) {
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
                 draw_loss_p: !R.different_engine_for_white_p && R.show_endstate,
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
+                draw_territory_counts_p: R.show_territory_count,
                 mapping_tics_p: !opts.main_canvas_p, ...opts})
 }
 
@@ -207,6 +208,7 @@ function draw_endstate_goban(canvas, options) {
           `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
           (truep(es) ? `  score = ${f2s(es - R.komi)}` : '')
     const common = {read_only: true, draw_endstate_value_p,
+                    draw_territory_counts_p: true,
                     draw_endstate_stdev_p: draw_endstate_value_p && !past_p}
     const current = {draw_visits_p: true, draw_next_p: true}
     const past = {draw_visits_p: past_text(R.move_count - past_mc, past_score)}
@@ -235,7 +237,7 @@ function draw_goban(canvas, given_stones, opts) {
         pausing_p, trial_p,
         draw_loss_p, draw_coordinates_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
-        draw_endstate_stdev_p,
+        draw_endstate_stdev_p, draw_territory_counts_p,
         read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
         hovered_move, show_until, analysis_region,
         main_canvas_p, handle_mouse_on_goban,
@@ -273,6 +275,7 @@ function draw_goban(canvas, given_stones, opts) {
     draw_on_board(stones, drawp, unit, idx2coord, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     !hide_endstate_clusters_p() && (draw_endstate_p || draw_endstate_value_p) &&
+        draw_territory_counts_p &&
         draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     analysis_region && draw_analysis_region(analysis_region, unit, idx2coord, g)
     // mouse events
