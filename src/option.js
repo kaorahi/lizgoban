@@ -125,26 +125,26 @@ const image_paths = [
 
 // renderer state
 const stored_keys_spec = [
-    // [key, default value, preference label],
-    ['always_show_coordinates', false, 'Coordinates'],
-    ['expand_winrate_bar', false, 'Expanded winrate bar'],
-    ['score_bar', true, 'Score bar (KataGo only)'],
-    ['show_endstate', true, 'Ownerships (KataGo only)'],
-    ['lizzie_style', true, 'Lizzie style'],
-    ['let_me_think', false, 'Let me think first'],
-    ['auto_overview', true, 'Auto overview'],
-    ['random_opening_p', false, 'Random opening'],
-    ['experimental_moves_ownership_p', false, 'Ownerships per move (Katago only, experimental)'],
-    ['gorule', default_gorule, null],
-    ['stone_image_p', true, null],
-    ['board_image_p', true, null],
-    ['stone_style', '3D', null],
-    ['use_cached_suggest_p', true, null],
-    ['komi_for_new_game', leelaz_komi, null],
-    ['komi_for_new_handicap_game', handicap_komi, null],
+    // [key, default value, preference label, preferene shortcut],
+    ['always_show_coordinates', false, 'Coordinates', 'c'],
+    ['expand_winrate_bar', false, 'Expanded winrate bar', 'B'],
+    ['score_bar', true, 'Score bar (KataGo only)', 'C'],
+    ['show_endstate', true, 'Ownerships (KataGo only)', 'E'],
+    ['lizzie_style', true, 'Lizzie style', 'l'],
+    ['let_me_think', false, 'Let me think first', 'M'],
+    ['auto_overview', true, 'Auto overview', 'v'],
+    ['random_opening_p', false, 'Random opening', 'r'],
+    ['experimental_moves_ownership_p', false, 'Ownerships per move (Katago only, experimental)', 'o'],
+    ['gorule', default_gorule],
+    ['stone_image_p', true],
+    ['board_image_p', true],
+    ['stone_style', '3D'],
+    ['use_cached_suggest_p', true],
+    ['komi_for_new_game', leelaz_komi],
+    ['komi_for_new_handicap_game', handicap_komi],
 ]
 const preference_spec =
-      stored_keys_spec.map(([k, , label]) => label && [k, label]).filter(truep)
+      stored_keys_spec.map(([k, , label, shortcut]) => label && [k, label, shortcut]).filter(truep)
 const default_for_stored_key = aa2hash(stored_keys_spec.map(([k, v, ]) => [k, v]))
 const stored_keys_for_renderer = Object.keys(default_for_stored_key)
 function keep_backward_compatibility_of_stone_style(get_stored, set_stored) {

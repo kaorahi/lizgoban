@@ -13,6 +13,10 @@ body {
     color: black; background: #8f8;
 }
 
+.shortcut {
+    font-size: small; color:#aaa;
+}
+
 footer {
     margin-top: auto; padding: 1em; text-align: center;
 }

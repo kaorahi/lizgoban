@@ -274,7 +274,7 @@ ipc.on('app_version', e => (e.returnValue = app.getVersion()))
 
 ipc.on('get_preferences',
        e => (e.returnValue =
-             preference_spec.map(([key, label]) => [key, get_stored(key), label])))
+             preference_spec.map(([key, label, shortcut]) => [key, get_stored(key), label, shortcut])))
 ipc.on('set_preference', (e, key, val) => {set_stored(key, val); update_all()})
 
 // update after every command
