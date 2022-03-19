@@ -19,8 +19,9 @@ function tsumego_frame(stones, komi, black_to_play_p, ko_p) {
     return [fill, validate(analysis_region)]
 }
 
-function tsumego_frame_stones(stones, komi, black_to_play_p, ko_p) {
+function tsumego_frame_stones(orig_stones, komi, black_to_play_p, ko_p) {
     const size = board_size()
+    const stones = aa_dup_hash(orig_stones)
     const ijs = aa_map(stones, (h, i, j) => h.stone && {i, j, black: h.black}).flat()
           .filter(truep)
     if (empty(ijs)) {return []}
