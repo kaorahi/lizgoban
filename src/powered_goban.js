@@ -323,6 +323,11 @@ function get_endstate_clusters(endstate, move_count) {
 }
 
 function get_ambiguity_etc(stones, endstate, game, move_count) {
+    const ambiguity = get_ambiguity(stones, endstate)
+    return truep(ambiguity) ? {ambiguity} : {}
+}
+
+function get_ambiguity(stones, endstate) {
     // ambiguity = sum of (1 - |ownership|) for all stones on the board.
     if (!endstate) {return {}}
     let ambiguity = 0
@@ -333,7 +338,7 @@ function get_ambiguity_etc(stones, endstate, game, move_count) {
         ambiguity += 1 - es
     }
     aa_each(stones, check_endstate)
-    return {ambiguity}
+    return ambiguity
 }
 
 function set_ambiguity_etc_in_game(game) {
