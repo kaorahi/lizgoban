@@ -1346,6 +1346,8 @@ function update_button_etc(availability) {
     update_ui_element('.show_in_anomalous_pair_go', anomalous_pair_go_p)
     update_ui_element('.show_in_exercise', !!R.exercise_metadata)
     update_ui_element('.katago_only', R.is_katago)
+    update_ui_element('.moves_ownership_only',
+                      R.is_katago && R.experimental_moves_ownership_p)
 }
 
 function in_match_p(serious) {return R.in_match && (!serious || R.board_type === 'raw')}

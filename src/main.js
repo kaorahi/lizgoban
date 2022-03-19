@@ -899,6 +899,9 @@ function set_match_param(weaken) {
     let m
     auto_play_weaken =
         (weaken === 'diverse') ? ['random_opening'] :
+        (weaken === 'envy') ? ['moves_ownership', [0, 1], [0, 1], [0, 1]] :
+        (weaken === 'rash') ? ['moves_ownership', [0, 0], [0, 1], [0, 1]] :
+        (weaken === 'chaos') ? ['moves_ownership', [-1, 1], [-1, 1], [-1, 1]] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
         []
@@ -987,6 +990,7 @@ function try_play_best(weaken_method, ...weaken_args) {
           weaken_method === 'random_candidate' ? weak_move(...weaken_args) :
           weaken_method === 'lose_score' ? weak_move_by_score(...weaken_args) :
           weaken_method === 'random_opening' ? random_opening_move(...weaken_args) :
+          weaken_method === 'moves_ownership' ? weak_move_by_moves_ownership(...weaken_args) :
           best_move()
     const pass_maybe =
           () => AI.peek_value('pass', value => {
@@ -1073,6 +1077,40 @@ function weak_move_by_score(average_losing_points) {
               `visits=${selected.visits} order=${selected.order} ` +
               `winrate_order=${selected.winrate_order}`)
     return selected.move
+}
+function weak_move_by_moves_ownership(my, your, space) {
+    // goodness = sum of evaluation over the board
+    // evaluation = weight * ownership_from_my_side (= AI side)
+    // weight = MY (on my stone), YOUR (on your stone), or SPACE
+    // (ex.) your = [1.0, 0.1] means "Try to kill your stones
+    // eagerly if they seems alive and slightly if they seems rather dead".
+    // (your = 0.7 is equivalent to your = [0.7, 0.7])
+    const typical_order = 3
+    const bturn = is_bturn(), sign_for_me = bturn ? 1 : -1
+    const my_color_p = z => !xor(z.black, bturn)
+    const my_ownership_p = es => sign_for_me * es > 0
+    const weight = (z, es) => {
+        const w = !z.stone ? space : my_color_p(z) ? my : your
+        return is_a(w, 'number') ? w : w[my_ownership_p(es) ? 0 : 1]
+    }
+    const evaluate = (z, es) => sign_for_me * weight(z, es) * es
+    const sum_on_stones = f => sum(aa_map(R.stones, f).flat().filter(truep))
+    const goodness = suggest => {
+        const copied_ownership = [...suggest.movesOwnership]
+        const endstate = endstate_from_ownership_destructive(copied_ownership)
+        return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
+    }
+    return weak_move_by_goodness_order(goodness, typical_order)
+}
+function weak_move_by_goodness_order(goodness, typical_order) {
+    if (!AI.katago_p() || !R.experimental_moves_ownership_p) {return best_move()}
+    const candidates = weak_move_candidates()
+    const evaluated = candidates.map(s => ({suggest: s, bad: - goodness(s)}))
+    const ordered = sort_by_key(evaluated, 'bad').map((h, k) => ({...h, order: k}))
+    const weight = h => Math.exp(- h.order / typical_order)
+    const {suggest, order, bad} = weighted_random_choice(ordered, weight)
+    debug_log(`weak_move_by_goodness_order: goodness_order=${order} engine_order=${suggest.order} goodness=${- bad} candidates=${candidates.length} all=${P.orig_suggest().length}`)
+    return suggest.move
 }
 function weak_move_candidates() {
     const suggest = P.orig_suggest()
