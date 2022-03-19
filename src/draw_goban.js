@@ -123,7 +123,8 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const bturn = opts.stones ? opts.bturn : R.bturn
     variation.forEach((move, k) => {
         const b = xor(bturn, k % 2 === 1), w = !b
-        const [pv0, pv] = (suggest.pvVisits || []).slice(k - 1, k + 1)
+        const {pvVisits, pvEdgeVisits} = suggest
+        const pv0 = (pvVisits || [])[k - 1], pv = (pvEdgeVisits || pvVisits || [])[k]
         const supplementary_info = suggested_variation_p && {
             inevitability: pv0 && pv && (pv / pv0),
             obsolete_pv_p: (k === suggest.uptodate_len),
@@ -608,7 +609,7 @@ function draw_movenums(h, xy, radius, g) {
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
     // clean me: Don't use GREEN when mn0 is the string '1'. (see stones_until())
     const color = (mn0 === 1) ? GREEN : h.variation_last ? RED : bw[h.black ? 1 : 0]
-    const min_rad_coef = 0.3, max_rad_coef = 1.2  // max for graphsearch
+    const min_rad_coef = 0.3, max_rad_coef = 1.2  // max is uselss actually
     const rad_coef = clip(Math.sqrt(true_or(h.inevitability, 1)), min_rad_coef, max_rad_coef)
     draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
 }

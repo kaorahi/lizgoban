@@ -121,6 +121,7 @@ function create_leelaz () {
             is_supported('ownershipStdev') && ownership_p && 'ownershipStdev true',
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
             is_supported('pvVisits') && 'pvVisits true',
+            is_supported('pvEdgeVisits') && 'pvEdgeVisits true',
             allow,
         ].filter(truep).join(' '), on_analysis_response)
     }
@@ -179,6 +180,7 @@ function create_leelaz () {
             ['endstate', 'endstate_map'],
             ['kata-raw-nn', 'kata-raw-nn 0'],
             ['pvVisits', 'kata-analyze 1 pvVisits true'],
+            ['pvEdgeVisits', 'kata-analyze 1 pvEdgeVisits true'],
             ['ownershipStdev', 'kata-analyze 1 ownershipStdev true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
         ]
@@ -637,7 +639,7 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     // aa = [['move', 'D17', 'order', '0' ], ['pv', ['D17', 'C4']], ['pvVisits', ['20', '14']]]
     // orig h = {move: 'D17', order: '0', pv: ['D17', 'C4'], pvVisits: ['20', '14']}
     // cooked h = {move: 'D17', order: 0, pv: ['D17', 'C4'], pvVisits: [20, 14]}
-    const pat = /\s*(?=(?:pv|pvVisits)\b)/  // keys for variable-length fields
+    const pat = /\s*(?=(?:pv|pvVisits|pvEdgeVisits)\b)/  // keys for variable-length fields
     const to_key_value = a => a[0].match(pat) ? [a[0], a.slice(1)] : a
     const aa = s.trim().split(pat).map(z => z.split(/\s+/)).map(to_key_value)
     const h = array2hash([].concat(...aa))
@@ -656,7 +658,7 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
         [to_i, 'visits', 'order'],
         [to_percent, 'winrate', 'prior', 'lcb'],
         [to_f, 'scoreStdev'],
-        [to_i_ary, 'pvVisits'],
+        [to_i_ary, 'pvVisits', 'pvEdgeVisits'],
     ]
     cooking_rule.forEach(cook)
     h.prior = h.prior / 100
