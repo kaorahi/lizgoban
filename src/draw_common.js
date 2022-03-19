@@ -124,9 +124,7 @@ function gradation_gen(grad, color0, color1, g) {
     return grad
 }
 
-function hsla(h, s, l, alpha) {
-    return 'hsla(' + h + ',' + s + '%,' + l + '%,' + (alpha === undefined ? 1 : alpha) + ')'
-}
+function hsla(h, s, l, alpha) {return `hsla(${h},${s}%,${l}%,${true_or(alpha, 1)})`}
 
 ////////////////////////////
 // math
