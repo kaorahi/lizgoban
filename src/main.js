@@ -1334,7 +1334,9 @@ function warn_disabled_cache() {
 function set_board() {
     set_AI_board_size_maybe(game.board_size)
     const hist = P.set_board(game)
-    AI.set_board(hist, game.get_komi(), get_gorule(), R.show_endstate, aggressive())
+    const ownership_p = R.show_endstate
+    const moves_ownership_p = R.experimental_moves_ownership_p
+    AI.set_board(hist, game.get_komi(), get_gorule(), ownership_p, moves_ownership_p, aggressive())
     AI.switch_leelaz(); update_let_me_think(true)
 }
 function set_AI_board_size_maybe(bsize) {
@@ -1806,6 +1808,7 @@ function leelaz_start_args(leelaz_command, given_leelaz_args, label) {
                tuning_handler: make_tuning_handler(), weight_file: null,
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['analyze_interval_centisec', 'wait_for_startup',
+                  'experimental_moves_ownership_p',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])
     return {...h, ...leelaz_start_args_for_board_size(board_size())}

@@ -126,6 +126,7 @@ const stored_keys_spec = [
     ['let_me_think', false, 'Let me think first'],
     ['auto_overview', true, 'Auto overview'],
     ['random_opening_p', false, 'Random opening'],
+    ['experimental_moves_ownership_p', false, 'Ownerships per move (Katago only, experimental)'],
     ['gorule', default_gorule, null],
     ['stone_image_p', true, null],
     ['board_image_p', true, null],
