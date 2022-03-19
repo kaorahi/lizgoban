@@ -44,6 +44,7 @@ function create_game(init_history, init_prop) {
         len: () => history.length,
         is_empty: () => empty(history),
         is_fresh: () => self.len() === self.init_len,
+        is_bturn: (mc = self.move_count) => !self.ref(mc).is_black,
         ref: mc => history[mc - 1] || self.move0,
         ref_current: () => self.ref(self.move_count),
         ref_last: () => self.ref(self.len()),

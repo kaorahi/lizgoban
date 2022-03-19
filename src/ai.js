@@ -33,7 +33,7 @@ function restart(h, new_weight_p) {
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
 function set_board(hist, komi, gorule, ownership_p, aggressive) {
-    const set_it = z => z.set_board(hist, komi, gorule, ownership_p,
+    const set_it = z => z.set_board(hist, is_bturn(), komi, gorule, ownership_p,
                                     aggressive_for(z, aggressive))
     each_leelaz(set_it, katago_p())
 }

@@ -22,7 +22,9 @@ function create_leelaz () {
     let obtained_pda_policy = null
 
     // game state
-    let move_count = 0, bturn = true
+    // bturn: for parsing engine output (updated when engine sync is finished)
+    // js_bturn: for sending analysis command (updated immediately in set_board)
+    let move_count = 0, bturn = true, js_bturn = true
 
     // util
     const log = (header, s, show_queue_p) => {
@@ -101,6 +103,7 @@ function create_leelaz () {
     const start_analysis_actually = () => {
         pondering && leelaz([
             is_katago() ? 'kata-analyze' : 'lz-analyze',
+            bw_for(js_bturn),
             `interval ${arg.analyze_interval_centisec}`,
             is_katago() && ownership_p && 'ownership true',
             is_supported('ownershipStdev') && ownership_p && 'ownershipStdev true',
@@ -186,8 +189,9 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
-    const set_board = (history, new_komi, new_gorule, new_ownership_p, new_aggressive) => {
+    const set_board = (history, new_bturn, new_komi, new_gorule, new_ownership_p, new_aggressive) => {
         if (is_in_startup) {return}
+        js_bturn = new_bturn
         change_board_size(board_size())
         let update_kata_p = false
         const update_kata = (val, new_val, command, setter) => {
@@ -203,13 +207,13 @@ function create_leelaz () {
         update_kata(gorule, new_gorule, 'kata-set-rules', z => {gorule = z})
         ownership_p = update_kata(ownership_p, new_ownership_p)
         aggressive = update_kata(aggressive, kata_pda_supported() ? new_aggressive : '')
-        if (empty(history)) {clear_leelaz_board(); update_move_count([]); return}
+        if (empty(history)) {clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
         const update_mc_p = back > 0 || !empty(rest) || update_kata_p
-        update_mc_p && update_move_count(history)
+        update_mc_p && update_move_count(history, new_bturn)
         leelaz_previous_history = history.slice()
     }
     const play1 = h => {
@@ -252,7 +256,7 @@ function create_leelaz () {
     const peek_value_lz = (move, cont) => {
         const do1 = () =>
               leelaz(join_commands('lz-setoption name visits value 1',
-                                   `play ${bw_for(bturn)} ${move}`,
+                                   `play ${bw_for(js_bturn)} ${move}`,
                                    'lz-analyze interval 0'), do2)
         const do2 = () => {
             the_nn_eval_reader =
@@ -262,9 +266,9 @@ function create_leelaz () {
         do1()
     }
     const peek_value_kata = (move, cont) => {
-        const flip = w => bturn ? w : 1 - w // bturn is not updated!
+        const flip = w => js_bturn ? w : 1 - w // js_bturn is not updated!
         const receiver = h => {leelaz('undo'); h && cont(flip(to_f(h.whiteWin[0])))}
-        leelaz(`play ${bw_for(bturn)} ${move}`); kata_raw_nn(receiver)
+        leelaz(`play ${bw_for(js_bturn)} ${move}`); kata_raw_nn(receiver)
     }
 
     // aggressive
@@ -385,9 +389,9 @@ function create_leelaz () {
     const send_to_leelaz = (command, on_response) =>
           send_task_to_leelaz({command, on_response})
 
-    const update_move_count = history => {
+    const update_move_count = (history, new_bturn) => {
         const new_state =
-              {move_count: history.length, bturn: !(last(history) || {}).is_black}
+              {move_count: history.length, bturn: new_bturn}
         const dummy_command = `lizgoban_set ${JSON.stringify(new_state)}`
         const on_response = () => ({move_count, bturn} = new_state)
         leelaz(dummy_command, on_response); update()

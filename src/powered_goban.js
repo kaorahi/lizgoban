@@ -17,7 +17,7 @@ function set_board(given_game) {
     game = given_game; set_board_size(game.board_size)
     const hist = game.array_until(game.move_count)
     R.move_count = game.move_count = hist.length
-    R.bturn = !(last(hist) || {}).is_black
+    R.bturn = game.is_bturn()
     R.visits = null
     set_stones(game.stones_and_hama_at(game.move_count))
     return hist.filter(h => !h.illegal)
@@ -479,7 +479,7 @@ function get_previous_suggest() {
     const [cur, prev] = [0, 1].map(k => game.ref(game.move_count - k))
     // avoid "undefined" and use "null" for merge in set_renderer_state
     const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
-    ret && (ret.bturn = !prev.is_black)
+    ret && (ret.bturn = game.is_bturn(prev.move_count))
     return ret
 }
 function weight_info_text() {

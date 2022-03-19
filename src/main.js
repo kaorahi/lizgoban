@@ -1661,9 +1661,10 @@ function update_state(keep_suggest_p) {
     const history_tags = game.flatMap(pick_tagged)
     const {player_black, player_white, trial} = game
     const su = P.move_count_for_suggestion(), showing_until_p = finitep(su)
-    const cur = game.ref(showing_until_p ? su : game.move_count)
+    const mc = showing_until_p ? su : game.move_count
+    const cur = game.ref(mc)
     const prev_su = showing_until_p && game.ref(su - 1)
-    const showing_bturn = !cur.is_black
+    const showing_bturn = game.is_bturn(mc)
     const subboard_stones_suggest = prev_su && prev_su.suggest && {
         ...subboard_stones_suggest_for(su, prev_su), gain: cur.gain,
     }
