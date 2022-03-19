@@ -16,10 +16,12 @@ E.do_nothing = () => {}
 E.identity = x => x
 E.is_a = (obj, type) => (typeof obj === type)
 E.stringp = obj => E.is_a(obj, 'string')
+E.valid_numberp = obj => E.is_a(obj, 'number') && !isNaN(obj)
 E.functionp = obj => E.is_a(obj, 'function')
 E.clip = (x, lower, upper) =>
     Math.max(lower, Math.min(x, E.truep(upper) ? upper : Infinity))
 E.sum = a => a.reduce((r,x) => r + x, 0)
+E.average = a => E.sum(a) / a.length
 // E.clone = x => JSON.parse(JSON.stringify(x))
 E.merge = Object.assign
 E.empty = a => !a || (a.length === 0)
