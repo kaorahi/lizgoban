@@ -368,8 +368,9 @@ function draw_pv_visits(extended_pv_visits, margin, idx2coord, g) {
     const draw_text = (v, k) => {
         const relative_visits = clip(v / v0, 0, 1)  // clip for graphsearch
         const [ , y] = idx2coord((1 - relative_visits) * (bsize - 1), 0)
-        const major = y - prev_y > fontsize; prev_y = y
-        !stringp(k) && (g.fillStyle = major ? VAGUE_BLACK : PALE_BLACK)
+        const drop = y - prev_y; prev_y = y
+        const major = drop > fontsize, warn = drop < 0
+        !stringp(k) && (g.fillStyle = warn ? highlight : major ? VAGUE_BLACK : PALE_BLACK)
         fill_text(g, fontsize, to_s(k), x, y, maxwidth)
     }
     at.forEach(k => draw_text(pv_visits[k - 1], k))
