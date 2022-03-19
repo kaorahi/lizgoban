@@ -23,7 +23,7 @@ let canvas_scale = 1
 // renderer state
 const R = {
     stones: [], black_hama: 0, white_hama: 0, move_count: 0, init_len: 0, bturn: true,
-    showing_bturn: true, forced_color_to_play: null,
+    forced_color_to_play: null,
     history_length: 0, suggest: [], engine_bturn: true, visits: 1,
     visits_per_sec: 0,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
