@@ -144,13 +144,20 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     mark_unexpected_p && set_expected_stone_for_variation(e, v, displayed_stones)
     const mapping_to_winrate_bar = mapping_text(suggest, opts)
     const {draw_endstate_p} = {draw_endstate_p: R.show_endstate, ...opts}
-    if (draw_endstate_p && suggest.movesOwnership && R.experimental_moves_ownership_p) {
+    const draw_moves_ownership_p =
+          draw_endstate_p && suggest.movesOwnership && R.experimental_moves_ownership_p
+    if (draw_moves_ownership_p) {
         const o = [...suggest.movesOwnership]  // dup for safety
-        aa_each(displayed_stones, s => {s.endstate = o.shift()})
+        aa_each(displayed_stones, s => {
+            const es = o.shift()
+            s.endstate_diff = es - s.endstate
+            s.endstate = es
+        })
     }
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_expected_p: true,
-                draw_endstate_p,
+                draw_endstate_p: draw_moves_ownership_p,
+                draw_endstate_diff_p: draw_moves_ownership_p,
                 mapping_to_winrate_bar, pv_visits, ...opts})
 }
 
