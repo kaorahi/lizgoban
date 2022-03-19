@@ -615,8 +615,9 @@ function face_image_for(h) {
     const {endstate, black} = h, es = (black ? 1 : -1) * (endstate || 0)
     // const wr = ((R.winrate_history[R.move_count] || {}).r || 50) / 50 - 1
     // const es = (black ? 1 : -1) * true_or(endstate, wr)
-    const [ , b, w] = R.face_image_rule.find(([threshold, , ]) => es < threshold)
-          || last(R.face_image_rule)
+    const {endstate_rule} = R.face_image_rule
+    const [ , b, w] = endstate_rule.find(([threshold, , ]) => es < threshold)
+          || last(endstate_rule)
     return stone_image_for_key(h, b, w)
 }
 function stone_image_for_key(h, b_key, w_key) {return R.image[h.black ? b_key : w_key]}
