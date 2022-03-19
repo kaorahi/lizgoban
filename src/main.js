@@ -1664,7 +1664,6 @@ function update_state(keep_suggest_p) {
     const mc = showing_until_p ? su : game.move_count
     const cur = game.ref(mc)
     const prev_su = showing_until_p && game.ref(su - 1)
-    const showing_bturn = game.is_bturn(mc)
     const subboard_stones_suggest = prev_su && prev_su.suggest && {
         ...subboard_stones_suggest_for(su, prev_su), gain: cur.gain,
     }
@@ -1678,7 +1677,7 @@ function update_state(keep_suggest_p) {
         history_length, sequence_cursor, sequence_length, attached,
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule, exercise_metadata,
-        showing_bturn, subboard_stones_suggest,
+        subboard_stones_suggest,
         in_pair_go,
         pv_trail_max_suggestions,
     }, more)

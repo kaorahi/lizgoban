@@ -4,6 +4,7 @@
 let winrate_bar_prev = 50
 
 function draw_winrate_bar_sub(target_move, canvas, move_count, large_bar, pale_text_p) {
+    R.showing_bturn = R.engine_bturn // ugly!
     const w = canvas.width, h = canvas.height, g = canvas.getContext("2d")
     const score_p = score_bar_p(), tics = score_p ? 19 : 9
     const xfor = percent => w * percent / 100

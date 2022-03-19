@@ -601,7 +601,8 @@ function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     const {shorttermScoreError} = best_suggest
     const more = truep(shorttermScoreError) ?
           {shorttermScoreError: to_f(shorttermScoreError)} : {}
-    return {suggest, visits, b_winrate, score_without_komi, ownership, ownership_stdev, komi, ...more}
+    const engine_bturn = bturn
+    return {suggest, engine_bturn, visits, b_winrate, score_without_komi, ownership, ownership_stdev, komi, ...more}
 }
 
 function append_pda_policy(h, pda_policy) {

@@ -60,6 +60,8 @@ function endstate_handler(h) {
     AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
 }
 
+// keys0: same as keys1. false, null, undefined are also valid.
+const suggest_keys0 = ['engine_bturn']
 // keys1: required. individual plot for each engine.
 const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 // keys2: optional. single global plot.
@@ -80,12 +82,14 @@ function suggest_handler(h) {
           (!AI.is_gorule_supported() || !cur_by_engine.gorule || cur_by_engine.gorule === h.gorule)
     const preferred_h = !R.use_cached_suggest_p ? h :
           prefer_cached_p ? {...h, ...cur_by_engine} : h
-    // do not use suggest_keys1 for background_visits
+    // do not use suggest_keys1 for background_visits etc.
     // because we need to copy falsy value too.
     preferred_h.background_visits =
         cur.background_visits = ((h !== preferred_h) && h.visits)
-    const copy_vals = (keys, to) =>
-          keys.forEach(k => truep(preferred_h[k]) && (to[k] = preferred_h[k]))
+    const copy_vals = (keys, to, allow_false_p) =>
+          keys.forEach(k => (truep(preferred_h[k]) || allow_false_p) && (to[k] = preferred_h[k]))
+    copy_vals(suggest_keys0, cur, true)
+    copy_vals(suggest_keys0, cur_by_engine, true)
     copy_vals(suggest_keys1, cur)
     copy_vals(suggest_keys1, cur_by_engine)
     copy_vals(suggest_keys2, cur)
@@ -479,7 +483,7 @@ function get_previous_suggest() {
     const [cur, prev] = [0, 1].map(k => game.ref(game.move_count - k))
     // avoid "undefined" and use "null" for merge in set_renderer_state
     const ret = (prev.suggest || []).find(h => h.move === (cur.move || '')) || null
-    ret && (ret.bturn = game.is_bturn(prev.move_count))
+    ret && (ret.bturn = prev.engine_bturn)
     return ret
 }
 function weight_info_text() {
