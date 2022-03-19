@@ -220,9 +220,13 @@ function draw_endstate_goban(canvas, options) {
     const default_mc = R.move_count - R.endstate_diff_interval
     const past_mc = clip_init_len(finite_or(show_until, default_mc))
     const past_score = scores[past_mc]
-    const past_text = (d_i, es) =>
-          `  at ${mc2movenum(past_mc)} (${Math.abs(d_i)} move${Math.abs(d_i) > 1 ? 's' : ''} ${d_i > 0 ? 'before' : 'after'})` +
-          (truep(es) ? `  score = ${f2s(es - R.komi)}` : '')
+    const past_text = (d_i, es) => {
+        const movenum = mc2movenum(past_mc), k = Math.abs(d_i)
+        const s = Math.abs(d_i) > 1 ? 's' : ''
+        const before_after = d_i > 0 ? 'before' : 'after'
+        const score = truep(es) ? `  score = ${f2s(es - R.komi)}` : ''
+        return `  at ${movenum} (${k} move${s} ${before_after})` + score
+    }
     const common = {read_only: true, draw_endstate_value_p,
                     draw_endstate_cluster_p: true,
                     draw_endstate_stdev_p: draw_endstate_value_p && !past_p}
