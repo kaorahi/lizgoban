@@ -360,7 +360,10 @@ function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
 }
 
 function draw_winrate_graph_history(ary, to_r, plotter, sr2coord, g) {
-    const f = (val, s) => truep(val) && plotter(...sr2coord(s, to_r(val)), s, g)
+    const f = (val, s) => {
+        const r = truep(val) && to_r(val)
+        truep(r) && plotter(...sr2coord(s, r), s, g)
+    }
     ary.forEach(f)
 }
 
