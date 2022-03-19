@@ -123,6 +123,7 @@ function create_leelaz () {
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
             is_supported('pvVisits') && 'pvVisits true',
             is_supported('pvEdgeVisits') && 'pvEdgeVisits true',
+            is_supported('movesOwnership') && 'movesOwnership true',
             allow,
         ].filter(truep).join(' '), on_analysis_response)
     }
@@ -183,6 +184,7 @@ function create_leelaz () {
             ['pvVisits', 'kata-analyze 1 pvVisits true'],
             ['pvEdgeVisits', 'kata-analyze 1 pvEdgeVisits true'],
             ['ownershipStdev', 'kata-analyze 1 ownershipStdev true'],
+            ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
         ]
         const do_check = table => table.forEach(a => check_supported(...a))
@@ -640,7 +642,7 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     // aa = [['move', 'D17', 'order', '0' ], ['pv', ['D17', 'C4']], ['pvVisits', ['20', '14']]]
     // orig h = {move: 'D17', order: '0', pv: ['D17', 'C4'], pvVisits: ['20', '14']}
     // cooked h = {move: 'D17', order: 0, pv: ['D17', 'C4'], pvVisits: [20, 14]}
-    const pat = /\s*(?=(?:pv|pvVisits|pvEdgeVisits)\b)/  // keys for variable-length fields
+    const pat = /\s*(?=(?:pv|pvVisits|pvEdgeVisits|movesOwnership)\b)/  // keys for variable-length fields
     const to_key_value = a => a[0].match(pat) ? [a[0], a.slice(1)] : a
     const aa = s.trim().split(pat).map(z => z.split(/\s+/)).map(to_key_value)
     const h = array2hash([].concat(...aa))
@@ -652,19 +654,22 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
         ['scoreStdev', 0],
     ]
     missing_rule.forEach(if_missing)
+    const turn_sign = bturn ? 1 : -1
     const cook1 = (f, key) => {const val = f(h[key]); truep(val) && (h[key] = val)}
     const cook = ([f, ...keys]) => keys.forEach(k => cook1(f, k))
-    const to_i_ary = a => Array.isArray(a) && a.map(to_i)
+    const to_ary = f => a => Array.isArray(a) && a.map(f)
+    const to_f_by_turn = z => to_f(z) * turn_sign
     const cooking_rule = [
         [to_i, 'visits', 'order'],
         [to_percent, 'winrate', 'prior', 'lcb'],
         [to_f, 'scoreStdev'],
-        [to_i_ary, 'pvVisits', 'pvEdgeVisits'],
+        [to_ary(to_i), 'pvVisits', 'pvEdgeVisits'],
+        [to_ary(to_f_by_turn), 'movesOwnership'],
     ]
     cooking_rule.forEach(cook)
     h.prior = h.prior / 100
     truep(h.scoreMean) &&
-        (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
+        (h.score_without_komi = h.scoreMean * turn_sign + komi)
     return h
 }
 function ownership_parser(s, bturn) {

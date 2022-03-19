@@ -143,8 +143,14 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     new_pv_move && merge_stone_at(new_pv_move, displayed_stones, {new_pv_p: true})
     mark_unexpected_p && set_expected_stone_for_variation(e, v, displayed_stones)
     const mapping_to_winrate_bar = mapping_text(suggest, opts)
+    const {draw_endstate_p} = {draw_endstate_p: R.show_endstate, ...opts}
+    if (draw_endstate_p && suggest.movesOwnership) {
+        const o = [...suggest.movesOwnership]  // dup for safety
+        aa_each(displayed_stones, s => {s.endstate = o.shift()})
+    }
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_expected_p: true,
+                draw_endstate_p,
                 mapping_to_winrate_bar, pv_visits, ...opts})
 }
 
@@ -182,6 +188,7 @@ function draw_goban_with_given_variation_sub(canvas, pv, expected_pv, options) {
 
 function draw_readonly_goban_with_variation(canvas, suggest, options) {
     const opts = {read_only: true, force_draw_expected_p: true,
+                  draw_endstate_p: false,
                   mapping_to_winrate_bar: false, ...options}
     draw_goban_with_variation(canvas, suggest, opts)
 }
@@ -191,6 +198,7 @@ function draw_goban_with_subboard_stones_suggest(canvas, options) {
     const draw_visits_p = truep(gain) && gain <= blunder_threshold &&
             `  ${bturn ? 'B' : 'W'} ${f2s(gain, 1)} pts`
     const opts = {stones, bturn, mapping_to_winrate_bar: false, draw_next_p: true,
+                  draw_endstate_p: false,
                   ...options,
                   // draw_visits_p must be later than options
                   draw_visits_p, trial_p: 'ref'}
