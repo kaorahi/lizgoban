@@ -74,7 +74,8 @@ function suggest_handler(h) {
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
     h.ownership && (h.endstate = endstate_from_ownership_destructive(h.ownership))
-    h.ownership_stdev && (h.endstate_stdev = endstate_from_ownership_destructive(h.ownership_stdev))
+    h.ownership_stdev &&
+        (h.endstate_stdev = endstate_from_ownership_destructive(h.ownership_stdev))
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
     const cur_by_engine = cur.by[engine_id]
     const prefer_cached_p = cur_by_engine.visits > h.visits &&
