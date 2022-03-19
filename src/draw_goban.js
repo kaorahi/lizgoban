@@ -123,11 +123,11 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const bturn = opts.stones ? opts.bturn : R.bturn
     variation.forEach((move, k) => {
         const b = xor(bturn, k % 2 === 1), w = !b
-        const {pvVisits, pvEdgeVisits} = suggest
+        const {pvVisits, pvEdgeVisits, uptodate_len} = suggest
         const pv0 = (pvVisits || [])[k - 1], pv = (pvEdgeVisits || pvVisits || [])[k]
         const supplementary_info = suggested_variation_p && {
             inevitability: pv0 && pv && (pv / pv0),
-            obsolete_pv_p: (k === suggest.uptodate_len),
+            obsolete_pv_p: (k === uptodate_len),
         }
         const pv_stone = {
             stone: true, black: b, white: w,
