@@ -292,12 +292,15 @@ function keep_selected_variation_maybe(suggest) {
     if (empty(suggest)) {return}; suggest[0].was_top = true
     const sticky = any_selected_suggest(); if (!sticky) {return}
     const merge_sticky = (orig, kept) => {
-        const {pv, was_top} = kept, pvVisits = kept.pvVisits && kept.pvVisits.slice()
+        const {pv, was_top} = kept
+        const copy_kept = k => kept[k] && kept[k].slice()
+        const pvVisits = copy_kept('pvVisits')
         const new_pv = orig.pv
         const obsolete_visits = kept.obsolete_visits || (pvVisits && pvVisits[0]) || 0
         const uptodate_len = common_header_length(new_pv, pv, true)
-        pvVisits && orig.pvVisits &&
-            replace_header(pvVisits, orig.pvVisits.slice(0, uptodate_len))
+        const replace_header_maybe = (kv, ov) => kv && ov &&
+              replace_header(kv, ov.slice(0, uptodate_len))
+        replace_header_maybe(pvVisits, orig.pvVisits)
         return {...orig, pv, pvVisits, was_top, obsolete_visits, uptodate_len, new_pv}
     }
     const k = suggest.findIndex(z => z.move === sticky.move)
