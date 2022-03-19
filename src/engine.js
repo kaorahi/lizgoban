@@ -101,7 +101,19 @@ function create_leelaz () {
         return true
     }
     const start_analysis_actually = () => {
+        const allow = is_supported('allow') && analysis_region_string()
+        // for a bug in KataGo v1.10.0:
+        // https://github.com/lightvector/KataGo/issues/602
+        // https://github.com/lightvector/KataGo/commit/78d811a6ed03e0e00a86232dff74131851a09717
+        // "allow" seems ignored in the first call of "kata-analyze B ..."
+        // just after "play B ...". It works in the second call.
+        // So we put a dummy kata-analyze before the actual one.
+        // (fixme) this "version check" may be incorrect someday
+        const is_katago_until_1_10_0 = is_katago() && !is_supported('pvEdgeVisits')
+        const workaround_for_katago_bug = allow && is_katago_until_1_10_0 &&
+              `kata-analyze ${bw_for(js_bturn)} interval 999999;`
         pondering && leelaz([
+            workaround_for_katago_bug,
             is_katago() ? 'kata-analyze' : 'lz-analyze',
             bw_for(js_bturn),
             `interval ${arg.analyze_interval_centisec}`,
@@ -109,7 +121,7 @@ function create_leelaz () {
             is_supported('ownershipStdev') && ownership_p && 'ownershipStdev true',
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
             is_supported('pvVisits') && 'pvVisits true',
-            is_supported('allow') && analysis_region_string(),
+            allow,
         ].filter(truep).join(' '), on_analysis_response)
     }
     const stop_analysis = () => {leelaz('name')}
