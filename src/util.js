@@ -125,7 +125,7 @@ E.snip_text = (str, head, tail, dots) => {
 
 E.orig_suggest_p = s => s.order >= 0
 
-E.endstate_from_ownership =
+E.endstate_from_ownership_destructive =
     ownership => aa_new(board_size(), board_size(), () => ownership.shift())
 
 E.change_detector = init_val => {
