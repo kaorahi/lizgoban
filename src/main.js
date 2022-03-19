@@ -91,6 +91,7 @@ let auto_analysis_steps = 1
 let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null
+let debug_force_aggressive = null
 
 function set_game(new_game) {
     game = new_game
@@ -583,6 +584,11 @@ function menu_template(win) {
         store_toggler_menu_item('Board image', 'board_image_p'),
         simple_toggler_menu_item('Keep bright board', 'keep_bright_board'),
         simple_toggler_menu_item('Show policy', 'debug_show_policy'),
+        item(`Force aggressive (${debug_force_aggressive || "none"})`, 'Meta+a', () => {
+            const next = R.bturn ?
+                  {_: 'b', b: 'w', w: null} : {_: 'w', w: 'b', b: null}
+            debug_force_aggressive = next[debug_force_aggressive || '_']
+        }),
         sep,
         item('Import diagram image', undefined, open_demo_image),
         sep,
@@ -1332,6 +1338,7 @@ function set_AI_board_size_maybe(bsize) {
     bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
 }
 function aggressive() {
+    if (debug_force_aggressive) {return debug_force_aggressive}
     const in_case = (R.in_match || AI.leelaz_for_white_p()); if (!in_case) {return ''}
     const {handicaps} = game, komi = game.get_komi()
     const b = (handicaps === 0 && komi >= 15) && 'b'
