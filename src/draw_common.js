@@ -38,6 +38,7 @@ function drawers_trio(gen) {
 
 function line_gen(...args) {
     // usage: line([x0, y0], [x1, y1], ..., [xn, yn], g)
+    if (args.length < 3) {return}
     const g = args.pop(), [[x0, y0], ...xys] = args
     g.moveTo(x0, y0); xys.forEach(xy => g.lineTo(...xy))
 }
