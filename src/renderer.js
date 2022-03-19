@@ -1054,6 +1054,8 @@ document.onkeydown = e => {
             !e.repeat && f(wink); break;
     case "[": skip_maybe('previous_sequence'); break;
     case "]": skip_maybe('next_sequence'); break;
+    case "M-,": m('debug_increase_komi', -10); break;
+    case "M-.": m('debug_increase_komi', +10); break;
     }
     if (e.repeat) {e.preventDefault(); return}
     // GROUP 3: usable with sabaki

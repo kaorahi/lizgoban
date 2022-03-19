@@ -207,6 +207,7 @@ const api = {
     read_sgf, open_url, set_game_info,
     next_sequence, previous_sequence, nth_sequence, cut_sequence, duplicate_sequence,
     switch_to_game_id,
+    debug_increase_komi,
     increase_exercise_stars,
     detach_from_sabaki,
     update_analysis_region: AI.update_analysis_region,
@@ -1131,6 +1132,7 @@ function set_komi(k) {
     update_default_p &&
         set_stored(handicap_p ? 'komi_for_new_handicap_game' : 'komi_for_new_game', k)
 }
+function debug_increase_komi(k) {game.komi += k}
 function ask_choice(message, values, proc) {
     const buttons = [...values.map(to_s), 'cancel']
     const action = z => {
