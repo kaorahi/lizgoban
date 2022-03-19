@@ -581,8 +581,7 @@ function menu_template(win) {
         {label: 'REPL', type: 'checkbox', checked: repl_p(), click: toggle_repl},
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
-        {label: 'Keep bright board', type: 'checkbox', checked: R.keep_bright_board,
-         click: () => {R.keep_bright_board = !R.keep_bright_board; update_all()}},
+        simple_toggler_menu_item('Keep bright board', 'keep_bright_board'),
         sep,
         item('Import diagram image', undefined, open_demo_image),
         sep,
@@ -627,6 +626,11 @@ function stone_style_submenu() {
         label, type: 'radio', checked: R.stone_style === label,
         click: () => {set_stored('stone_style', label); update_all()},
     }))
+}
+
+function simple_toggler_menu_item(label, key) {
+    const click = () => {R[key] = !R[key]; update_all()}
+    return {label, type: 'checkbox', checked: R[key], click}
 }
 
 function store_toggler_menu_item(label, key, accelerator, on_click) {
