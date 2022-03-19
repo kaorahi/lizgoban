@@ -112,15 +112,6 @@ function draw_winrate_bar_tics(b_wr, komi_wr, tics, w, h, vline, g) {
     too_black ? fade(0, unit) : too_white ? fade(w, w - unit) : komi_line()
 }
 
-
-function draw_winrate_bar_komi(komi, h, xfor, g) {
-    const dummy = 0
-    const [x1, x2] = [-0.5, 0.5].map(d => xfor(fake_winrate_for(dummy, komi + d, true)))
-    g.lineWidth = 1; g.strokeStyle = '#888'
-    line([x1, 0], [x2, h], g)
-}
-
-
 function draw_winrate_bar_last_move_eval(b_wr, prev_score, h, xfor, vline, g) {
     const obw = origin_b_winrate(), dummy = 0
     const prev_b_wr = score_bar_p() ?
