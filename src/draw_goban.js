@@ -943,7 +943,7 @@ function goban_params(canvas) {
 // stones
 
 function copy_stones_for_display(stones) {
-    return (stones || R.stones).map(row => row.map(s => ({...s})))
+    return aa_dup_hash(stones || R.stones)
 }
 
 function each_stone(stones, proc) {
