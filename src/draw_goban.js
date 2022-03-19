@@ -366,7 +366,8 @@ function draw_pv_visits(extended_pv_visits, margin, idx2coord, g) {
     // pv_visits
     let prev_y = - Infinity
     const draw_text = (v, k) => {
-        const [ , y] = idx2coord((1 - v / v0) * (bsize - 1), 0)
+        const relative_visits = clip(v / v0, 0, 1)  // clip for graphsearch
+        const [ , y] = idx2coord((1 - relative_visits) * (bsize - 1), 0)
         const major = y - prev_y > fontsize; prev_y = y
         !stringp(k) && (g.fillStyle = major ? VAGUE_BLACK : PALE_BLACK)
         fill_text(g, fontsize, to_s(k), x, y, maxwidth)
@@ -606,8 +607,8 @@ function draw_movenums(h, xy, radius, g) {
           h.is_vague ? [MAYBE_BLACK, MAYBE_WHITE] : [BLACK, WHITE]
     // clean me: Don't use GREEN when mn0 is the string '1'. (see stones_until())
     const color = (mn0 === 1) ? GREEN : h.variation_last ? RED : bw[h.black ? 1 : 0]
-    const min_rad_coef = 0.3
-    const rad_coef = clip(Math.sqrt(true_or(h.inevitability, 1)), min_rad_coef)
+    const min_rad_coef = 0.3, max_rad_coef = 1.2  // max for graphsearch
+    const rad_coef = clip(Math.sqrt(true_or(h.inevitability, 1)), min_rad_coef, max_rad_coef)
     draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
 }
 
