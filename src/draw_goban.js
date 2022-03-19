@@ -766,9 +766,13 @@ function draw_minor_suggest(h, xy, radius, g) {
 }
 
 function draw_suggest_0visits(h, xy, radius, g) {
+    draw_suggest_policy(h, xy, radius, 1, 0.2, g)
+}
+
+function draw_suggest_policy(h, xy, radius, line_width, alpha, g) {
     const limit_order = 4, size = (1 + log10(h.data.prior) / limit_order)
     if (size <= 0) {return}
-    g.lineWidth = 1; g.strokeStyle = 'rgba(255,0,0,0.2)'
+    g.lineWidth = line_width; g.strokeStyle = `rgba(255,0,0,${alpha})`
     circle(xy, radius * size, g)
 }
 
