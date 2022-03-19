@@ -29,8 +29,9 @@ function clear_canvas(canvas, bg_color, g) {
 }
 
 function drawers_trio(gen) {
-    const edged = (...a) => {gen(...a); last(a).stroke()}
-    const filled = (...a) => {gen(...a); last(a).fill()}
+    const draw = (...a) => {const g = last(a); g.beginPath(); gen(...a); return g}
+    const edged = (...a) => draw(...a).stroke()
+    const filled = (...a) => draw(...a).fill()
     const both = (...a) => {filled(...a); edged(...a)}
     return [edged, filled, both]
 }
@@ -38,12 +39,12 @@ function drawers_trio(gen) {
 function line_gen(...args) {
     // usage: line([x0, y0], [x1, y1], ..., [xn, yn], g)
     const g = args.pop(), [[x0, y0], ...xys] = args
-    g.beginPath(); g.moveTo(x0, y0); xys.forEach(xy => g.lineTo(...xy))
+    g.moveTo(x0, y0); xys.forEach(xy => g.lineTo(...xy))
 }
-function rect_gen([x0, y0], [x1, y1], g) {g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0)}
-function circle_gen([x, y], r, g) {g.beginPath(); g.arc(x, y, r, 0, 2 * Math.PI)}
+function rect_gen([x0, y0], [x1, y1], g) {g.rect(x0, y0, x1 - x0, y1 - y0)}
+function circle_gen([x, y], r, g) {g.arc(x, y, r, 0, 2 * Math.PI)}
 function fan_gen([x, y], r, [deg1, deg2], g) {
-    g.beginPath(); g.moveTo(x, y)
+    g.moveTo(x, y)
     g.arc(x, y, r, deg1 * Math.PI / 180, deg2 * Math.PI / 180); g.closePath()
 }
 function square_around_gen([x, y], radius, g) {
