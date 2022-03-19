@@ -614,9 +614,8 @@ function face_image_for(h) {
     if (h.movenums) {return null}
     const {endstate, endstate_diff, black} = h
     const conv = z => (black ? 1 : -1) * (z || 0)
-    const es = conv(endstate), diff = conv(endstate_diff)
-    // const wr = ((R.winrate_history[R.move_count] || {}).r || 50) / 50 - 1
-    // const es = (black ? 1 : -1) * true_or(endstate, wr)
+    const wr = true_or((R.winrate_history[R.move_count] || {}).r, 50) / 50 - 1
+    const es = conv(true_or(endstate, wr)), diff = conv(endstate_diff)
     const {endstate_rule, endstate_diff_rule} = R.face_image_rule
     const pick = (rule, z) => !rule ? [] :
           rule.find(([threshold, , ]) => z < threshold) || last(rule)
