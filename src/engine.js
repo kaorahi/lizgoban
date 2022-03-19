@@ -649,13 +649,19 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
         ['scoreStdev', 0],
     ]
     missing_rule.forEach(if_missing)
-    h.lcb = to_percent(h.lcb)
-    h.visits = to_i(h.visits); h.order = to_i(h.order)
-    h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
+    const cook1 = (f, key) => {const val = f(h[key]); truep(val) && (h[key] = val)}
+    const cook = ([f, ...keys]) => keys.forEach(k => cook1(f, k))
+    const to_i_ary = a => Array.isArray(a) && a.map(to_i)
+    const cooking_rule = [
+        [to_i, 'visits', 'order'],
+        [to_percent, 'winrate', 'prior', 'lcb'],
+        [to_f, 'scoreStdev'],
+        [to_i_ary, 'pvVisits'],
+    ]
+    cooking_rule.forEach(cook)
+    h.prior = h.prior / 100
     truep(h.scoreMean) &&
         (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
-    h.scoreStdev = to_f(h.scoreStdev)
-    h.pvVisits && (h.pvVisits = h.pvVisits.map(to_i))
     return h
 }
 function ownership_parser(s, bturn) {
