@@ -306,7 +306,7 @@ function play(move, force_create, default_tag, comment, auto_play_in_match_sec) 
         auto_play_in_match(auto_play_in_match_sec, get_auto_moves_in_match())
     autosave_later()
 }
-function black_to_play_now_p() {return black_to_play_p(R.forced_color_to_play, R.bturn)}
+function black_to_play_now_p() {return black_to_play_p(R.forced_color_to_play, is_bturn())}
 function do_play(move, is_black, tag, note) {
     // We drop "double pass" to avoid halt of analysis by Leelaz.
     // B:D16, W:Q4, B:pass ==> ok
@@ -1037,7 +1037,7 @@ function weak_move(weaken_percent) {
     const r = clip((weaken_percent || 0) / 100, 0, 1)
     const initial_target_winrate = 40 * 10**(- r)
     const target = initial_target_winrate * 2**(- game.move_count / 100)  // (1)
-    const flip_maybe = x => R.bturn ? x : 100 - x
+    const flip_maybe = x => is_bturn() ? x : 100 - x
     const current_winrate = flip_maybe(winrate_after(game.move_count))
     const u = Math.random()**(1 - r) * r  // (2)
     const next_target = current_winrate * (1 - u) + target * u  // (3)
@@ -1731,8 +1731,8 @@ function availability() {
         detach: attached,
         pause: !pausing,
         resume: pausing,
-        bturn: R.bturn,
-        wturn: !R.bturn,
+        bturn: is_bturn(),
+        wturn: !is_bturn(),
         auto_analyze: !game.is_empty(),
         start_auto_analyze: !auto_p,
         stop_auto: auto_p,
