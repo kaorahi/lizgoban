@@ -587,7 +587,8 @@ function play_pass(e) {
     is_event_to_edit_middle(e) ? main('edit_middle', 'pass') :
         (main('pass'), auto_play_in_match())
 }
-function auto_play_in_match() {
+function auto_play_in_match(handicap) {
+    truep(handicap) && main('add_handicap_stones', handicap)
     in_match_p() && main('auto_play_in_match', auto_play_in_match_sec())
 }
 function set_match_param(reset_p) {
