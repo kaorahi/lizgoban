@@ -215,8 +215,9 @@ function create_leelaz () {
     const play1 = h => {
         const {move, is_black} = h
         const f = ok => !ok && !h.illegal && ((h.illegal = true), arg.illegal_handler(h))
-        leelaz('play ' + (is_black ? 'b ' : 'w ') + move, f)
+        leelaz('play ' + bw_for(is_black) + ' ' + move, f)
     }
+    const bw_for = bool => (bool ? 'b' : 'w')
     const undo1 = () => {leelaz('undo')}
     let old_board_size
     const change_board_size = bsize => {
@@ -251,7 +252,7 @@ function create_leelaz () {
     const peek_value_lz = (move, cont) => {
         const do1 = () =>
               leelaz(join_commands('lz-setoption name visits value 1',
-                                   `play ${bturn ? 'b' : 'w'} ${move}`,
+                                   `play ${bw_for(bturn)} ${move}`,
                                    'lz-analyze interval 0'), do2)
         const do2 = () => {
             the_nn_eval_reader =
@@ -263,7 +264,7 @@ function create_leelaz () {
     const peek_value_kata = (move, cont) => {
         const flip = w => bturn ? w : 1 - w // bturn is not updated!
         const receiver = h => {leelaz('undo'); h && cont(flip(to_f(h.whiteWin[0])))}
-        leelaz(`play ${bturn ? 'b' : 'w'} ${move}`); kata_raw_nn(receiver)
+        leelaz(`play ${bw_for(bturn)} ${move}`); kata_raw_nn(receiver)
     }
 
     // aggressive
