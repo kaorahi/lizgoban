@@ -106,13 +106,16 @@ function resolve_engine_path(given_leelaz_command) {
 }
 
 // images
-function cook_face_image_rule(endstate_rule) {
-    return endstate_rule && {endstate_rule}
+function cook_face_image_rule(endstate_rule, endstate_diff_rule) {
+    if (!endstate_rule && !endstate_diff_rule) {return null}
+    const h1 = endstate_rule ? {endstate_rule} : {}
+    const h2 = endstate_diff_rule ? {endstate_diff_rule} : {}
+    return {...h1, ...h2}
 }
 option.face_image_rule =  // clean me: ugly overwriting
-    cook_face_image_rule(option.face_image_rule)
+    cook_face_image_rule(option.face_image_rule, option.face_image_diff_rule)
 const face_image_paths = Object.values(option.face_image_rule || {}).flat()
-      .flatMap(([ , b, w]) => [[b, b], [w, w]])
+      .flatMap(([ , b, w]) => [b && [b, b], w && [w, w]]).filter(truep)
 const image_paths = [
     ['black_stone', 'black.png', true],
     ['white_stone', 'white.png', true],

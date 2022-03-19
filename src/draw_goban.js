@@ -612,15 +612,17 @@ function face_image_p() {
 function stone_image_for(h) {return stone_image_for_key(h, 'black_stone', 'white_stone')}
 function face_image_for(h) {
     if (h.movenums) {return null}
-    const {endstate, black} = h
+    const {endstate, endstate_diff, black} = h
     const conv = z => (black ? 1 : -1) * (z || 0)
-    const es = conv(endstate)
+    const es = conv(endstate), diff = conv(endstate_diff)
     // const wr = ((R.winrate_history[R.move_count] || {}).r || 50) / 50 - 1
     // const es = (black ? 1 : -1) * true_or(endstate, wr)
-    const {endstate_rule} = R.face_image_rule
-    const pick = (rule, z) => rule.find(([threshold, , ]) => z < threshold) || last(rule)
+    const {endstate_rule, endstate_diff_rule} = R.face_image_rule
+    const pick = (rule, z) => !rule ? [] :
+          rule.find(([threshold, , ]) => z < threshold) || last(rule)
     const [ , b, w] = pick(endstate_rule, es)
-    return stone_image_for_key(h, b, w)
+    const [ , db, dw] = pick(endstate_diff_rule, diff)
+    return stone_image_for_key(h, db || b, dw || w)
 }
 function stone_image_for_key(h, b_key, w_key) {return R.image[h.black ? b_key : w_key]}
 
