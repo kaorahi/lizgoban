@@ -582,6 +582,7 @@ function menu_template(win) {
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
         simple_toggler_menu_item('Keep bright board', 'keep_bright_board'),
+        simple_toggler_menu_item('Show policy', 'debug_show_policy'),
         sep,
         item('Import diagram image', undefined, open_demo_image),
         sep,

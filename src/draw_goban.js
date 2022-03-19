@@ -705,6 +705,7 @@ function draw_cheap_shadow([x, y], radius, g) {
 // See "suggestion reader" section in engine.js for suggestion_data.
 
 function draw_suggest(h, xy, radius, large_font_p, g) {
+    if (R.debug_show_policy) {draw_suggest_policy(h, xy, radius, 6, 0.5, g); return}
     if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
     if (minor_suggest_p(h)) {draw_minor_suggest(h, xy, radius, g); return}
     const suggest = h.data, {stroke, fill} = suggest_color(suggest)

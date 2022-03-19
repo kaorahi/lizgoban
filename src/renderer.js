@@ -48,6 +48,7 @@ const R = {
     pv_trail_max_suggestions: 0,
     always_show_coordinates: false,
     keep_bright_board: false,
+    debug_show_policy: false,
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null
