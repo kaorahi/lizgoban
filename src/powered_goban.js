@@ -384,10 +384,8 @@ function winrate_from_game(engine_id) {
             if (s <= game.init_len || xor(is_black, cur.is_black)) {return null}
             const {suggest} = prev, {move} = cur
             const hit = (suggest || []).find(z => z.move === move)
-            const {aggressive_policy, defensive_policy} = hit || {}
-            const valid = truep(aggressive_policy) && truep(defensive_policy)
-            const max = Number.MAX_VALUE
-            return valid && clip(aggressive_policy / defensive_policy, 0, max)
+            const {aggressive_policy, defensive_policy, prior} = hit || {}
+            return remarkable_aggressiveness(aggressive_policy, defensive_policy, prior)
         }
         const aggressiveness = M.plot_aggressiveness_p() ?
               {aggressiveness_b: aggressiveness_of(true), aggressiveness_w: aggressiveness_of(false)} : {}

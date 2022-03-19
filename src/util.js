@@ -95,6 +95,16 @@ function kilo_str_sub(x, rules) {
 // str_sort_uniq('zabcacd') = 'abcdz'
 E.str_sort_uniq = str => [...new Set(str.split(''))].sort().join('')
 
+E.remarkable_aggressiveness = (aggressive_policy, defensive_policy, prior) => {
+    const valid = truep(aggressive_policy) && truep(defensive_policy)
+    if (!valid) {return null}
+    const [bot, mid, top] = [aggressive_policy, defensive_policy, prior].sort()
+    if (top === prior) {return 1.0}
+    const tm = top / mid
+    const agg = (top === aggressive_policy) ? tm : (1 / tm), max = Number.MAX_VALUE
+    return clip(agg, 0, max)
+}
+
 let debug_log_p = false
 E.debug_log = (arg, limit_len) => is_a(arg, 'boolean') ?
     (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len))

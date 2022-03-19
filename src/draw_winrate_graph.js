@@ -350,12 +350,16 @@ function draw_winrate_graph_aggressiveness(sr2coord, g) {
     const f_mag = {true: [fill_square_around, 1],
                    false: [fill_diamond_around, Math.sqrt(2)]}
     const to_r = val => truep(val) && clip(Math.log(val) / Math.log(2) * scale, - bound, bound) + 50
+    const to_r_filtered = val => {
+        const small = 5, r = to_r(val), boring = (clip(r, 50 - small, 50 + small) === r)
+        return !boring && r
+    }
     const moving_average = (a, d) => a.map((z, k) => z && average(a.slice(clip(k - d, 0), k + d + 1).filter(valid_numberp)))
     const plot1 = ([key, rgb, black_p]) => {
         const values = winrate_history_values_of(key), [f, mag] = f_mag[black_p]
         const plotter = (x, y, s, g) => f([x, y], radius * mag, g)
         g.fillStyle = `rgba(${rgb},${alpha})`
-        draw_winrate_graph_history(values, to_r, plotter, sr2coord, g)
+        draw_winrate_graph_history(values, to_r_filtered, plotter, sr2coord, g)
         const d = 6, smoothed_r = moving_average(values.map(to_r), d)
         const xys = smoothed_r.map((r, s) => truep(r) && sr2coord(s, r)).filter(truep)
         g.save()
