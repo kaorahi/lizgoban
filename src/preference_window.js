@@ -33,3 +33,7 @@ window.onload = () => {
     })
     // Q('#debug').textContent = JSON.stringify(preferences)
 }
+
+document.onkeydown = e => {
+    if (e.key === "Escape" || e.ctrlKey && e.key === "[") {window.close()}
+}
