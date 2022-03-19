@@ -80,7 +80,8 @@ function create_leelaz () {
     }
     const pda_for_checking_policy_aggressiveness = 2.0
     const start_analysis_after_raw_nn = () => {
-        if (!kata_pda_supported()) {return false}
+        const too_slow = (speedometer.latest() < 40)
+        if (too_slow || !kata_pda_supported()) {return false}
         const args = [
             ['aggressive_policy', +1],
             // ['default_policy', 0],
