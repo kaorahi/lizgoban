@@ -28,3 +28,14 @@ These are not applied to Katago as its estimation seems more stable.
 
 src/package.json exists only for backward compatibility to enable "npx
 electron src".
+
+Note on confusing names (for historical reason):
+
+is_black - used in game history like {move: "D4", is_black: true, ...}
+black - used in stones (2D array) like {stone: true, black: true, ...}
+
+endstate - 2D array (positive = black)
+ownership - 1D array (positive = black)
+
+move_count - handicap stones are also counted.
+(First move = 1 in a normal game, 5 in a 4-handicap game.)
