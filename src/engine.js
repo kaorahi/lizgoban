@@ -641,15 +641,20 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     const to_key_value = a => a[0].match(pat) ? [a[0], a.slice(1)] : a
     const aa = s.trim().split(pat).map(z => z.split(/\s+/)).map(to_key_value)
     const h = array2hash([].concat(...aa))
-    const if_missing = (key, val) => !truep(h[key]) && (h[key] = val)
-    if_missing('order', fake_order)
-    if_missing('prior', 1000)
-    h.lcb = to_percent(h.lcb || h.winrate)
+    const if_missing = ([key, val]) => !truep(h[key]) && (h[key] = val)
+    const missing_rule = [
+        ['order', fake_order],
+        ['prior', 1000],
+        ['lcb', h.winrate],
+        ['scoreStdev', 0],
+    ]
+    missing_rule.forEach(if_missing)
+    h.lcb = to_percent(h.lcb)
     h.visits = to_i(h.visits); h.order = to_i(h.order)
     h.winrate = to_percent(h.winrate); h.prior = to_percent(h.prior) / 100
     truep(h.scoreMean) &&
         (h.score_without_komi = h.scoreMean * (bturn ? 1 : -1) + komi)
-    h.scoreStdev = to_f(h.scoreStdev || 0)
+    h.scoreStdev = to_f(h.scoreStdev)
     h.pvVisits && (h.pvVisits = h.pvVisits.map(to_i))
     return h
 }
