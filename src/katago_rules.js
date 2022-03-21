@@ -1,3 +1,5 @@
+'use strict'
+
 // ref.
 // https://github.com/lightvector/KataGo/blob/master/docs/GTP_Extensions.md
 // https://www.red-bean.com/sgf/properties.html#RU

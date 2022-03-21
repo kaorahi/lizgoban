@@ -1,3 +1,5 @@
+'use strict'
+
 const CRYPTO = require('crypto')
 
 const assuming_broken_GTP = true

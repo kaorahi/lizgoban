@@ -1,5 +1,7 @@
 // -*- coding: utf-8 -*-
 
+'use strict'
+
 /////////////////////////////////////////////////
 // electron
 const electron = require('electron')

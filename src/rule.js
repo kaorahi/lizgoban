@@ -1,3 +1,5 @@
+'use strict'
+
 // illegal moves are not checked (ko, suicide, occupied place, ...)
 
 ///////////////////////////////////////

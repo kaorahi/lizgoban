@@ -1,3 +1,5 @@
+'use strict'
+
 // utilities
 
 const E = {}

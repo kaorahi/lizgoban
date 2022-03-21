@@ -1,3 +1,5 @@
+'use strict'
+
 // private
 
 let branch_structure

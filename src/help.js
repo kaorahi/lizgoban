@@ -1,3 +1,5 @@
+'use strict'
+
 let electron; try {electron = require('electron')} catch {}
 const version = electron ? electron.ipcRenderer.sendSync('app_version') : ''
 const open_ext = electron ? electron.shell.openExternal : window.open

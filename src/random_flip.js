@@ -1,3 +1,5 @@
+'use strict'
+
 // frontend
 
 function random_flip_rotation(history) {

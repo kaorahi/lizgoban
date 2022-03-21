@@ -1,5 +1,7 @@
 // coordinates converter
 
+'use strict'
+
 // idx [i][j] of array: [0][0] = top left, [0][18] = top right
 // coord (x, y) on canvas: (0, 0) = top left, (width, 0) = top right
 // move: "A19" = top left, "T19" = top right

@@ -1,5 +1,7 @@
 // ai.js: abstraction of engines
 
+'use strict'
+
 const PATH = require('path')
 const original_create_leelaz = require('./engine.js').create_leelaz
 

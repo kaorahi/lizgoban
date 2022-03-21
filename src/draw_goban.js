@@ -1,5 +1,7 @@
 // -*- coding: utf-8 -*-
 
+'use strict'
+
 // state
 let the_target_move = null
 function target_move() {return the_target_move}

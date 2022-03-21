@@ -1,5 +1,7 @@
 // clustering & counting of areas
 
+'use strict'
+
 // fix me: inefficient...
 
 const minor_ownership = 0.1

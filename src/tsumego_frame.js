@@ -1,3 +1,5 @@
+'use strict'
+
 const {ij_flipper} = require('./random_flip.js')
 
 //////////////////////////////////////

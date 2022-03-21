@@ -1,3 +1,5 @@
+'use strict'
+
 const {get_stones_and_set_ko_state} = require('./rule.js')
 const {parse_analyze} = require('./engine.js')
 const TRANSFORM = require('./random_flip.js')

@@ -1,3 +1,5 @@
+'use strict'
+
 // powered_goban.js: board renderer + analysis engine
 // 
 // set_board() indirectly updates displayed board,
