@@ -42,6 +42,7 @@
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; font-size: 2vmin;
   background-color: rgba(255, 255, 255, 0.5); visibility: hidden;
   display: flex; justify-content: center; align-items: center;
+  white-space: normal;
  }
  .dialog p, .dialog div {
   color: white; background-color: #444; padding: 3em; z-index: 9; position: relative;
@@ -50,6 +51,20 @@
  .dialog td:nth-child(2n+3) {padding-left: 2em;}
  .dialog td {padding-bottom: 1em;}
  .dialog textarea {width: 50vw;}
+ #match_ai_conf_dialog > div div {padding: 0.5em 0.5em;}
+ #persona_info code {background-color: black; padding: 0.1em; border-radius: 0.2em;}
+ #persona_info li {list-style-type: none;}
+ #persona_info table {border-collapse: collapse;}
+ #persona_info th, #persona_info td {
+  border: 1px solid gray; text-align: center; padding: 0.5em; font-weight: normal;
+ }
+ #persona_info span[data-sym] {display: inline-block; text-align: center; width: 1em;}
+ #persona_info *[data-sym="-"] {background-color: red;}
+ #persona_info *[data-sym="."] {background-color: transparent;}
+ #persona_info *[data-sym="+"] {background-color: blue;}
+ #persona_info *[data-sym="!"] {background-color: #2c2;}
+ #persona_code_input {width: 3em;}
+ #persona_level {display: inline-block; text-align: right; width: 1em; padding: 0}
  #toast {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   display: flex; justify-content: center; align-items: center;
@@ -188,10 +203,9 @@ vs.
  <option class="katago_only" value="-1.5pt">-1.5pt</option>
  <option class="katago_only" value="-2pt">-2pt</option>
  <option class="katago_only" value="-5pt">-5pt</option>
- <option class="moves_ownership_only" value="envy">(envy)</option>
- <option class="moves_ownership_only" value="rash">(rash)</option>
- <option class="moves_ownership_only" value="chaos">(chaos)</option>
+ <option class="moves_ownership_only" value="persona">(persona)</option>
 </select>
+<input type='button' id='match_ai_conf' onclick="open_match_ai_conf_dialog()" value="...">
 (<input type='number' id='match_sec' value='3' min='1' style='width: 3em'>sec)
 <input type='button' onclick="auto_play_in_match()" value="start AI's turn">
 <input type='button' style='color: red' onclick="stop_match()" value="stop match">
@@ -317,6 +331,42 @@ Exercise ★<span id='exercise_stars'></span>
   <input type='hidden' id='initial_p'>
   <div style='text-align: center; padding: 1em 0em 0em 0em;'>
    <input type='button' onclick="set_game_info()" value=" ok " accesskey='o'>
+   (<u>O</u>)
+  </div>
+  <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">
+ </div>
+</div>
+
+<div class='dialog' id='match_ai_conf_dialog'>
+ <div>
+  <h2>AI persona (strategy setting)</h2>
+  <div id='persona_info'></div>
+  <h2 style="margin-top: 0.5em;">Change persona</h2>
+  <div>
+   new random persona:
+   level <span id='persona_level'></span>
+   <input id='persona_level_slider' type='range' style='width: 12em;' oninput='update_persona_level()'>
+   <input type='button' onclick="randomize_persona()" value="generate">
+  </div>
+  <div>
+   persona code: <input id='persona_code_input' oninput="update_persona_code()">
+  </div>
+  <div>
+   predefined characters:
+   <input type='button' onclick="update_persona_code('666')" value="envy">
+   <input type='button' onclick="update_persona_code('566')" value="rash">
+   <input type='button' onclick="update_persona_code('222')" value="chaos">
+   <input type='button' onclick="update_persona_code('555')" value="dice">
+  </div>
+  <!--
+  <div style="width: 30em;">
+   They can be still tough because
+   they select their moves only in major suggestions of the AI.
+   They play seriously when there is only one reasonable move.
+  </div>
+  -->
+  <div style='text-align: center; padding: 1em 0em 0em 0em;'>
+   <input type='button' onclick="submit_match_ai_conf()" value=" ok " accesskey='o'>
    (<u>O</u>)
   </div>
   <input class="close_button" type='button' onclick="hide_dialog()" value=" × ">

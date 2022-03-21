@@ -13,6 +13,10 @@ const {globalize} = require('./globalize.js')
 globalize(require('./util.js'), require('./coord.js'), require('./draw_common.js'))
 const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
 const {save_blob} = require('./image_exporter.js')
+const {
+    persona_random_code, persona_html_for_code,
+    persona_code_level, persona_level_range,
+} = require('./persona_param.js')
 
 // canvas
 const main_canvas = Q('#goban'), sub_canvas = Q('#sub_goban')
@@ -754,6 +758,48 @@ function shrink_analysis_region(axis, positive) {
     region.splice(axis, 1, shrunken); update_analysis_region(region)
 }
 
+// match AI config
+
+function update_persona_level() {
+    setq("#persona_level", Q("#persona_level_slider").value)
+}
+update_persona_level()
+function randomize_persona() {
+    const level = to_i(Q("#persona_level_slider").value)
+    const code = persona_random_code(level)
+    const extreme = persona_level_range.includes(level)
+    update_persona_code(code)
+    extreme && toast(`only one persona in level ${level}`)
+}
+function update_persona_code(given_code) {
+    const input = Q('#persona_code_input')
+    const code = given_code || input.value.trim()
+    const html = persona_html_for_code(code), valid = !!html
+    input.style.backgroundColor = valid ? '#fff' : '#fcc'
+    if (!valid) {return}
+    input.value = code
+    Q('#persona_info').innerHTML = html
+    // slider initialization
+    const slider = Q('#persona_level_slider')
+    if (slider.hasAttribute('min')) {return}
+    const [min, max] = persona_level_range, h = {min, max}
+    each_key_value(h, (k, v) => slider.setAttribute(k, v))
+    slider.value = persona_code_level(code)
+    update_persona_level()
+}
+
+function open_match_ai_conf_dialog() {
+    update_persona_code(R.persona_code)
+    const no_selection = 'dummy'
+    show_dialog('#match_ai_conf_dialog', no_selection)
+}
+function submit_match_ai_conf() {
+    const code = Q('#persona_code_input').value
+    const valid = !!persona_html_for_code(code)
+    valid ? main('set_persona_code', code) : toast(`invalid code: ${code}`)
+    hide_dialog()
+}
+
 /////////////////////////////////////////////////
 // thmubnails
 
@@ -1337,6 +1383,7 @@ function update_button_etc(availability) {
     f('start_auto_analyze', 'start_auto_analyze auto_analysis_visits')
     f('stop_auto')
     f('trial')
+    f('match_ai_conf')
     const in_match = in_match_p(), serious = in_match_p(true)
     const pair_go_p = (R.in_pair_go === 'pair_go')
     const anomalous_pair_go_p = R.in_pair_go && !pair_go_p
@@ -1423,5 +1470,4 @@ function toast(message, millisec) {
 // https://qiita.com/tkdn/items/5be7ee5cc178a62f4f67
 Q('body').offsetLeft  // magic spell to get updated clientWidth value
 set_all_canvas_size()
-
 main('init_from_renderer')
