@@ -83,11 +83,17 @@ function is_gorule_supported() {
     return leelaz_for_this_turn().is_supported('kata-set-rules')
 }
 
-let analysis_region = null
+let analysis_region = null, allowed_opening_positions = null
 function update_analysis_region(region) {
     analysis_region = region; each_leelaz(apply_current_analysis_region, true)
 }
-function apply_current_analysis_region(lz) {lz.update_analysis_region(analysis_region)}
+function update_allowed_opening_positions(aop) {
+    allowed_opening_positions = aop; each_leelaz(apply_current_analysis_region, true)
+}
+function get_analysis_region() {
+    return allowed_opening_positions ? {allowed_opening_positions} : analysis_region
+}
+function apply_current_analysis_region(lz) {lz.update_analysis_region(get_analysis_region())}
 
 function set_instant_analysis(instant_p) {each_leelaz(lz => lz.set_instant_analysis(instant_p))}
 
@@ -293,7 +299,7 @@ module.exports = {
     unload_leelaz_for_white, leelaz_weight_file, restart,
     set_engine_for_white, restore, info_for_restore, backup,
     different_komi_for_black_and_white, startup_log,
-    update_analysis_region, set_instant_analysis,
+    update_analysis_region, update_allowed_opening_positions, set_instant_analysis,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
