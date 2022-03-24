@@ -17,9 +17,10 @@ const code_radix = pow(code_radix_bits)
 
 const persona_level_range = [0, total_cases * raw_max]
 
-function generate_persona_param() {
+function generate_persona_param(code) {
     let param
-    randomize()
+    if ((code !== undefined) && !persona_code_valid(code)) {return null}
+    code ? set_code(code) : randomize()
 
     function get() {return param}
     function set(z) {param = z}

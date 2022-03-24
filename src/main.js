@@ -47,7 +47,7 @@ const {tsumego_frame} = require('./tsumego_frame.js')
 const {ladder_branches, ladder_is_seen, last_ladder_branches, cancel_ladder_hack}
       = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
-const {generate_persona_param} = require('./persona_param.js')
+const {generate_persona_param, persona_code_valid} = require('./persona_param.js')
 
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
 
@@ -94,6 +94,7 @@ let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null
 let debug_force_aggressive = null
+let auto_play_persona_codes = null
 const persona_param = generate_persona_param()
 
 function set_game(new_game) {
@@ -194,6 +195,7 @@ const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
+    set_auto_play_persona,
     enable_menu,
 }
 const api = {
@@ -596,6 +598,7 @@ function menu_template(win) {
                   {_: 'b', b: 'w', w: null} : {_: 'w', w: 'b', b: null}
             debug_force_aggressive = next[debug_force_aggressive || '_']
         }),
+        item('Autoplay persona', 'Meta+p', () => ask_auto_play_persona(win)),
         sep,
         item('Import diagram image', undefined, open_demo_image),
         sep,
@@ -844,6 +847,7 @@ function try_auto_play(force_next) {
         replay: () => do_as_auto_play(redoable(), redo),
         best: () => try_play_best(...auto_play_weaken),
         random_opening: () => try_play_best('random_opening'),
+        persona_codes: () => try_play_best('bw_persona_codes', auto_play_persona_codes),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() && proc()
@@ -863,7 +867,10 @@ function auto_play_progress() {
 }
 function ask_auto_play_sec(win, replaying) {
     const mismatched_komi = !replaying && AI.different_komi_for_black_and_white()
-    const warning = mismatched_komi ? '(Different komi for black & white) ' : ''
+    const k_warning = mismatched_komi ? '(Different komi for black & white) ' : ''
+    const p_warning = auto_play_persona_codes ?
+          `persona${JSON.stringify(auto_play_persona_codes)} ` : ''
+    const warning = k_warning + p_warning
     const label = 'Auto play seconds:'
     const cannel = replaying ? 'submit_auto_replay' : 'submit_auto_play'
     generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
@@ -872,6 +879,7 @@ function submit_auto_play_or_replay(sec, replaying) {
     const rand_p = store.get('random_opening_p')
     const strategy =
           replaying ? 'replay' :
+          auto_play_persona_codes ? 'persona_codes' :
           rand_p ? 'random_opening' :
           'best'
     default_auto_play_sec = sec; start_auto_play(strategy, sec, Infinity)
@@ -889,6 +897,11 @@ function stop_auto_play() {
 }
 function auto_playing(forever) {
     return auto_play_count >= (forever ? Infinity : 1)
+}
+function ask_auto_play_persona(win) {win.webContents.send('ask_auto_play_persona')}
+function set_auto_play_persona(codes) {
+    const validated = codes.map(c => persona_code_valid(c) && c)
+    auto_play_persona_codes = validated.find(truep) && validated
 }
 
 // match
@@ -1002,6 +1015,7 @@ function try_play_best(weaken_method, ...weaken_args) {
           weaken_method === 'lose_score' ? weak_move_by_score(...weaken_args) :
           weaken_method === 'random_opening' ? random_opening_move(...weaken_args) :
           weaken_method === 'persona' ? weak_move_by_persona(...weaken_args) :
+          weaken_method === 'bw_persona_codes' ? weak_move_by_bw_persona_codes(...weaken_args) :
           best_move()
     const pass_maybe =
           () => AI.peek_value('pass', value => {
@@ -1097,6 +1111,11 @@ function weak_move_by_persona(persona) {
     const [trans, ] = translator_pair(level_range, log_threshold_range)
     const threshold = Math.exp(trans(level))
     return weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
+}
+function weak_move_by_bw_persona_codes([black_code, white_code]) {
+    const p = generate_persona_param(black_to_play_now_p() ? black_code : white_code)
+    debug_log(`weak_move_by_bw_persona_codes ${JSON.stringify({black_code, white_code})} (${!!p})`)
+    return p ? weak_move_by_persona(p) : best_move()
 }
 function weak_move_by_moves_ownership(my, your, space, typical_order, threshold) {
     // goodness = sum of evaluation over the board
@@ -1767,7 +1786,9 @@ function update_title() {
     const names = (b || w) ? `(B: ${n(b)} / W: ${n(w)})` : ''
     const tags = current_tag_letters()
     const tag_text = tags ? `[${tags}]` : ''
-    const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''}`
+    const persona = auto_playing() && auto_play_persona_codes ?
+          ` persona${JSON.stringify(auto_play_persona_codes)}` : ''
+    const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''} ${persona}`
     title_change_detector.is_changed(title) &&
         get_windows().forEach(win => win.setTitle(title))
 }

@@ -110,6 +110,13 @@ function submit_generic_input_dialog() {
     hide_dialog()
 }
 
+function show_auto_play_persona_dialog() {show_dialog('#auto_play_persona_dialog')}
+function submit_auto_play_persona_dialog() {
+    const ids = ['#auto_play_persona_dialog_black', '#auto_play_persona_dialog_white']
+    main('set_auto_play_persona', ids.map(id => Q(id).value))
+    hide_dialog()
+}
+
 function set_game_info() {
     const keys = ['#player_black', '#player_white', '#board_size', '#handicap',
                   '#komi', '#sgf_rule', '#rule', '#comment_form', '#initial_p']
@@ -219,6 +226,8 @@ ipc.on('update_ui', (e, win_prop, availability) => {
 
 ipc.on('generic_input_dialog', (e, label, init_val, channel, warning) =>
        show_generic_input_dialog(warning, label, init_val, val => main(channel, val)))
+
+ipc.on('ask_auto_play_persona', show_auto_play_persona_dialog)
 
 ipc.on('ask_game_info', (e, params) => {
     const {info_text, sgf_rule, current_rule, supported_rules, handicaps,
@@ -1081,6 +1090,8 @@ document.onkeydown = e => {
     switch (key === "Enter" && target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "generic_input_dialog_input": submit_generic_input_dialog(); return
+    case "auto_play_persona_dialog_black": case "auto_play_persona_dialog_white":
+        submit_auto_play_persona_dialog(); return
     case "player_black": case "player_white": case "komi": case "sgf_rule":
         set_game_info(); return
     }
