@@ -96,6 +96,8 @@ let exercise_metadata = null
 let debug_force_aggressive = null
 let auto_play_persona_codes = null
 const persona_param = generate_persona_param()
+const initial_sanity = 0, sanity_range = [-10, 10]
+let sanity = initial_sanity
 
 function set_game(new_game) {
     game = new_game
@@ -1106,11 +1108,17 @@ function weak_move_by_score(average_losing_points) {
 function weak_move_by_persona(persona) {
     const typical_order = 3, threshold_range = [1e-3, 1e-1]
     const [my, your, space] = persona.get()
-    const level = get_stored('persona_level')
     const log_threshold_range = threshold_range.map(Math.log)
-    const [trans, ] = translator_pair(persona_level_range, log_threshold_range)
-    const threshold = Math.exp(trans(level))
+    const [trans, ] = translator_pair(sanity_range, log_threshold_range)
+    const threshold = Math.exp(trans(update_sanity()))
     return weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
+}
+function update_sanity() {
+    const sanity_delta = 0.2
+    const suggest = P.orig_suggest(), wr = (suggest[0] || {}).winrate
+    if (!truep(wr)) {return}
+    const d = - Math.sign(wr - 50) * sanity_delta
+    return sanity = clip(sanity + d, ...sanity_range)
 }
 function weak_move_by_bw_persona_codes([black_code, white_code]) {
     const p = generate_persona_param(black_to_play_now_p() ? black_code : white_code)
@@ -1250,9 +1258,9 @@ function open_preference() {
     const w = get_new_window('preference_window.html', {webPreferences})
     w.setMenu(Menu.buildFromTemplate(menu))
 }
-function set_persona_code(code, level) {
+function set_persona_code(code) {
     persona_param.set_code(code)
-    set_stored('persona_level', level)
+    sanity = initial_sanity
 }
 function open_clipboard_image() {
     // window

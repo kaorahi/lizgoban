@@ -770,10 +770,6 @@ function shrink_analysis_region(axis, positive) {
 
 // match AI config
 
-function update_persona_level() {
-    setq("#persona_level", Q("#persona_level_slider").value)
-}
-update_persona_level()
 function randomize_persona() {
     const code = persona_random_code()
     update_persona_code(code)
@@ -786,13 +782,6 @@ function update_persona_code(given_code) {
     if (!valid) {return}
     input.value = code
     Q('#persona_info').innerHTML = html
-    // slider initialization
-    const slider = Q('#persona_level_slider')
-    if (slider.hasAttribute('min')) {return}
-    const [min, max] = persona_level_range, h = {min, max}
-    each_key_value(h, (k, v) => slider.setAttribute(k, v))
-    slider.value = R.persona_level
-    update_persona_level()
 }
 
 function open_match_ai_conf_dialog() {
@@ -801,9 +790,8 @@ function open_match_ai_conf_dialog() {
 }
 function submit_match_ai_conf() {
     const code = Q('#persona_code_input').value
-    const level = Q('#persona_level_slider').value
     const valid = persona_code_valid(code)
-    valid ? main('set_persona_code', code, level) : toast(`invalid code: ${code}`)
+    valid ? main('set_persona_code', code) : toast(`invalid code: ${code}`)
     hide_dialog()
 }
 
