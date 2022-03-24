@@ -870,7 +870,10 @@ function ask_auto_play_sec(win, replaying) {
 }
 function submit_auto_play_or_replay(sec, replaying) {
     const rand_p = store.get('random_opening_p')
-    const strategy = replaying ? 'replay' : rand_p ? 'random_opening' : 'best'
+    const strategy =
+          replaying ? 'replay' :
+          rand_p ? 'random_opening' :
+          'best'
     default_auto_play_sec = sec; start_auto_play(strategy, sec, Infinity)
 }
 function submit_auto_play(sec) {submit_auto_play_or_replay(sec, false)}
