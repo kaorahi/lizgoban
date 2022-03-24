@@ -11,6 +11,7 @@ const total_cases = stone_cases * ownership_cases
 const elt_variations = pow(elt_bits), raw_max = elt_variations - 1
 const elt_max = elt_from_raw(raw_max)
 const code_radix = pow(code_radix_bits)
+const code_len = total_cases * elt_bits / code_radix_bits  // must be int
 
 ///////////////////////////////////////
 // public
@@ -75,8 +76,7 @@ function persona_html_for_code(code) {
 
 function code_for_param(param) {
     const k = raws_from_param(param).reduce((a, z) => (a << elt_bits) + z)
-    const code_len = total_cases * elt_bits / code_radix_bits  // must be int
-    return to_str(k, code_radix, code_len)
+    return to_code(k)
 }
 function param_for_code(code) {
     const elt_radix = elt_variations
@@ -93,6 +93,7 @@ function random_param() {
 // util
 function pow(k) {return 1 << k}
 function to_str(k, radix, len) {return k.toString(radix).padStart(len, "0")}
+function to_code(k) {return to_str(k, code_radix, code_len)}
 function elt_from_raw(z) {return z + elt_min}  // raw = 0, 1, 2, ...
 function raw_from_elt(z) {return z - elt_min}
 function param_from_raws(raws) {
