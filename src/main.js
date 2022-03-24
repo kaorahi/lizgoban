@@ -1114,10 +1114,10 @@ function weak_move_by_persona(persona) {
     return weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
 }
 function update_sanity() {
-    const sanity_delta = 0.2
+    const max_delta = 0.5, learning_rate = max_delta / 50
     const suggest = P.orig_suggest(), wr = (suggest[0] || {}).winrate
     if (!truep(wr)) {return}
-    const d = - Math.sign(wr - 50) * sanity_delta
+    const d = - learning_rate * (wr - 50)
     return sanity = clip(sanity + d, ...sanity_range)
 }
 function weak_move_by_bw_persona_codes([black_code, white_code]) {
