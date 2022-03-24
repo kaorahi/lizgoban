@@ -66,7 +66,7 @@
  #persona_info *[data-sym="."] {background-color: transparent;}
  #persona_info *[data-sym="+"] {background-color: blue;}
  #persona_info *[data-sym="!"] {background-color: #2c2;}
- #persona_code_input {width: 3em;}
+ #persona_code_input {width: 8em;}
  #toast {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   display: flex; justify-content: center; align-items: center;
@@ -367,7 +367,9 @@ Exercise ★<span id='exercise_stars'></span>
   <div>
    <input type='button' onclick="randomize_persona()" value="Generate">
    or input
-   persona code: <input id='persona_code_input' oninput="update_persona_code()">
+   persona name: <input id='persona_code_input' oninput="update_persona_code()">
+   <br>
+   (Any name is accepted, e.g. Alice, Bob, ...)
   </div>
   <div>
    predefined characters:

@@ -47,7 +47,7 @@ const {tsumego_frame} = require('./tsumego_frame.js')
 const {ladder_branches, ladder_is_seen, last_ladder_branches, cancel_ladder_hack}
       = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
-const {generate_persona_param, persona_code_valid} = require('./persona_param.js')
+const {generate_persona_param} = require('./persona_param.js')
 
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
 
@@ -901,7 +901,7 @@ function auto_playing(forever) {
 }
 function ask_auto_play_persona(win) {win.webContents.send('ask_auto_play_persona')}
 function set_auto_play_persona(codes) {
-    const validated = codes.map(c => persona_code_valid(c) && c)
+    const validated = codes.map(c => (c === '') ? null : c)
     auto_play_persona_codes = validated.find(truep) && validated
 }
 

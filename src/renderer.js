@@ -13,7 +13,6 @@ const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
 const {save_blob} = require('./image_exporter.js')
 const {
     persona_random_code, persona_html_for_code,
-    persona_code_valid,
 } = require('./persona_param.js')
 
 // canvas
@@ -799,11 +798,12 @@ function randomize_persona() {
 function update_persona_code(given_code) {
     const input = Q('#persona_code_input')
     const code = given_code || get_persona_code_input()
-    const valid = persona_code_valid(code), html = persona_html_for_code(code)
+    const valid = (code !== '')
+    const html = persona_html_for_code(code)
     input.style.backgroundColor = valid ? '#fff' : '#fcc'
-    if (!valid) {return}
     input.value = code
     Q('#persona_info').innerHTML = html
+    Q('#persona_info code').innerText = code
 }
 
 function open_match_ai_conf_dialog() {
@@ -812,8 +812,8 @@ function open_match_ai_conf_dialog() {
 }
 function submit_match_ai_conf() {
     const code = get_persona_code_input()
-    const valid = persona_code_valid(code)
-    valid ? main('set_persona_code', code) : toast(`invalid code: ${code}`)
+    const valid = (code !== '')
+    valid ? main('set_persona_code', code) : toast('empty code')
     hide_dialog()
 }
 

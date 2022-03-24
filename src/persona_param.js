@@ -12,13 +12,14 @@ const elt_variations = pow(elt_bits), raw_max = elt_variations - 1
 const elt_max = elt_from_raw(raw_max)
 const code_radix = pow(code_radix_bits)
 const code_len = total_cases * elt_bits / code_radix_bits  // must be int
+const hex_code_len = total_cases * elt_bits / 4  // must be int
 
 ///////////////////////////////////////
 // public
 
 function generate_persona_param(code) {
     let param
-    if ((code !== undefined) && !persona_code_valid(code)) {return null}
+    if ((code !== undefined) && !stringp(code)) {return null}
     code ? set_code(code) : randomize()
 
     function get() {return param}
@@ -36,12 +37,7 @@ function generate_persona_param(code) {
 
 function persona_random_code() {return code_for_param(random_param())}
 
-function persona_code_valid(code) {
-    return stringp(code) && code_for_param(param_for_code(code)) === code
-}
-
 function persona_html_for_code(code) {
-    if (!persona_code_valid(code)) {return null}
     const sym = {"-1": "-", 0: ".", 1: "+", 2: "!"}
     const board_labels = ["AI's stone", "your stone", "empty grid"]
     const ownership_labels = ["AI's ownership", "your ownership"]
@@ -54,7 +50,7 @@ function persona_html_for_code(code) {
     function td(elt) {const s = sym[elt]; return tag("td", s, ["data-sym", s])}
     function th(label) {return tag("th", label)}
     function tr(cols) {return tag("tr", cols.join(""))}
-    const prof = `code <code>${code}</code>`
+    const prof = '<code></code>'  // insert code later for avoiding HTML injection
     const header = tr([prof, ...board_labels].map(th))
     const rows = p_rows.map((r, k) => tr([th(ownership_labels[k]), ...r.map(td)]))
     const table = tag("table", header + rows.join(""))
@@ -74,11 +70,19 @@ function persona_html_for_code(code) {
 ///////////////////////////////////////
 // private
 
+function persona_code_valid(code) {
+    return stringp(code) && code_for_param(param_for_strict_code(code)) === code
+}
 function code_for_param(param) {
     const k = raws_from_param(param).reduce((a, z) => (a << elt_bits) + z)
     return to_code(k)
 }
 function param_for_code(code) {
+    if (persona_code_valid(code)) {return param_for_strict_code(code)}
+    const k = parseInt(sha256sum(code).slice(0, hex_code_len), 16)
+    return param_for_strict_code(to_code(k))
+}
+function param_for_strict_code(code) {
     const elt_radix = elt_variations
     const raw_str = to_str(parseInt(code, code_radix), elt_radix, total_cases)
     const raws = raw_str.split('').map(c => parseInt(c, elt_radix))
@@ -130,6 +134,5 @@ function raws_from_param(param) {return param.flat().map(raw_from_elt)}
 module.exports = {
     generate_persona_param,
     persona_random_code,
-    persona_code_valid,
     persona_html_for_code,
 }
