@@ -94,10 +94,9 @@ let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null
 let debug_force_aggressive = null
+let adjust_sanity_p = false
 let auto_play_persona_codes = null
 const persona_param = generate_persona_param()
-const initial_sanity = 0, sanity_range = [-10, 10]
-let sanity = initial_sanity
 
 function set_game(new_game) {
     game = new_game
@@ -198,6 +197,7 @@ const simple_api = {
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
     set_auto_play_persona,
+    set_sanity_from_renderer,
     enable_menu,
 }
 const api = {
@@ -220,8 +220,7 @@ const api = {
     increase_exercise_stars,
     detach_from_sabaki,
     update_analysis_region: AI.update_analysis_region,
-    set_persona_code,
-
+    set_persona_code, set_adjust_sanity_p,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
 }
@@ -1106,11 +1105,12 @@ function weak_move_by_score(average_losing_points) {
     return selected.move
 }
 function weak_move_by_persona(persona) {
-    const typical_order = 3, threshold_range = [1e-3, 1e-1]
+    const typical_order = 3, threshold_range = [1e-3, 0.3]
     const [my, your, space] = persona.get()
     const log_threshold_range = threshold_range.map(Math.log)
     const [trans, ] = translator_pair(sanity_range, log_threshold_range)
-    const threshold = Math.exp(trans(adjust_sanity()))
+    adjust_sanity_p && adjust_sanity()
+    const threshold = Math.exp(trans(get_stored('sanity')))
     return weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
 }
 function adjust_sanity() {
@@ -1118,7 +1118,7 @@ function adjust_sanity() {
     const suggest = P.orig_suggest(), s0 = (suggest[0] || {}).score_without_komi
     if (!truep(s0)) {return}
     const d = - learning_rate * (s0 - game.get_komi()) * (is_bturn() ? 1 : -1)
-    return sanity = clip(sanity + d, ...sanity_range)
+    set_stored('sanity', clip(get_stored('sanity') + d, ...sanity_range))
 }
 function weak_move_by_bw_persona_codes([black_code, white_code]) {
     const p = generate_persona_param(black_to_play_now_p() ? black_code : white_code)
@@ -1258,10 +1258,9 @@ function open_preference() {
     const w = get_new_window('preference_window.html', {webPreferences})
     w.setMenu(Menu.buildFromTemplate(menu))
 }
-function set_persona_code(code) {
-    persona_param.set_code(code)
-    sanity = initial_sanity
-}
+function set_persona_code(code) {persona_param.set_code(code)}
+function set_adjust_sanity_p(bool) {adjust_sanity_p = bool}
+function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
 function open_clipboard_image() {
     // window
     const size = get_windows()[0].getSize()

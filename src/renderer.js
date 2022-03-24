@@ -188,6 +188,7 @@ function render_now() {
     setq('#white_hama', R.white_hama)
     setq('#history_length', ' (' + D.max_movenum() + ')')
     setq('#every_n_moves', R.in_pair_go)
+    set_sanity_from_main()
     update_displayed_comment()
     D.update_winrate_trail()
     alter_suggest_by_pv_trail()
@@ -770,6 +771,27 @@ function shrink_analysis_region(axis, positive) {
 
 // match AI config
 
+const sanity_slider = Q("#sanity_slider"), sanity_auto_checkbox = Q("#sanity_auto")
+function update_sanity(manually) {
+    const {value} = sanity_slider, {checked} = sanity_auto_checkbox
+    sanity_slider.disabled = checked
+    setq("#sanity_value", checked ? '?' : value)
+    manually && main('set_sanity_from_renderer', to_i(value))
+}
+function set_sanity_from_main() {
+    !sanity_auto_checkbox.checked && (sanity_slider.value = R.sanity)
+    update_sanity()
+}
+function initialize_sanity_slider() {
+    const [min, max] = sanity_range, h = {min, max}
+    if (sanity_slider.hasAttribute('min')) {return}
+    each_key_value(h, (k, v) => sanity_slider.setAttribute(k, v))
+    sanity_slider.addEventListener('input', () => update_sanity(true))
+    const on_check = () => main('set_adjust_sanity_p', sanity_auto_checkbox.checked)
+    sanity_auto_checkbox.addEventListener('change', on_check)
+}
+initialize_sanity_slider()
+
 function randomize_persona() {
     const code = persona_random_code()
     update_persona_code(code)
@@ -948,7 +970,7 @@ function set_all_canvas_size() {
     const main_board_height = wr_only ? main_board_max_size * 0.85 : main_board_size
     const winrate_bar_height = main_size - main_board_height
     const sub_board_max_height = h =>
-          h * (portrait_p() ? 1 : wr_only ? 0.5 : h < 1000 ? 0.55 : 1)
+          h * (portrait_p() ? 1 : R.in_match ? 0.5 : wr_only ? 0.5 : h < 1000 ? 0.55 : 1)
     const sub_board_size =
           Math.min(main_board_max_size * 0.65, rest_size * 0.85,
                    sub_board_max_height(window.innerHeight))
@@ -1394,6 +1416,7 @@ function update_button_etc(availability) {
     update_ui_element('.katago_only', R.is_katago)
     update_ui_element('.moves_ownership_only',
                       R.is_katago && R.experimental_moves_ownership_p)
+    update_ui_element('#sanity_div', availability.match_ai_conf)
 }
 
 function in_match_p(serious) {return R.in_match && (!serious || R.board_type === 'raw')}

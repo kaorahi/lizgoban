@@ -15,7 +15,7 @@
  .controller_row {margin-top: 2%; white-space: normal; text-align: left;}
  .controller_row.show_in_serious_match {margin-top: 0%; margin-bottom: 8%;}
  .controller_row.show_in_match {margin-bottom: 3%;}
- .controller_row.show_in_match span {border: solid 1px white; padding: 1%;}
+ .match_panel {border: solid 1px white; padding: 1%;}
  .controller_row.show_in_exercise > span {border: solid 1px white; padding: 1%;}
  .controller_row.show_in_exercise input[type="button"] {width: 1em}
  .show_in_match, .show_in_serious_match {display: none;}
@@ -51,6 +51,7 @@
  .dialog td:nth-child(2n+3) {padding-left: 2em;}
  .dialog td {padding-bottom: 1em;}
  .dialog textarea {width: 50vw;}
+ #sanity_value {display: inline-block; text-align: right; width: 1em; padding: 0}
  #match_ai_conf_dialog > div div {padding: 0.5em 0.5em;}
  #match_ai_conf_dialog h2:first-of-type {margin-top: 0em;}
  #match_ai_conf_dialog h2 {margin-top: 1em;}
@@ -179,7 +180,7 @@ handicap
 </div>
 
 <div class="controller_row show_in_match">
-<span>
+<span class="match_panel">
 vs.
 <select id="weaken" value="best" onchange="set_match_param()">
  <!-- first item must be "best" for set_match_param in renderer.js -->
@@ -211,6 +212,15 @@ vs.
 <input type='button' onclick="auto_play_in_match()" value="start AI's turn">
 <input type='button' style='color: red' onclick="stop_match()" value="stop match">
 </span>
+</div>
+
+<div class="controller_row show_in_match" id='sanity_div'>
+ sanity
+ <span id='sanity_value'></span>
+ <input id='sanity_slider' type='range' style='width: 15em;'>
+ &nbsp;
+ <input id='sanity_auto' type='checkbox'>
+ <label for='sanity_auto'>auto</label>
 </div>
 
 <div class="controller_row show_in_serious_match"></div>
