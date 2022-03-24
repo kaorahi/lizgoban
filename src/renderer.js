@@ -798,7 +798,7 @@ function randomize_persona() {
 }
 function update_persona_code(given_code) {
     const input = Q('#persona_code_input')
-    const code = given_code || input.value.trim()
+    const code = given_code || get_persona_code_input()
     const valid = persona_code_valid(code), html = persona_html_for_code(code)
     input.style.backgroundColor = valid ? '#fff' : '#fcc'
     if (!valid) {return}
@@ -811,10 +811,14 @@ function open_match_ai_conf_dialog() {
     show_dialog('#match_ai_conf_dialog', null)
 }
 function submit_match_ai_conf() {
-    const code = Q('#persona_code_input').value
+    const code = get_persona_code_input()
     const valid = persona_code_valid(code)
     valid ? main('set_persona_code', code) : toast(`invalid code: ${code}`)
     hide_dialog()
+}
+
+function get_persona_code_input() {
+    return Q('#persona_code_input').value.trim().replace(/\s/g, '')
 }
 
 /////////////////////////////////////////////////
