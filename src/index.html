@@ -52,6 +52,8 @@
  .dialog td {padding-bottom: 1em;}
  .dialog textarea {width: 50vw;}
  #match_ai_conf_dialog > div div {padding: 0.5em 0.5em;}
+ #match_ai_conf_dialog h2:first-of-type {margin-top: 0em;}
+ #match_ai_conf_dialog h2 {margin-top: 1em;}
  #persona_info code {background-color: black; padding: 0.1em; border-radius: 0.2em;}
  #persona_info li {list-style-type: none;}
  #persona_info table {border-collapse: collapse;}
@@ -350,16 +352,17 @@ Exercise ★<span id='exercise_stars'></span>
 
 <div class='dialog' id='match_ai_conf_dialog'>
  <div>
+  <h2>AI sanity</h2>
+  <div>
+   <span id='persona_level'></span>
+   <input id='persona_level_slider' type='range' style='width: 25em;' oninput='update_persona_level()'>
+  </div>
   <h2>AI persona (strategy setting)</h2>
   <div id='persona_info'></div>
-  <h2 style="margin-top: 0.5em;">Change persona</h2>
+  <h2>Change persona</h2>
   <div>
-   new random persona:
-   level <span id='persona_level'></span>
-   <input id='persona_level_slider' type='range' style='width: 12em;' oninput='update_persona_level()'>
-   <input type='button' onclick="randomize_persona()" value="generate">
-  </div>
-  <div>
+   <input type='button' onclick="randomize_persona()" value="Generate">
+   or input
    persona code: <input id='persona_code_input' oninput="update_persona_code()">
   </div>
   <div>
@@ -376,7 +379,7 @@ Exercise ★<span id='exercise_stars'></span>
    They play seriously when there is only one reasonable move.
   </div>
   -->
-  <div style='text-align: center; padding: 1em 0em 0em 0em;'>
+  <div style='text-align: center; padding: 2em 0em 0em 0em;'>
    <input type='button' onclick="submit_match_ai_conf()" value=" ok " accesskey='o'>
    <span style="color: gray;">(<u>O</u>)</span>
   </div>

@@ -109,7 +109,7 @@ const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()
 game.komi = get_stored('komi_for_new_game')
 
 keep_backward_compatibility_of_stone_style(get_stored, set_stored)
-persona_param.randomize(get_stored('persona_level'))
+persona_param.randomize()
 
 globalize({  // for ai.js
     is_bturn: () => R.bturn,
@@ -1106,9 +1106,9 @@ function weak_move_by_score(average_losing_points) {
 function weak_move_by_persona(persona) {
     const typical_order = 3, threshold_range = [1e-3, 1e-1]
     const [my, your, space] = persona.get()
-    const level = persona.level(), level_range = persona.level_range
+    const level = get_stored('persona_level')
     const log_threshold_range = threshold_range.map(Math.log)
-    const [trans, ] = translator_pair(level_range, log_threshold_range)
+    const [trans, ] = translator_pair(persona_level_range, log_threshold_range)
     const threshold = Math.exp(trans(level))
     return weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
 }
@@ -1250,9 +1250,9 @@ function open_preference() {
     const w = get_new_window('preference_window.html', {webPreferences})
     w.setMenu(Menu.buildFromTemplate(menu))
 }
-function set_persona_code(code) {
+function set_persona_code(code, level) {
     persona_param.set_code(code)
-    set_stored('persona_level', persona_param.level())
+    set_stored('persona_level', level)
 }
 function open_clipboard_image() {
     // window

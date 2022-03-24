@@ -142,7 +142,7 @@ const stored_keys_spec = [
     ['use_cached_suggest_p', true],
     ['komi_for_new_game', leelaz_komi],
     ['komi_for_new_handicap_game', handicap_komi],
-    ['persona_level', 9],
+    ['persona_level', 5],
 ]
 const preference_spec =
       stored_keys_spec.map(([k, , label, shortcut]) => label && [k, label, shortcut]).filter(truep)

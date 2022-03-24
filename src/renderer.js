@@ -13,7 +13,7 @@ const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
 const {save_blob} = require('./image_exporter.js')
 const {
     persona_random_code, persona_html_for_code,
-    persona_code_level, persona_code_valid, persona_level_range,
+    persona_code_valid,
 } = require('./persona_param.js')
 
 // canvas
@@ -775,11 +775,8 @@ function update_persona_level() {
 }
 update_persona_level()
 function randomize_persona() {
-    const level = to_i(Q("#persona_level_slider").value)
-    const code = persona_random_code(level)
-    const extreme = persona_level_range.includes(level)
+    const code = persona_random_code()
     update_persona_code(code)
-    extreme && toast(`only one persona in level ${level}`)
 }
 function update_persona_code(given_code) {
     const input = Q('#persona_code_input')
@@ -794,7 +791,7 @@ function update_persona_code(given_code) {
     if (slider.hasAttribute('min')) {return}
     const [min, max] = persona_level_range, h = {min, max}
     each_key_value(h, (k, v) => slider.setAttribute(k, v))
-    slider.value = persona_code_level(code)
+    slider.value = R.persona_level
     update_persona_level()
 }
 
@@ -804,8 +801,9 @@ function open_match_ai_conf_dialog() {
 }
 function submit_match_ai_conf() {
     const code = Q('#persona_code_input').value
+    const level = Q('#persona_level_slider').value
     const valid = persona_code_valid(code)
-    valid ? main('set_persona_code', code) : toast(`invalid code: ${code}`)
+    valid ? main('set_persona_code', code, level) : toast(`invalid code: ${code}`)
     hide_dialog()
 }
 

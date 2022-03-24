@@ -181,6 +181,8 @@ E.set_error_handler = (process, handler) => {
     process.on('exit', handler)
 }
 
+E.persona_level_range = [0, 10]
+
 // avoid letters for keyboard operation in renderer.js
 const normal_tag_letters = 'defghijklmnorstuy'
 const last_loaded_element_tag_letter = '.'
