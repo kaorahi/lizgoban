@@ -18,14 +18,14 @@ const hex_code_len = total_cases * elt_bits / 4  // must be int
 // public
 
 function generate_persona_param(code) {
-    let param
+    let param, explicitly_given_code
     if ((code !== undefined) && !stringp(code)) {return null}
     code ? set_code(code) : randomize()
 
     function get() {return param}
-    function set(z) {param = z}
-    function get_code() {return code_for_param(get())}
-    function set_code(code) {set(param_for_code(code))}
+    function set(z) {param = z; explicitly_given_code = null}
+    function get_code() {return true_or(explicitly_given_code, code_for_param(get()))}
+    function set_code(code) {set(param_for_code(code)); explicitly_given_code = code}
     function randomize() {set(random_param())}
 
     return {

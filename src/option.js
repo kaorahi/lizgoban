@@ -143,6 +143,7 @@ const stored_keys_spec = [
     ['komi_for_new_game', leelaz_komi],
     ['komi_for_new_handicap_game', handicap_komi],
     ['sanity', initial_sanity],
+    ['persona_code', 'abc'],
 ]
 const preference_spec =
       stored_keys_spec.map(([k, , label, shortcut]) => label && [k, label, shortcut]).filter(truep)
