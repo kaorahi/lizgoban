@@ -263,6 +263,7 @@ ipc.on('save_q_and_a_images', (e, q_filename, a_filename, msg_path) => {
 })
 
 const direct_ipc = {
+    set_match_param,
     reset_match_param, take_thumbnail, slide_in, wink, toast, update_analysis_region,
 }
 each_key_value(direct_ipc, (key, func) => ipc.on(key, (e, ...a) => func(...a)))

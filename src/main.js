@@ -892,7 +892,7 @@ let auto_play_weaken = [], pondering_in_match = false
 function start_match(win, auto_moves_in_match) {
     const resetp = (auto_moves_in_match === 'reset_param')
     set_auto_moves_in_match(resetp ? 1 : to_i(auto_moves_in_match))
-    resetp && renderer('reset_match_param')
+    renderer(resetp ? 'reset_match_param' : 'set_match_param')
     set_board_type('raw', win); R.in_match = true
 }
 function stop_match(window_id) {
