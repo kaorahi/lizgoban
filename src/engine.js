@@ -1,5 +1,3 @@
-const CRYPTO = require('crypto')
-
 const assuming_broken_GTP = true
 
 function create_leelaz () {
@@ -577,7 +575,7 @@ function create_leelaz () {
 
 function unique_identifier() {return new Object}
 function hash(str) {
-    return CRYPTO.createHash('sha256').update(str).digest('hex').slice(0, 8)
+    return sha256sum(str).slice(0, 8)
 }
 
 /////////////////////////////////////////////////

@@ -1,6 +1,10 @@
+const CRYPTO = require('crypto')
+
 // utilities
 
 const E = {}
+
+E.sha256sum = x => CRYPTO.createHash('sha256').update(x).digest('hex')
 
 E.to_i = x => (x | 0)  // to_i(true) is 1!
 E.to_f = x => (x - 0)  // to_f(true) is 1!
