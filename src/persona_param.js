@@ -79,19 +79,19 @@ ${sample_for(elt_min)} invert (= prefer to lose score)
 // private
 
 function persona_code_valid(code) {
-    return stringp(code) && code_for_param(param_for_strict_code(code)) === code
+    return stringp(code) && code_for_param(param_for_direct_code(code)) === code
 }
 function code_for_param(param) {
     const k = raws_from_param(param).reduce((a, z) => (a << elt_bits) + z)
     return to_code(k)
 }
 function param_for_code(code) {
-    if (persona_code_valid(code)) {return param_for_strict_code(code)}
+    if (persona_code_valid(code)) {return param_for_direct_code(code)}
     const hexes = sha256sum(code).slice(0, total_cases).split('')
     const raws = hexes.map(hex => raw_max * parseInt(hex, 16) / 15)
     return param_from_raws(raws)
 }
-function param_for_strict_code(code) {
+function param_for_direct_code(code) {
     const elt_radix = elt_variations
     const raw_str = to_str(parseInt(code, code_radix), elt_radix, total_cases)
     const raws = raw_str.split('').map(c => parseInt(c, elt_radix))
