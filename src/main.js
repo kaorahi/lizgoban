@@ -47,6 +47,8 @@ const {tsumego_frame} = require('./tsumego_frame.js')
 const {ladder_branches, ladder_is_seen, last_ladder_branches, cancel_ladder_hack}
       = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
+const {generate_persona_param} = require('./persona_param.js')
+
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
 
 // debug log
@@ -92,6 +94,7 @@ let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null
 let debug_force_aggressive = null
+const persona_param = generate_persona_param()
 
 function set_game(new_game) {
     game = new_game
@@ -212,6 +215,7 @@ const api = {
     increase_exercise_stars,
     detach_from_sabaki,
     update_analysis_region: AI.update_analysis_region,
+    set_persona_code,
 
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
@@ -895,16 +899,19 @@ function stop_match(window_id) {
     R.in_match = false; auto_play_weaken = []
     truep(window_id) && toggle_board_type(window_id, null, "raw")
 }
+
 function set_match_param(weaken) {
     let m
     auto_play_weaken =
         (weaken === 'diverse') ? ['random_opening'] :
-        (weaken === 'envy') ? ['moves_ownership', [0, 1], [0, 1], [0, 1]] :
-        (weaken === 'rash') ? ['moves_ownership', [0, 0], [0, 1], [0, 1]] :
-        (weaken === 'chaos') ? ['moves_ownership', [-1, 1], [-1, 1], [-1, 1]] :
+        (weaken === 'persona') ? ['persona', persona_param] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
         []
+}
+function match_param_has_option_p() {
+    const a = ['persona']
+    return a.includes(auto_play_weaken[0])
 }
 function auto_play_in_match(sec, count) {
     pondering_in_match = !pausing
@@ -990,7 +997,7 @@ function try_play_best(weaken_method, ...weaken_args) {
           weaken_method === 'random_candidate' ? weak_move(...weaken_args) :
           weaken_method === 'lose_score' ? weak_move_by_score(...weaken_args) :
           weaken_method === 'random_opening' ? random_opening_move(...weaken_args) :
-          weaken_method === 'moves_ownership' ? weak_move_by_moves_ownership(...weaken_args) :
+          weaken_method === 'persona' ? weak_move_by_persona(...weaken_args) :
           best_move()
     const pass_maybe =
           () => AI.peek_value('pass', value => {
@@ -1078,14 +1085,22 @@ function weak_move_by_score(average_losing_points) {
               `winrate_order=${selected.winrate_order}`)
     return selected.move
 }
-function weak_move_by_moves_ownership(my, your, space) {
+function weak_move_by_persona(persona) {
+    const typical_order = 3, threshold_range = [1e-3, 1e-1]
+    const [my, your, space] = persona.get()
+    const level = persona.level(), level_range = persona.level_range
+    const log_threshold_range = threshold_range.map(Math.log)
+    const [trans, ] = translator_pair(level_range, log_threshold_range)
+    const threshold = Math.exp(trans(level))
+    return weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
+}
+function weak_move_by_moves_ownership(my, your, space, typical_order, threshold) {
     // goodness = sum of evaluation over the board
     // evaluation = weight * ownership_from_my_side (= AI side)
     // weight = MY (on my stone), YOUR (on your stone), or SPACE
     // (ex.) your = [1.0, 0.1] means "Try to kill your stones
     // eagerly if they seems alive and slightly if they seems rather dead".
-    // (your = 0.7 is equivalent to your = [0.7, 0.7])
-    const typical_order = 3
+    if (!AI.katago_p() || !R.experimental_moves_ownership_p) {return best_move()}
     const bturn = is_bturn(), sign_for_me = bturn ? 1 : -1
     const my_color_p = z => !xor(z.black, bturn)
     const my_ownership_p = es => sign_for_me * es > 0
@@ -1100,11 +1115,12 @@ function weak_move_by_moves_ownership(my, your, space) {
         const endstate = endstate_from_ownership_destructive(copied_ownership)
         return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
     }
-    return weak_move_by_goodness_order(goodness, typical_order)
+    debug_log(`weak_move_by_moves_ownership: ${JSON.stringify({my, your, space, typical_order, threshold})}`)
+    return weak_move_by_goodness_order(goodness, typical_order, threshold)
 }
-function weak_move_by_goodness_order(goodness, typical_order) {
-    if (!AI.katago_p() || !R.experimental_moves_ownership_p) {return best_move()}
-    const candidates = weak_move_candidates()
+function weak_move_by_goodness_order(goodness, typical_order, threshold) {
+    // shuffle candidates so that "goodness = const." corresponds to "random"
+    const candidates = sort_by(weak_move_candidates(threshold), Math.random)
     const evaluated = candidates.map(s => ({suggest: s, bad: - goodness(s)}))
     const ordered = sort_by_key(evaluated, 'bad').map((h, k) => ({...h, order: k}))
     const weight = h => Math.exp(- h.order / typical_order)
@@ -1112,9 +1128,9 @@ function weak_move_by_goodness_order(goodness, typical_order) {
     debug_log(`weak_move_by_goodness_order: goodness_order=${order} engine_order=${suggest.order} goodness=${- bad} candidates=${candidates.length} all=${P.orig_suggest().length}`)
     return suggest.move
 }
-function weak_move_candidates() {
+function weak_move_candidates(threshold) {
     const suggest = P.orig_suggest()
-    const too_small_visits = (suggest[0] || {}).visits * 0.02
+    const too_small_visits = (suggest[0] || {}).visits * (threshold || 0.02)
     return suggest.filter(s => s.visits > too_small_visits)
 }
 
@@ -1211,6 +1227,7 @@ function open_preference() {
     const w = get_new_window('preference_window.html', {webPreferences})
     w.setMenu(Menu.buildFromTemplate(menu))
 }
+function set_persona_code(code) {persona_param.set_code(code)}
 function open_clipboard_image() {
     // window
     const size = get_windows()[0].getSize()
@@ -1709,6 +1726,7 @@ function update_state(keep_suggest_p) {
     }
     const amm = get_auto_moves_in_match()
     const in_pair_go = R.in_match && (amm !== 1) && (amm === 3 ? 'pair_go' : amm)
+    const persona_code = persona_param.get_code()
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
     const {face_image_rule, pv_trail_max_suggestions} = option
@@ -1719,6 +1737,7 @@ function update_state(keep_suggest_p) {
         image_paths, face_image_rule, exercise_metadata,
         subboard_stones_suggest,
         in_pair_go,
+        persona_code,
         pv_trail_max_suggestions,
     }, more)
 }
@@ -1777,6 +1796,7 @@ function availability() {
         start_auto_analyze: !auto_p,
         stop_auto: auto_p,
         trial: game.trial,
+        match_ai_conf: match_param_has_option_p(),
     }
 }
 
