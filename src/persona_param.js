@@ -12,7 +12,6 @@ const elt_variations = pow(elt_bits), raw_max = elt_variations - 1
 const elt_max = elt_from_raw(raw_max)
 const code_radix = pow(code_radix_bits)
 const code_len = total_cases * elt_bits / code_radix_bits  // must be int
-const hex_code_len = total_cases * elt_bits / 4  // must be int
 
 ///////////////////////////////////////
 // public
@@ -38,31 +37,40 @@ function generate_persona_param(code) {
 function persona_random_code() {return code_for_param(random_param())}
 
 function persona_html_for_code(code) {
-    const sym = {"-1": "-", 0: ".", 1: "+", 2: "!"}
     const board_labels = ["AI's stone", "your stone", "empty grid"]
     const ownership_labels = ["AI's ownership", "your ownership"]
     const param = param_for_code(code)
     const p_rows = aa_transpose(param)
+    const format = z => Math.round(z * 5)
+    // const format = z => z.toFixed(1)
+    function color_for(elt) {
+        const rgb = elt >= 0 ? '0,0,255' : '255,0,0'
+        const alpha = elt >= 0 ? elt / elt_max : elt / elt_min
+        return `rgba(${rgb},${alpha})`
+    }
     function tag(name, inner, ...attrs) {
         const a = attrs.map(([k, v]) => `${k}="${v}"`)
         return `<${[name, ...a].join(" ")}>${inner}</${name}>`
     }
-    function td(elt) {const s = sym[elt]; return tag("td", s, ["data-sym", s])}
+    function td(elt) {
+        const s = format(elt)
+        const style = `background: ${color_for(elt)};`
+        return tag("td", s, ["style", style])
+    }
     function th(label) {return tag("th", label)}
     function tr(cols) {return tag("tr", cols.join(""))}
     const prof = '<code></code>'  // insert code later for avoiding HTML injection
     const header = tr([prof, ...board_labels].map(th))
     const rows = p_rows.map((r, k) => tr([th(ownership_labels[k]), ...r.map(td)]))
     const table = tag("table", header + rows.join(""))
+    const sample_for = elt =>
+          `<span style="display: inline-block; width: 1em; background: ${color_for(elt)};">&nbsp;</span>`
     return `
 <div>${table}</div>
 <div>
-<ul>
-<li><span data-sym="!">!</span> care much</li>
-<li><span data-sym="+">+</span> care</li>
-<li><span data-sym=".">.</span> ignore</li>
-<li><span data-sym="-">-</span> invert (= prefer to lose score)</li>
-</ul>
+${sample_for(elt_max)} care
+&nbsp;
+${sample_for(elt_min)} invert (= prefer to lose score)
 </div>
 `
 }
@@ -79,8 +87,9 @@ function code_for_param(param) {
 }
 function param_for_code(code) {
     if (persona_code_valid(code)) {return param_for_strict_code(code)}
-    const k = parseInt(sha256sum(code).slice(0, hex_code_len), 16)
-    return param_for_strict_code(to_code(k))
+    const hexes = sha256sum(code).slice(0, total_cases).split('')
+    const raws = hexes.map(hex => raw_max * parseInt(hex, 16) / 15)
+    return param_from_raws(raws)
 }
 function param_for_strict_code(code) {
     const elt_radix = elt_variations
