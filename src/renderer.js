@@ -123,7 +123,9 @@ function set_game_info() {
 }
 
 function show_dialog(name, selected) {
-    Q(name).style.visibility = "visible"; Q(`${name} ${selected || "input"}`).select()
+    Q(name).style.visibility = "visible"
+    const sel = (selected === undefined) ? "input" : selected
+    const e = Q(`${name} ${sel}`); e && e.select()
     main('enable_menu', false)
 }
 function shown_dialogs() {
@@ -789,8 +791,7 @@ function update_persona_code(given_code) {
 
 function open_match_ai_conf_dialog() {
     update_persona_code(R.persona_code)
-    const no_selection = 'dummy'
-    show_dialog('#match_ai_conf_dialog', no_selection)
+    show_dialog('#match_ai_conf_dialog', null)
 }
 function submit_match_ai_conf() {
     const code = Q('#persona_code_input').value
