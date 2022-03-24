@@ -1110,10 +1110,10 @@ function weak_move_by_persona(persona) {
     const [my, your, space] = persona.get()
     const log_threshold_range = threshold_range.map(Math.log)
     const [trans, ] = translator_pair(sanity_range, log_threshold_range)
-    const threshold = Math.exp(trans(update_sanity()))
+    const threshold = Math.exp(trans(adjust_sanity()))
     return weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
 }
-function update_sanity() {
+function adjust_sanity() {
     const learning_rate = 0.01
     const suggest = P.orig_suggest(), s0 = (suggest[0] || {}).score_without_komi
     if (!truep(s0)) {return}
