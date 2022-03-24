@@ -108,6 +108,7 @@ const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()
 game.komi = get_stored('komi_for_new_game')
 
 keep_backward_compatibility_of_stone_style(get_stored, set_stored)
+persona_param.randomize(get_stored('persona_level'))
 
 globalize({  // for ai.js
     is_bturn: () => R.bturn,
@@ -1227,7 +1228,10 @@ function open_preference() {
     const w = get_new_window('preference_window.html', {webPreferences})
     w.setMenu(Menu.buildFromTemplate(menu))
 }
-function set_persona_code(code) {persona_param.set_code(code)}
+function set_persona_code(code) {
+    persona_param.set_code(code)
+    set_stored('persona_level', persona_param.level())
+}
 function open_clipboard_image() {
     // window
     const size = get_windows()[0].getSize()
