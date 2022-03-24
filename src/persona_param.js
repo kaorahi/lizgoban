@@ -40,13 +40,16 @@ function persona_random_code(level) {return code_for_param(random_param(level))}
 
 function persona_code_level(code) {return persona_level(param_for_code(code))}
 
+function persona_code_valid(code) {
+    return stringp(code) && code_for_param(param_for_code(code)) === code
+}
+
 function persona_html_for_code(code) {
-    // return null for invalid code
+    if (!persona_code_valid(code)) {return null}
     const sym = {"-1": "-", 0: ".", 1: "+", 2: "!"}
     const board_labels = ["AI's stone", "your stone", "empty grid"]
     const ownership_labels = ["AI's ownership", "your ownership"]
     const param = param_for_code(code)
-    const valid = code_for_param(param) === code; if (!valid) {return null}
     const p_rows = aa_transpose(param)
     function tag(name, inner, ...attrs) {
         const a = attrs.map(([k, v]) => `${k}="${v}"`)
@@ -144,6 +147,7 @@ module.exports = {
     generate_persona_param,
     persona_random_code,
     persona_code_level,
+    persona_code_valid,
     persona_html_for_code,
     persona_level_range,
 }
