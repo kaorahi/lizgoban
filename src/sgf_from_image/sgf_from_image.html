@@ -38,6 +38,7 @@
   canvas {position: absolute}
   input {width: 3em;}
   input[type="range"] {width: 30vw;}
+  input[type="radio"] {width: auto;}
   #header {
    position: sticky; top: 0; z-index: 1;
    padding: 0.6vmin;
@@ -87,6 +88,14 @@
 
 <p id="header">
  <button id="reset" onclick="reset()" style="margin-right: 1vmin">reset</button>
+ <span style="margin-right: 1vmin;">
+ (SGF size:
+ <input type="radio" name="sgf_size" id="sgf_size_as_is" value="-1">
+ <label for="sgf_size_as_is">as is</label>
+ <input type="radio" name="sgf_size" id="sgf_size_19" value="19">
+ <label for="sgf_size_19">19x19</label>
+ )
+  </span>
  <span style="color: gray;">
   <span id="stage0">click 1-1 (corner)</span> →
   <span id="stage1">click 2-2</span> →
