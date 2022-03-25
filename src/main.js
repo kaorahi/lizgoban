@@ -1268,7 +1268,7 @@ function open_clipboard_image() {
     // window
     const size = get_windows()[0].getSize()
     const opt = {webPreferences, width: size[0], height: size[1]}
-    const file_name = 'sgf_from_image/sgf_from_image.html'
+    const file_name = 'sgf_from_image/sgf_from_image.html?sgf_size=19'
     const win = get_new_window(file_name, opt)
     // menu
     const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}

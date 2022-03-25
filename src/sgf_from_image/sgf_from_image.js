@@ -29,6 +29,7 @@ const default_param = {
     allow_outliers_in_white: 1,
     consider_reddish_stone: 30,
     detection_width: 40,
+    sgf_size: -1,
 }
 let param = {...default_param}
 function reset_param() {param = {...default_param}; update_forms(); read_param()}
@@ -40,14 +41,23 @@ const [BLACK, WHITE, EMPTY] = grid_state_name
 // parameters UI
 
 function update_forms() {
-    each_key_value(param, (key, val) => {
+    const update = (...a) => update_radio(...a) || update_slider(...a)
+    const update_radio = (key, val) =>
+          each_elem_for_name(key, elem => {elem.checked = (to_i(elem.value) === val)})
+    const update_slider = (key, val) => {
         Q(`#${key}`).value = Q(`#${slider_id_for(key)}`).value = val
-    })
+    }
+    each_key_value(param, update)
 }
 
 function read_param(elem, temporary) {
+    const radio_val = key => {
+        let val = null
+        each_elem_for_name(key, e => e.checked && (val = to_i(e.value)))
+        return val
+    }
     each_key_value(param, (key, _) => {
-        const val = to_f(Q(`#${key}`).value); if (isNaN(val)) {return}
+        const val = radio_val(key) || to_f(Q(`#${key}`).value); if (isNaN(val)) {return}
         param[key] = val
     })
     draw(0, 0)
@@ -447,9 +457,10 @@ function redness([r, g, b, ]) {return (r - b) / 255}
 function get_sgf() {
     // ex. (;SZ[19]AB[bc][bd][cc][db][dc]AW[be][bg][cd][ce][dd][eb][ec][ed][gb])
     if (!guessed_board) {return ''}
+    const size = get_sgf_size()
     const sgfpos_name = "abcdefghijklmnopqrs"
-    const header = '(;SZ[19]', footer = ')'
-    const sgfpos = (k, sign) => sgfpos_name[sign > 0 ? k : 19 - k - 1]
+    const header = `(;SZ[${size}]`, footer = ')'
+    const sgfpos = (k, sign) => sgfpos_name[sign > 0 ? k : size - k - 1]
     const [si, sj] = coord_signs
     const coords = (i, j) => '[' + sgfpos(i, si) + sgfpos(j, sj) + ']'
     const grids =
@@ -459,6 +470,12 @@ function get_sgf() {
         return (s === '') ? '' : (prop + s)
     }
     return header + body('black', 'AB') + body('white', 'AW') + footer
+}
+
+function get_sgf_size() {
+    const {sgf_size} = param; if (sgf_size > 0) {return sgf_size}
+    const rows = guessed_board.length, cols = guessed_board[0].length
+    return Math.max(rows, cols)
 }
 
 ///////////////////////////////////////////
@@ -685,6 +702,11 @@ function create_after(elem, tag) {
     const new_elem = document.createElement(tag)
     elem.parentNode.insertBefore(new_elem, elem.nextSibling)
     return new_elem
+}
+function each_elem_for_name(name, proc) {
+    const es = Q_all(`[name=${name}]`)
+    es.forEach(proc)
+    return es.length > 0
 }
 
 function set_style_px(elem, key, val){elem.style[key] = `${val}px`}
