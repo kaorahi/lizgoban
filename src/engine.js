@@ -312,11 +312,22 @@ function create_leelaz () {
     }
     const analysis_region_string = () => {
         if (!analysis_region) {return null}
+        if (!Array.isArray(analysis_region)) {return allowed_opening_positions_string()}
         const [is, js] = analysis_region.map(range => seq_from_to(...range))
         const vertices = is.flatMap(i => js.map(j => idx2move(i, j))).join(',')
         const untildepth = 1
+        return analysis_region_string_sub(vertices, untildepth)
+    }
+    const analysis_region_string_sub = (vertices, untildepth) => {
         const for_color = player => `allow ${player} ${vertices} ${untildepth}`
         return ['B', 'W'].map(for_color).join(' ')
+    }
+    const allowed_opening_positions_string = () => {
+        const {allowed_opening_positions} = analysis_region
+        if (!allowed_opening_positions) {return null}
+        const vertices = allowed_opening_positions.map(ij => idx2move(...ij)).join(',')
+        const untildepth = allowed_opening_positions.length - move_count
+        return (untildepth > 0) && analysis_region_string_sub(vertices, untildepth)
     }
 
     /////////////////////////////////////////////////

@@ -574,6 +574,12 @@ function menu_template(win) {
             menu("Free handicap...",
                  seq(10).map(k => (k !== 1) &&
                              item(`${k} stones`, undefined, () => game.free_handicaps = k))),
+            menu("3n handicap...", [
+                ...seq(10).map(k => item(`n = ${k}`, undefined, () => three_n_handicap(k))),
+                sep,
+                item("What's this?", undefined,
+                     () => electron.shell.openExternal("https://www.reddit.com/r/baduk/comments/sublre/i_have_created_an_opening_method_to_make_handicap/")),
+            ]),
         ]),
     ])
     const white_unloader_item =
@@ -926,6 +932,7 @@ function stop_match(window_id) {
 function set_match_param(weaken) {
     let m
     auto_play_weaken =
+        game.allowed_opening_positions ? ['best'] :
         (weaken === 'diverse') ? ['random_opening'] :
         (weaken === 'persona') ? ['persona', persona_param] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
@@ -1044,7 +1051,9 @@ function random_opening_move() {
     const top_visits = Math.max(...suggest.map(s => s.visits))
     const log = (selected, label, val) => selected !== best && debug_log(`random_opening_move: movenum=${movenum + 1}, order=${selected.order}, ${label}=${JSON.stringify(val)}, visits=${selected.visits}, w_loss=${best.winrate - selected.winrate}, s_loss=${best.scoreMean - selected.scoreMean}`)
     // main
-    if (movenum <= param.prior_until_movenum && best.prior) {
+    const prior_p = (movenum <= param.prior_until_movenum) && best.prior &&
+          !game.allowed_opening_positions
+    if (prior_p) {
         const selected = weighted_random_choice(suggest, s => s.prior)
         log(selected, 'prior', selected.prior)
         return selected.move
@@ -1230,6 +1239,23 @@ function ask_choice(message, values, proc) {
         const v = values[z.response]; truep(v) && proc(v); update_all()
     }
     dialog.showMessageBox(null, {type: "question", message, buttons}).then(action)
+}
+
+// 3n opening method for handicap games by badukmadness
+// https://www.reddit.com/r/baduk/comments/sublre/i_have_created_an_opening_method_to_make_handicap/
+function three_n_handicap(k) {
+    const one_side_plays = k, alternative_plays = 2 * k, too_near = 2, too_low = 2
+    const bsize = board_size(), ijs = []
+    const rand = () => too_low + Math.floor(Math.random() * (bsize - too_low * 2))
+    const distance = ([i1, j1], [i2, j2]) => Math.abs(i1 - i2) + Math.abs(j1 - j2)
+    const push_pos = () => {
+        const ij = seq(2).map(rand)
+        const valid = ijs.every(z => distance(z, ij) > too_near)
+        valid ? ijs.push(ij) : push_pos()
+    }
+    game.free_handicaps = one_side_plays
+    game.allowed_opening_positions = (k > 0) &&
+        (seq(one_side_plays + alternative_plays).forEach(push_pos), ijs)
 }
 
 // misc.
@@ -1429,10 +1455,11 @@ function warn_disabled_cache() {
 
 function set_board() {
     set_AI_board_size_maybe(game.board_size)
-    const hist = P.set_board(game)
+    const hist = P.set_board(game), aop = game.get_allowed_opening_positions()
     const ownership_p = R.show_endstate
     const moves_ownership_p = R.experimental_moves_ownership_p
     AI.set_board(hist, game.get_komi(), get_gorule(), ownership_p, moves_ownership_p, aggressive())
+    AI.update_allowed_opening_positions(aop)
     AI.switch_leelaz(); update_let_me_think(true)
 }
 function set_AI_board_size_maybe(bsize) {

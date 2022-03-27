@@ -33,6 +33,7 @@ function create_game(init_history, init_prop) {
         move_count: 0, player_black: "", player_white: "", komi: 7.5, board_size: 19,
         handicaps: 0, init_len: 0, sgf_gorule: "", gorule: null,
         free_handicaps: 0,
+        allowed_opening_positions: null,
         sgf_file: "", sgf_str: "", id: new_game_id(), move0: {}, brothers: [],
         trial: false, last_loaded_element: null, engines: {}, current_engine: null,
         needs_cooking_lizzie_cache: false,
@@ -60,6 +61,10 @@ function create_game(init_history, init_prop) {
         delete_future: () => history.splice(self.move_count),
         last_move: () => (last(history) || {}).move,
         get_komi: () => true_or(self.komi, leelaz_komi),
+        get_allowed_opening_positions: () => {
+            const aop = self.allowed_opening_positions
+            return truep(aop) && (aop.length - self.move_count > 0) && aop
+        },
         set_last_loaded_element: () => self.last_loaded_element = last(history),
         shallow_copy: prop => create_game(history.slice(), {
             ...self, id: new_game_id(), last_loaded_element: null, ...(prop || {})
