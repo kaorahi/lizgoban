@@ -2,6 +2,29 @@
 
 # Release notes
 
+## LizGoban 0.7.0-pre3
+
+* Upgrade KataGo to [1.11.0](https://github.com/lightvector/KataGo/releases/tag/v1.11.0).
+* Show the preferred moves by "AIs for handicap games" as the stronger/weaker side. (small blue up/down triangles on the board, sharpness of the triangles in the winrate bar)
+* Add "Preferences" into Edit menu for convenience.
+* Slightly improve ladder continuation.
+* (Bonus) [3n opening method for handicap games](https://www.reddit.com/r/baduk/comments/sublre/i_have_created_an_opening_method_to_make_handicap/) in Tool > Experimental. This is just a temporary trial and will be removed in the next release. See [#75](https://github.com/kaorahi/lizgoban/issues/75).
+
+If you are willing to help developments, please try new weak bots for matches vs. AI (work in progress). This is a step toward ideal bots that have a wide variety of playing styles and auto-adjusted strength without unnaturally stupid moves.
+
+1. Enable "Edit > Preferences > Ownerships per move".
+2. Click "File > Match vs. AI".
+3. Click the pull down menu beside "vs." and select "(persona)" at the bottom.
+4. Click the board to play a game.
+
+You can play against bots with randomly generated characteristics from "..." button. You can also adjust "sanity" slider anytime, or check "auto" for auto-adjusting.
+
+In addition, there is a new system of virtual opponent characters. When you input any name from "..." button, LizGoban generates a bot with the parameters based on its name. For example, "jowa" prefers to capture stones, "alex" likes positional plays, etc. Try various names to find your favorite opponents. Note that unreasonable strategies are still tough if you set high "sanity" because the moves are selected only in major suggestions by AI.
+
+Incompatibilities:
+
+* Upgrade libraries (Electron 17, etc.). So you may need to do "npm install" again.
+
 ## LizGoban 0.7.0-pre2
 
 * Upgrade KataGo to [1.10.0](https://github.com/lightvector/KataGo/releases/tag/v1.10.0).

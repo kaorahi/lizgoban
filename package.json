@@ -1,6 +1,6 @@
 {
   "name": "LizGoban",
-  "version": "0.7.0-pre2",
+  "version": "0.7.0-pre3",
   "description": "An analysis tool of the game Go with Leela Zero and KataGo",
   "author": "kaorahi <khi@users.osdn.me>",
   "license": "GPL-3.0",
@@ -17,8 +17,8 @@
     "xyz2sgf": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^17.0.0",
-    "electron-builder": "^22.14.5"
+    "electron": "^17.1.2",
+    "electron-builder": "^22.14.13"
   },
   "build": {
     "files": [
