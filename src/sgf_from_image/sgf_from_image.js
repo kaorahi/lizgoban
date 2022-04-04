@@ -151,8 +151,9 @@ electron && initialize_electron()
 hide(electron ? '.standalone' : '.electron')
 
 function initialize_electron() {
+    const api = {highlight_tips}
     const {clipboard, ipcRenderer} = electron
-    ipcRenderer.on('highlight_tips', highlight_tips)
+    each_key_value(api, (k, v) => ipcRenderer.on(k, v))
     load_image(clipboard.readText() || clipboard.readImage().toDataURL())
 }
 
