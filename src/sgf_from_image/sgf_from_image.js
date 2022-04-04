@@ -301,7 +301,7 @@ function fine_tune(delta) {
     done && force_num_grids(mx, ny)
     done && estimate(true)
     const g = overlay_ctx
-    g.strokeStyle = 'blue'; g.lineWidth = 1; cross_line(...xy, g)
+    g.strokeStyle = 'blue'; g.lineWidth = 1; cross_line(g, ...xy)
 }
 
 function force_num_grids(m, n) {
@@ -345,7 +345,7 @@ function update_indicators() {
 function draw0(x, y, g) {
     clear(g)
     g.strokeStyle = 'rgba(255,0,0,1)'; g.lineWidth = 1
-    cross_line(x, y, g)
+    cross_line(g, x, y)
     draw_perspective_corners(x, y, g)
 }
 
@@ -383,7 +383,7 @@ function draw_drag1(x, y, g) {draw_drag_range(x, y, g)}
 function draw_drag2(x, y, g) {
     const thick = 5
     draw_drag_range(...xy_mn, g)
-    g.strokeStyle = 'blue'; g.lineWidth = thick; cross_line(x, y, g)
+    g.strokeStyle = 'blue'; g.lineWidth = thick; cross_line(g, x, y)
 }
 
 function draw_drag_range(x, y, g) {
@@ -900,9 +900,9 @@ function clear(ctx) {const c = ctx.canvas; ctx.clearRect(0, 0, c.width, c.height
 function line(ctx, x1, y1, x2, y2) {
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke()
 }
-function cross_line(x, y, g) {
-    const {width, height} = g.canvas
-    line(g, x, 0, x, height); line(g, 0, y, width, y)
+function cross_line(ctx, x, y) {
+    const {width, height} = ctx.canvas
+    line(ctx, x, 0, x, height); line(ctx, 0, y, width, y)
 }
 function square(ctx, x, y, r) {
     ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.stroke()
