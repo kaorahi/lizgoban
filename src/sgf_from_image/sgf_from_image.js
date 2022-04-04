@@ -377,9 +377,20 @@ function draw2(x, y, g) {
 function draw_drag1(x, y, g) {draw_drag_range(x, y, g)}
 
 function draw_drag2(x, y, g) {
-    const thick = 5
     draw_drag_range(...xy_mn, g)
-    g.strokeStyle = 'blue'; g.lineWidth = thick; cross_line(g, x, y)
+    g.strokeStyle = 'blue'; g.lineWidth = 1; cross_line(g, x, y)
+    const [x1, y1] = xy_11, [xm, yn] = xy_mn
+    const out = (z, a, b) => (z - a) * (z - b) > 0
+    const nearer = (z, a, b) => Math.abs(z - a) < Math.abs(z - b) ? a : b
+    const x0 = nearer(x, x1, xm), y0 = nearer(y, y1, yn)
+    const outside_p = out(x, x1, xm) || out(y, y1, yn)
+    if (outside_p) {
+        big_message(g, '19x19', (x1 + xm) / 2, (y1 + yn) / 2, 'blue', 'white')
+    } else {
+        const thick = 5
+        g.strokeStyle = 'blue'; g.lineWidth = thick
+        line(g, x, y, x0, y); line(g, x, y, x, y0)
+    }
 }
 
 function draw_drag_range(x, y, g) {
@@ -792,10 +803,7 @@ function transform_image(...args) {
     const g = image_ctx, {width, height} = image_canvas
     g.fillStyle = 'rgba(255,255,255,0.7)'
     g.fillRect(0, 0, width, height)
-    g.font = '20vmin Arial'
-    g.fillStyle = 'blue'
-    g.textAlign = 'center'; g.textBaseline = 'middle'
-    g.fillText('Transforming...', width * 0.5, height * 0.5)
+    big_message(g, 'Transforming...', width * 0.5, height * 0.5, 'blue')
     const wait_millisec = 100
     setTimeout(() => transform_image_soon(...args), wait_millisec)
 }
@@ -909,6 +917,15 @@ function fill_rect_by_diag(ctx, x1, y1, x2, y2) {
     const min_len = (a, b) => [Math.min(a, b), Math.abs(a - b)]
     const [left, width] = min_len(x1, x2), [top, height] = min_len(y1, y2)
     ctx.fillRect(left, top, width, height)
+}
+function big_message(ctx, text, x, y, fill_style, stroke_style) {
+    ctx.save()
+    ctx.font = '20vmin Arial'
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    const args = [text, x, y]
+    fill_style && ((ctx.fillStyle = fill_style), ctx.fillText(...args))
+    stroke_style && ((ctx.strokeStyle = stroke_style), ctx.strokeText(...args))
+    ctx.restore()
 }
 
 function square(ctx, x, y, r) {
