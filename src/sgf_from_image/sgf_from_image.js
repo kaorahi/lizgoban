@@ -213,17 +213,6 @@ function reset() {
     draw(0, 0)
 }
 
-function flip_xy_22_maybe() {
-    // (for translating drag style to equivalent click style...)
-    // when x2 is near to xm, use (x2 - xm) instead of (x2 - x1) for grid size
-    const [x1, y1] = xy_11, [x2, y2] = xy_22, [xm, yn] = xy_mn
-    const dx1 = x2 - x1, dxm = x2 - xm, dy1 = y2 - y1, dyn = y2 - yn
-    const flip_p = (a, b) => Math.abs(a) > Math.abs(b)
-    const x = flip_p(dx1, dxm) ? x1 - dxm : x2
-    const y = flip_p(dy1, dyn) ? y1 - dyn : y2
-    xy_22 = [x, y]
-}
-
 ///////////////////////////////////////////
 // mouse
 
@@ -250,7 +239,7 @@ function mousedown(e) {
 
 function click_after_drag(xy) {
     xy_22 = xy; update_indicators(); wink()  // need setTimeout for immediate wink
-    setTimeout(() => {adjust_xy_all(); flip_xy_22_maybe(); estimate()})
+    setTimeout(() => {adjust_xy_all(); estimate()})
 }
 
 function mouseup(e) {
@@ -303,8 +292,9 @@ function fine_tune(delta, given_xy) {
 
 function force_num_grids(m, n) {
     const f = (grids, k) => {
-        const [z1, z] = [xy_11[k], xy_mn[k]]
-        xy_22[k] = z1 + (z - z1) / (grids - 1)
+        const [z1, z2, z] = [xy_11[k], xy_22[k], xy_mn[k]]
+        const [near, far] = Math.abs(z1 - z2) < Math.abs(z2 - z) ? [z1, z] : [z, z1]
+        xy_22[k] = near + (far - near) / (grids - 1)
     }
     [m, n].map(f)
 }
@@ -455,7 +445,10 @@ function draw_grids(x1, y1, mx, ny, dx, dy, radius, style, g) {
 
 function grid_params(xy) {
     const [x, y] = xy_mn || xy, [x2, y2] = xy_22 || xy_mn || xy, [x1, y1] = xy_11 || xy_22
-    const num_grids = ([z1, z2, z]) => (z - z1) / (z2 - z1) + 1
+    const num_grids_A = ([z1, z2, z]) => (z - z1) / (z2 - z1) + 1
+    const num_grids_B = ([z1, z2, z]) =>  // use min(|z-z1|, |z-z2|) for unit length
+          Math.max(...[[z1, z2, z], [z, z2, z1]].map(num_grids_A))
+    const num_grids = stage() === 2 ? num_grids_A : num_grids_B
     const digitize = z => Math.max(2, Math.min(Math.round(z), 19))
     const [mx0, ny0] = [[x1, x2, x], [y1, y2, y]].map(num_grids)
     const [mx, ny] = (mx0 >= 2 && ny0 >= 2) ? [mx0, ny0].map(digitize) : [19, 19]
