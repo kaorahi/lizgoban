@@ -1272,10 +1272,17 @@ function open_clipboard_image() {
     const file_name = 'sgf_from_image/sgf_from_image.html?sgf_size=19'
     const win = get_new_window(file_name, opt)
     // menu
-    const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}
     const usage = {label: 'Usage', click: open_demo_image}
     const usage2 = {label: 'Another usage', click: open_demo_image2}
     const tips = {label: 'Tips', click: () => win.webContents.send('highlight_tips')}
+    const rgb_diff = enhance => ({
+        label: `RGB diff x${enhance}`,
+        click: () => win.webContents.send('debug_show_rgb_diff', enhance)
+    })
+    const debug = {label: 'Debug', submenu: [
+        ...[1, 3, 10].map(rgb_diff),
+        {role: 'toggleDevTools'}
+    ]}
     const menu = [
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
