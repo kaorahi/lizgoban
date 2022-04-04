@@ -368,7 +368,7 @@ function grid_params(xy) {
     const num_grids = ([z1, z2, z]) => (z - z1) / (z2 - z1) + 1
     const digitize = z => Math.max(2, Math.min(Math.round(z), 19))
     const [mx0, ny0] = [[x1, x2, x], [y1, y2, y]].map(num_grids)
-    const [mx, ny] = (mx0 >= 1 && ny0 >= 1) ? [mx0, ny0].map(digitize) : [19, 19]
+    const [mx, ny] = (mx0 >= 2 && ny0 >= 2) ? [mx0, ny0].map(digitize) : [19, 19]
     const [dx, dy] = [(x - x1) / (mx - 1), (y - y1) / (ny - 1)]
     const radius = Math.min(...[dx, dy].map(Math.abs)) * param.detection_width / 200
     const is = seq(mx), js = seq(ny)
