@@ -29,7 +29,8 @@ const default_param = {
     allow_outliers_in_white: 1,
     consider_reddish_stone: 30,
     detection_width: 40,
-    sgf_size: -1,
+    sgf_size: '-1',  // -1 = as_is
+    to_play: 'B',
 }
 let param = {...default_param}
 function reset_param() {param = {...default_param}; update_forms(); read_param()}
@@ -43,7 +44,7 @@ const [BLACK, WHITE, EMPTY] = grid_state_name
 function update_forms() {
     const update = (...a) => update_radio(...a) || update_slider(...a)
     const update_radio = (key, val) =>
-          each_elem_for_name(key, elem => {elem.checked = (to_i(elem.value) === val)})
+          each_elem_for_name(key, elem => {elem.checked = (elem.value === val)})
     const update_slider = (key, val) => {
         Q(`#${key}`).value = Q(`#${slider_id_for(key)}`).value = val
     }
@@ -51,13 +52,15 @@ function update_forms() {
 }
 
 function read_param(elem, temporary) {
-    const radio_val = key => {
+    const set_radio_val = key => {
         let val = null
-        each_elem_for_name(key, e => e.checked && (val = to_i(e.value)))
+        each_elem_for_name(key, e => e.checked && (val = e.value))
+        val && (param[key] = val)
         return val
     }
     each_key_value(param, (key, _) => {
-        const val = radio_val(key) || to_f(Q(`#${key}`).value); if (isNaN(val)) {return}
+        if (set_radio_val(key)) {return}
+        const val = to_f(Q(`#${key}`).value); if (isNaN(val)) {return}
         param[key] = val
     })
     draw(0, 0)
@@ -457,9 +460,9 @@ function redness([r, g, b, ]) {return (r - b) / 255}
 function get_sgf() {
     // ex. (;SZ[19]AB[bc][bd][cc][db][dc]AW[be][bg][cd][ce][dd][eb][ec][ed][gb])
     if (!guessed_board) {return ''}
-    const size = get_sgf_size()
+    const size = get_sgf_size(), {to_play} = param
     const sgfpos_name = "abcdefghijklmnopqrs"
-    const header = `(;SZ[${size}]`, footer = ')'
+    const header = `(;SZ[${size}]PL[${to_play}]`, footer = ')'
     const sgfpos = (k, sign) => sgfpos_name[sign > 0 ? k : size - k - 1]
     const [si, sj] = coord_signs
     const coords = (i, j) => '[' + sgfpos(i, si) + sgfpos(j, sj) + ']'
@@ -473,7 +476,7 @@ function get_sgf() {
 }
 
 function get_sgf_size() {
-    const {sgf_size} = param; if (sgf_size > 0) {return sgf_size}
+    const sgf_size = to_i(param.sgf_size); if (sgf_size > 0) {return sgf_size}
     const rows = guessed_board.length, cols = guessed_board[0].length
     return Math.max(rows, cols)
 }
@@ -607,7 +610,8 @@ window.addEventListener("paste", e => {
 
 function set_param_from_url() {
     const p = new URLSearchParams(location.search)
-    p.forEach((value, key) => {param[key] = to_f(value)})
+    const to_f_maybe = (val, orig) => (typeof orig === 'string') ? val : to_f(val)
+    p.forEach((value, key) => {param[key] = to_f_maybe(value, param[key])})
 }
 
 function set_url_from_param() {

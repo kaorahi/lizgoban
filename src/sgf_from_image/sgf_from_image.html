@@ -43,6 +43,8 @@
    position: sticky; top: 0; z-index: 1;
    padding: 0.6vmin;
    background: #eeeeff;
+   display: flex;
+   justify-content: space-between;
   }
   #tuning_container {
    display: flex; justify-content: space-around;
@@ -87,15 +89,9 @@
 </div>
 
 <p id="header">
+ <!-- left -->
+ <span>
  <button id="reset" onclick="reset()" style="margin-right: 1vmin">reset</button>
- <span style="margin-right: 1vmin;">
- (SGF size:
- <input type="radio" name="sgf_size" id="sgf_size_as_is" value="-1">
- <label for="sgf_size_as_is">as is</label>
- <input type="radio" name="sgf_size" id="sgf_size_19" value="19">
- <label for="sgf_size_19">19x19</label>
- )
-  </span>
  <span style="color: gray;">
   <span id="stage0">click 1-1 (corner)</span> →
   <span id="stage1">click 2-2</span> →
@@ -104,6 +100,24 @@
    <span class="standalone">Done! (copied to clipboard) / </span>
    <span>Click wrong detection, if any.</span>
    <button class="electron" id="ok" onclick="finish_electron()">OK</button>
+  </span>
+ </span>
+ </span>
+ <!-- right -->
+ <span>
+  <span style="margin-right: 2vmin;">
+   SGF size:
+   <input type="radio" name="sgf_size" id="sgf_size_as_is" value="-1">
+   <label for="sgf_size_as_is">as is</label>
+   <input type="radio" name="sgf_size" id="sgf_size_19" value="19">
+   <label for="sgf_size_19">19x19</label>
+  </span>
+  <span style="margin-right: 1vmin;">
+   To play:
+   <input type="radio" name="to_play" id="black_to_play" value="B">
+   <label for="black_to_play">black</label>
+   <input type="radio" name="to_play" id="white_to_play" value="W">
+   <label for="white_to_play">white</label>
   </span>
  </span>
 </p>
