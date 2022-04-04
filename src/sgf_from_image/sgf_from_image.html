@@ -93,9 +93,18 @@
  <span>
  <button id="reset" onclick="reset()" style="margin-right: 1vmin">reset</button>
  <span style="color: gray;">
-  <span id="stage0">click 1-1 (corner)</span> →
-  <span id="stage1">click 2-2</span> →
-  <span id="stage2">click the limit grid</span> →
+  <span id="stage0">
+   <span class="drag_style_only">drag from 1-1 (corner)</span>
+   <span class="click_style_only">click 1-1 (corner)</span>
+  </span> →
+  <span class="drag_style_only">
+   <span id="drag1">release at the limit grid</span> →
+   <span id="drag2">click 2-2</span> →
+  </span>
+  <span class="click_style_only">
+   <span id="stage1">click 2-2</span> →
+   <span id="stage2">click the limit grid</span> →
+  </span>
   <span id="done" style="padding-bottom: 0.5vmin">
    <span class="standalone">Done! (copied to clipboard) / </span>
    <span>Click wrong detection, if any.</span>

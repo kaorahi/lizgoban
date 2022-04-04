@@ -15,6 +15,7 @@ let is_tuning = false
 let digitizing = false
 let last_xy = [0, 0]
 let perspective_corners = []
+let is_mouse_down = false
 
 const sentinel = null
 
@@ -133,7 +134,7 @@ new ResizeObserver(set_size).observe(image_box)
 
 set_size()
 
-const listener = {mousemove, mousedown}
+const listener = {mousemove, mousedown, mouseup}
 each_key_value(listener, (key, val) => overlay_canvas.addEventListener(key, val))
 
 load_image('demo.png')
@@ -171,18 +172,35 @@ function highlight_tips() {
 
 ///////////////////////////////////////////
 // stage
+
+// (old way) click style:
 // 0 = initial
-// 1 = 1-1 was clicked
-// 2 = 2-2 was clicked
-// 3 = finished
+// 1 = 1-1 was clicked (xy_11 is set)
+// 2 = 2-2 was clicked (xy_22 is set)
+// 3 = the limit grid was clicked (xy_mn is set)
+
+// (new way) drag style:
+// 0 = initial
+// "drag1" = mouse button has been pressed at 1-1 (xy_11 is set)
+// "drag2" = mouse button was released at the limit grid (xy_mn is set)
+// 3 = 2-2 was clicked (xy_22 is set)
 
 function xy_all() {return [xy_11, xy_22, xy_mn, sentinel]}
 
-function stage() {return xy_all().findIndex(a => !a)}
+function stage() {
+    const s = xy_all().findIndex(a => !a)
+    return (s === 3) ? s :
+        (s === 1 && xy_mn) ? "drag2" :
+        (s === 1 && is_mouse_down) ? "drag1" :
+        s
+}
 
 function last_set_xy() {
     const s = stage(), pc = perspective_corners
-    return s === 0 ? pc[pc.length - 1] : xy_all()[s - 1]
+    return s === 0 ? pc[pc.length - 1] :
+        s === 'drag1' ? xy_11 :
+        s === 'drag2' ? xy_mn :
+        xy_all()[s - 1]
 }
 
 function reset() {
@@ -195,6 +213,17 @@ function reset() {
     draw(0, 0)
 }
 
+function flip_xy_22_maybe() {
+    // (for translating drag style to equivalent click style...)
+    // when x2 is near to xm, use (x2 - xm) instead of (x2 - x1) for grid size
+    const [x1, y1] = xy_11, [x2, y2] = xy_22, [xm, yn] = xy_mn
+    const dx1 = x2 - x1, dxm = x2 - xm, dy1 = y2 - y1, dyn = y2 - yn
+    const flip_p = (a, b) => Math.abs(a) > Math.abs(b)
+    const x = flip_p(dx1, dxm) ? x1 - dxm : x2
+    const y = flip_p(dy1, dyn) ? y1 - dyn : y2
+    xy_22 = [x, y]
+}
+
 ///////////////////////////////////////////
 // mouse
 
@@ -203,16 +232,40 @@ function mousemove(e) {
 }
 
 function mousedown(e) {
+    const s = stage()  // before setting is_mouse_down
+    is_mouse_down = true
     const xy = event_xy(e)
     const valid2 = (a, b) => (a[0] !== b[0] || a[1] !== b[1])
     if (e.shiftKey) {try_perspective_transformation(xy); return}
-    switch (stage()) {
+    switch (s) {
     case 0: xy_11 = xy; break
     case 1: valid2(xy_11, xy) ? (xy_22 = xy) : wink(); break
     case 2: xy_mn = xy; estimate(); break
     case 3: edit_guess(...xy); break
+    case "drag1": break  // can't happen
+    case "drag2": click_after_drag(xy); return  // draw later
     }
     draw(...xy)
+}
+
+function click_after_drag(xy) {
+    xy_22 = xy; update_indicators(); wink()  // need setTimeout for immediate wink
+    setTimeout(() => {adjust_xy_all(); flip_xy_22_maybe(); estimate()})
+}
+
+function mouseup(e) {
+    const s = stage()  // before resetting is_mouse_down
+    is_mouse_down = false
+    const xy = event_xy(e)
+    if (s === "drag1") {
+        const {width, height} = image_canvas
+        const too_near = Math.min(width, height) * 0.1
+        const [x, y] = xy, [x1, y1] = xy_11
+        const d = Math.min(...[x - x1, y - y1].map(Math.abs))
+        if (d < too_near) {draw(...xy); return}
+        xy_mn = xy
+        draw(...xy)
+    }
 }
 
 function event_xy(e) {
@@ -261,17 +314,31 @@ function force_num_grids(m, n) {
 ///////////////////////////////////////////
 // draw each stage
 
+function click_style_p() {return [1, 2].includes(stage())}
+
 function draw(x, y) {
+    const drag_table = {drag1: draw_drag1, drag2: draw_drag2}
+    const click_table = [draw0, draw1, draw2, draw_guess]
+    const s = stage(), f = drag_table[s] || click_table[s]
+    f && f(x, y, overlay_ctx)
+    update_indicators()
+}
+
+function update_indicators() {
+    const drag_guide = {drag1: '#drag1', drag2: '#drag2'}
+    const click_guide = ['#stage0', '#stage1', '#stage2', '#done']
     const s = stage()
-    const f = [draw0, draw1, draw2, draw_guess][s]; f && f(x, y, overlay_ctx)
-    const guide = ['#stage0', '#stage1', '#stage2', '#done']
-    guide.forEach((sel, k) => {
+    const highlight_guide = (sel, k) => {
         const {style} = Q(sel) || {style: {}}, current = (k === s)
         style.borderBottom = current ? 'solid 0.5vmin blue' : 'none'
         style.color = current ? 'black' : 'gray'
-    })
+    }
+    click_guide.forEach(highlight_guide)
+    Object.keys(drag_guide).forEach(k => highlight_guide(drag_guide[k], k))
     Q('#reset').disabled = (s === 0 && perspective_corners.length === 0)
     Q('#ok').disabled = (s !== 3)
+    const cs = click_style_p()
+    show_if(cs, '.click_style_only'); show_if(!cs, '.drag_style_only')
 }
 
 function draw0(x, y, g) {
@@ -308,6 +375,22 @@ function draw2(x, y, g) {
     const style = 'rgba(0,0,255,0.2)'
     const {x1, y1, mx, ny, dx, dy, radius} = grid_params([x, y])
     draw_grids(x1, y1, mx, ny, dx, dy, radius, style, g)
+}
+
+function draw_drag1(x, y, g) {draw_drag_range(x, y, g)}
+
+function draw_drag2(x, y, g) {
+    const thick = 5
+    draw_drag_range(...xy_mn, g)
+    g.strokeStyle = 'blue'; g.lineWidth = thick; cross_line(x, y, g)
+}
+
+function draw_drag_range(x, y, g) {
+    const style = 'rgba(0,0,255,0.2)'
+    const {x1, y1} = grid_params([x, y])
+    const min_len = (a, b) => [Math.min(a, b), Math.abs(a - b)]
+    const [left, width] = min_len(x1, x), [top, height] = min_len(y1, y)
+    clear(g); g.fillStyle = style; g.fillRect(left, top, width, height)
 }
 
 ///////////////////////////////////////////
@@ -622,6 +705,68 @@ function set_url_from_param() {
 }
 
 ///////////////////////////////////////////
+// auto adjust
+
+function adjust_xy_all() {
+    const tolerance = 0.4
+    if (stage() !== 3) {return}
+    const [x1, y1] = xy_11, [x2, y2] = xy_22, [xm, yn] = xy_mn
+    const ds = [x2 - x1, x2 - xm, y2 - y1, y2 - yn]
+    const out = (k, l) => ds[k] * ds[l] > 0, outside_p = out(0, 1) || out(2, 3)
+    const min_abs = (...a) => Math.min(...a.map(Math.abs))
+    const unit = outside_p ? min_abs(x1 - xm, y1 - yn) / (19 - 1) : min_abs(...ds)
+    const r = Math.floor(unit * tolerance)
+    const board_range = [xy_11, xy_mn]
+    const get_adjusted = (xy0, r, toward) => {
+        if (!toward) {return find_cross_around(xy0, r, board_range)}
+        const [x0, y0] = xy0, [xt, yt] = toward
+        const [dx, dy] = [xt - x0, yt - y0].map(z => Math.sign(z) * r)
+        const search_range = [[x0, y0], [x0 + dx, y0 + dy]]
+        return find_cross_in(search_range, board_range)
+    }
+    const adjust = (xy0, r, toward) => vec_cp(get_adjusted(xy0, r, toward), xy0)
+    adjust(xy_11, r, xy_mn)
+    !outside_p && adjust(xy_22, r)
+    adjust(xy_mn, r, xy_11)
+}
+
+function find_cross_in(search_range, board_range) {
+    const [[x0, y0], [x1, y1]] = search_range
+    const [[bx0, by0], [bx1, by1]] = board_range
+    const min_max = (a, b) => [Math.min(a, b), Math.max(a, b)]
+    const argmax = (f, z0, z1) => {
+        let champ = - Infinity, at = null
+        const [zmin, zmax] = min_max(z0, z1)
+        for (let z = zmin; z <= zmax; z++) {
+            const score = f(z); score > champ && ([champ, at] = [score, z])
+        }
+        return at
+    }
+    const rd_v = x => rgb_diff_on_vertical_line(x, ...min_max(by0, by1))
+    const rd_h = y => rgb_diff_on_horizontal_line(y, ...min_max(bx0, bx1))
+    const x = argmax(rd_v, x0, x1), y = argmax(rd_h, y0, y1)
+    return [x, y]
+}
+
+function find_cross_around([x0, y0], radius, board_range) {
+    const search_range = [[x0 - radius, y0 - radius], [x0 + radius, y0 + radius]]
+    return find_cross_in(search_range, board_range)
+}
+
+function rgb_diff_on_vertical_line(x0, ymin, ymax) {
+    return sum_for(y => rgb_diff(x0, y, 1, 0), ymin, ymax)
+}
+function rgb_diff_on_horizontal_line(y0, xmin, xmax) {
+    return sum_for(x => rgb_diff(x, y0, 0, 1), xmin, xmax)
+}
+
+function rgb_diff(x, y, dx, dy) {
+    const get_rgb = ([p, q]) => rgba256_at(x + p, y + q).slice(0, 3)
+    const [c0, c] = [[0, 0], [dx, dy]].map(get_rgb)
+    return c0.map((_, k) => Math.abs(c[k] - c0[k])).reduce((a, z) => a + z)
+}
+
+///////////////////////////////////////////
 // perspective transformation
 
 function try_perspective_transformation(xy) {
@@ -682,9 +827,14 @@ function to_f(x) {return x - 0}
 function each_key_value(h, f){Object.keys(h).forEach(k => f(k, h[k]))}
 function each_value(h, f){each_key_value(h, (_, v) => f(v))}  // for non-array
 function vec_add(a, delta) {a.forEach((_, k) => {a[k] += delta[k]})}
+function vec_cp(from, to) {from.forEach((_, k) => {to[k] = from[k]})}
 
 // seq(3) = [ 0, 1, 2 ]
 function seq(n){return [...Array(n)].map((_, i) => i)}
+
+function sum_for(f, min, max) {
+    let a = 0; for (let z = min; z <= max; z++) {a += f(z)}; return a
+}
 
 function skip_too_frequent_requests(f) {
     let latest_request = null
