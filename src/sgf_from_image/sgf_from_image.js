@@ -264,6 +264,7 @@ function mouseup(e) {
         const d = Math.min(...[x - x1, y - y1].map(Math.abs))
         if (d < too_near) {draw(...xy); return}
         xy_mn = xy
+        adjust_xy_all()
         draw(...xy)
     }
 }
@@ -708,9 +709,9 @@ function set_url_from_param() {
 // auto adjust
 
 function adjust_xy_all() {
-    const tolerance = 0.4
-    if (stage() !== 3) {return}
-    const [x1, y1] = xy_11, [x2, y2] = xy_22, [xm, yn] = xy_mn
+    const tolerance = 0.4, valid_stages = [3, "drag2"], outside = [-1, -1]
+    if (!valid_stages.includes(stage())) {return}
+    const [x1, y1] = xy_11, [x2, y2] = xy_22 || outside, [xm, yn] = xy_mn
     const ds = [x2 - x1, x2 - xm, y2 - y1, y2 - yn]
     const out = (k, l) => ds[k] * ds[l] > 0, outside_p = out(0, 1) || out(2, 3)
     const min_abs = (...a) => Math.min(...a.map(Math.abs))
