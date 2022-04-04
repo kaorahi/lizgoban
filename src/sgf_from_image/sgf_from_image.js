@@ -14,6 +14,7 @@ let prev_scale = 1
 let is_tuning = false
 let digitizing = false
 let last_xy = [0, 0]
+let fine_tune_xy = null
 let perspective_corners = []
 let is_mouse_down = false
 let initial_image_url = null
@@ -276,7 +277,7 @@ document.onkeydown = e => {
     const xy = e.shiftKey ? xy_11 : e.ctrlKey ? xy_22 : null
     e.preventDefault(); fine_tune(delta, xy)
 }
-document.onkeyup = e => {stage() === 3 && arrow_key_vec(e) && estimate()}
+document.onkeyup = e => {arrow_key_vec(e) && finish_fine_tune()}
 
 function arrow_key_vec(e) {
     const vec = {
@@ -287,13 +288,20 @@ function arrow_key_vec(e) {
 function is_input_area(e) {return ['INPUT', 'TEXTAREA'].includes(e.target.tagName)}
 
 function fine_tune(delta, given_xy) {
-    const xy = given_xy || last_set_xy(); if (!xy) {return}
+    const xy = fine_tune_xy = given_xy || last_set_xy(); if (!xy) {return}
     const done = (stage() === 3), {mx, ny} = done ? grid_params() : {}
     vec_add(xy, delta)
     done && (xy !== xy_22) && force_num_grids(mx, ny)
-    done && estimate(true)
+    done ? estimate(true) : draw(...last_xy)
+}
+function draw_fine_tune() {
+    if (!fine_tune_xy) {return}
     const g = overlay_ctx
-    g.strokeStyle = 'blue'; g.lineWidth = 1; cross_line(g, ...xy)
+    g.strokeStyle = 'blue'; g.lineWidth = 1; cross_line(g, ...fine_tune_xy)
+}
+function finish_fine_tune() {
+    fine_tune_xy = null
+    setTimeout(() => {stage() === 3 ? estimate() : draw(...last_xy)}, 500)
 }
 
 function force_num_grids(m, n) {
@@ -315,6 +323,7 @@ function draw(x, y) {
     const click_table = [draw0, draw1, draw2, draw_guess]
     const s = stage(), f = drag_table[s] || click_table[s]
     f && f(x, y, overlay_ctx)
+    draw_fine_tune()
     update_indicators()
 }
 
@@ -486,7 +495,7 @@ function do_estimate(temporary) {
 }
 
 function update_guess(x, y, silent, temporary) {
-    draw_guess(x, y)
+    draw(x, y)
     update_sgf(silent, temporary)
 }
 
