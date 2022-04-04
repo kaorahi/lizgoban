@@ -258,11 +258,7 @@ function mouseup(e) {
     is_mouse_down = false
     const xy = event_xy(e)
     if (s === "drag1") {
-        const {width, height} = image_canvas
-        const too_near = Math.min(width, height) * 0.1
-        const [x, y] = xy, [x1, y1] = xy_11
-        const d = Math.min(...[x - x1, y - y1].map(Math.abs))
-        if (d < too_near) {draw(...xy); return}
+        if (too_near_in_canvas(image_canvas, 0.1, xy_11, xy)) {draw(...xy); return}
         xy_mn = xy
         adjust_xy_all()
         draw(...xy)
@@ -389,9 +385,7 @@ function draw_drag2(x, y, g) {
 function draw_drag_range(x, y, g) {
     const style = 'rgba(0,0,255,0.2)'
     const {x1, y1} = grid_params([x, y])
-    const min_len = (a, b) => [Math.min(a, b), Math.abs(a - b)]
-    const [left, width] = min_len(x1, x), [top, height] = min_len(y1, y)
-    clear(g); g.fillStyle = style; g.fillRect(left, top, width, height)
+    clear(g); g.fillStyle = style; fill_rect_by_diag(g, x1, y1, x, y)
 }
 
 ///////////////////////////////////////////
@@ -740,7 +734,6 @@ function adjust_xy_all_repeatedly(count) {
 function find_cross_in(search_range, board_range) {
     const [[x0, y0], [x1, y1]] = search_range
     const [[bx0, by0], [bx1, by1]] = board_range
-    const min_max = (a, b) => [Math.min(a, b), Math.max(a, b)]
     const argmax = (f, z0, z1) => {
         let champ = - Infinity, at = null
         const [zmin, zmax] = min_max(z0, z1)
@@ -833,6 +826,7 @@ function to_i(x) {return x | 0}
 function to_f(x) {return x - 0}
 function each_key_value(h, f){Object.keys(h).forEach(k => f(k, h[k]))}
 function each_value(h, f){each_key_value(h, (_, v) => f(v))}  // for non-array
+function min_max(a, b) {return [Math.min(a, b), Math.max(a, b)]}
 function vec_add(a, delta) {a.forEach((_, k) => {a[k] += delta[k]})}
 function vec_cp(from, to) {from.forEach((_, k) => {to[k] = from[k]})}
 
@@ -896,6 +890,13 @@ function set_canvas_size(canvas, width, height) {
     canvas.width = w; canvas.height = h
 }
 
+function too_near_in_canvas(canvas, ratio, [x1, y1], [x2, y2]) {
+    const {width, height} = canvas
+    const too_near_len = Math.min(width, height) * ratio
+    const d = Math.min(...[x1 - x2, y1 - y2].map(Math.abs))
+    return d < too_near_len
+}
+
 function clear(ctx) {const c = ctx.canvas; ctx.clearRect(0, 0, c.width, c.height)}
 function line(ctx, x1, y1, x2, y2) {
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke()
@@ -904,6 +905,12 @@ function cross_line(ctx, x, y) {
     const {width, height} = ctx.canvas
     line(ctx, x, 0, x, height); line(ctx, 0, y, width, y)
 }
+function fill_rect_by_diag(ctx, x1, y1, x2, y2) {
+    const min_len = (a, b) => [Math.min(a, b), Math.abs(a - b)]
+    const [left, width] = min_len(x1, x2), [top, height] = min_len(y1, y2)
+    ctx.fillRect(left, top, width, height)
+}
+
 function square(ctx, x, y, r) {
     ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.stroke()
 }
