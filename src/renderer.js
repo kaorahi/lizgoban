@@ -775,7 +775,7 @@ function update_sanity(manually) {
     const {value} = sanity_slider, {checked} = sanity_auto_checkbox
     sanity_slider.disabled = checked
     setq("#sanity_value", checked ? '?' : value)
-    manually && main('set_sanity_from_renderer', to_i(value))
+    manually && (main('set_sanity_from_renderer', to_i(value)), set_match_param())
 }
 function set_sanity_from_main() {
     !sanity_auto_checkbox.checked && (sanity_slider.value = R.sanity)
@@ -815,6 +815,7 @@ function submit_match_ai_conf() {
     const valid = (code !== '')
     valid ? main('set_persona_code', code) : toast('empty code')
     hide_dialog()
+    set_match_param()
 }
 
 function get_persona_code_input() {
