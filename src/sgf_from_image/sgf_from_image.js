@@ -219,7 +219,7 @@ function event_xy(e) {
     if (!e) {return last_xy}
     const x0 = e.layerX, y0 = e.layerY
     const scale = canvas_scale(), x = x0 * scale, y = y0 * scale
-    return (last_xy = [x, y])
+    return (last_xy = [x, y].map(Math.round))
 }
 
 ///////////////////////////////////////////
