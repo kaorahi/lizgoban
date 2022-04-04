@@ -468,8 +468,6 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         each_coord((h, xy, idx) => draw_halo_lizzie(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
-        h.allowed_opening_positions &&
-            draw_allowed_opening_positions(h, xy, stone_radius, g)
         h.stone &&
             draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g)
         if (R.busy) {return}
@@ -790,12 +788,6 @@ function draw_halo_lizzie(h, xy, stone_radius, g) {
     const width = next_move_line_width * 1.5
     const radius = stone_radius + width / 2
     g.strokeStyle = '#0f0'; g.lineWidth = width; circle(xy, radius, g)
-}
-
-function draw_allowed_opening_positions(h, xy, stone_radius, g) {
-    const width = next_move_line_width
-    const radius = stone_radius - width / 2
-    g.strokeStyle = '#00f'; g.lineWidth = width; square_around(xy, radius, g)
 }
 
 function draw_minor_suggest(h, xy, radius, g) {

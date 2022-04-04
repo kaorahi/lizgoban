@@ -543,13 +543,6 @@ function pv_from_moves(moves, initial_bturn) {
         return p ? ['pass', move] : [move]
     })
 }
-function add_allowed_opening_positions(stones, game, move_count) {
-    const aop = game.get_allowed_opening_positions(); if (!aop) {return}
-    aop.forEach(ij => {
-        const s = aa_ref(stones, ...ij) || {}
-        s.allowed_opening_positions = true
-    })
-}
 function add_info_to_stones(stones, game) {
     game.forEach(h => {
         const s = stone_for_history_elem(h, stones); if (!s) {return}
@@ -560,7 +553,6 @@ function add_info_to_stones(stones, game) {
     })
     add_next_mark_to_stones(stones, game, game.move_count)
     add_branches_to_stones(stones, game, game.move_count)
-    add_allowed_opening_positions(stones, game, game.move_count)
 }
 function update_info_in_stones() {
     clear_info_in_stones(R.stones); add_info_to_stones(R.stones, game)
