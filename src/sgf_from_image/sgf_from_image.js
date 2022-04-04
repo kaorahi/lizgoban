@@ -151,7 +151,7 @@ electron && initialize_electron()
 hide(electron ? '.standalone' : '.electron')
 
 function initialize_electron() {
-    const api = {highlight_tips}
+    const api = {highlight_tips, debug_show_rgb_diff}
     const {clipboard, ipcRenderer} = electron
     each_key_value(api, (k, v) => ipcRenderer.on(k, v))
     load_image(clipboard.readText() || clipboard.readImage().toDataURL())
@@ -808,6 +808,32 @@ function debug_rgb_diff_color(x, y) {
     const hue = 120 * th / max_th, saturation = 100, luminance = 50
     const alpha = Math.min(2 * r / max_r, 1)
     return `hsla(${hue},${saturation}%,${luminance}%,${alpha})`
+}
+
+function debug_show_rgb_diff(dummy_ipc_event, enhance) {
+    const {width, height} = image_canvas, g = image_ctx
+    big_message(g, 'converting...', width / 2, height / 2, 'blue', 'white')
+    // need setTimeout for showing message immediately
+    setTimeout(() => debug_show_rgb_diff_now(enhance))
+}
+
+function debug_show_rgb_diff_now(enhance) {
+    const {width, height} = image_canvas, g = image_ctx
+    const dst = g.createImageData(width, height)
+    const max_diff = 255 * 3
+    const to_color = z => Math.round(Math.min(z / max_diff * enhance, 1) * 255)
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+            const [red, green] = rgb_diff_hv(x, y).map(to_color)
+            const rgba = [red, green, 0, 255]
+            const k = image_data_index(x, y)
+            rgba.forEach((v, d) => {dst.data[k + d] = v})
+        }
+    }
+    g.putImageData(dst, 0, 0)
+    update_image_data()
+    reset()
+    Q('#revert_image').disabled = false
 }
 
 ///////////////////////////////////////////
