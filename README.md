@@ -43,7 +43,7 @@ with lots of original gimmicks.
 * Save/load analyses to/from SGF in Lizzie-compatible format
 * Restriction of analysis region like KaTrain
 * Free editing of stones in the middle of a game
-* Import stone positions from diagram images like [img2sgf](https://github.com/hanysz/img2sgf)
+* [Import stone positions from diagram images](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html) like [img2sgf](https://github.com/hanysz/img2sgf)
 * [Experimental] Use your favorite images for the board and the stones
 
 ### Original features
