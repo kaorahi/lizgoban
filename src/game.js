@@ -295,12 +295,15 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
                  handicaps, komi, sgf_gorule, board_size: bsize, trial: false})
     const comment = first_node_ref("C")
     merge(game.ref(0), comment ? {comment} : {})
+    const pl = first_node_ref("PL")
+    const white_to_play_first = truep(pl) && pl.toLowerCase()[0] === 'w'
     // [body]
     // need to set board size for history_from_sabaki_nodes
     // (and recover the old board size immediately so that its change
     // is correctly detected elsewhere for switching of engine processes)
     const to_history = nodes =>
           history_from_sabaki_nodes(nodes, true_or(komi, leelaz_komi),
+                                    !white_to_play_first,
                                     cache_suggestions_p)
     const history_for = given_nodes => with_board_size(bsize, to_history, given_nodes)
     const new_hist = history_for(nodes)
@@ -332,7 +335,7 @@ function fix_fox_sgf(game) {
     game.komi = true_or(katago_komi, katrain_komi)
 }
 
-function history_from_sabaki_nodes(nodes, komi, cache_suggestions_p) {
+function history_from_sabaki_nodes(nodes, komi, black_to_play_first, cache_suggestions_p) {
     const new_history = []; let move_count = 0
     const f = (h, key, is_black) => {
         (h[key] || []).forEach((pos, k) => {
@@ -350,7 +353,13 @@ function history_from_sabaki_nodes(nodes, komi, cache_suggestions_p) {
         })
     }
     nodes.forEach(h => {
-        f(h, 'AB', true); f(h, 'AW', false); f(h, 'B', true); f(h, 'W', false)
+        // fixme: this is a quick hack to support PL[W] only pretendedly.
+        // OK: (;SZ[19]PL[W]AB[bc][bd]AW[be][bg])
+        // NG: (;SZ[19]PL[W])
+        const args = black_to_play_first ?
+              [['AB', true], ['AW', false], ['B', true], ['W', false]] :
+              [['AW', false], ['AB', true], ['W', false], ['B', true]]
+        args.forEach(a => f(h, ...a))
     })
     return new_history
 }
