@@ -1,4 +1,4 @@
-!SGF from Image
+# SGF from Image
 
 This is a semiautomatic converter from diagram images of the game Go (Weiqi, Baduk) to SGF format. Try an [online demo](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html).
 
