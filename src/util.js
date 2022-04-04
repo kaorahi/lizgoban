@@ -185,6 +185,11 @@ E.set_error_handler = (process, handler) => {
     process.on('exit', handler)
 }
 
+E.exec_command = (com, f) => {
+    const callback = (err, stdout, stderror) => !err && f && f(stdout)
+    require('child_process').exec(com, callback)
+}
+
 E.initial_sanity = 10
 E.sanity_range = [0, 20]
 

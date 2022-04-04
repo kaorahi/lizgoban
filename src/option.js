@@ -39,6 +39,8 @@ const default_option = {
         winrate_loss: 1.0,
         score_loss: 1.0,
     },
+    screenshot_region_command: null,  // "slop"
+    screenshot_capture_command: null,  // "maim -f png -g %s | xclip -t image/png -se c"
 }
 const option = {}
 let white_preset = []

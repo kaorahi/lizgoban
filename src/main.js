@@ -604,6 +604,10 @@ function menu_template(win) {
         item('Autoplay persona', 'Meta+p', () => ask_auto_play_persona(win)),
         sep,
         item('Import diagram image', undefined, open_demo_image),
+        option.screenshot_region_command &&
+            item('Set screenshot region', undefined, set_screenshot_region),
+        option.screenshot_capture_command &&
+            item('Capture screenshot', 'Meta+c', capture_screenshot),
         sep,
         {role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'},
         sep,
@@ -1270,7 +1274,8 @@ let the_settings_for_sgf_from_image = null
 function momorize_settings_for_sgf_from_image(settings) {
     the_settings_for_sgf_from_image = settings
 }
-function recall_settings_for_sgf_from_image(win) {
+function recall_settings_for_sgf_from_image(win, silent) {
+    if (silent && !the_settings_for_sgf_from_image) {return}
     win.webContents.send('restore_settings', the_settings_for_sgf_from_image)
 }
 function open_clipboard_image() {
@@ -1306,6 +1311,7 @@ function open_clipboard_image() {
     ]
     // init
     win.setMenu(Menu.buildFromTemplate(menu))
+    return win
 }
 function open_demo_image() {open_image_url('demo_auto.png')}
 function open_demo_image2() {open_image_url('demo_hand.png')}
@@ -1393,6 +1399,28 @@ function with_game(tmp_game, proc, ...args) {
 function with_move_count(tmp_mc, proc, ...args) {
     const diff = game.move_count - tmp_mc  // move_count can be changed in proc
     game.move_count = tmp_mc; proc(...args); game.move_count = game.move_count + diff
+}
+
+// screen capture
+
+let the_screenshot_region = null
+function set_screenshot_region() {
+    exec_command(option.screenshot_region_command, s => {
+        the_screenshot_region = s
+        capture_screenshot()
+    })
+}
+function capture_screenshot() {
+    if (!the_screenshot_region) {toast("No region is specified."); return}
+    const com = option.screenshot_capture_command
+    const cont = () => {
+        const win = open_clipboard_image()
+        win.once('ready-to-show',
+                 () => recall_settings_for_sgf_from_image(win, true))
+    }
+    exec_command(com.replace(/%s/, the_screenshot_region))
+    // cont does not work as callback in exec_command. why?
+    setTimeout(cont, 500)
 }
 
 /////////////////////////////////////////////////
