@@ -151,7 +151,7 @@ electron && initialize_electron()
 hide(electron ? '.standalone' : '.electron')
 
 function initialize_electron() {
-    const api = {highlight_tips, debug_show_rgb_diff}
+    const api = {highlight_tips, debug_show_rgb_diff, restore_settings}
     const {clipboard, ipcRenderer} = electron
     each_key_value(api, (k, v) => ipcRenderer.on(k, v))
     load_image(clipboard.readText() || clipboard.readImage().toDataURL())
@@ -159,8 +159,20 @@ function initialize_electron() {
 
 function finish_electron() {
     if (!electron) {return}
-    electron.ipcRenderer.send('read_sgf', get_sgf())
+    const {send} = electron.ipcRenderer
+    send('momorize_settings_for_sgf_from_image', get_settings())
+    send('read_sgf', get_sgf())
     window.close()
+}
+
+function get_settings() {return {param, points: [xy_11, xy_22, xy_mn]}}
+function restore_settings(dummy_ipc_event, settings) {
+    if (!settings) {alert('No previous settings')}
+    [xy_11, xy_22, xy_mn] = settings.points
+    param = settings.param
+    estimate()
+    update_forms()
+    set_url_from_param()
 }
 
 function open_demo(image_url) {
