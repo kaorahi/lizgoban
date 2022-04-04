@@ -772,6 +772,7 @@ function draw_debug(x, y) {
     const p = ([label, f]) => `${label}=${to_i(f(c) * 100)}%`
     const rgba = `rgba(${c.slice(0, 3).join(',')},${(c[3] / 255).toFixed(2)})`
     const red_bright = [['red', redness], ['bright', brightness]].map(p).join(' ')
+    Q('#debug_xy').textContent = `(${x},${y})`
     Q('#debug_color').style.background = Q('#debug_rgba').textContent = rgba
     Q('#debug_dark').textContent = `${red_bright} (${digitized[ternarize(c)]})`
     Q('#debug_guess').textContent = debug_guess(x, y)
