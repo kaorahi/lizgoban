@@ -708,7 +708,10 @@ function set_url_from_param() {
 ///////////////////////////////////////////
 // auto adjust
 
-function adjust_xy_all() {
+function adjust_xy_all() {adjust_xy_all_repeatedly(10)}
+
+function adjust_xy_all_repeatedly(count) {
+    if (count < 1) {return}
     const tolerance = 0.4, valid_stages = [3, "drag2"], outside = [-1, -1]
     if (!valid_stages.includes(stage())) {return}
     const [x1, y1] = xy_11, [x2, y2] = xy_22 || outside, [xm, yn] = xy_mn
@@ -726,9 +729,12 @@ function adjust_xy_all() {
         return find_cross_in(search_range, board_range)
     }
     const adjust = (xy0, r, toward) => vec_cp(get_adjusted(xy0, r, toward), xy0)
+    const before = JSON.stringify(xy_all())
     adjust(xy_11, r, xy_mn)
     !outside_p && adjust(xy_22, r)
     adjust(xy_mn, r, xy_11)
+    const after = JSON.stringify(xy_all()); if (before === after) {return}
+    adjust_xy_all_repeatedly(count - 1)
 }
 
 function find_cross_in(search_range, board_range) {
