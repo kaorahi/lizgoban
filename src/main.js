@@ -308,11 +308,9 @@ function play(move, force_create, default_tag, comment, auto_play_in_match_sec) 
     if (another_game) {switch_to_game(another_game, next_move_count); return}
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create_p)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
-    game.is_in_free_handicap() &&
-        toast(`Free handicap: ${game.move_count + 1}/${game.free_handicaps}`)
     do_play(move, black_to_play_now_p(), tag || default_tag || undefined, comment)
     pass && wink()
-    truep(auto_play_in_match_sec) && !game.is_in_free_handicap() &&
+    truep(auto_play_in_match_sec) &&
         auto_play_in_match(auto_play_in_match_sec, get_auto_moves_in_match())
     autosave_later()
 }
@@ -571,9 +569,6 @@ function menu_template(win) {
                  () => add_tsumego_frame(true), true, game.move_count > 0),
             sep,
             item("Save Q&&A images", 'PrintScreen', save_q_and_a_images),
-            menu("Free handicap...",
-                 seq(10).map(k => (k !== 1) &&
-                             item(`${k} stones`, undefined, () => game.free_handicaps = k))),
         ]),
     ])
     const white_unloader_item =
@@ -1441,9 +1436,9 @@ function set_AI_board_size_maybe(bsize) {
 function aggressive() {
     if (debug_force_aggressive) {return debug_force_aggressive}
     const in_case = (R.in_match || AI.leelaz_for_white_p()); if (!in_case) {return ''}
-    const {handicaps, free_handicaps} = game, komi = game.get_komi()
-    const b = (handicaps <= 1 && free_handicaps <= 1 && komi >= 15) && 'b'
-    const w = (handicaps > 1 || free_handicaps > 1 || komi <= 0) && 'w'
+    const {handicaps} = game, komi = game.get_komi()
+    const b = (handicaps === 0 && komi >= 15) && 'b'
+    const w = (handicaps > 0 || komi <= 0) && 'w'
     return b || w || ''
 }
 
