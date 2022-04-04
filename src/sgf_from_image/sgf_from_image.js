@@ -796,6 +796,19 @@ function rgb_diff(x, y, dx, dy) {
     return c0.map((_, k) => Math.abs(c[k] - c0[k])).reduce((a, z) => a + z)
 }
 
+function rgb_diff_hv(x, y) {
+    return [[1, 0], [0, 1]].map(dxy => rgb_diff(x, y, ...dxy))
+}
+
+function debug_rgb_diff_color(x, y) {
+    const [d_h, d_v] = rgb_diff_hv(x, y)
+    const r = Math.sqrt(d_h ** 2 + d_v **2), th = Math.atan2(d_h, d_v)
+    const max_r = Math.sqrt(2) * 3 * 255, max_th = Math.PI / 2
+    const hue = 120 * th / max_th, saturation = 100, luminance = 50
+    const alpha = Math.min(2 * r / max_r, 1)
+    return `hsla(${hue},${saturation}%,${luminance}%,${alpha})`
+}
+
 ///////////////////////////////////////////
 // perspective transformation
 
@@ -987,6 +1000,8 @@ function draw_debug(x, y) {
     Q('#debug_color').style.background = Q('#debug_rgba').textContent = rgba
     Q('#debug_dark').textContent = `${red_bright} (${digitized[ternarize(c)]})`
     Q('#debug_guess').textContent = debug_guess(x, y)
+    Q('#debug_rgb_diff').textContent = JSON.stringify(rgb_diff_hv(x, y))
+    Q('#debug_rgb_diff_color').style.background = debug_rgb_diff_color(x, y)
     // Q('#debug_misc').textContent = window.devicePixelRatio
 }
 
