@@ -808,7 +808,7 @@ function update_persona_code(given_code) {
 
 function open_match_ai_conf_dialog() {
     update_persona_code(R.persona_code)
-    show_dialog('#match_ai_conf_dialog', null)
+    show_dialog('#match_ai_conf_dialog', '#persona_code_input')
 }
 function submit_match_ai_conf() {
     const code = get_persona_code_input()
@@ -1103,6 +1103,7 @@ document.onkeydown = e => {
     switch (key === "Enter" && target.id) {
     case "auto_analysis_visits": toggle_auto_analyze(); return
     case "generic_input_dialog_input": submit_generic_input_dialog(); return
+    case "persona_code_input": submit_match_ai_conf(); return
     case "auto_play_persona_dialog_black": case "auto_play_persona_dialog_white":
         submit_auto_play_persona_dialog(); return
     case "player_black": case "player_white": case "komi": case "sgf_rule":
