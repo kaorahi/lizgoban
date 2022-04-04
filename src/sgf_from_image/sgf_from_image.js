@@ -16,6 +16,7 @@ let digitizing = false
 let last_xy = [0, 0]
 let perspective_corners = []
 let is_mouse_down = false
+let initial_image_url = null
 
 const sentinel = null
 
@@ -137,7 +138,7 @@ set_size()
 const listener = {mousemove, mousedown, mouseup}
 each_key_value(listener, (key, val) => overlay_canvas.addEventListener(key, val))
 
-load_image('demo.png')
+load_image(initial_image_url || 'demo_auto.png')
 hide('#loading'); show_if(true, '#main')
 
 ///////////////////////////////////////////
@@ -158,6 +159,11 @@ function finish_electron() {
     if (!electron) {return}
     electron.ipcRenderer.send('read_sgf', get_sgf())
     window.close()
+}
+
+function open_demo(image_url) {
+    electron ? electron.ipcRenderer.send('open_image_url', image_url) :
+        window.open(location.pathname + '?initial_image_url=' + image_url, '_blank')
 }
 
 function highlight_tips() {
@@ -694,7 +700,10 @@ window.addEventListener("paste", e => {
 function set_param_from_url() {
     const p = new URLSearchParams(location.search)
     const to_f_maybe = (val, orig) => (typeof orig === 'string') ? val : to_f(val)
-    p.forEach((value, key) => {param[key] = to_f_maybe(value, param[key])})
+    p.forEach((value, key) => {
+        if (key === 'initial_image_url') {initial_image_url = value; return}
+        param[key] = to_f_maybe(value, param[key])
+    })
 }
 
 function set_url_from_param() {

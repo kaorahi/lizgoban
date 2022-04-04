@@ -198,6 +198,7 @@ const simple_api = {
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
     set_auto_play_persona,
     set_sanity_from_renderer,
+    open_image_url,
     enable_menu,
 }
 const api = {
@@ -1273,18 +1274,20 @@ function open_clipboard_image() {
     // menu
     const debug = {label: 'Debug', submenu: [{role: 'toggleDevTools'}]}
     const usage = {label: 'Usage', click: open_demo_image}
+    const usage2 = {label: 'Another usage', click: open_demo_image2}
     const tips = {label: 'Tips', click: () => win.webContents.send('highlight_tips')}
     const menu = [
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
-        {label: 'Help', submenu: [usage, tips]},
+        {label: 'Help', submenu: [usage, usage2, tips]},
         ...(app.isPackaged ? [] : [debug]),
     ]
     // init
     win.setMenu(Menu.buildFromTemplate(menu))
 }
-function open_demo_image() {open_image_url('demo.png')}
+function open_demo_image() {open_image_url('demo_auto.png')}
+function open_demo_image2() {open_image_url('demo_hand.png')}
 function info_text() {
     const f = (label, s) => s ?
           `<${label}>\n` + JSON.stringify(s) + '\n\n' : ''
