@@ -650,7 +650,7 @@ function transform_image(...args) {
     g.font = '20vmin Arial'
     g.fillStyle = 'blue'
     g.textAlign = 'center'; g.textBaseline = 'middle'
-    image_ctx.fillText('Transforming...', width * 0.5, height * 0.5)
+    g.fillText('Transforming...', width * 0.5, height * 0.5)
     const wait_millisec = 100
     setTimeout(() => transform_image_soon(...args), wait_millisec)
 }
