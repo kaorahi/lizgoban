@@ -282,7 +282,7 @@ function event_xy(e) {
 document.onkeydown = e => {
     // e.key === 'Escape' && (reset_perspective_corners(), draw())
     let delta = arrow_key_vec(e); if (!delta) {return}
-    e.preventDefault(); fine_tune(delta, true)
+    e.preventDefault(); fine_tune(delta)
 }
 document.onkeyup = e => {stage() === 3 && arrow_key_vec(e) && estimate()}
 
@@ -294,12 +294,12 @@ function arrow_key_vec(e) {
 }
 function is_input_area(e) {return ['INPUT', 'TEXTAREA'].includes(e.target.tagName)}
 
-function fine_tune(delta, force_estimate) {
+function fine_tune(delta) {
     const xy = last_set_xy(); if (!xy) {return}
     const done = (stage() === 3), {mx, ny} = done ? grid_params() : {}
     vec_add(xy, delta)
     done && force_num_grids(mx, ny)
-    done && force_estimate ? estimate(true) : mousemove()
+    done && estimate(true)
     const g = overlay_ctx
     g.strokeStyle = 'blue'; g.lineWidth = 1; cross_line(...xy, g)
 }
