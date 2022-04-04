@@ -199,6 +199,7 @@ const simple_api = {
     set_auto_play_persona,
     set_sanity_from_renderer,
     open_image_url,
+    momorize_settings_for_sgf_from_image,
     enable_menu,
 }
 const api = {
@@ -1265,6 +1266,13 @@ function set_persona_code(code) {
 }
 function set_adjust_sanity_p(bool) {adjust_sanity_p = bool}
 function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
+let the_settings_for_sgf_from_image = null
+function momorize_settings_for_sgf_from_image(settings) {
+    the_settings_for_sgf_from_image = settings
+}
+function recall_settings_for_sgf_from_image(win) {
+    win.webContents.send('restore_settings', the_settings_for_sgf_from_image)
+}
 function open_clipboard_image() {
     // window
     const size = get_windows()[0].getSize()
@@ -1279,7 +1287,12 @@ function open_clipboard_image() {
         label: `RGB diff x${enhance}`,
         click: () => win.webContents.send('debug_show_rgb_diff', enhance)
     })
+    const recall = {
+        label: 'Apply previous settings', accelerator: 'CmdOrCtrl+Y',
+        click: () => recall_settings_for_sgf_from_image(win),
+    }
     const debug = {label: 'Debug', submenu: [
+        recall,
         ...[1, 3, 10].map(rgb_diff),
         {role: 'toggleDevTools'}
     ]}
@@ -1287,6 +1300,7 @@ function open_clipboard_image() {
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
+        {label: 'Tool', submenu: [recall]},
         {label: 'Help', submenu: [usage, usage2, tips]},
         ...(app.isPackaged ? [] : [debug]),
     ]
