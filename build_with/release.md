@@ -78,7 +78,7 @@ This is very low-tech. You may need parameter tuning or manual correction for ph
 * Slightly improve Tsumego frame (boundary, analysis region).
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
 * Insert a black (white) stone by b(w)+click.
-* Add pair Go to "File" menu and `preset` in `config.json`.
+* Add pair match to "File" menu and `preset` in `config.json`.
 * Add "resize to 19x19" into "Flip..." in "Edit" menu.
 * Copy SGF comments to the clipboard when they are clicked.
 * Accelerate quick overview.

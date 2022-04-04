@@ -60,7 +60,7 @@ with lots of original gimmicks.
 * Preview of branches before switching for nested SGFs
 * Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
 * Play against weakened engines in several ways (Note: [KaTrain](https://github.com/sanderland/katrain/) has nicer features in this field now.)
-* Play pair Go, "you & KataGo" vs. Leela Zero, etc.
+* Play pair match, "you & KataGo" vs. Leela Zero, etc.
 * [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 * [Experimental] [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically. Enjoy watching [Ladder fight!](https://www.reddit.com/r/baduk/comments/llk8cj/ladder_fight/)
 * [Experimental] [External control of GUI](https://github.com/kaorahi/lizgoban/issues/61) from another program
@@ -191,7 +191,7 @@ Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or 
   * rules: See the comments for "rules" in gtp_example.cfg of KataGo.
   * komi: 7.5, 6.5, 0, -0.5, etc. (for KataGo)
   * handicap: Number of handicap stones.
-  * match: Set it true for match vs. AI. Set it 3 for pair Go (= AI plays 3 moves after your move).
+  * match: Set it true for match vs. AI. Set it 3 for pair match (= AI plays 3 moves after your move).
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
   * stone_style: One of "2D", "2.5D", "3D", or "Face". (You need to set "face_image_rule" for "Face". See the next section.)
 
@@ -298,7 +298,7 @@ Incompatibilities:
 * Insert/delete moves in the middle of the game by Ctrl+Shift+click.
 * Insert a black (white) stone by b(w)+click.
 * Add import of diagram images by Ctrl+V ("Paste" in "Edit" menu). [[Solve tsumego pictures (demo)]](https://github.com/kaorahi/lizgoban/issues/68) [[Online version of "SGF from Image"]](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html)
-* Add pair Go to "File" menu and `preset` in `config.json`.
+* Add pair match to "File" menu and `preset` in `config.json`.
 * Add "Random opening" into Tool menu for AI vs. AI (and "diverse" strategy in Match vs. AI) for more various openings.
 * Add "Coordinates" into View menu.
 * Add "resize to 19x19" into "Flip..." in "Edit" menu.
