@@ -24,7 +24,7 @@ const sentinel = null
 ///////////////////////////////////////////
 // parameters
 
-const default_param = {
+const default_tuning_param = {
     // all parameters are "percents"
     assume_gray_as_dark: 40,
     assume_gray_as_light: 40,
@@ -32,11 +32,17 @@ const default_param = {
     allow_outliers_in_white: 1,
     consider_reddish_stone: 30,
     detection_width: 40,
+}
+const default_param = {
+    ...default_tuning_param,
     sgf_size: '-1',  // -1 = as_is
     to_play: 'B',
 }
 let param = {...default_param}
-function reset_param() {param = {...default_param}; update_forms(); read_param()}
+function reset_param() {
+    param = {...param, ...default_tuning_param}
+    update_forms(); read_param()
+}
 
 const grid_state_name = ['black', 'white', 'empty']
 const [BLACK, WHITE, EMPTY] = grid_state_name
