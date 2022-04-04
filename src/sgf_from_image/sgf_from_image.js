@@ -744,8 +744,8 @@ function line(ctx, x1, y1, x2, y2) {
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke()
 }
 function cross_line(x, y, g) {
-    const scale = canvas_scale()
-    line(g, x, 0, x, ch * scale); line(g, 0, y, cw * scale, y)
+    const {width, height} = g.canvas
+    line(g, x, 0, x, height); line(g, 0, y, width, y)
 }
 function square(ctx, x, y, r) {
     ctx.beginPath(); ctx.rect(x - r, y - r, r * 2, r * 2); ctx.stroke()
