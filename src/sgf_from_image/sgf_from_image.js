@@ -253,6 +253,7 @@ function mouseup(e) {
     const s = stage()  // before resetting is_mouse_down
     is_mouse_down = false
     const xy = event_xy(e)
+    if (e.shiftKey) {try_perspective_transformation_mouseup(xy); return}
     if (s === "drag1") {
         if (too_near_in_canvas(image_canvas, 0.1, xy_11, xy)) {draw(...xy); return}
         xy_mn = xy
@@ -359,9 +360,15 @@ function draw_perspective_corners(x, y, g) {
         g.fillStyle = 'rgba(0,255,255,0.3)'; g.beginPath(); g.moveTo(...pc[3])
         pc.forEach(point => g.lineTo(...point)); g.fill()
     }
+    const draw_rect = () => {
+        g.fillStyle = 'rgba(0,255,255,0.3)'
+        fill_rect_by_diag(g, ...pc[0], x, y)
+    }
+    const pc_len = pc.length, is_dragging = (pc_len === 1 && is_mouse_down)
+    if (is_dragging) {draw_rect(); return}
     g.strokeStyle = 'rgba(0,255,255,0.5)'; g.lineWidth = thick
     xys.forEach((xy, k) => (k > 0) && line(g, ...xys[k - 1], ...xy))
-    switch (pc.length) {
+    switch (pc_len) {
     case 3: g.strokeStyle = 'rgba(0,0,255,0.5)'; draw_last_edge(); break
     case 4: draw_last_edge(); draw_area(); break
     }
@@ -805,6 +812,17 @@ function try_perspective_transformation(xy) {
     }
     const [[left, right], [top, bottom]] = [width, height].map(both_ends)
     transform_image([right, top], [left, top], [left, bottom], [right, bottom], ...pc)
+}
+
+function try_perspective_transformation_mouseup(xy) {
+    const pc = perspective_corners
+    const is_dragging =
+          (pc.length === 1 && !too_near_in_canvas(image_canvas, 0.01, pc[0], xy))
+    if (!is_dragging) {return}
+    const [x0, y0] = pc[0], [x, y] = xy
+    const [left, right] = min_max(x0, x), [top, bottom] = min_max(y0, y)
+    perspective_corners = [[right, top], [left, top], [left, bottom]]
+    try_perspective_transformation([right, bottom])
 }
 
 function reset_perspective_corners() {perspective_corners = []}
