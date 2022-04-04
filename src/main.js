@@ -455,7 +455,7 @@ function menu_template(win) {
                  (this_item, win) => stop_match(window_prop(win).window_id), true) :
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
         item('Pair match', undefined,
-             (this_item, win) => start_match(win, 3), true, !(R.in_match && R.in_pair_go)),
+             (this_item, win) => start_match(win, 3), true, !(R.in_match && R.in_pair_match)),
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
         item('Save SGF with analysis...', 'CmdOrCtrl+S', () => save_sgf(true), true),
@@ -1761,7 +1761,7 @@ function update_state(keep_suggest_p) {
         ...subboard_stones_suggest_for(su, prev_su), gain: cur.gain,
     }
     const amm = get_auto_moves_in_match()
-    const in_pair_go = R.in_match && (amm !== 1) && (amm === 3 ? 'pair_go' : amm)
+    const in_pair_match = R.in_match && (amm !== 1) && (amm === 3 ? 'pair_match' : amm)
     const persona_code = persona_param.get_code()
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
@@ -1772,7 +1772,7 @@ function update_state(keep_suggest_p) {
         player_black, player_white, trial, sequence_ids, sequence_props, history_tags,
         image_paths, face_image_rule, exercise_metadata,
         subboard_stones_suggest,
-        in_pair_go,
+        in_pair_match,
         persona_code,
         pv_trail_max_suggestions,
     }, more)
