@@ -234,7 +234,7 @@ function reset() {
     coord_signs = [0, 0]
     guessed_board = []
     set_sgf_form('')
-    Q('#copy_to_clipboard').disabled = true
+    Q('#copy_to_clipboard').disabled = Q('#download').disabled = true
     reset_perspective_corners()
     draw(0, 0)
 }
@@ -540,7 +540,7 @@ function update_sgf(silent, temporary) {
     if (electron) {return}
     const sgf = get_sgf()
     set_sgf_form(sgf)
-    Q('#copy_to_clipboard').disabled = false
+    Q('#copy_to_clipboard').disabled = Q('#download').disabled = false
     !temporary && navigator.clipboard.writeText(sgf)
     !silent && wink()
 }
@@ -728,6 +728,21 @@ window.addEventListener("paste", e => {
         f && load_image(URL.createObjectURL(f))
     })
 })
+
+///////////////////////////////////////////
+// save
+
+function save_sgf() {
+    // https://stackoverflow.com/questions/45831191/generate-and-download-file-from-js
+    // https://learngo.co.uk/Screen2SGF.html
+    if (electron) {return}
+    const a = document.createElement('a')
+    const datestr = (new Date()).toISOString()
+    const filename = datestr.replace(/:|^[-+]|[.].*/g, '').replace('T', '-') + '.sgf'
+    a.download = filename  // '2022-01-23-123456.sgf'
+    a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(get_sgf())
+    a.click()
+}
 
 ///////////////////////////////////////////
 // URL
