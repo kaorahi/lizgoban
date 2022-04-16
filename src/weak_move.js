@@ -3,10 +3,23 @@
 ///////////////////////////////////////////////
 // main
 
+// public
+
 function select_weak_move(...args) {
     const [move, comment] = parse_commented_move(get_commented_move(...args))
     return [move, prepend_common_comment(move, comment, ...args)]
 }
+
+function adjust_weaken_args(weaken_method, weaken_args, adjust_sanity) {
+    const copied_args = weaken_args.slice()
+    switch (weaken_method) {
+    case 'persona':
+        overwrite_weaken_args_by_persona(copied_args, adjust_sanity()); break
+    }
+    return copied_args
+}
+
+// private
 
 function get_commented_move(state, weaken_method, weaken_args) {
     const a = [state, ...weaken_args]
@@ -151,8 +164,12 @@ function weak_move_by_score(state, average_losing_points) {
 ///////////////////////////////////////////////
 // strategy: persona
 
-function weak_move_by_persona(state, persona) {
-    const {orig_suggest, sanity} = state
+function overwrite_weaken_args_by_persona(weaken_args, new_sanity) {
+    weaken_args[1] = new_sanity
+}
+
+function weak_move_by_persona(state, persona, sanity) {
+    const {orig_suggest} = state
     const typical_order = 3, threshold_range = [1e-3, 0.3]
     const param = persona.get()
     const log_threshold_range = threshold_range.map(Math.log)
@@ -252,4 +269,5 @@ function parse_commented_move(commented_move) {
 
 module.exports = {
     select_weak_move,
+    adjust_weaken_args,
 }

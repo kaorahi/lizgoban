@@ -38,7 +38,7 @@ const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
-const {select_weak_move} = require('./weak_move.js')
+const {select_weak_move, adjust_weaken_args} = require('./weak_move.js')
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
@@ -929,7 +929,7 @@ function set_match_param(weaken) {
     let m
     auto_play_weaken =
         (weaken === 'diverse') ? ['random_opening'] :
-        (weaken === 'persona') ? ['persona', persona_param] :
+        (weaken === 'persona') ? ['persona', persona_param, get_stored('sanity')] :
         (weaken === 'pass') ? ['pass_maybe'] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
@@ -1009,7 +1009,8 @@ function try_play_best(weaken_method, ...weaken_args) {
     // try_play_best('lose_score', 0.1)
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     const suggest = P.orig_suggest(); if (empty(suggest)) {return}
-    weaken_method === 'persona' && adjust_sanity_p && adjust_sanity()
+    adjust_sanity_p &&
+        (weaken_args = adjust_weaken_args(weaken_method, weaken_args, adjust_sanity))
     const state = {
         orig_suggest: suggest,
         is_bturn: is_bturn(),
@@ -1019,7 +1020,6 @@ function try_play_best(weaken_method, ...weaken_args) {
         orig_winrate: winrate_after(game.move_count),
         orig_score_without_komi: game.ref_current().score_without_komi,
         random_opening: option.random_opening,
-        sanity: get_stored('sanity'),
         generate_persona_param,
         katago_p: AI.katago_p(),
         is_moves_ownership_supported: AI.is_moves_ownership_supported(),
@@ -1057,10 +1057,13 @@ function winrate_after(move_count) {
 
 function adjust_sanity() {
     const learning_rate = 0.01
+    const sanity = get_stored('sanity')
     const suggest = P.orig_suggest(), s0 = (suggest[0] || {}).score_without_komi
-    if (!truep(s0)) {return}
+    if (!truep(s0)) {return sanity}
     const d = - learning_rate * (s0 - game.get_komi()) * (is_bturn() ? 1 : -1)
-    set_stored('sanity', clip(get_stored('sanity') + d, ...sanity_range))
+    const new_sanity = clip(sanity + d, ...sanity_range)
+    set_stored('sanity', new_sanity)
+    return new_sanity
 }
 
 /////////////////////////////////////////////////
