@@ -96,6 +96,7 @@ let pausing = false, busy = false
 let exercise_metadata = null
 let debug_force_aggressive = null
 let adjust_sanity_p = false
+let auto_play_weaken_for_bw = {}; clear_auto_play_weaken_for_bw()
 
 function set_game(new_game) {
     game = new_game
@@ -581,7 +582,7 @@ function menu_template(win) {
              load_leelaz_for_white),
         white_unloader_item,
         item('Swap black/white engines', 'Shift+S',
-             AI.swap_leelaz_for_black_and_white, false, !!lz_white),
+             swap_leelaz_for_black_and_white, false, !!lz_white),
         // item('Switch to previous engine', 'Shift+T', () => AI.restore(1)),
         sep,
         item('Reset', 'CmdOrCtrl+R', restart),
@@ -598,6 +599,15 @@ function menu_template(win) {
                   {_: 'b', b: 'w', w: null} : {_: 'w', w: 'b', b: null}
             debug_force_aggressive = next[debug_force_aggressive || '_']
         }),
+        sep,
+        ...['black', 'white', 'common'].map(player =>
+            item(`Paste to ${player} strategy`, undefined,
+                 () => paste_to_auto_play_weaken_for_bw(player),
+                 true, get_current_match_param())),
+        ...[
+            ['Swap b/w strategies', swap_auto_play_weaken_for_bw],
+            ['Clear b/w strategies', clear_auto_play_weaken_for_bw],
+        ].map(([l, a]) => item(l, undefined, a, true, auto_play_weaken_for_bw_p())),
         sep,
         item('Import diagram image', undefined, open_demo_image),
         option.screenshot_region_command &&
@@ -665,6 +675,10 @@ function toggle_stored(key) {
 }
 
 function unload_leelaz_for_white() {AI.unload_leelaz_for_white()}
+function swap_leelaz_for_black_and_white() {
+    AI.swap_leelaz_for_black_and_white()
+    swap_auto_play_weaken_for_bw()
+}
 
 function obsolete_toggler_menu_item(label, key, accelerator) {
     const message = 'This preference will be removed in future versions. If you have a special reason to change the default value, please post it to GitHub issues from the link "Project Home" at the bottom of "Help > en".'
@@ -845,10 +859,12 @@ function start_auto_play(strategy, sec, count) {
     replaying && rewind_maybe()
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
 }
+
 function try_auto_play(force_next) {
+    const weaken = auto_play_weaken_for_current_bw() || auto_play_weaken
     const proc = {
         replay: () => do_as_auto_play(redoable(), redo),
-        best: () => try_play_best(auto_play_weaken),
+        best: () => try_play_best(weaken),
         random_opening: () => try_play_best(['random_opening']),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
@@ -875,7 +891,7 @@ function ask_auto_play_sec(win, replaying) {
     generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
 }
 function submit_auto_play_or_replay(sec, replaying) {
-    const rand_p = store.get('random_opening_p')
+    const rand_p = store.get('random_opening_p') && !auto_play_weaken_for_bw_p()
     const strategy =
           replaying ? 'replay' :
           rand_p ? 'random_opening' :
@@ -932,6 +948,38 @@ function auto_play_in_match(sec, count) {
 let the_auto_moves_in_match = 1
 function get_auto_moves_in_match() {return clip(the_auto_moves_in_match, 1)}
 function set_auto_moves_in_match(k) {the_auto_moves_in_match = k}
+
+// auto_play_weaken_for_bw (player = 'black' or 'white')
+function get_auto_play_weaken_for_bw(player) {
+    return auto_play_weaken_for_bw[player]
+}
+function set_auto_play_weaken_for_bw(player, val) {
+    auto_play_weaken_for_bw[player] = val
+}
+function clear_auto_play_weaken_for_bw() {
+    ['black', 'white'].forEach(player => set_auto_play_weaken_for_bw(player, null))
+}
+function auto_play_weaken_for_current_bw() {
+    return get_auto_play_weaken_for_bw(is_bturn() ? 'black' : 'white')
+}
+function auto_play_weaken_for_bw_p() {
+    // !! to avoid undefined
+    return !!['black', 'white'].find(get_auto_play_weaken_for_bw)
+}
+function get_current_match_param() {
+    return !empty(auto_play_weaken) && auto_play_weaken
+}
+function paste_to_auto_play_weaken_for_bw(player) {
+    const mp = get_current_match_param()
+    if (!mp) {toast('Nothing to paste.'); return}
+    const ps = (player === 'common') ? ['black', 'white'] : [player]
+    ps.forEach(p => set_auto_play_weaken_for_bw(p, mp))
+}
+function swap_auto_play_weaken_for_bw() {
+    const ps = ['black', 'white'], vs = ps.map(get_auto_play_weaken_for_bw)
+    const swapped = [[ps[0], vs[1]], [ps[1], vs[0]]]
+    swapped.map(a => set_auto_play_weaken_for_bw(...a))
+}
 
 // auto-redo (without additional analysis)
 let the_auto_redo_progress = 0, auto_redo_millisec = 0, auto_redo_timer = null
@@ -996,7 +1044,7 @@ function try_play_best(weaken) {
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     const suggest = P.orig_suggest(); if (empty(suggest)) {return}
     // clean me: side effect!
-    adjust_sanity_p &&
+    adjust_sanity_p && !auto_play_weaken_for_current_bw() &&
         weaken.splice(0, Infinity, weaken_method, ...adjust_weaken_args(weaken_method, weaken_args, adjust_sanity))
     const state = {
         orig_suggest: suggest,
@@ -1724,7 +1772,11 @@ function update_title() {
     const names = (b || w) ? `(B: ${n(b)} / W: ${n(w)})` : ''
     const tags = current_tag_letters()
     const tag_text = tags ? `[${tags}]` : ''
-    const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''}`
+    const weaken_bw = ['black', 'white'].map(k => {
+        const v = get_auto_play_weaken_for_bw(k)
+        return v && `weak_${k}=${JSON.stringify(v)}`
+    }).filter(truep).join(' ')
+    const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''} ${weaken_bw}`
     title_change_detector.is_changed(title) &&
         get_windows().forEach(win => win.setTitle(title))
 }
