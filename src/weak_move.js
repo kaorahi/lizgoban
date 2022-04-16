@@ -22,13 +22,13 @@ function adjust_weaken_args(weaken_method, weaken_args, adjust_sanity) {
 // private
 
 function get_move_etc(state, weaken_method, weaken_args) {
-    const a = [state, ...weaken_args]
-    const ret = weaken_method === 'random_candidate' ? weak_move(...a) :
-        weaken_method === 'lose_score' ? weak_move_by_score(...a) :
-        weaken_method === 'random_opening' ? random_opening_move(...a) :
-        weaken_method === 'persona' ? weak_move_by_persona(...a) :
-        best_move(...a)
-    return parse_commented_move(ret)
+    const f = {
+        random_candidate: weak_move,
+        lose_score: weak_move_by_score,
+        random_opening: random_opening_move,
+        persona: weak_move_by_persona,
+    }[weaken_method] || best_move
+    return parse_commented_move(f(state, ...weaken_args))
 }
 
 function prepend_common_comment(move, comment, state, weaken_method, weaken_args) {
