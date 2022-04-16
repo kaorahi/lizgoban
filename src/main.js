@@ -1010,11 +1010,12 @@ function try_play_best(weaken_method, ...weaken_args) {
     if (empty(P.orig_suggest())) {return}
     // comment
     const play_com = m => {
-        const base = `by ${AI.engine_info().current.preset_label_text}`
+        const ai = `by ${AI.engine_info().current.preset_label_text}`
         const {order} = P.orig_suggest().find(s => s.move === m) || {}
-        const more = !truep(order) ? ['(outside the candidates)'] :
-              (order > 0) ? [`(order = ${order + 1})`] : []
-        const comment = [base, ...more].join(' ')
+        const ord = !truep(order) ? '(outside the candidates)':
+              (order > 0) ? `(order = ${order + 1})` : null
+        const join_by = (sep, ...a) => a.filter(identity).join(sep)
+        const comment = join_by(' ', ai, ord)
         play(m, 'never_redo', null, comment)
     }
     // move
