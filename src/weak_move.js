@@ -156,8 +156,8 @@ function weak_move_by_score(state, average_losing_points) {
 ///////////////////////////////////////////////
 // strategy: persona
 
-function weak_move_etc_by_persona(state, persona_code, current_sanity) {
-    const new_sanity = state.adjust_sanity_p && adjust_sanity(state, current_sanity)
+function weak_move_etc_by_persona(state, persona_code, current_sanity, adjust_sanity_p) {
+    const new_sanity = adjust_sanity_p && adjust_sanity(state, current_sanity)
     const sanity = true_or(new_sanity, current_sanity)
     const {orig_suggest, generate_persona_param} = state
     const typical_order = 1, threshold_range = [1e-3, 0.3]
@@ -172,7 +172,7 @@ function weak_move_etc_by_persona(state, persona_code, current_sanity) {
         return make_commented_move(best_move(state), com)
     }
     const {move} = suggest
-    const new_weaken_args = truep(new_sanity) && [persona_code, new_sanity]
+    const new_weaken_args = truep(new_sanity) && [persona_code, new_sanity, adjust_sanity_p]
     // (move comment)
     const com_candidates_len = 5
     const candidate_moves =

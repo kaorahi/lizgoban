@@ -777,7 +777,7 @@ function initialize_sanity_slider() {
     if (sanity_slider.hasAttribute('min')) {return}
     each_key_value(h, (k, v) => sanity_slider.setAttribute(k, v))
     sanity_slider.addEventListener('input', () => update_sanity(true))
-    const on_check = () => main('set_adjust_sanity_p', sanity_auto_checkbox.checked)
+    const on_check = () => {main('set_adjust_sanity_p', sanity_auto_checkbox.checked); set_match_param()}
     sanity_auto_checkbox.addEventListener('change', on_check)
 }
 initialize_sanity_slider()

@@ -930,7 +930,7 @@ function set_match_param(weaken) {
     let m
     auto_play_weaken =
         (weaken === 'diverse') ? ['random_opening'] :
-        (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity')] :
+        (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity'), adjust_sanity_p] :
         (weaken === 'pass') ? ['pass_maybe'] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
@@ -1057,7 +1057,6 @@ function try_play_best(weaken) {
         orig_score_without_komi: game.ref_current().score_without_komi,
         my_current_score: get_my_score(0),
         my_previous_score: get_my_score(-2),
-        adjust_sanity_p: adjust_sanity_p && !auto_play_weaken_for_current_bw(),
         random_opening: option.random_opening,
         generate_persona_param,
         katago_p: AI.katago_p(),
@@ -1068,7 +1067,8 @@ function try_play_best(weaken) {
           select_weak_move(state, weaken_method, weaken_args)
     // clean me: side effect!
     new_weaken_args && weaken.splice(0, Infinity, weaken_method, ...new_weaken_args)
-    new_sanity && set_stored('sanity', new_sanity)
+    new_sanity && adjust_sanity_p && !auto_play_weaken_for_current_bw()
+        && set_stored('sanity', new_sanity)
     const play_com = (m, c) => {
         play(m, 'never_redo', null, c)
         is_pass(m) && toast('Pass')
