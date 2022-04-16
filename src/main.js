@@ -1129,11 +1129,15 @@ function winrate_after(move_count) {
         true_or(game.ref(move_count).b_winrate, NaN)
 }
 function weak_move_by_score(average_losing_points) {
-    if (!AI.katago_p()) {return best_move()}
+    if (!AI.katago_p()) {
+        const com = 'Play normally because "lose_score" is not supported for this engine.'
+        return make_commented_move(best_move(), com)
+    }
     const suggest = weak_move_candidates()
     const current_score = game.ref_current().score_without_komi || 0
     const losing_points = Math.random() * average_losing_points * 2
-    const target_score = current_score - losing_points * (is_bturn() ? 1 : -1)
+    const sign = is_bturn() ? 1 : -1
+    const target_score = current_score - losing_points * sign
     const selected =
           min_by(suggest, s => Math.abs(s.score_without_komi - target_score))
     debug_log(`weak_move_by_score: current_score=${current_score} ` +
@@ -1141,7 +1145,12 @@ function weak_move_by_score(average_losing_points) {
               `move=${selected.move} score=${selected.score_without_komi} ` +
               `visits=${selected.visits} order=${selected.order} ` +
               `winrate_order=${selected.winrate_order}`)
-    return selected.move
+    const {move, score_without_komi} = selected
+    const actual_loss = (score_without_komi - current_score) * sign
+    const com = `Searched ${suggest.length} candidates` +
+          ` for -${losing_points.toFixed(2)}pts` +
+          ` and found -${actual_loss.toFixed(2)}pts actually.`
+    return make_commented_move(move, com)
 }
 function weak_move_by_persona(persona) {
     const typical_order = 3, threshold_range = [1e-3, 0.3]
