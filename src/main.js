@@ -1094,8 +1094,9 @@ function adjust_sanity() {
     const sanity = get_stored('sanity')
     const suggest = P.orig_suggest(), s0 = (suggest[0] || {}).score_without_komi
     if (!truep(s0)) {return sanity}
+    const round = (z, k) => Math.round(z * 10**k) / 10**k
     const d = - learning_rate * (s0 - game.get_komi()) * (is_bturn() ? 1 : -1)
-    const new_sanity = clip(sanity + d, ...sanity_range)
+    const new_sanity = clip(round(get_stored('sanity') + d, 2), ...sanity_range)
     set_stored('sanity', new_sanity)
     return new_sanity
 }
