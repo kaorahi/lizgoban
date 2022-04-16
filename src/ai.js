@@ -182,6 +182,7 @@ function engine_info() {
     const cur_lz = leelaz_for_this_turn()
     return {engine_komi: cur_lz.get_komi(),
             leelaz_for_white_p: leelaz_for_white_p(), current: f(cur_lz),
+            really_current: f(leelaz),  // for switch_to_random_leelaz
             black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
 

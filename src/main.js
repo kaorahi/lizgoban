@@ -1010,7 +1010,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     if (empty(P.orig_suggest())) {return}
     // comment
     const play_com = (m, c) => {
-        const ai = `by ${AI.engine_info().current.preset_label_text}`
+        const ai = `by ${AI.engine_info().really_current.preset_label_text}`
         const {order} = P.orig_suggest().find(s => s.move === m) || {}
         const ord = !truep(order) ? '(outside the candidates)':
               (order > 0) ? `(order = ${order + 1})` : null
