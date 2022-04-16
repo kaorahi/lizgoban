@@ -1032,7 +1032,11 @@ function try_play_best(weaken_method, ...weaken_args) {
     const [move, weaken_comment] = parse_commented_move(commented_move)
     const pass_maybe =
           () => AI.peek_value('pass', value => {
-              play_com(value < 0.9 ? 'pass' : move); update_all()
+              const threshold = 0.9, pass_p = (value < threshold)
+              const com = `If I play pass, your winrate will be ${value.toFixed(2)}` +
+                    ` (${pass_p ? "<" : ">="} threshold ${threshold}).` +
+                    ` So I play ${pass_p ? "pass" : "normally"}.`
+              play_com(pass_p ? 'pass' : move, com); update_all()
           }) || toast('Not supported')
     const play_it = () => {
         decrement_auto_play_count()
