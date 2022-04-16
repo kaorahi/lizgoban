@@ -222,41 +222,19 @@ You can also adjust "sanity" slider anytime, or check "auto" for auto-adjusting.
 </p>
 
 <p>
-(The following descriptions are rather obsolete.)
+(Older strategies)
 </p>
 
 <ul>
+ <li>pass: play pass when there is enough margin of winrate</li>
  <li>weak n: n=1 (slightly weak) to n=9 (very weak)</li>
  <li>-Xpt (KataGo only): lose the score by X points or so in every move</li>
+ <li>swap n: random mixture of different engines (see below)</li>
 </ul>
 
 Note that strong engines may not find bad moves unless you give them sufficient time.
-You can skip the rest of this section if the above menu is enough for you.
-
-<p>
-<ol>
- <li>Select "Raw board" in "View" menu.</li>
- <li>Click any point in your turn.</li>
- <li>Hit Enter key in engine's turn.<br>
-      Or, hit "1", "2", ..., "9" key
-      (1 = slightly weak move, 9 = very weak move).<br>
-      Or, hit "0" key (play pass when there is enough margin of winrate).</li>
-</ol>
-Push "z" key (keep holding down) to peek suggestions.
-</p>
-
-<p>
-As another handicap,
-you can also play against a random mixture of different engines.
-<ol>
- <li>Select "Raw board" in "View" menu.</li>
- <li>Select a weights file (ex. LZ38) from "Load network weights" in "Engine" menu.</li>
- <li>Select another weights file (ex. LZ157) from "Alternative weights for white" in "Engine" menu.</li>
-</ol>
-Then LZ157 is used normally for white if you hit Enter key.
-But, if you hit "1" key, LZ38 is used instead for white with 10% probability.
-It is 20% by "2" key, 30% by "3" key, ..., and 90% by "9" key.
-</p>
+"swap n" swaps engines for black and white randomly with probability 10n%.
+(You need to set engines with different configurations, e.g. LZ38 and LZ157, for black and white beforehand from "Engine" menu or "Preset" menu.)
 
 <h3><a name="layout">UI layout</a></h3>
 
