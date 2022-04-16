@@ -1090,13 +1090,18 @@ function winrate_after(move_count) {
 }
 
 function adjust_sanity() {
-    const learning_rate = 0.01
+    const eta_s = 0.01, eta_ds = 0.1
     const sanity = get_stored('sanity')
-    const suggest = P.orig_suggest(), s0 = (suggest[0] || {}).score_without_komi
-    if (!truep(s0)) {return sanity}
+    const get_my_score = dmc => {
+        const mc = game.move_count + dmc, sign = is_bturn() ? 1 : -1
+        return (mc >= game.init_len) &&
+            (game.ref(mc).score_without_komi - game.get_komi()) * sign
+    }
+    const ss = [-2, 0].map(get_my_score), [s_prev, s_cur] = ss
+    if (!ss.every(truep)) {return sanity}
     const round = (z, k) => Math.round(z * 10**k) / 10**k
-    const d = - learning_rate * (s0 - game.get_komi()) * (is_bturn() ? 1 : -1)
-    const new_sanity = clip(round(get_stored('sanity') + d, 2), ...sanity_range)
+    const ds = s_cur - s_prev, d_san = - (eta_s * s_cur + eta_ds * ds)
+    const new_sanity = clip(round(sanity + d_san, 4), ...sanity_range)
     set_stored('sanity', new_sanity)
     return new_sanity
 }
