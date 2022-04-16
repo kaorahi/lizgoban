@@ -1065,7 +1065,7 @@ function random_opening_move() {
         log(selected, 'prior', selected.prior)
         return selected.move
     }
-    if (Math.random() > discount) {return best.move}
+    if (Math.random() >= discount) {return best.move}
     const admissible = s => {
         if (s === best) {return true}
         const ok = (key, limit, sign) =>
