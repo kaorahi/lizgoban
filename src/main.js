@@ -38,7 +38,7 @@ const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
-const {select_weak_move, adjust_weaken_args} = require('./weak_move.js')
+const {select_weak_move} = require('./weak_move.js')
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
@@ -1043,9 +1043,11 @@ function try_play_best(weaken) {
     const [weaken_method, ...weaken_args] = weaken || []
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     const suggest = P.orig_suggest(); if (empty(suggest)) {return}
-    // clean me: side effect!
-    adjust_sanity_p && !auto_play_weaken_for_current_bw() &&
-        weaken.splice(0, Infinity, weaken_method, ...adjust_weaken_args(weaken_method, weaken_args, adjust_sanity))
+    const get_my_score = dmc => {
+        const mc = game.move_count + dmc, sign = is_bturn() ? 1 : -1
+        return (mc >= game.init_len) &&
+            (game.ref(mc).score_without_komi - game.get_komi()) * sign
+    }
     const state = {
         orig_suggest: suggest,
         is_bturn: is_bturn(),
@@ -1053,13 +1055,20 @@ function try_play_best(weaken) {
         stones: R.stones,
         orig_winrate: winrate_after(game.move_count),
         orig_score_without_komi: game.ref_current().score_without_komi,
+        my_current_score: get_my_score(0),
+        my_previous_score: get_my_score(-2),
+        adjust_sanity_p: adjust_sanity_p && !auto_play_weaken_for_current_bw(),
         random_opening: option.random_opening,
         generate_persona_param,
         katago_p: AI.katago_p(),
         is_moves_ownership_supported: AI.is_moves_ownership_supported(),
         preset_label_text: AI.engine_info().really_current.preset_label_text,
     }
-    const [move, comment] = select_weak_move(state, weaken_method, weaken.slice(1))
+    const {move, comment, new_weaken_args, new_sanity} =
+          select_weak_move(state, weaken_method, weaken_args)
+    // clean me: side effect!
+    new_weaken_args && weaken.splice(0, Infinity, weaken_method, ...new_weaken_args)
+    new_sanity && set_stored('sanity', new_sanity)
     const play_com = (m, c) => {
         play(m, 'never_redo', null, c)
         is_pass(m) && toast('Pass')
@@ -1087,23 +1096,6 @@ function winrate_after(move_count) {
     return move_count < 0 ? NaN :
         move_count === 0 ? P.get_initial_b_winrate() :
         true_or(game.ref(move_count).b_winrate, NaN)
-}
-
-function adjust_sanity() {
-    const eta_s = 0.01, eta_ds = 0.1
-    const sanity = get_stored('sanity')
-    const get_my_score = dmc => {
-        const mc = game.move_count + dmc, sign = is_bturn() ? 1 : -1
-        return (mc >= game.init_len) &&
-            (game.ref(mc).score_without_komi - game.get_komi()) * sign
-    }
-    const ss = [-2, 0].map(get_my_score), [s_prev, s_cur] = ss
-    if (!ss.every(truep)) {return sanity}
-    const round = (z, k) => Math.round(z * 10**k) / 10**k
-    const ds = s_cur - s_prev, d_san = - (eta_s * s_cur + eta_ds * ds)
-    const new_sanity = clip(round(sanity + d_san, 4), ...sanity_range)
-    set_stored('sanity', new_sanity)
-    return new_sanity
 }
 
 /////////////////////////////////////////////////

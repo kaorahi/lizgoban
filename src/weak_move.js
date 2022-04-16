@@ -6,17 +6,8 @@
 // public
 
 function select_weak_move(...args) {
-    const {move, comment} = get_move_etc(...args)
-    return [move, prepend_common_comment(move, comment, ...args)]
-}
-
-function adjust_weaken_args(weaken_method, weaken_args, adjust_sanity) {
-    const copied_args = weaken_args.slice()
-    switch (weaken_method) {
-    case 'persona':
-        overwrite_weaken_args_by_persona(copied_args, adjust_sanity()); break
-    }
-    return copied_args
+    const ret = get_move_etc(...args), {move, comment} = ret
+    return {...ret, comment: prepend_common_comment(move, comment, ...args)}
 }
 
 // private
@@ -26,9 +17,10 @@ function get_move_etc(state, weaken_method, weaken_args) {
         random_candidate: weak_move,
         lose_score: weak_move_by_score,
         random_opening: random_opening_move,
-        persona: weak_move_by_persona,
+        persona: weak_move_etc_by_persona,
     }[weaken_method] || best_move
-    return parse_commented_move(f(state, ...weaken_args))
+    const ret = f(state, ...weaken_args)
+    return stringp(ret) ? parse_commented_move(ret) : ret
 }
 
 function prepend_common_comment(move, comment, state, weaken_method, weaken_args) {
@@ -164,11 +156,9 @@ function weak_move_by_score(state, average_losing_points) {
 ///////////////////////////////////////////////
 // strategy: persona
 
-function overwrite_weaken_args_by_persona(weaken_args, new_sanity) {
-    weaken_args[1] = new_sanity
-}
-
-function weak_move_by_persona(state, persona_code, sanity) {
+function weak_move_etc_by_persona(state, persona_code, current_sanity) {
+    const new_sanity = state.adjust_sanity_p && adjust_sanity(state, current_sanity)
+    const sanity = true_or(new_sanity, current_sanity)
     const {orig_suggest, generate_persona_param} = state
     const typical_order = 1, threshold_range = [1e-3, 0.3]
     const param = generate_persona_param(persona_code).get()
@@ -181,6 +171,8 @@ function weak_move_by_persona(state, persona_code, sanity) {
         const com = 'Play normally because persona is not supported for this engine.'
         return make_commented_move(best_move(state), com)
     }
+    const {move} = suggest
+    const new_weaken_args = truep(new_sanity) && [persona_code, new_sanity]
     // (move comment)
     const com_candidates_len = 5
     const candidate_moves =
@@ -197,8 +189,17 @@ function weak_move_by_persona(state, persona_code, sanity) {
     const com_persona =
           `Persona "${persona_code}" = {${f(0, "my")}, ${f(1, "your")}, ${f(2, "space")}}`
     // (total comment)
-    const com = [com_move, com_sanity, com_persona].join("\n")
-    return make_commented_move(suggest.move, com)
+    const comment = [com_move, com_sanity, com_persona].join("\n")
+    return {move, comment, new_sanity, new_weaken_args}
+}
+
+function adjust_sanity(state, sanity) {
+    const eta_s = 0.01, eta_ds = 0.1
+    const s_cur = state.my_current_score, s_prev = state.my_previous_score
+    if (![s_cur, s_prev].every(truep)) {return null}
+    const round = (z, k) => Math.round(z * 10**k) / 10**k
+    const ds = s_cur - s_prev, d_san = - (eta_s * s_cur + eta_ds * ds)
+    return clip(round(sanity + d_san, 4), ...sanity_range)
 }
 
 function select_weak_move_by_moves_ownership(state, param, typical_order, threshold) {
@@ -258,5 +259,4 @@ function parse_commented_move(commented_move) {
 
 module.exports = {
     select_weak_move,
-    adjust_weaken_args,
 }
