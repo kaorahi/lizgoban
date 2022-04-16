@@ -210,7 +210,7 @@ const api = {
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     edit_middle,
     let_me_think_next, goto_next_something, goto_previous_something,
-    goto_move_count, toggle_auto_analyze, play_best, play_weak, stop_auto,
+    goto_move_count, toggle_auto_analyze, play_best, stop_auto,
     submit_auto_play, submit_auto_replay, auto_play_in_match,
     start_auto_redo,
     stop_match,
@@ -999,9 +999,6 @@ function start_auto_redo(sec) {
 function play_best(n, weaken_method, ...weaken_args) {
     start_auto_play('best'); increment_auto_play_count(n)
     try_play_best(weaken_method, ...weaken_args)
-}
-function play_weak(percent) {
-    play_best(null, AI.leelaz_for_white_p() ? 'random_leelaz' : 'random_candidate', percent)
 }
 function play_pass_maybe() {play_best(null, 'pass_maybe')}
 function try_play_best(weaken_method, ...weaken_args) {

@@ -1137,10 +1137,7 @@ document.onkeydown = e => {
     }
     if (e.repeat) {e.preventDefault(); return}
     // GROUP 3: usable with sabaki
-    const challenging = (R.board_type === "raw" && current_board_type() === "raw" &&
-                         !R.attached)
-    to_i(key) > 0 && (challenging ? m('play_weak', to_i(key) * 10) :
-                      f(set_keyboard_moves_maybe, to_i(key) - 1))
+    to_i(key) > 0 && f(set_keyboard_moves_maybe, to_i(key) - 1)
     key.length === 1 && tag_letters.includes(key) && f(set_keyboard_tag_maybe, key)
     key === ladder_tag_letter && main('ladder_is_seen')
     switch (key) {
@@ -1156,8 +1153,7 @@ document.onkeydown = e => {
     case " ": m('toggle_pause'); return
     case "Z": f(toggle_board_type, 'raw'); return
     case "Tab": f(toggle_board_type); return
-    case "0": challenging ? m('play_pass_maybe') :
-            f(set_keyboard_moves_for_next_move); return
+    case "0": f(set_keyboard_moves_for_next_move); return
     case "#": f(alert_comment); return
     case "A-h": shrink_analysis_region_to('left'); return
     case "A-j": shrink_analysis_region_to('down'); return
