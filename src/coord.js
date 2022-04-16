@@ -5,6 +5,8 @@
 // move: "A19" = top left, "T19" = top right
 // sgfpos: "aa" = top left, "sa" = top right
 
+const pass_command = 'pass'
+
 /////////////////////////////////////////////////
 // board_size
 
@@ -106,6 +108,7 @@ function sgfpos2move(pos) {
 }
 
 module.exports = {
+    pass_command,
     idx2rowcol, move2idx_maybe,
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
     translator_pair,

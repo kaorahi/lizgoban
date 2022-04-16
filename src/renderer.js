@@ -587,7 +587,7 @@ function play_here(e, coord2idx, canvas) {
     const match_sec = in_match_p() && (set_match_param(), auto_play_in_match_sec())
     const force_create = in_match_p() ? 'never_redo' : !!another_board
     if (is_event_to_edit_middle(e)) {
-        pass && main('edit_middle', 'pass'); main('edit_middle', move); return true
+        pass && main('edit_middle', pass_command); main('edit_middle', move); return true
     }
     if (is_event_to_set_analysis_region(e)) {start_analysis_region(idx); return false}
     if (goto_p) {goto_idx_maybe(idx, another_board); return true}
@@ -600,7 +600,7 @@ function play_here(e, coord2idx, canvas) {
     return true
 }
 function play_pass(e) {
-    is_event_to_edit_middle(e) ? main('edit_middle', 'pass') :
+    is_event_to_edit_middle(e) ? main('edit_middle', pass_command) :
         (main('pass'), auto_play_in_match())
 }
 function auto_play_in_match(handicap) {

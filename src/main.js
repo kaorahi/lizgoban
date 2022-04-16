@@ -334,7 +334,6 @@ function explicit_undo() {
         game.move_count < game.len() ? undo() : wink_if_pass(delete_last_move)
 }
 function delete_last_move() {game.pop(); update_branch(); autosave_later()}
-const pass_command = 'pass'
 function pass() {play(pass_command)}
 function is_pass(move) {return move === pass_command}
 function is_last_move_pass() {return is_pass(game.last_move())}
@@ -1034,12 +1033,12 @@ function try_play_best(weaken_method, ...weaken_args) {
     }
     const pass_maybe_p = (weaken_method === 'pass_maybe')
     const pass_maybe =
-          () => AI.peek_value('pass', value => {
+          () => AI.peek_value(pass_command, value => {
               const threshold = 0.9, pass_p = (value < threshold)
               const com = `If I play pass, your winrate will be ${value.toFixed(2)}` +
                     ` (${pass_p ? "<" : ">="} threshold ${threshold}).` +
                     ` So I play ${pass_p ? "pass" : "normally"}.`
-              play_com(pass_p ? 'pass' : move, com); update_all()
+              play_com(pass_p ? pass_command : move, com); update_all()
           }) || toast('Not supported')
     const play_it = () => {
         decrement_auto_play_count()
@@ -1048,7 +1047,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     // need to avoid update_all in do_as_auto_play for pass_maybe
     // because set_board in update_all may call clear_board,
     // that cancels peek_value
-    do_as_auto_play(move !== 'pass', play_it, pass_maybe_p)
+    do_as_auto_play(!is_pass(move), play_it, pass_maybe_p)
 }
 function winrate_after(move_count) {
     return move_count < 0 ? NaN :
@@ -1329,7 +1328,7 @@ function add_tsumego_frame(ko_p) {
     duplicate_sequence(true, true); fill.forEach(play1)
     set_gorule(default_gorule)
     const [i0, j0, is_black0] = last(fill) || []
-    !!is_black0 === !!bturn && do_play('pass', !bturn)
+    !!is_black0 === !!bturn && do_play(pass_command, !bturn)
     renderer('update_analysis_region', analysis_region)
 }
 

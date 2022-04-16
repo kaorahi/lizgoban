@@ -540,7 +540,7 @@ function pv_from_moves(moves, initial_bturn) {
     let bturn = initial_bturn
     return moves.flatMap(({move, is_black}) => {
         const p = xor(bturn, is_black); bturn = !is_black
-        return p ? ['pass', move] : [move]
+        return p ? [pass_command, move] : [move]
     })
 }
 function add_info_to_stones(stones, game) {
