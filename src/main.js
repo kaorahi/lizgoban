@@ -1060,12 +1060,20 @@ function random_opening_move() {
     const top_visits = Math.max(...suggest.map(s => s.visits))
     const log = (selected, label, val) => selected !== best && debug_log(`random_opening_move: movenum=${movenum + 1}, order=${selected.order}, ${label}=${JSON.stringify(val)}, visits=${selected.visits}, w_loss=${best.winrate - selected.winrate}, s_loss=${best.scoreMean - selected.scoreMean}`)
     // main
-    if (movenum <= param.prior_until_movenum && best.prior) {
+    const p_until = param.prior_until_movenum, r_until = param.random_until_movenum
+    if (movenum <= p_until && best.prior) {
         const selected = weighted_random_choice(suggest, s => s.prior)
-        log(selected, 'prior', selected.prior)
-        return selected.move
+        const {move, prior} = selected
+        log(selected, 'prior', prior)
+        const com = `Play randomly by the policy in the first ${p_until} moves.` +
+              ` (policy = ${prior.toFixed(2)})`
+        return make_commented_move(move, com)
     }
-    if (Math.random() >= discount) {return best.move}
+    if (Math.random() >= discount) {
+        const com = (discount <= 0) ? `Play normally after ${r_until} moves.` :
+              `Play normally with probability ${(1 - discount).toFixed(2)}.`
+        return make_commented_move(best.move, com)
+    }
     const admissible = s => {
         if (s === best) {return true}
         const ok = (key, limit, sign) =>
@@ -1079,7 +1087,11 @@ function random_opening_move() {
     const candidates = suggest.filter(admissible), uniform = () => 1
     const selected = weighted_random_choice(candidates, uniform)
     log(selected, 'candidates', candidates.map(h => h.order))
-    return selected.move
+    const cs = candidates.map(c => c.move).join(','), clen = candidates.length
+    const com = (clen === 1) ? 'Only this move is acceptable.' :
+          `Select a random move unifromly` +
+          ` from ${clen} admissible candidates (${cs}).`
+    return make_commented_move(selected.move, com)
 }
 function weak_move(weaken_percent) {
     // (1) Converge winrate to 0 with move counts
