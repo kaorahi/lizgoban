@@ -96,7 +96,6 @@ let pausing = false, busy = false
 let exercise_metadata = null
 let debug_force_aggressive = null
 let adjust_sanity_p = false
-let auto_play_persona_codes = null
 const persona_param = generate_persona_param()
 
 function set_game(new_game) {
@@ -197,7 +196,6 @@ const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
-    set_auto_play_persona,
     set_sanity_from_renderer,
     open_image_url,
     momorize_settings_for_sgf_from_image,
@@ -602,7 +600,6 @@ function menu_template(win) {
                   {_: 'b', b: 'w', w: null} : {_: 'w', w: 'b', b: null}
             debug_force_aggressive = next[debug_force_aggressive || '_']
         }),
-        item('Autoplay persona', 'Meta+p', () => ask_auto_play_persona(win)),
         sep,
         item('Import diagram image', undefined, open_demo_image),
         option.screenshot_region_command &&
@@ -855,7 +852,6 @@ function try_auto_play(force_next) {
         replay: () => do_as_auto_play(redoable(), redo),
         best: () => try_play_best(auto_play_weaken),
         random_opening: () => try_play_best(['random_opening']),
-        persona_codes: () => try_play_best(['bw_persona_codes', auto_play_persona_codes]),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() && proc()
@@ -875,10 +871,7 @@ function auto_play_progress() {
 }
 function ask_auto_play_sec(win, replaying) {
     const mismatched_komi = !replaying && AI.different_komi_for_black_and_white()
-    const k_warning = mismatched_komi ? '(Different komi for black & white) ' : ''
-    const p_warning = auto_play_persona_codes ?
-          `persona${JSON.stringify(auto_play_persona_codes)} ` : ''
-    const warning = k_warning + p_warning
+    const warning = mismatched_komi ? '(Different komi for black & white) ' : ''
     const label = 'Auto play seconds:'
     const cannel = replaying ? 'submit_auto_replay' : 'submit_auto_play'
     generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
@@ -887,7 +880,6 @@ function submit_auto_play_or_replay(sec, replaying) {
     const rand_p = store.get('random_opening_p')
     const strategy =
           replaying ? 'replay' :
-          auto_play_persona_codes ? 'persona_codes' :
           rand_p ? 'random_opening' :
           'best'
     default_auto_play_sec = sec; start_auto_play(strategy, sec, Infinity)
@@ -905,11 +897,6 @@ function stop_auto_play() {
 }
 function auto_playing(forever) {
     return auto_play_count >= (forever ? Infinity : 1)
-}
-function ask_auto_play_persona(win) {win.webContents.send('ask_auto_play_persona')}
-function set_auto_play_persona(codes) {
-    const validated = codes.map(c => (c === '') ? null : c)
-    auto_play_persona_codes = validated.find(truep) && validated
 }
 
 // match
@@ -1016,7 +1003,6 @@ function try_play_best(weaken) {
     const state = {
         orig_suggest: suggest,
         is_bturn: is_bturn(),
-        black_to_play_now_p: black_to_play_now_p(),
         movenum: game.move_count - game.init_len,
         stones: R.stones,
         orig_winrate: winrate_after(game.move_count),
@@ -1743,9 +1729,7 @@ function update_title() {
     const names = (b || w) ? `(B: ${n(b)} / W: ${n(w)})` : ''
     const tags = current_tag_letters()
     const tag_text = tags ? `[${tags}]` : ''
-    const persona = auto_playing() && auto_play_persona_codes ?
-          ` persona${JSON.stringify(auto_play_persona_codes)}` : ''
-    const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''} ${persona}`
+    const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''}`
     title_change_detector.is_changed(title) &&
         get_windows().forEach(win => win.setTitle(title))
 }

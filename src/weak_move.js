@@ -27,7 +27,6 @@ function get_commented_move(state, weaken_method, weaken_args) {
         weaken_method === 'lose_score' ? weak_move_by_score(...a) :
         weaken_method === 'random_opening' ? random_opening_move(...a) :
         weaken_method === 'persona' ? weak_move_by_persona(...a) :
-        weaken_method === 'bw_persona_codes' ? weak_move_by_bw_persona_codes(...a) :
         best_move(...a)
 }
 
@@ -238,16 +237,6 @@ function select_weak_move_by_goodness_order(orig_suggest, goodness, typical_orde
     const {suggest, order, bad} = weighted_random_choice(ordered, weight)
     debug_log(`select_weak_move_by_goodness_order: goodness_order=${order} engine_order=${suggest.order} goodness=${- bad} candidates=${candidates.length} all=${orig_suggest.length}`)
     return {suggest, order, bad, ordered}
-}
-
-///////////////////////////////////////////////
-// strategy: bw_persona_codes
-
-function weak_move_by_bw_persona_codes(state, [black_code, white_code]) {
-    const {black_to_play_now_p, generate_persona_param} = state
-    const p = generate_persona_param(black_to_play_now_p ? black_code : white_code)
-    debug_log(`weak_move_by_bw_persona_codes ${JSON.stringify({black_code, white_code})} (${!!p})`)
-    return p ? weak_move_by_persona(state, p) : best_move(state)
 }
 
 ///////////////////////////////////////////////
