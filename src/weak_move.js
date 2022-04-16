@@ -49,7 +49,7 @@ function random_opening_move(state) {
     const top_visits = Math.max(...suggest.map(s => s.visits))
     const log = (selected, label, val) => selected !== best && debug_log(`random_opening_move: movenum=${movenum + 1}, order=${selected.order}, ${label}=${JSON.stringify(val)}, visits=${selected.visits}, w_loss=${best.winrate - selected.winrate}, s_loss=${best.scoreMean - selected.scoreMean}`)
     // main
-    if (movenum <= p_until && best.prior) {
+    if (movenum < p_until && best.prior) {
         const selected = weighted_random_choice(suggest, s => s.prior)
         const {move, prior} = selected
         log(selected, 'prior', prior)
