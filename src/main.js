@@ -1139,12 +1139,37 @@ function weak_move_by_score(average_losing_points) {
 }
 function weak_move_by_persona(persona) {
     const typical_order = 3, threshold_range = [1e-3, 0.3]
-    const [my, your, space] = persona.get()
+    const param = persona.get(), [my, your, space] = param
     const log_threshold_range = threshold_range.map(Math.log)
     const [trans, ] = translator_pair(sanity_range, log_threshold_range)
     adjust_sanity_p && adjust_sanity()
-    const threshold = Math.exp(trans(get_stored('sanity')))
-    return weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
+    const sanity = get_stored('sanity')
+    const threshold = Math.exp(trans(sanity))
+    const {suggest, order, ordered} =
+          select_weak_move_by_moves_ownership(...param, typical_order, threshold)
+    if (!suggest) {
+        const com = 'Play normally because persona is not supported for this engine.'
+        return make_commented_move(best_move(), com)
+    }
+    // (move comment)
+    const com_candidates_len = 5
+    const candidate_moves =
+          ordered.slice(0, com_candidates_len).map(h => h.suggest.move).join(',') +
+          (ordered.length > com_candidates_len ? ',..' : '')
+    const com_move = ordered.length === 1 ? 'Only this move is acceptable.' :
+          `Order of preference = ${order + 1}` +
+          ` in ${ordered.length} candidates ${candidate_moves}.`
+    // (sanity comment)
+    const com_sanity = `(policy threshold = ${threshold.toFixed(3)}` +
+          ` for sanity ${sanity.toFixed(2)})`
+    // (persona comment)
+    const f = (k, name) => `${name}:[${param[k].map(z => z.toFixed(1)).join(",")}]`
+    const code = persona.get_code()
+    const com_persona =
+          `Persona "${code}" = {${f(0, "my")}, ${f(1, "your")}, ${f(2, "space")}}`
+    // (total comment)
+    const com = [com_move, com_sanity, com_persona].join("\n")
+    return make_commented_move(suggest.move, com)
 }
 function adjust_sanity() {
     const learning_rate = 0.01
@@ -1158,13 +1183,13 @@ function weak_move_by_bw_persona_codes([black_code, white_code]) {
     debug_log(`weak_move_by_bw_persona_codes ${JSON.stringify({black_code, white_code})} (${!!p})`)
     return p ? weak_move_by_persona(p) : best_move()
 }
-function weak_move_by_moves_ownership(my, your, space, typical_order, threshold) {
+function select_weak_move_by_moves_ownership(my, your, space, typical_order, threshold) {
     // goodness = sum of evaluation over the board
     // evaluation = weight * ownership_from_my_side (= AI side)
     // weight = MY (on my stone), YOUR (on your stone), or SPACE
     // (ex.) your = [1.0, 0.1] means "Try to kill your stones
     // eagerly if they seems alive and slightly if they seems rather dead".
-    if (!AI.is_moves_ownership_supported()) {return best_move()}
+    if (!AI.is_moves_ownership_supported()) {return {}}
     const bturn = is_bturn(), sign_for_me = bturn ? 1 : -1
     const my_color_p = z => !xor(z.black, bturn)
     const my_ownership_p = es => sign_for_me * es > 0
@@ -1179,18 +1204,18 @@ function weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
         const endstate = endstate_from_ownership_destructive(copied_ownership)
         return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
     }
-    debug_log(`weak_move_by_moves_ownership: ${JSON.stringify({my, your, space, typical_order, threshold})}`)
-    return weak_move_by_goodness_order(goodness, typical_order, threshold)
+    debug_log(`select_weak_move_by_moves_ownership: ${JSON.stringify({my, your, space, typical_order, threshold})}`)
+    return select_weak_move_by_goodness_order(goodness, typical_order, threshold)
 }
-function weak_move_by_goodness_order(goodness, typical_order, threshold) {
+function select_weak_move_by_goodness_order(goodness, typical_order, threshold) {
     // shuffle candidates so that "goodness = const." corresponds to "random"
     const candidates = sort_by(weak_move_candidates(threshold), Math.random)
     const evaluated = candidates.map(s => ({suggest: s, bad: - goodness(s)}))
     const ordered = sort_by_key(evaluated, 'bad').map((h, k) => ({...h, order: k}))
     const weight = h => Math.exp(- h.order / typical_order)
     const {suggest, order, bad} = weighted_random_choice(ordered, weight)
-    debug_log(`weak_move_by_goodness_order: goodness_order=${order} engine_order=${suggest.order} goodness=${- bad} candidates=${candidates.length} all=${P.orig_suggest().length}`)
-    return suggest.move
+    debug_log(`select_weak_move_by_goodness_order: goodness_order=${order} engine_order=${suggest.order} goodness=${- bad} candidates=${candidates.length} all=${P.orig_suggest().length}`)
+    return {suggest, order, bad, ordered}
 }
 function weak_move_candidates(threshold) {
     const suggest = P.orig_suggest()
