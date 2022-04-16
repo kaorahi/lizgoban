@@ -179,9 +179,14 @@ handicap
 vs.
 <select id="weaken" value="best" onchange="set_match_param()">
  <!-- first item must be "best" for set_match_param in renderer.js -->
+ <optgroup label="Strong">
  <option value="best">best</option>
  <option value="diverse" selected>diverse</option>
+ </optgroup>
+ <optgroup label="Weak">
  <option class="moves_ownership_only" value="persona">persona</option>
+ </optgroup>
+ <optgroup label="Obsolete">
  <option value="pass">pass</option>
  <option value="1">weak 1</option>
  <option value="2">weak 2</option>
@@ -211,6 +216,7 @@ vs.
  <option class="different_engine_for_white_only" value="swap7">swap 7</option>
  <option class="different_engine_for_white_only" value="swap8">swap 8</option>
  <option class="different_engine_for_white_only" value="swap9">swap 9</option>
+ </optgroup>
 </select>
 <input type='button' id='match_ai_conf' onclick="open_match_ai_conf_dialog()" value="...">
 (<input type='number' id='match_sec' value='3' min='1' style='width: 3em'>sec)
