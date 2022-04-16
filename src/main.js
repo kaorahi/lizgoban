@@ -96,7 +96,6 @@ let pausing = false, busy = false
 let exercise_metadata = null
 let debug_force_aggressive = null
 let adjust_sanity_p = false
-const persona_param = generate_persona_param()
 
 function set_game(new_game) {
     game = new_game
@@ -110,7 +109,6 @@ const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()
 game.komi = get_stored('komi_for_new_game')
 
 keep_backward_compatibility_of_stone_style(get_stored, set_stored)
-persona_param.set_code(get_stored('persona_code'))
 
 globalize({  // for ai.js
     is_bturn: () => R.bturn,
@@ -916,7 +914,7 @@ function set_match_param(weaken) {
     let m
     auto_play_weaken =
         (weaken === 'diverse') ? ['random_opening'] :
-        (weaken === 'persona') ? ['persona', persona_param, get_stored('sanity')] :
+        (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity')] :
         (weaken === 'pass') ? ['pass_maybe'] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
@@ -1147,10 +1145,7 @@ function open_preference() {
     const w = get_new_window('preference_window.html', {webPreferences})
     w.setMenu(Menu.buildFromTemplate(menu))
 }
-function set_persona_code(code) {
-    persona_param.set_code(code)
-    set_stored('persona_code', code)
-}
+function set_persona_code(code) {set_stored('persona_code', code)}
 function set_adjust_sanity_p(bool) {adjust_sanity_p = bool}
 function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
 let the_settings_for_sgf_from_image = null
@@ -1695,7 +1690,7 @@ function update_state(keep_suggest_p) {
     }
     const amm = get_auto_moves_in_match()
     const in_pair_match = R.in_match && (amm !== 1) && (amm === 3 ? 'pair_match' : amm)
-    const persona_code = persona_param.get_code()
+    const persona_code = get_stored('persona_code')
     const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
     const {face_image_rule, pv_trail_max_suggestions} = option

@@ -167,10 +167,10 @@ function overwrite_weaken_args_by_persona(weaken_args, new_sanity) {
     weaken_args[1] = new_sanity
 }
 
-function weak_move_by_persona(state, persona, sanity) {
-    const {orig_suggest} = state
+function weak_move_by_persona(state, persona_code, sanity) {
+    const {orig_suggest, generate_persona_param} = state
     const typical_order = 3, threshold_range = [1e-3, 0.3]
-    const param = persona.get()
+    const param = generate_persona_param(persona_code).get()
     const log_threshold_range = threshold_range.map(Math.log)
     const [trans, ] = translator_pair(sanity_range, log_threshold_range)
     const threshold = Math.exp(trans(sanity))
@@ -193,9 +193,8 @@ function weak_move_by_persona(state, persona, sanity) {
           ` for sanity ${sanity.toFixed(2)})`
     // (persona comment)
     const f = (k, name) => `${name}:[${param[k].map(z => z.toFixed(1)).join(",")}]`
-    const code = persona.get_code()
     const com_persona =
-          `Persona "${code}" = {${f(0, "my")}, ${f(1, "your")}, ${f(2, "space")}}`
+          `Persona "${persona_code}" = {${f(0, "my")}, ${f(1, "your")}, ${f(2, "space")}}`
     // (total comment)
     const com = [com_move, com_sanity, com_persona].join("\n")
     return make_commented_move(suggest.move, com)
