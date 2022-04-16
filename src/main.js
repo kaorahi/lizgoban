@@ -1014,8 +1014,10 @@ function try_play_best(weaken_method, ...weaken_args) {
         const {order} = P.orig_suggest().find(s => s.move === m) || {}
         const ord = !truep(order) ? '(outside the candidates)':
               (order > 0) ? `(order = ${order + 1})` : null
+        const weak = weaken_method &&
+              `[${[weaken_method, ...weaken_args.map(JSON.stringify)].join(' ')}]`
         const join_by = (sep, ...a) => a.filter(identity).join(sep)
-        const comment = join_by(' ', ai, ord)
+        const comment = join_by(' ', ai, ord, weak)
         play(m, 'never_redo', null, comment)
     }
     // move
