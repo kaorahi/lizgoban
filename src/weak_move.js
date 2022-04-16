@@ -173,7 +173,7 @@ function weak_move_by_persona(state, persona) {
           `Order of preference = ${order + 1}` +
           ` in ${ordered.length} candidates ${candidate_moves}.`
     // (sanity comment)
-    const com_sanity = `(policy threshold = ${threshold.toFixed(3)}` +
+    const com_sanity = `(visits threshold = ${(threshold * 100).toFixed(1)}%` +
           ` for sanity ${sanity.toFixed(2)})`
     // (persona comment)
     const f = (k, name) => `${name}:[${param[k].map(z => z.toFixed(1)).join(",")}]`
