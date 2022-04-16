@@ -853,9 +853,9 @@ function start_auto_play(strategy, sec, count) {
 function try_auto_play(force_next) {
     const proc = {
         replay: () => do_as_auto_play(redoable(), redo),
-        best: () => try_play_best(...auto_play_weaken),
-        random_opening: () => try_play_best('random_opening'),
-        persona_codes: () => try_play_best('bw_persona_codes', auto_play_persona_codes),
+        best: () => try_play_best(auto_play_weaken),
+        random_opening: () => try_play_best(['random_opening']),
+        persona_codes: () => try_play_best(['bw_persona_codes', auto_play_persona_codes]),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() && proc()
@@ -995,19 +995,19 @@ function start_auto_redo(sec) {
 /////////////////////////////////////////////////
 // play against leelaz
 
-function play_best(n, ...weaken) {
+function play_best(n, weaken) {
     start_auto_play('best'); increment_auto_play_count(n)
-    try_play_best(...weaken)
+    try_play_best(weaken)
 }
-function play_pass_maybe() {play_best(null, 'pass_maybe')}
-function try_play_best(...weaken) {
+function play_pass_maybe() {play_best(null, ['pass_maybe'])}
+function try_play_best(weaken) {
     // (ex)
     // try_play_best()
-    // try_play_best('pass_maybe')
-    // try_play_best('random_candidate', 30)
-    // try_play_best('random_leelaz', 30)
-    // try_play_best('lose_score', 0.1)
-    const [weaken_method, ...weaken_args] = weaken
+    // try_play_best(['pass_maybe'])
+    // try_play_best(['random_candidate', 30])
+    // try_play_best(['random_leelaz', 30])
+    // try_play_best(['lose_score', 0.1])
+    const [weaken_method, ...weaken_args] = weaken || []
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     const suggest = P.orig_suggest(); if (empty(suggest)) {return}
     // clean me: side effect!
