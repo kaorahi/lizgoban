@@ -38,6 +38,7 @@ const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
+const {select_weak_move} = require('./weak_move.js')
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
@@ -1007,29 +1008,25 @@ function try_play_best(weaken_method, ...weaken_args) {
     // try_play_best('random_leelaz', 30)
     // try_play_best('lose_score', 0.1)
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
-    if (empty(P.orig_suggest())) {return}
-    // comment
-    const play_com = (m, c) => {
-        const ai = `by ${AI.engine_info().really_current.preset_label_text}`
-        const {order} = P.orig_suggest().find(s => s.move === m) || {}
-        const ord = !truep(order) ? '(outside the candidates)':
-              (order > 0) ? `(order = ${order + 1})` : null
-        const weak = weaken_method &&
-              `[${[weaken_method, ...weaken_args.map(JSON.stringify)].join(' ')}]`
-        const join_by = (sep, ...a) => a.filter(identity).join(sep)
-        const com1 = join_by(' ', ai, ord, weak)
-        const comment = join_by("\n", com1, c)
-        play(m, 'never_redo', null, comment)
+    const suggest = P.orig_suggest(); if (empty(suggest)) {return}
+    weaken_method === 'persona' && adjust_sanity_p && adjust_sanity()
+    const state = {
+        orig_suggest: suggest,
+        is_bturn: is_bturn(),
+        black_to_play_now_p: black_to_play_now_p(),
+        movenum: game.move_count - game.init_len,
+        stones: R.stones,
+        orig_winrate: winrate_after(game.move_count),
+        orig_score_without_komi: game.ref_current().score_without_komi,
+        random_opening: option.random_opening,
+        sanity: get_stored('sanity'),
+        generate_persona_param,
+        katago_p: AI.katago_p(),
+        is_moves_ownership_supported: AI.is_moves_ownership_supported(),
+        preset_label_text: AI.engine_info().really_current.preset_label_text,
     }
-    // move
-    const commented_move =
-          weaken_method === 'random_candidate' ? weak_move(...weaken_args) :
-          weaken_method === 'lose_score' ? weak_move_by_score(...weaken_args) :
-          weaken_method === 'random_opening' ? random_opening_move(...weaken_args) :
-          weaken_method === 'persona' ? weak_move_by_persona(...weaken_args) :
-          weaken_method === 'bw_persona_codes' ? weak_move_by_bw_persona_codes(...weaken_args) :
-          best_move()
-    const [move, weaken_comment] = parse_commented_move(commented_move)
+    const [move, comment] = select_weak_move(state, weaken_method, weaken_args)
+    const play_com = (m, c) => play(m, 'never_redo', null, c)
     const pass_maybe =
           () => AI.peek_value('pass', value => {
               const threshold = 0.9, pass_p = (value < threshold)
@@ -1040,202 +1037,23 @@ function try_play_best(weaken_method, ...weaken_args) {
           }) || toast('Not supported')
     const play_it = () => {
         decrement_auto_play_count()
-        weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move, weaken_comment)
+        weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move, comment)
         R.in_match && !pondering_in_match && !auto_playing() && pause()
     }
     do_as_auto_play(move !== 'pass', play_it)
-}
-function make_commented_move(move, comment) {return move + '#' + comment}
-function parse_commented_move(commented_move) {
-    const [move, ...rest] = commented_move.split('#'), comment = rest.join('#')
-    return [move, comment]
-}
-function best_move() {return P.orig_suggest()[0].move}
-function random_opening_move() {
-    // const
-    const param = option.random_opening
-    const movenum = game.move_count - game.init_len
-    const discount = clip(1 - movenum / param.random_until_movenum, 0)
-    const suggest = P.orig_suggest(), best = suggest[0]
-    const top_visits = Math.max(...suggest.map(s => s.visits))
-    const log = (selected, label, val) => selected !== best && debug_log(`random_opening_move: movenum=${movenum + 1}, order=${selected.order}, ${label}=${JSON.stringify(val)}, visits=${selected.visits}, w_loss=${best.winrate - selected.winrate}, s_loss=${best.scoreMean - selected.scoreMean}`)
-    // main
-    const p_until = param.prior_until_movenum, r_until = param.random_until_movenum
-    if (movenum <= p_until && best.prior) {
-        const selected = weighted_random_choice(suggest, s => s.prior)
-        const {move, prior} = selected
-        log(selected, 'prior', prior)
-        const com = `Play randomly by the policy in the first ${p_until} moves.` +
-              ` (policy = ${prior.toFixed(2)})`
-        return make_commented_move(move, com)
-    }
-    if (Math.random() >= discount) {
-        const com = (discount <= 0) ? `Play normally after ${r_until} moves.` :
-              `Play normally with probability ${(1 - discount).toFixed(2)}.`
-        return make_commented_move(best.move, com)
-    }
-    const admissible = s => {
-        if (s === best) {return true}
-        const ok = (key, limit, sign) =>
-              (best[key] - s[key]) * (sign || 1) < param[limit] * discount
-        const o_ok = ok('order', 'max_order', -1)
-        const w_ok = ok('winrate', 'winrate_loss')
-        const s_ok = !truep(best.scoreMean) || ok('scoreMean', 'score_loss')
-        const v_ok = s.visits >= top_visits * param.relative_visits
-        return o_ok && w_ok && s_ok && v_ok
-    }
-    const candidates = suggest.filter(admissible), uniform = () => 1
-    const selected = weighted_random_choice(candidates, uniform)
-    log(selected, 'candidates', candidates.map(h => h.order))
-    const cs = candidates.map(c => c.move).join(','), clen = candidates.length
-    const com = (clen === 1) ? 'Only this move is acceptable.' :
-          `Select a random move unifromly` +
-          ` from ${clen} admissible candidates (${cs}).`
-    return make_commented_move(selected.move, com)
-}
-function weak_move(weaken_percent) {
-    // (1) Converge winrate to 0 with move counts
-    // (2) Occasionally play good moves with low probability
-    // (3) Do not play too bad moves
-    const r = clip((weaken_percent || 0) / 100, 0, 1)
-    const initial_target_winrate = 40 * 10**(- r)
-    const target = initial_target_winrate * 2**(- game.move_count / 100)  // (1)
-    const flip_maybe = x => is_bturn() ? x : 100 - x
-    const current_winrate = flip_maybe(winrate_after(game.move_count))
-    const u = Math.random()**(1 - r) * r  // (2)
-    const next_target = current_winrate * (1 - u) + target * u  // (3)
-    const {selected, not_too_bad} = select_nearest_move_to_winrate(next_target)
-    const {move, winrate} = selected, f = Math.round
-    const com = `\
-winrates: move=${f(winrate)}%, target=${f(next_target)}%, long_target=${f(target)}%
-candidates = ${not_too_bad.length}\
-`
-    return make_commented_move(move, com)
-}
-function select_nearest_move_to_winrate(target_winrate) {
-    const suggest = weak_move_candidates()
-    const not_too_bad = suggest.filter(s => s.winrate >= target_winrate)
-    const selected = min_by(empty(not_too_bad) ? suggest : not_too_bad,
-                            s => Math.abs(s.winrate - target_winrate))
-    debug_log(`weak_move: target_winrate=${target_winrate} ` +
-              `move=${selected.move} winrate=${selected.winrate} ` +
-              `visits=${selected.visits} order=${selected.order} ` +
-              `winrate_order=${selected.winrate_order}`)
-    return {selected, not_too_bad}
 }
 function winrate_after(move_count) {
     return move_count < 0 ? NaN :
         move_count === 0 ? P.get_initial_b_winrate() :
         true_or(game.ref(move_count).b_winrate, NaN)
 }
-function weak_move_by_score(average_losing_points) {
-    if (!AI.katago_p()) {
-        const com = 'Play normally because "lose_score" is not supported for this engine.'
-        return make_commented_move(best_move(), com)
-    }
-    const suggest = weak_move_candidates()
-    const current_score = game.ref_current().score_without_komi || 0
-    const losing_points = Math.random() * average_losing_points * 2
-    const sign = is_bturn() ? 1 : -1
-    const target_score = current_score - losing_points * sign
-    const selected =
-          min_by(suggest, s => Math.abs(s.score_without_komi - target_score))
-    debug_log(`weak_move_by_score: current_score=${current_score} ` +
-              `target_score=${target_score} ` +
-              `move=${selected.move} score=${selected.score_without_komi} ` +
-              `visits=${selected.visits} order=${selected.order} ` +
-              `winrate_order=${selected.winrate_order}`)
-    const {move, score_without_komi} = selected
-    const actual_loss = (score_without_komi - current_score) * sign
-    const com = `Searched ${suggest.length} candidates` +
-          ` for -${losing_points.toFixed(2)}pts` +
-          ` and found -${actual_loss.toFixed(2)}pts actually.`
-    return make_commented_move(move, com)
-}
-function weak_move_by_persona(persona) {
-    const typical_order = 3, threshold_range = [1e-3, 0.3]
-    const param = persona.get(), [my, your, space] = param
-    const log_threshold_range = threshold_range.map(Math.log)
-    const [trans, ] = translator_pair(sanity_range, log_threshold_range)
-    adjust_sanity_p && adjust_sanity()
-    const sanity = get_stored('sanity')
-    const threshold = Math.exp(trans(sanity))
-    const {suggest, order, ordered} =
-          select_weak_move_by_moves_ownership(...param, typical_order, threshold)
-    if (!suggest) {
-        const com = 'Play normally because persona is not supported for this engine.'
-        return make_commented_move(best_move(), com)
-    }
-    // (move comment)
-    const com_candidates_len = 5
-    const candidate_moves =
-          ordered.slice(0, com_candidates_len).map(h => h.suggest.move).join(',') +
-          (ordered.length > com_candidates_len ? ',..' : '')
-    const com_move = ordered.length === 1 ? 'Only this move is acceptable.' :
-          `Order of preference = ${order + 1}` +
-          ` in ${ordered.length} candidates ${candidate_moves}.`
-    // (sanity comment)
-    const com_sanity = `(policy threshold = ${threshold.toFixed(3)}` +
-          ` for sanity ${sanity.toFixed(2)})`
-    // (persona comment)
-    const f = (k, name) => `${name}:[${param[k].map(z => z.toFixed(1)).join(",")}]`
-    const code = persona.get_code()
-    const com_persona =
-          `Persona "${code}" = {${f(0, "my")}, ${f(1, "your")}, ${f(2, "space")}}`
-    // (total comment)
-    const com = [com_move, com_sanity, com_persona].join("\n")
-    return make_commented_move(suggest.move, com)
-}
+
 function adjust_sanity() {
     const learning_rate = 0.01
     const suggest = P.orig_suggest(), s0 = (suggest[0] || {}).score_without_komi
     if (!truep(s0)) {return}
     const d = - learning_rate * (s0 - game.get_komi()) * (is_bturn() ? 1 : -1)
     set_stored('sanity', clip(get_stored('sanity') + d, ...sanity_range))
-}
-function weak_move_by_bw_persona_codes([black_code, white_code]) {
-    const p = generate_persona_param(black_to_play_now_p() ? black_code : white_code)
-    debug_log(`weak_move_by_bw_persona_codes ${JSON.stringify({black_code, white_code})} (${!!p})`)
-    return p ? weak_move_by_persona(p) : best_move()
-}
-function select_weak_move_by_moves_ownership(my, your, space, typical_order, threshold) {
-    // goodness = sum of evaluation over the board
-    // evaluation = weight * ownership_from_my_side (= AI side)
-    // weight = MY (on my stone), YOUR (on your stone), or SPACE
-    // (ex.) your = [1.0, 0.1] means "Try to kill your stones
-    // eagerly if they seems alive and slightly if they seems rather dead".
-    if (!AI.is_moves_ownership_supported()) {return {}}
-    const bturn = is_bturn(), sign_for_me = bturn ? 1 : -1
-    const my_color_p = z => !xor(z.black, bturn)
-    const my_ownership_p = es => sign_for_me * es > 0
-    const weight = (z, es) => {
-        const w = !z.stone ? space : my_color_p(z) ? my : your
-        return is_a(w, 'number') ? w : w[my_ownership_p(es) ? 0 : 1]
-    }
-    const evaluate = (z, es) => sign_for_me * weight(z, es) * es
-    const sum_on_stones = f => sum(aa_map(R.stones, f).flat().filter(truep))
-    const goodness = suggest => {
-        const copied_ownership = [...suggest.movesOwnership]
-        const endstate = endstate_from_ownership_destructive(copied_ownership)
-        return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
-    }
-    debug_log(`select_weak_move_by_moves_ownership: ${JSON.stringify({my, your, space, typical_order, threshold})}`)
-    return select_weak_move_by_goodness_order(goodness, typical_order, threshold)
-}
-function select_weak_move_by_goodness_order(goodness, typical_order, threshold) {
-    // shuffle candidates so that "goodness = const." corresponds to "random"
-    const candidates = sort_by(weak_move_candidates(threshold), Math.random)
-    const evaluated = candidates.map(s => ({suggest: s, bad: - goodness(s)}))
-    const ordered = sort_by_key(evaluated, 'bad').map((h, k) => ({...h, order: k}))
-    const weight = h => Math.exp(- h.order / typical_order)
-    const {suggest, order, bad} = weighted_random_choice(ordered, weight)
-    debug_log(`select_weak_move_by_goodness_order: goodness_order=${order} engine_order=${suggest.order} goodness=${- bad} candidates=${candidates.length} all=${P.orig_suggest().length}`)
-    return {suggest, order, bad, ordered}
-}
-function weak_move_candidates(threshold) {
-    const suggest = P.orig_suggest()
-    const too_small_visits = (suggest[0] || {}).visits * (threshold || 0.02)
-    return suggest.filter(s => s.visits > too_small_visits)
 }
 
 /////////////////////////////////////////////////
