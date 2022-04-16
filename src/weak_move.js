@@ -6,7 +6,7 @@
 // public
 
 function select_weak_move(...args) {
-    const [move, comment] = parse_commented_move(get_commented_move(...args))
+    const {move, comment} = get_move_etc(...args)
     return [move, prepend_common_comment(move, comment, ...args)]
 }
 
@@ -21,13 +21,14 @@ function adjust_weaken_args(weaken_method, weaken_args, adjust_sanity) {
 
 // private
 
-function get_commented_move(state, weaken_method, weaken_args) {
+function get_move_etc(state, weaken_method, weaken_args) {
     const a = [state, ...weaken_args]
-    return weaken_method === 'random_candidate' ? weak_move(...a) :
+    const ret = weaken_method === 'random_candidate' ? weak_move(...a) :
         weaken_method === 'lose_score' ? weak_move_by_score(...a) :
         weaken_method === 'random_opening' ? random_opening_move(...a) :
         weaken_method === 'persona' ? weak_move_by_persona(...a) :
         best_move(...a)
+    return parse_commented_move(ret)
 }
 
 function prepend_common_comment(move, comment, state, weaken_method, weaken_args) {
@@ -249,7 +250,7 @@ function weak_move_candidates(suggest, threshold) {
 function make_commented_move(move, comment) {return move + '#' + comment}
 function parse_commented_move(commented_move) {
     const [move, ...rest] = commented_move.split('#'), comment = rest.join('#')
-    return [move, comment]
+    return {move, comment}
 }
 
 ///////////////////////////////////////////////
