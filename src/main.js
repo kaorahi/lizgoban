@@ -1009,7 +1009,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     if (empty(P.orig_suggest())) {return}
     // comment
-    const play_com = m => {
+    const play_com = (m, c) => {
         const ai = `by ${AI.engine_info().current.preset_label_text}`
         const {order} = P.orig_suggest().find(s => s.move === m) || {}
         const ord = !truep(order) ? '(outside the candidates)':
@@ -1017,27 +1017,34 @@ function try_play_best(weaken_method, ...weaken_args) {
         const weak = weaken_method &&
               `[${[weaken_method, ...weaken_args.map(JSON.stringify)].join(' ')}]`
         const join_by = (sep, ...a) => a.filter(identity).join(sep)
-        const comment = join_by(' ', ai, ord, weak)
+        const com1 = join_by(' ', ai, ord, weak)
+        const comment = join_by("\n", com1, c)
         play(m, 'never_redo', null, comment)
     }
     // move
-    const move =
+    const commented_move =
           weaken_method === 'random_candidate' ? weak_move(...weaken_args) :
           weaken_method === 'lose_score' ? weak_move_by_score(...weaken_args) :
           weaken_method === 'random_opening' ? random_opening_move(...weaken_args) :
           weaken_method === 'persona' ? weak_move_by_persona(...weaken_args) :
           weaken_method === 'bw_persona_codes' ? weak_move_by_bw_persona_codes(...weaken_args) :
           best_move()
+    const [move, weaken_comment] = parse_commented_move(commented_move)
     const pass_maybe =
           () => AI.peek_value('pass', value => {
               play_com(value < 0.9 ? 'pass' : move); update_all()
           }) || toast('Not supported')
     const play_it = () => {
         decrement_auto_play_count()
-        weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move)
+        weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move, weaken_comment)
         R.in_match && !pondering_in_match && !auto_playing() && pause()
     }
     do_as_auto_play(move !== 'pass', play_it)
+}
+function make_commented_move(move, comment) {return move + '#' + comment}
+function parse_commented_move(commented_move) {
+    const [move, ...rest] = commented_move.split('#'), comment = rest.join('#')
+    return [move, comment]
 }
 function best_move() {return P.orig_suggest()[0].move}
 function random_opening_move() {
