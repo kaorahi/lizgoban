@@ -995,22 +995,24 @@ function start_auto_redo(sec) {
 /////////////////////////////////////////////////
 // play against leelaz
 
-function play_best(n, weaken_method, ...weaken_args) {
+function play_best(n, ...weaken) {
     start_auto_play('best'); increment_auto_play_count(n)
-    try_play_best(weaken_method, ...weaken_args)
+    try_play_best(...weaken)
 }
 function play_pass_maybe() {play_best(null, 'pass_maybe')}
-function try_play_best(weaken_method, ...weaken_args) {
+function try_play_best(...weaken) {
     // (ex)
     // try_play_best()
     // try_play_best('pass_maybe')
     // try_play_best('random_candidate', 30)
     // try_play_best('random_leelaz', 30)
     // try_play_best('lose_score', 0.1)
+    const [weaken_method, ...weaken_args] = weaken
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     const suggest = P.orig_suggest(); if (empty(suggest)) {return}
+    // clean me: side effect!
     adjust_sanity_p &&
-        (weaken_args = adjust_weaken_args(weaken_method, weaken_args, adjust_sanity))
+        weaken.splice(0, Infinity, weaken_method, ...adjust_weaken_args(weaken_method, weaken_args, adjust_sanity))
     const state = {
         orig_suggest: suggest,
         is_bturn: is_bturn(),
@@ -1025,7 +1027,7 @@ function try_play_best(weaken_method, ...weaken_args) {
         is_moves_ownership_supported: AI.is_moves_ownership_supported(),
         preset_label_text: AI.engine_info().really_current.preset_label_text,
     }
-    const [move, comment] = select_weak_move(state, weaken_method, weaken_args)
+    const [move, comment] = select_weak_move(state, weaken_method, weaken.slice(1))
     const play_com = (m, c) => {
         play(m, 'never_redo', null, c)
         is_pass(m) && toast('Pass')
