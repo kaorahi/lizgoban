@@ -930,6 +930,7 @@ function set_match_param(weaken) {
     auto_play_weaken =
         (weaken === 'diverse') ? ['random_opening'] :
         (weaken === 'persona') ? ['persona', persona_param] :
+        (weaken === 'pass') ? ['pass_maybe'] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
         []
@@ -1026,7 +1027,10 @@ function try_play_best(weaken_method, ...weaken_args) {
         preset_label_text: AI.engine_info().really_current.preset_label_text,
     }
     const [move, comment] = select_weak_move(state, weaken_method, weaken_args)
-    const play_com = (m, c) => play(m, 'never_redo', null, c)
+    const play_com = (m, c) => {
+        play(m, 'never_redo', null, c)
+        R.in_match && !pondering_in_match && !auto_playing() && pause()
+    }
     const pass_maybe =
           () => AI.peek_value('pass', value => {
               const threshold = 0.9, pass_p = (value < threshold)
@@ -1038,7 +1042,6 @@ function try_play_best(weaken_method, ...weaken_args) {
     const play_it = () => {
         decrement_auto_play_count()
         weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move, comment)
-        R.in_match && !pondering_in_match && !auto_playing() && pause()
     }
     do_as_auto_play(move !== 'pass', play_it)
 }
