@@ -1,3 +1,4 @@
+const engine_log_conf = {}
 const assuming_broken_GTP = true
 
 function create_leelaz () {
@@ -33,7 +34,7 @@ function create_leelaz () {
             startup_log.push(snip(message, 300))
         debug_log(message +
                   (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
-                  arg && arg.engine_log_line_length || 500)
+                  engine_log_conf.line_length || 500)
     }
 
     /////////////////////////////////////////////////
@@ -44,7 +45,7 @@ function create_leelaz () {
         arg = cook_arg(h); base_engine_id = hash(JSON.stringify(arg))
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file, working_dir, default_board_size,
-               minimum_suggested_moves, engine_log_line_length, ready_handler,
+               minimum_suggested_moves, ready_handler,
                endstate_handler, suggest_handler, restart_handler, error_handler,
                illegal_handler, tuning_handler, command_failure_handler}
               = arg || {}
@@ -677,4 +678,4 @@ function ownership_parser(s, bturn) {
 /////////////////////////////////////////////////
 // exports
 
-module.exports = {create_leelaz, parse_analyze}
+module.exports = {create_leelaz, parse_analyze, engine_log_conf}

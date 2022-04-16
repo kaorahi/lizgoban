@@ -49,6 +49,7 @@ const {ladder_branches, ladder_is_seen, last_ladder_branches, cancel_ladder_hack
       = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
 const {generate_persona_param} = require('./persona_param.js')
+const {engine_log_conf} = require('./engine.js')
 
 function update_branch() {update_branch_for(game, sequences_and_brothers())}
 
@@ -291,6 +292,7 @@ ipc.on('set_preference', (e, key, val) => {set_stored(key, val); update_all()})
 function update_all(keep_board) {
     debug_log(`update_all start (keep_board = ${keep_board})`)
     keep_board || set_board()
+    update_engine_log_conf()
     update_state(keep_board); update_ponder(); update_ui(); update_menu()
     debug_log('update_all done')
 }
@@ -1416,6 +1418,10 @@ function aggressive() {
     return b || w || ''
 }
 
+function update_engine_log_conf() {
+    engine_log_conf.line_length = option.engine_log_line_length
+}
+
 function generic_input_dialog(win, label, init_val, channel, warning) {
     win.webContents.send('generic_input_dialog', label, init_val, channel, warning || '')
 }
@@ -1881,7 +1887,7 @@ function leelaz_start_args(leelaz_command, given_leelaz_args, label) {
                tuning_handler: make_tuning_handler(), weight_file: null,
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['analyze_interval_centisec', 'wait_for_startup',
-                  'minimum_suggested_moves', 'engine_log_line_length']
+                  'minimum_suggested_moves']
     opts.forEach(key => h[key] = option[key])
     return {...h, ...leelaz_start_args_for_board_size(board_size())}
 }
