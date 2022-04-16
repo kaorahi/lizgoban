@@ -1104,9 +1104,15 @@ function weak_move(weaken_percent) {
     const current_winrate = flip_maybe(winrate_after(game.move_count))
     const u = Math.random()**(1 - r) * r  // (2)
     const next_target = current_winrate * (1 - u) + target * u  // (3)
-    return nearest_move_to_winrate(next_target)
+    const {selected, not_too_bad} = select_nearest_move_to_winrate(next_target)
+    const {move, winrate} = selected, f = Math.round
+    const com = `\
+winrates: move=${f(winrate)}%, target=${f(next_target)}%, long_target=${f(target)}%
+candidates = ${not_too_bad.length}\
+`
+    return make_commented_move(move, com)
 }
-function nearest_move_to_winrate(target_winrate) {
+function select_nearest_move_to_winrate(target_winrate) {
     const suggest = weak_move_candidates()
     const not_too_bad = suggest.filter(s => s.winrate >= target_winrate)
     const selected = min_by(empty(not_too_bad) ? suggest : not_too_bad,
@@ -1115,7 +1121,7 @@ function nearest_move_to_winrate(target_winrate) {
               `move=${selected.move} winrate=${selected.winrate} ` +
               `visits=${selected.visits} order=${selected.order} ` +
               `winrate_order=${selected.winrate_order}`)
-    return selected.move
+    return {selected, not_too_bad}
 }
 function winrate_after(move_count) {
     return move_count < 0 ? NaN :
