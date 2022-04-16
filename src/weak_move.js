@@ -169,7 +169,7 @@ function overwrite_weaken_args_by_persona(weaken_args, new_sanity) {
 
 function weak_move_by_persona(state, persona_code, sanity) {
     const {orig_suggest, generate_persona_param} = state
-    const typical_order = 3, threshold_range = [1e-3, 0.3]
+    const typical_order = 1, threshold_range = [1e-3, 0.3]
     const param = generate_persona_param(persona_code).get()
     const log_threshold_range = threshold_range.map(Math.log)
     const [trans, ] = translator_pair(sanity_range, log_threshold_range)
