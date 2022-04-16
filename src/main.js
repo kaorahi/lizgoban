@@ -1012,7 +1012,8 @@ function try_play_best(weaken_method, ...weaken_args) {
     const play_com = m => {
         const base = `by ${AI.engine_info().current.preset_label_text}`
         const {order} = P.orig_suggest().find(s => s.move === m) || {}
-        const more = (truep(order) && order > 0) ? [`(order = ${order + 1})`] : []
+        const more = !truep(order) ? ['(outside the candidates)'] :
+              (order > 0) ? [`(order = ${order + 1})`] : []
         const comment = [base, ...more].join(' ')
         play(m, 'never_redo', null, comment)
     }
