@@ -29,7 +29,7 @@ with lots of original gimmicks.
 3. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis. The all-in-one package of LizGoban works immediately out of the box without installation, configuration, additional downloads, and so on.
 4. Flexibility of JavaScript also enables quick experiments of fun ideas that bring various original features as follows.
 
-You will enjoy LizGoban if you are interested in the process as well as the result of the search by AI. You may also like experiments of new ideas on Go GUI, e.g. [quick ladder check](https://github.com/kaorahi/lizgoban/issues/63), comparison of current and past boards, etc. If you just expect ordinary features and beautiful graphics, probably you will prefer other GUIs.
+You will enjoy LizGoban if you are interested in the process as well as the result of the search by AI. You may also like experiments of new ideas on Go GUI, e.g. [quick ladder check](https://github.com/kaorahi/lizgoban/issues/63), random generation of various playing styles, etc. If you just expect ordinary features and beautiful graphics, probably you will prefer other GUIs.
 
 ## <a name="Features"></a>Features
 
@@ -61,7 +61,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
 * Preview of branches before switching for nested SGFs
 * Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
-* Play against weakened engines in several ways (Note: [KaTrain](https://github.com/sanderland/katrain/) has nicer features in this field now.)
+* Random generation of various playing styles for matches vs. weak bots.
 * Play pair match, "you & KataGo" vs. Leela Zero, etc.
 * [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 * [Experimental] [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically. Enjoy watching [Ladder fight!](https://www.reddit.com/r/baduk/comments/llk8cj/ladder_fight/)
@@ -273,8 +273,11 @@ Please note that this feature is experimental and API etc. may be changed in fut
 
 ### 0.7.*
 
+* Random generation of various playing styles for matches vs. weak bots.
 * Support the new feature ["ownershipStdev"](https://github.com/lightvector/KataGo/pull/500) in KataGo 1.10.0 (red backgrounds in the subboard), that looks like a heatmap of "KataGo's eye tracking".
+* Support ["movesOwnership"](https://github.com/lightvector/KataGo/issues/608) in KataGo 1.11.0.
 * Show the preferred moves by "AIs for handicap games" as the stronger/weaker side. (small blue up/down triangles on the board, sharpness of the triangles in the winrate bar)
+* Add auto-adjustment for image imports.
 * Add "Auto overview" into Tool menu so that one can turn it off.
 * Add "Preferences" into Edit menu for convenience.
 * Slightly improve bogus territory counts.
