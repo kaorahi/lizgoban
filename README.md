@@ -220,33 +220,41 @@ In addition, LizGoban reads external/config.json (and config.json in the "workin
 Prepare stone images and put them into `external/` directory.
 For example, images in [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html) are used in the above screenshot.
 
-Then add "face_image_rule" into config.json like this.
+Then add "face_image_rule" and "face_image_diff_rule" into config.json like this.
 
 ~~~~
 {
     ...
     "face_image_rule": [
         [-0.8, "goisi_k4.png", "goisi_s4.png"],
-        [-0.6, "goisi_k15.png", "goisi_s15.png"],
         [-0.4, "goisi_k8.png", "goisi_s8.png"],
-        [-0.2, "goisi_k9.png", "goisi_s9.png"],
         [0.00, "goisi_k7.png", "goisi_s7.png"],
         [0.30, "goisi_k11.png", "goisi_s11.png"],
-        [0.60, "goisi_k5.png", "goisi_s5.png"],
         [0.90, "goisi_k10.png", "goisi_s10.png"],
-        [0.95, "goisi_k14.png", "goisi_s14.png"],
         [1.00, "goisi_k16.png", "goisi_s16.png"]
+    ],
+    "face_image_diff_rule": [
+        [-1.0, "goisi_k15.png", "goisi_s15.png"],
+        [-0.5, "goisi_k9.png", "goisi_s9.png"],
+        [0.50, null, null],
+        [1.00, "goisi_k5.png", "goisi_s5.png"],
+        [2.00, "goisi_k14.png", "goisi_s14.png"]
     ],
     ...
 }
 ~~~~
 
-It means
+The former is applied only if the latter says null. Namely, when "ownership" = O and "change of ownership" = C,
 
-* goisi_k4.png (black) or goisi_s4.png (white) for ownership < -0.8 (dead).
-* goisi_k15.png or goisi_s15.png for ownership < -0.6.
-* ...
-* goisi_k16.png or goisi_s16.png for ownership <= 1.00 (alive).
+* goisi_k15.png (black) or goisi_s15.png (white) for C < -1 (getting dead).
+* goisi_k9.png or goisi_s9.png for -1 <= C < -0.5.
+* face_image_rule for -0.5 <= C < 0.5.
+  * goisi_k4.png or goisi_s4.png for O < -0.8 (dead).
+  * goisi_k8.png or goisi_s8.png for -0.8 <= O < -0.4.
+  * ...
+  * goisi_k16.png or goisi_s16.png for 0.9 <= O <= 1 (alive).
+* goisi_k5.png or goisi_s5.png for 0.5 <= C < 1.
+* goisi_k14.png or goisi_s14.png for 1 <= C <= 2 (getting alive).
 
 Set KataGo as the engine and select View > Stone > Face. You need to enable View > Ownership if you have disabled it.
 
@@ -282,6 +290,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Add "Preferences" into Edit menu for convenience.
 * Slightly improve bogus territory counts.
 * Slightly improve ladder continuation.
+* Use change of ownership in addition to ownership itself for facial stones.
 * Guess the rule from komi if RU (rule) property is missing in SGF.
 
 Incompatibilities:
