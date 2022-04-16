@@ -934,6 +934,7 @@ function set_match_param(weaken) {
         (weaken === 'pass') ? ['pass_maybe'] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
+        (m = weaken.match(/^swap([1-9])$/)) ? ['random_leelaz', to_i(m[1]) * 10] :
         []
 }
 function match_param_has_option_p() {

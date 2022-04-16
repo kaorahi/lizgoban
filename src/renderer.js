@@ -1420,6 +1420,8 @@ function update_button_etc(availability) {
     update_ui_element('.show_in_anomalous_pair_match', anomalous_pair_match_p)
     update_ui_element('.show_in_exercise', !!R.exercise_metadata)
     update_ui_element('.katago_only', R.is_katago)
+    update_ui_element('.different_engine_for_white_only',
+                      R.different_engine_for_white_p)
     update_ui_element('.moves_ownership_only', availability.moves_ownership)
     update_ui_element('#sanity_div', availability.match_ai_conf)
 }
