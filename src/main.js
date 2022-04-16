@@ -591,6 +591,7 @@ function menu_template(win) {
     ])
     const debug_menu = menu('Debug', [
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
+        store_toggler_menu_item('...Snip similar lines', 'engine_log_snip_similar_lines'),
         {label: 'REPL', type: 'checkbox', checked: repl_p(), click: toggle_repl},
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
@@ -1420,6 +1421,7 @@ function aggressive() {
 
 function update_engine_log_conf() {
     engine_log_conf.line_length = option.engine_log_line_length
+    engine_log_conf.snip_similar_lines = get_stored('engine_log_snip_similar_lines')
 }
 
 function generic_input_dialog(win, label, init_val, channel, warning) {
@@ -1885,6 +1887,7 @@ function leelaz_start_args(leelaz_command, given_leelaz_args, label) {
                // so that cached engines are reused correctly
                // (cf. start_args_equal())
                tuning_handler: make_tuning_handler(), weight_file: null,
+               engine_log_snip_similar_lines: get_stored('engine_log_snip_similar_lines'),
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['analyze_interval_centisec', 'wait_for_startup',
                   'minimum_suggested_moves']

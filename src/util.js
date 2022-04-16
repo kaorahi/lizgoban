@@ -111,11 +111,26 @@ E.remarkable_aggressiveness = (aggressive_policy, defensive_policy, prior) => {
 }
 
 let debug_log_p = false
-E.debug_log = (arg, limit_len) => is_a(arg, 'boolean') ?
-    (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len))
-function do_debug_log(arg, limit_len) {
+let debug_log_prev_category = null
+let debug_log_snipped_lines = 0, debug_log_last_snipped_line = null
+E.debug_log = (arg, limit_len, category) => is_a(arg, 'boolean') ?
+    (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len, category))
+function do_debug_log(arg, limit_len, category) {
     const sec = `(${(new Date()).toJSON().replace(/(.*:)|(.Z)/g, '')}) `
-    console.log(sec + snip(E.to_s(arg), limit_len))
+    const line = sec + snip(E.to_s(arg), limit_len)
+    const same_category_p = (category && (category === debug_log_prev_category))
+    debug_log_prev_category = category
+    if (same_category_p) {
+        debug_log_snipped_lines++ === 0 && console.log('...snipping lines...')
+        debug_log_last_snipped_line = line
+        return
+    }
+    --debug_log_snipped_lines > 0 &&
+        console.log(`...${debug_log_snipped_lines} lines are snipped.`)
+    debug_log_snipped_lines = 0
+    debug_log_last_snipped_line && console.log(debug_log_last_snipped_line)
+    debug_log_last_snipped_line = null
+    console.log(line)
 }
 E.snip = (str, limit_len) => {
     const half = Math.floor((limit_len || Infinity) / 2)

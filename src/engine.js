@@ -26,7 +26,7 @@ function create_leelaz () {
     let move_count = 0, bturn = true, js_bturn = true
 
     // util
-    const log = (header, s, show_queue_p) => {
+    const log = (header, s, show_queue_p, category) => {
         const t2s = task => (task.protect_p ? '!' : '') +
               (with_response_p(task) ? '*' : '') + task.command
         const message = `[${(leelaz_process || {}).pid}] ${header} ${s}`
@@ -34,7 +34,8 @@ function create_leelaz () {
             startup_log.push(snip(message, 300))
         debug_log(message +
                   (show_queue_p ? ` [${command_queue.map(t2s)}]` : ''),
-                  engine_log_conf.line_length || 500)
+                  engine_log_conf.line_length || 500,
+                  engine_log_conf.snip_similar_lines && category)
     }
 
     /////////////////////////////////////////////////
@@ -441,7 +442,9 @@ function create_leelaz () {
     const expecting_multiline_response = unique_identifier()
 
     const stdout_reader = (s) => {
-        log('stdout|', s); current_stdout_reader(s); send_from_queue()
+        const category = (current_stdout_reader !== stdout_main_reader) &&
+              current_stdout_reader
+        log('stdout|', s, false, category); current_stdout_reader(s); send_from_queue()
     }
 
     const stdout_main_reader = (s, strict) => {
