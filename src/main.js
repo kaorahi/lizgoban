@@ -1029,6 +1029,7 @@ function try_play_best(weaken_method, ...weaken_args) {
     const [move, comment] = select_weak_move(state, weaken_method, weaken_args)
     const play_com = (m, c) => {
         play(m, 'never_redo', null, c)
+        is_pass(m) && toast('Pass')
         R.in_match && !pondering_in_match && !auto_playing() && pause()
     }
     const pass_maybe_p = (weaken_method === 'pass_maybe')
