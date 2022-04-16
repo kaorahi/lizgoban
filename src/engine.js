@@ -11,7 +11,6 @@ function create_leelaz () {
     const queue_log_header = 'queue>'
 
     let leelaz_process, arg, base_engine_id, is_ready = false, ownership_p = false
-    let moves_ownership_p = false
     let aggressive = ''  // '', 'b', 'w'
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_response_for_id = {}
@@ -119,10 +118,10 @@ function create_leelaz () {
             `interval ${arg.analyze_interval_centisec}`,
             is_katago() && ownership_p && 'ownership true',
             is_supported('ownershipStdev') && ownership_p && 'ownershipStdev true',
-            is_supported('movesOwnership') && moves_ownership_p && 'movesOwnership true',
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
             is_supported('pvVisits') && 'pvVisits true',
             is_supported('pvEdgeVisits') && 'pvEdgeVisits true',
+            is_supported('movesOwnership') && 'movesOwnership true',
             allow,
         ].filter(truep).join(' '), on_analysis_response)
     }
@@ -205,7 +204,7 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
-    const set_board = (history, new_bturn, new_komi, new_gorule, new_ownership_p, new_moves_ownership_p, new_aggressive) => {
+    const set_board = (history, new_bturn, new_komi, new_gorule, new_ownership_p, new_aggressive) => {
         if (is_in_startup) {return}
         js_bturn = new_bturn
         change_board_size(board_size())
@@ -222,7 +221,6 @@ function create_leelaz () {
         update_kata(komi, new_komi, 'komi', z => {komi = z})
         update_kata(gorule, new_gorule, 'kata-set-rules', z => {gorule = z})
         ownership_p = update_kata(ownership_p, new_ownership_p)
-        moves_ownership_p = update_kata(moves_ownership_p, new_moves_ownership_p)
         aggressive = update_kata(aggressive, kata_pda_supported() ? new_aggressive : '')
         if (empty(history)) {clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)

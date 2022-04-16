@@ -32,9 +32,9 @@ function restart(h, new_weight_p) {
           (leelaz === leelaz_for_white) ? invalid_weight_for_white : do_nothing
     leelaz.restart(new_weight_p ? {...cooked, error_handler} : cooked)
 }
-function set_board(hist, komi, gorule, ownership_p, moves_ownership_p, aggressive) {
+function set_board(hist, komi, gorule, ownership_p, aggressive) {
     const set_it = z => z.set_board(hist, is_bturn(), komi, gorule, ownership_p,
-                                    moves_ownership_p, aggressive_for(z, aggressive))
+                                    aggressive_for(z, aggressive))
     each_leelaz(set_it, katago_p())
 }
 function aggressive_for(lz, aggressive) {
@@ -79,6 +79,9 @@ function with_handlers(h) {
 function katago_p() {return leelaz_for_this_turn().is_katago()}
 function is_gorule_supported() {
     return leelaz_for_this_turn().is_supported('kata-set-rules')
+}
+function is_moves_ownership_supported() {
+    return leelaz_for_this_turn().is_supported('movesOwnership')
 }
 
 let analysis_region = null
@@ -292,6 +295,7 @@ module.exports = {
     set_engine_for_white, restore, info_for_restore, backup,
     different_komi_for_black_and_white, startup_log,
     update_analysis_region, set_instant_analysis,
+    is_moves_ownership_supported,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only

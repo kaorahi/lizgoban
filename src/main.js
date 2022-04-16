@@ -1137,7 +1137,7 @@ function weak_move_by_moves_ownership(my, your, space, typical_order, threshold)
     // weight = MY (on my stone), YOUR (on your stone), or SPACE
     // (ex.) your = [1.0, 0.1] means "Try to kill your stones
     // eagerly if they seems alive and slightly if they seems rather dead".
-    if (!AI.katago_p() || !R.experimental_moves_ownership_p) {return best_move()}
+    if (!AI.is_moves_ownership_supported()) {return best_move()}
     const bturn = is_bturn(), sign_for_me = bturn ? 1 : -1
     const my_color_p = z => !xor(z.black, bturn)
     const my_ownership_p = es => sign_for_me * es > 0
@@ -1477,9 +1477,7 @@ function warn_disabled_cache() {
 function set_board() {
     set_AI_board_size_maybe(game.board_size)
     const hist = P.set_board(game)
-    const ownership_p = R.show_endstate
-    const moves_ownership_p = R.experimental_moves_ownership_p
-    AI.set_board(hist, game.get_komi(), get_gorule(), ownership_p, moves_ownership_p, aggressive())
+    AI.set_board(hist, game.get_komi(), get_gorule(), R.show_endstate, aggressive())
     AI.switch_leelaz(); update_let_me_think(true)
 }
 function set_AI_board_size_maybe(bsize) {
@@ -1886,6 +1884,7 @@ function availability() {
         start_auto_analyze: !auto_p,
         stop_auto: auto_p,
         trial: game.trial,
+        moves_ownership: AI.is_moves_ownership_supported(),
         match_ai_conf: match_param_has_option_p(),
     }
 }
@@ -1956,7 +1955,6 @@ function leelaz_start_args(leelaz_command, given_leelaz_args, label) {
                tuning_handler: make_tuning_handler(), weight_file: null,
                restart_handler: auto_restart, ready_handler: on_ready}
     const opts = ['analyze_interval_centisec', 'wait_for_startup',
-                  'experimental_moves_ownership_p',
                   'minimum_suggested_moves', 'engine_log_line_length']
     opts.forEach(key => h[key] = option[key])
     return {...h, ...leelaz_start_args_for_board_size(board_size())}
