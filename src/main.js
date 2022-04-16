@@ -214,6 +214,7 @@ const api = {
     submit_auto_play, submit_auto_replay, auto_play_in_match,
     start_auto_redo,
     stop_match,
+    play_pass_maybe,
     new_empty_board, add_handicap_stones,
     paste_sgf_or_url_from_clipboard,
     read_sgf, open_url, set_game_info,
@@ -238,7 +239,7 @@ function api_handler(channel, handler, busy) {
     }
 }
 function apply_api(channel, handler, args) {
-    const silently = ['ladder_is_seen']
+    const silently = ['ladder_is_seen', 'play_pass_maybe']
     const keep_board = ['toggle_pause', !is_busy() && 'unset_busy', 'set_showing_until']
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
@@ -864,9 +865,9 @@ function try_auto_play(force_next) {
 function auto_play_ready() {
     return !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
-function do_as_auto_play(playable, proc) {
+function do_as_auto_play(playable, proc, silent) {
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
-    update_all()
+    !silent && update_all()
 }
 function update_auto_play_time() {last_auto_play_time = Date.now()}
 function auto_play_progress() {
@@ -1001,6 +1002,7 @@ function play_best(n, weaken_method, ...weaken_args) {
 function play_weak(percent) {
     play_best(null, AI.leelaz_for_white_p() ? 'random_leelaz' : 'random_candidate', percent)
 }
+function play_pass_maybe() {play_best(null, 'pass_maybe')}
 function try_play_best(weaken_method, ...weaken_args) {
     // (ex)
     // try_play_best()
@@ -1031,6 +1033,7 @@ function try_play_best(weaken_method, ...weaken_args) {
         play(m, 'never_redo', null, c)
         R.in_match && !pondering_in_match && !auto_playing() && pause()
     }
+    const pass_maybe_p = (weaken_method === 'pass_maybe')
     const pass_maybe =
           () => AI.peek_value('pass', value => {
               const threshold = 0.9, pass_p = (value < threshold)
@@ -1041,9 +1044,12 @@ function try_play_best(weaken_method, ...weaken_args) {
           }) || toast('Not supported')
     const play_it = () => {
         decrement_auto_play_count()
-        weaken_method === 'pass_maybe' ? pass_maybe() : play_com(move, comment)
+        pass_maybe_p ? pass_maybe() : play_com(move, comment)
     }
-    do_as_auto_play(move !== 'pass', play_it)
+    // need to avoid update_all in do_as_auto_play for pass_maybe
+    // because set_board in update_all may call clear_board,
+    // that cancels peek_value
+    do_as_auto_play(move !== 'pass', play_it, pass_maybe_p)
 }
 function winrate_after(move_count) {
     return move_count < 0 ? NaN :

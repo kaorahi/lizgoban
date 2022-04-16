@@ -1156,7 +1156,7 @@ document.onkeydown = e => {
     case " ": m('toggle_pause'); return
     case "Z": f(toggle_board_type, 'raw'); return
     case "Tab": f(toggle_board_type); return
-    case "0": challenging ? m('play_best', null, 'pass_maybe') :
+    case "0": challenging ? m('play_pass_maybe') :
             f(set_keyboard_moves_for_next_move); return
     case "#": f(alert_comment); return
     case "A-h": shrink_analysis_region_to('left'); return
