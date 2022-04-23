@@ -123,7 +123,7 @@ function create_leelaz () {
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
             is_supported('pvVisits') && 'pvVisits true',
             is_supported('pvEdgeVisits') && 'pvEdgeVisits true',
-            is_supported('movesOwnership') && 'movesOwnership true',
+            is_supported('movesOwnership') && ownership_p && 'movesOwnership true',
             allow,
         ].filter(truep).join(' '), on_analysis_response)
     }
