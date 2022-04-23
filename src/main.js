@@ -38,7 +38,7 @@ const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
-const {select_weak_move} = require('./weak_move.js')
+const {select_weak_move, weak_move_prop} = require('./weak_move.js')
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
@@ -940,10 +940,6 @@ function set_match_param(weaken) {
         (m = weaken.match(/^swap([1-9])$/)) ? ['random_leelaz', to_i(m[1]) * 10] :
         []
 }
-function match_param_has_option_p() {
-    const a = ['persona']
-    return a.includes(auto_play_weaken[0])
-}
 function auto_play_in_match(sec, count) {
     pondering_in_match = !pausing
     start_auto_play('best', sec, count || 1)
@@ -1819,7 +1815,7 @@ function availability() {
         stop_auto: auto_p,
         trial: game.trial,
         moves_ownership: AI.is_moves_ownership_supported(),
-        match_ai_conf: match_param_has_option_p(),
+        match_ai_conf: weak_move_prop('has_option_p', auto_play_weaken)
     }
 }
 

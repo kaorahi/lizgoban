@@ -10,6 +10,13 @@ function select_weak_move(...args) {
     return {...ret, comment: prepend_common_comment(move, comment, ...args)}
 }
 
+function weak_move_prop(prop, weaken) {
+    const prop_table = {
+        has_option_p: ['persona'],
+    }
+    return prop_table[prop].includes(weaken[0])
+}
+
 // private
 
 function get_move_etc(state, weaken_method, weaken_args) {
@@ -259,4 +266,5 @@ function parse_commented_move(commented_move) {
 
 module.exports = {
     select_weak_move,
+    weak_move_prop,
 }
