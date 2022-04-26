@@ -122,6 +122,17 @@ update_tuning_internally()
 ///////////////////////////////////////////
 // init
 
+const sgf_text_area = Q('#sgf')
+function hack_for_chrome() {
+    // "Paste" does not appear in the right click menu if the textarea is readonly...
+    const read_only = 'mousedown mouseup keydown keyup'.split(/\s+/)
+    const set_read_only = (key, value) =>
+          sgf_text_area.addEventListener(key, e => {e.target.readOnly = value})
+    set_read_only('contextmenu', false)
+    read_only.forEach(key => set_read_only(key, true))
+}
+hack_for_chrome()
+
 window.onresize = () => {set_size()}
 window.resizeTo(window.screen.width * 0.95, window.screen.height * 0.95)
 
@@ -534,7 +545,7 @@ function edit_guess(x, y) {
     update_guess(x, y, true)
 }
 
-function set_sgf_form(sgf) {(Q('#sgf') || {}).value = sgf}
+function set_sgf_form(sgf) {sgf_text_area.value = sgf; sgf_text_area.readOnly = true}
 
 function update_sgf(silent, temporary) {
     if (electron) {return}
