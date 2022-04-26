@@ -534,7 +534,7 @@ function edit_guess(x, y) {
     update_guess(x, y, true)
 }
 
-function set_sgf_form(sgf) {(Q('#sgf') || {}).textContent = sgf}
+function set_sgf_form(sgf) {(Q('#sgf') || {}).value = sgf}
 
 function update_sgf(silent, temporary) {
     if (electron) {return}
