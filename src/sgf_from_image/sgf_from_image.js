@@ -500,7 +500,7 @@ function grid_params(xy) {
     const num_grids_A = ([z1, z2, z]) => (z - z1) / (z2 - z1) + 1
     const num_grids_B = ([z1, z2, z]) =>  // use min(|z-z1|, |z-z2|) for unit length
           Math.max(...[[z1, z2, z], [z, z2, z1]].map(num_grids_A))
-    const num_grids = stage() === 2 ? num_grids_A : num_grids_B
+    const num_grids = [1, 2].includes(stage()) ? num_grids_A : num_grids_B
     const digitize = z => Math.max(2, Math.min(Math.round(z), 19))
     const [mx0, ny0] = [[x1, x2, x], [y1, y2, y]].map(num_grids)
     const [mx, ny] = (mx0 >= 2 && ny0 >= 2) ? [mx0, ny0].map(digitize) : [19, 19]
