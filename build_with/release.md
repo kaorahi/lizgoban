@@ -2,6 +2,27 @@
 
 # Release notes
 
+## LizGoban 0.7.0-pre4
+
+* Tune the behavior of "AI persona".
+* Officially support [movesOwnership](https://github.com/lightvector/KataGo/issues/608) in KataGo 1.11.0.
+* Add auto-adjustment for [[SGF from Image]](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html).
+* Add items to the pull down menu of AI strategy and delete the corresponding keyboard shortcuts "1" to "9" instead.
+  * "pass": AI plays "pass" if there is room.
+  * "swap n": AI swaps engines for black and white randomly with probability 10n%. (You need to set engines with different configurations, e.g. LZ38 and LZ157, for black and white beforehand from "Engine" menu or "Preset" menu.)
+* Use change of ownership in addition to ownership itself for facial stones.
+* (Remove [3n opening method for handicap games](https://github.com/kaorahi/lizgoban/issues/75).)
+
+If you are willing to help developments, please try new weak bots for matches vs. AI (work in progress). This is a step toward ideal bots that have a wide variety of playing styles and auto-adjusted strength without unnaturally stupid moves.
+
+1. Click "File > Match vs. AI".
+2. Click the pull down menu beside "vs." and select "persona".
+3. Click the board to play a game.
+
+You can play against bots with randomly generated characteristics from "..." button. You can also adjust "sanity" slider anytime, or check "auto" for auto-adjusting.
+
+In addition, there is a new system of virtual opponent characters. When you input any name from "..." button, LizGoban generates a bot with the parameters based on its name. For example, "jowa" prefers to capture stones, "alex" likes positional plays, etc. Try various names to find your favorite opponents. Note that unreasonable strategies are still tough if you set high "sanity" because the moves are selected only in major suggestions by AI.
+
 ## LizGoban 0.7.0-pre3
 
 * Upgrade KataGo to [1.11.0](https://github.com/lightvector/KataGo/releases/tag/v1.11.0).
@@ -9,17 +30,6 @@
 * Add "Preferences" into Edit menu for convenience.
 * Slightly improve ladder continuation.
 * (Bonus) [3n opening method for handicap games](https://www.reddit.com/r/baduk/comments/sublre/i_have_created_an_opening_method_to_make_handicap/) in Tool > Experimental. This is just a temporary trial and will be removed in the next release. See [#75](https://github.com/kaorahi/lizgoban/issues/75).
-
-If you are willing to help developments, please try new weak bots for matches vs. AI (work in progress). This is a step toward ideal bots that have a wide variety of playing styles and auto-adjusted strength without unnaturally stupid moves.
-
-1. Enable "Edit > Preferences > Ownerships per move".
-2. Click "File > Match vs. AI".
-3. Click the pull down menu beside "vs." and select "(persona)" at the bottom.
-4. Click the board to play a game.
-
-You can play against bots with randomly generated characteristics from "..." button. You can also adjust "sanity" slider anytime, or check "auto" for auto-adjusting.
-
-In addition, there is a new system of virtual opponent characters. When you input any name from "..." button, LizGoban generates a bot with the parameters based on its name. For example, "jowa" prefers to capture stones, "alex" likes positional plays, etc. Try various names to find your favorite opponents. Note that unreasonable strategies are still tough if you set high "sanity" because the moves are selected only in major suggestions by AI.
 
 Incompatibilities:
 
