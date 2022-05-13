@@ -19,23 +19,29 @@ all: $(TARGETS)
 clean:
 	rm -f $(TARGETS)
 
-$(REL_NOTE): release.md $(PD_HEADER)
+$(DOC):
+	mkdir -p $@/KataGo
+
+$(SAMPLE):
+	mkdir -p $@
+
+$(REL_NOTE): release.md $(PD_HEADER) $(DOC)
 	$(PANDOC) $< -M pagetitle='Release Note' -o $@
 
-$(README): ../README.md $(PD_HEADER)
+$(README): ../README.md $(PD_HEADER) $(DOC)
 	 $(PANDOC) $< -M pagetitle='README' -o $@
 
-$(LG_CONF): config.json
+$(LG_CONF): config.json $(SAMPLE)
 	cp -f $< $@
 
-$(SCR_IMG): ../screen.gif
+$(SCR_IMG): ../screen.gif $(DOC)
 	convert $<'[0]' $@
 
-$(MTCH_IMG): ../match.png
+$(MTCH_IMG): ../match.png $(DOC)
 	cp -f $< $@
 
-$(FACE_IMG): ../faces.png
+$(FACE_IMG): ../faces.png $(DOC)
 	cp -f $< $@
 
-$(KATA_DOC): bin/win/katago/README.txt
+$(KATA_DOC): bin/win/katago/README.txt $(DOC)
 	cp -f $< $@
