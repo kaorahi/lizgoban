@@ -14,7 +14,9 @@ TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF) $(
 
 PANDOC = pandoc -H $(PD_HEADER)
 
-all: $(TARGETS)
+local: $(TARGETS)
+
+all: local img
 
 clean:
 	rm -f $(TARGETS)
@@ -45,3 +47,15 @@ $(FACE_IMG): ../faces.png $(DOC)
 
 $(KATA_DOC): bin/win/katago/README.txt $(DOC)
 	cp -f $< $@
+
+#######################################
+# facial stone images
+
+# cf. https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html
+GOISI_URL = https://www.asahi-net.or.jp/~hk6t-itu/igo/image/
+GOISI_COLORS = k s
+GOISI_INDICES = 4 5 7 8 9 10 11 14 15 16
+
+img:
+	mkdir -p $@
+	(for c in $(GOISI_COLORS); do for i in $(GOISI_INDICES); do echo $(GOISI_URL)/goisi_$$c$$i.png; done; done) | wget -i - -P $@
