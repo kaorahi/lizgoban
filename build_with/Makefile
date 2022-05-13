@@ -8,7 +8,8 @@ SCR_IMG = $(DOC)/screen.gif
 MTCH_IMG = $(DOC)/match.png
 FACE_IMG = $(DOC)/faces.png
 LG_CONF = $(SAMPLE)/config.json
-KATA_DOC = $(DOC)/KataGo/README.txt
+KATA_DOC_DIR = $(DOC)/KataGo
+KATA_DOC = $(KATA_DOC_DIR)/README.txt
 
 TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF) $(KATA_DOC)
 
@@ -22,7 +23,7 @@ clean:
 	rm -f $(TARGETS)
 
 $(DOC):
-	mkdir -p $@/KataGo
+	mkdir -p $@
 
 $(SAMPLE):
 	mkdir -p $@
@@ -46,6 +47,7 @@ $(FACE_IMG): ../faces.png $(DOC)
 	cp -f $< $@
 
 $(KATA_DOC): bin/win/katago/README.txt $(DOC)
+	mkdir -p $(KATA_DOC_DIR)
 	cp -f $< $@
 
 #######################################

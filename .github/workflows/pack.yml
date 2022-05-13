@@ -1,5 +1,7 @@
 name: pack
 
+# does not work because it lacks pandoc and wine
+
 on:
   workflow_dispatch:
 
@@ -12,7 +14,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: '14'
-        cache: npm
     - name: Make ZIP
       run: make zip
     - name: Upload ZIP
