@@ -2,6 +2,7 @@
 /external/
 /build_with/bin/
 /build_with/extra/
+/build_with/img/
 
 node_modules/
 package-lock.json
