@@ -1,0 +1,22 @@
+name: pack
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '14'
+        cache: npm
+    - name: Make ZIP
+      run: make zip
+    - name: Upload ZIP
+      uses: actions/upload-artifact@v3
+      with:
+        name: lizgoban_release
+        path: tmpLizGoban-*.zip
