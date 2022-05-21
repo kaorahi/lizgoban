@@ -64,7 +64,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Random generation of various playing styles for matches vs. weak bots.
 * Play pair match, "you & KataGo" vs. Leela Zero, etc.
 * [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
-* [Experimental] [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically. Enjoy watching [Ladder fight!](https://www.reddit.com/r/baduk/comments/llk8cj/ladder_fight/)
+* [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically. Enjoy watching [Ladder fight!](https://www.reddit.com/r/baduk/comments/llk8cj/ladder_fight/)
 * [Experimental] [External control of GUI](https://github.com/kaorahi/lizgoban/issues/61) from another program
 
 ### Original visualizations
@@ -295,7 +295,7 @@ Please note that this feature is experimental and API etc. may be changed in fut
 
 Incompatibilities:
 
-* Upgrade libraries (Electron 17, etc.). So you may need to do "npm install" again.
+* Upgrade libraries (Electron 18, etc.). So you may need to do "npm install" again.
 
 ### 0.6.*
 
