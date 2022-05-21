@@ -63,7 +63,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
 * Random generation of various playing styles for matches vs. weak bots.
 * Play pair match, "you & KataGo" vs. Leela Zero, etc.
-* [Experimental] [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
+* [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 * [Experimental] [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically. Enjoy watching [Ladder fight!](https://www.reddit.com/r/baduk/comments/llk8cj/ladder_fight/)
 * [Experimental] [External control of GUI](https://github.com/kaorahi/lizgoban/issues/61) from another program
 
