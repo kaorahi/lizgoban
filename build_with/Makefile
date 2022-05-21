@@ -11,13 +11,18 @@ LG_CONF = $(SAMPLE)/config.json
 KATA_DOC_DIR = $(DOC)/KataGo
 KATA_DOC = $(KATA_DOC_DIR)/README.txt
 
+BIN_DIR = bin
+KATA_DIR = $(BIN_DIR)/win/katago
+KATA_MODEL_DIR = $(BIN_DIR)/common
+KATA_MODEL_FILE = $(KATA_MODEL_DIR)/katanetwork.gz
+
 TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF) $(KATA_DOC)
 
 PANDOC = pandoc -H $(PD_HEADER)
 
 local: $(TARGETS)
 
-all: bin local img
+all: katago local img
 
 clean:
 	rm -f $(TARGETS)
@@ -46,28 +51,33 @@ $(MTCH_IMG): ../match.png $(DOC)
 $(FACE_IMG): ../faces.png $(DOC)
 	cp -f $< $@
 
-$(KATA_DOC): bin/win/katago/README.txt $(DOC)
+$(KATA_DOC): $(KATA_DIR)/README.txt $(DOC)
 	mkdir -p $(KATA_DOC_DIR)
 	cp -f $< $@
 
 #######################################
 # katago
 
-KATA_DIR = win/katago
-KATA_URL1 = https://github.com/lightvector/KataGo/releases/download/v1.11.0/katago-v1.11.0-eigen-windows-x64.zip
-KATA_URL2 = https://github.com/lightvector/KataGo/releases/download/v1.11.0/katago-v1.11.0-eigenavx2-windows-x64.zip
-KATA_URL3 = https://github.com/lightvector/KataGo/releases/download/v1.11.0/katago-v1.11.0-opencl-windows-x64.zip
+KATA_URL_BASE = https://github.com/lightvector/KataGo/releases/download
+KATA_URL1 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-eigen-windows-x64.zip
+KATA_URL2 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-eigenavx2-windows-x64.zip
+KATA_URL3 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-opencl-windows-x64.zip
 KATA_MODEL_URL = https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b15c192-s1672170752-d466197061.txt.gz
 
-bin:
-	mkdir -p $@/common $@/$(KATA_DIR)
+katago: $(KATA_DIR) $(KATA_MODEL_FILE)
+
+$(KATA_DIR):
+	mkdir -p $@
 	\wget -O tmp_kata1.zip $(KATA_URL1)
 	\wget -O tmp_kata2.zip $(KATA_URL2)
 	\wget -O tmp_kata3.zip $(KATA_URL3)
-	unzip -o tmp_kata1.zip -d $@/$(KATA_DIR) && cd $@/$(KATA_DIR) && mv katago.exe katago-eigen.exe
-	unzip -o tmp_kata2.zip -d $@/$(KATA_DIR) && cd $@/$(KATA_DIR) && mv katago.exe katago-eigenavx2.exe
-	unzip -o tmp_kata3.zip -d $@/$(KATA_DIR) && cd $@/$(KATA_DIR) && mv katago.exe katago-opencl.exe
-	cd $@/common; \wget -O katanetwork.txt.gz $(KATA_MODEL_URL)
+	unzip -o tmp_kata1.zip -d $@ && cd $@ && mv katago.exe katago-eigen.exe
+	unzip -o tmp_kata2.zip -d $@ && cd $@ && mv katago.exe katago-eigenavx2.exe
+	unzip -o tmp_kata3.zip -d $@ && cd $@ && mv katago.exe katago-opencl.exe
+
+$(KATA_MODEL_FILE):
+	mkdir -p $(KATA_MODEL_DIR)
+	\wget -O $(KATA_MODEL_FILE) $(KATA_MODEL_URL)
 
 #######################################
 # facial stone images

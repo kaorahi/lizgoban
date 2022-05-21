@@ -44,7 +44,7 @@
         "from": "build_with/bin/common",
         "to": "resources/external",
         "filter": [
-          "katanetwork.*.gz"
+          "katanetwork.gz"
         ]
       }
     ],
