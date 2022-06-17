@@ -165,6 +165,17 @@ E.deferred_procs = (...proc_delay_pairs) => {
     }))
 }
 
+// v = vapor_var(500, 'foo'); v('bar'); v() ==> 'bar'
+// (after 500ms) v() ==> 'foo'
+E.vapor_var = (millisec, default_val) => {
+    let val
+    const recover = () => {val = default_val}
+    const [recover_later] = deferred_procs([recover, millisec])
+    const obj = new_val =>
+          (new_val === undefined ? val : (val = new_val, recover_later()))
+    recover(); return obj
+}
+
 E.make_speedometer = (interval_sec, premature_sec) => {
     let t0, k0, t1, k1  // t0 = origin, t1 = next origin
     let the_latest = null

@@ -1203,9 +1203,11 @@ document.onkeyup = e => {
     // without e.repeat. It causes a race condition with
     // ipc.on('render', ...) that is called by the following main('unset_busy').
     const {key} = e, clearp = tag_letters.includes(key) || key === "Shift"
-    const reset_kb_moves_p = (to_i(key) > 0 || key === "0" || clearp)
+    const order_key_p = (to_i(key) > 0 || key === "0")
+    const reset_kb_moves_p = (order_key_p || clearp)
     reset_keyboard_tag();
     reset_kb_moves_p && reset_keyboard_moves(true)
+    order_key_p && main('hold_suggestion_for_a_while')
     cancel_alt_up_maybe(e)
     switch (key) {
     case "b": case "w": main('cancel_forced_color'); break

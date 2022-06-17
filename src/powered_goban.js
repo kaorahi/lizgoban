@@ -60,6 +60,10 @@ function endstate_handler(h) {
     AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
 }
 
+const hold_suggestion_millisec = 1000
+const is_holding_suggestion = vapor_var(hold_suggestion_millisec, false)
+function hold_suggestion_for_a_while() {is_holding_suggestion(true)}
+
 // keys0: same as keys1. false, null, undefined are also valid.
 const suggest_keys0 = ['engine_bturn']
 // keys1: required. individual plot for each engine.
@@ -69,7 +73,7 @@ const suggest_keys2 = ['endstate', 'endstate_stdev', 'score_without_komi', 'ambi
 
 const too_small_prior = 1e-3
 function suggest_handler(h) {
-    if (finitep(get_showing_until())) {return}
+    if (finitep(get_showing_until()) || is_holding_suggestion()) {return}
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
     const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
     h.suggest = h.suggest.filter(considerable)
@@ -599,4 +603,5 @@ module.exports = {
     get_initial_b_winrate, add_info_to_stones, renew_game,
     set_ambiguity_etc_in_game,
     delete_cache, undelete_cache,
+    hold_suggestion_for_a_while,
 }

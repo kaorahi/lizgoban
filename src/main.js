@@ -191,10 +191,11 @@ const {
 
 // normal commands
 
-const {set_showing_until} = P
+const {set_showing_until, hold_suggestion_for_a_while} = P
 const simple_api = {
     unset_busy, toggle_board_type, toggle_let_me_think, toggle_stored,
     copy_sgf_to_clipboard, set_endstate_diff_interval, set_showing_until, update_menu,
+    hold_suggestion_for_a_while,
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
     set_sanity_from_renderer,
     open_image_url,
@@ -237,7 +238,7 @@ function api_handler(channel, handler, busy) {
     }
 }
 function apply_api(channel, handler, args) {
-    const silently = ['ladder_is_seen', 'play_pass_maybe']
+    const silently = ['ladder_is_seen', 'play_pass_maybe', 'hold_suggestion_for_a_while']
     const keep_board = ['toggle_pause', !is_busy() && 'unset_busy', 'set_showing_until']
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
