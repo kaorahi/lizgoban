@@ -864,7 +864,13 @@ function start_auto_play(strategy, sec, count) {
 }
 
 function try_auto_play(force_next) {
-    const weaken = auto_play_weaken_for_current_bw() || auto_play_weaken
+    // In pair matches, the specified weaken method is applied only to
+    // the opponent AI. The partner AI ignores it and plays normally.
+    const is_partner =
+          (R.in_pair_match === 'pair_match') && (auto_play_count === 2)
+    const partner_weaken = is_partner && default_weaken()
+    const weaken =
+          auto_play_weaken_for_current_bw() || partner_weaken || auto_play_weaken
     const proc = {
         replay: () => do_as_auto_play(redoable(), redo),
         best: () => try_play_best(weaken),
@@ -894,11 +900,7 @@ function ask_auto_play_sec(win, replaying) {
     generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
 }
 function submit_auto_play_or_replay(sec, replaying) {
-    const rand_p = store.get('random_opening_p') && !auto_play_weaken_for_bw_p()
-    const strategy =
-          replaying ? 'replay' :
-          rand_p ? 'random_opening' :
-          'best'
+    const strategy = replaying ? 'replay' : default_strategy()
     default_auto_play_sec = sec; start_auto_play(strategy, sec, Infinity)
 }
 function submit_auto_play(sec) {submit_auto_play_or_replay(sec, false)}
@@ -914,6 +916,15 @@ function stop_auto_play() {
 }
 function auto_playing(forever) {
     return auto_play_count >= (forever ? Infinity : 1)
+}
+
+function default_strategy() {
+    const rand_p = store.get('random_opening_p') && !auto_play_weaken_for_bw_p()
+    return rand_p ? 'random_opening' : 'best'
+}
+function default_weaken() {
+    const weaken = {best: [], random_opening: ['random_opening']}
+    return weaken[default_strategy()]
 }
 
 // match
