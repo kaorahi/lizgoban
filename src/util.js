@@ -60,6 +60,15 @@ E.seq = (n, from) => [...Array(clip(n, 0))].map((_, i) => i + (from || 0))
 E.seq_from_to = (from, to) => E.seq(to - from + 1, from)
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
+// change_points('aaabcc'.split('')) ==> [3, 4]
+// unchanged_ranges('aaabcc'.split('')) ==> [['a', 0, 2], ['b', 3, 3], ['c', 4, 5]]
+E.change_points = a => a.map((z, k) => k > 0 && a[k - 1] !== a[k] && k).filter(truep)
+E.unchanged_periods =
+    a => empty(a) ? [] : [0, ...change_points([...a, {}])].map((k, l, cs) => {
+        const next = cs[l + 1]
+        return next && [a[k], k, next - 1]
+    }).filter(truep)
+
 // "magic" in ai.py of KaTrain
 // seq(1000).map(_ => weighted_random_choice([1,2,3,4], identity)).filter(x => x === 3).length
 // ==> around 300

@@ -79,7 +79,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Additional plots
   * cumulative score-losses by black and white that indicate mistakes of each player separately
   * ambiguity of life & death that indicates big fights, game stages (opening / middlegame / endgame), etc.
-* Indicators that suggest highlight scenes of the game (ko fights, played zones)
+* Indicators that suggest highlight scenes of the game (ko fights, SOPPO)
 * Translucent stones for too long variations as the above screenshot
 * Ownerships of stones by facial expressions
 

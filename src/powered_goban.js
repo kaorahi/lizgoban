@@ -148,6 +148,7 @@ function set_renderer_state(...args) {
     const busy = M.is_busy(), long_busy = M.is_long_busy()
     const winrate_history = busy ? [] : winrate_from_game()
     const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
+    const soppo = busy ? [] : get_soppo()
     const su_p = finitep(move_count_for_suggestion())
     const previous_suggest = !su_p && get_previous_suggest()
     const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
@@ -175,6 +176,7 @@ function set_renderer_state(...args) {
     const different_engine_for_white_p = AI.leelaz_for_white_p()
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
+              soppo,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               different_engine_for_white_p,
@@ -206,6 +208,26 @@ function add_next_played_move_as_fake_suggest() {
 }
 
 function orig_suggest() {return (R.suggest || []).filter(orig_suggest_p)}
+
+function get_soppo() {
+    const long_enough = 2
+    function pick(mc) {
+        const {move_count, is_black, suggest} = game.ref(mc)
+        const best_move = ((suggest || [])[0] || {}).move
+        return {move_count, is_black, best_move}
+    }
+    const picked = seq(game.len() + 1).map(pick)
+    function soppo_for_color(is_black) {
+        const valid = ([best_move, k1, k2]) => best_move && (k2 - k1 >= long_enough)
+        const to_soppo = ([best_move, k1, k2]) => {
+            const [beg, end] = [k1, k2].map(k => a[k].move_count)
+            return {is_black, best_move, beg, end}
+        }
+        const a = picked.filter(h => !xor(h.is_black, is_black))
+        return unchanged_periods(a.map(h => h.best_move)).filter(valid).map(to_soppo)
+    }
+    return [true, false].flatMap(soppo_for_color)
+}
 
 /////////////////////////////////////////////////
 // endstate

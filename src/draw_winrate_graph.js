@@ -39,7 +39,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_ambiguity(sq2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
-    draw_winrate_graph_zone(w, sr2coord_noclip, g)
+    draw_winrate_graph_soppo(w, sr2coord_noclip, g)
     draw_winrate_graph_order(sr2coord, g)
     draw_winrate_graph_aggressiveness(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
@@ -325,15 +325,16 @@ function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
     draw_winrate_graph_scale(at_r, to_loss, style.b, w * 0.995, sr2coord, g)
 }
 
-function draw_winrate_graph_zone(w, sr2coord, g) {
-    const half = 0.6  // > 0.5 for avoiding gaps in spectrum bar
+function draw_winrate_graph_soppo(w, sr2coord, g) {
     const rmin = - zone_indicator_height_percent
     const y_for = r => sr2coord(R.init_len, r)[1]
+    const r1 = rmin / 2
     // bottom space for zone indicator
     g.fillStyle = DARK_GRAY; fill_rect([0, y_for(0)], [w, y_for(rmin)], g)
-    R.move_history.forEach((z, s) => {
-        g.fillStyle = zone_color_for_move(z.move)
-        fill_rect(sr2coord(s - half, 0), sr2coord(s + half, rmin), g)
+    R.soppo.forEach(({is_black, best_move, beg, end}) => {
+        const r2 = (is_black ? rmin : 0)
+        g.fillStyle = zone_color_for_move(best_move)
+        fill_rect(sr2coord(beg, r1), sr2coord(end, r2), g)
     })
 }
 
