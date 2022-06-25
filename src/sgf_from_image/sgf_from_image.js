@@ -33,10 +33,13 @@ const default_tuning_param = {
     consider_reddish_stone: 30,
     detection_width: 40,
 }
-const default_param = {
-    ...default_tuning_param,
+const default_sgf_param = {
     sgf_size: '-1',  // -1 = as_is
     to_play: 'B',
+}
+const default_param = {
+    ...default_tuning_param,
+    ...default_sgf_param,
 }
 let param = {...default_param}
 function reset_param() {
@@ -73,7 +76,9 @@ function read_param(elem, temporary) {
         param[key] = val
     })
     draw(0, 0)
-    stage() === 3 && estimate(temporary)
+    const sgf_only_p = Object.keys(default_sgf_param).includes(elem.name)
+    const update_result = sgf_only_p ? update_sgf_silently : estimate
+    stage() === 3 && update_result(temporary)
     !temporary && (update_forms(), set_url_from_param())
     digitizing && (!elem || is_digitizer_elem(elem)) && digitize_image_soon()
 }
@@ -556,6 +561,7 @@ function update_sgf(silent, temporary) {
     !temporary && navigator.clipboard.writeText(sgf)
     !silent && wink()
 }
+function update_sgf_silently(temporary) {update_sgf(true, temporary)}
 
 function update_sgf_link(sgf) {
     const a = Q('#download')
