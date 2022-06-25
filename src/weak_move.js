@@ -217,7 +217,7 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
     // (ex.) your = [1.0, 0.1] means "Try to kill your stones
     // eagerly if they seems alive and slightly if they seems rather dead".
     const {orig_suggest, is_bturn, stones, is_moves_ownership_supported} = state
-    if (!AI.is_moves_ownership_supported) {return {}}
+    if (!is_moves_ownership_supported) {return {}}
     const [my, your, space] = param
     const sign_for_me = is_bturn ? 1 : -1
     const my_color_p = z => !xor(z.black, is_bturn)
