@@ -21,7 +21,7 @@ function ij_flipper(flip_i, flip_j, swap_ij) {
 }
 
 function convert(f, history) {
-    const kept_keys = ['is_black', 'move_count']
+    const kept_keys = ['is_black', 'move_count', 'comment', 'note', 'tag']
     const conv1 = h => {
         const {move} = h, ij = move2idx(move), pass = !idx2move(...ij)
         const converted_move = (pass ? move : idx2move(...f(ij)))
