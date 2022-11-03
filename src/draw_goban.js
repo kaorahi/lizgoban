@@ -269,12 +269,11 @@ function draw_goban(given_canvas, given_stones, opts) {
     const font_unit = Math.min(margin, canvas.height * max_font_for_goban_message)
     const stones = given_stones || R.stones
     // draw
-    canvases.forEach(c => clear_canvas(c))
+    uniq(canvases).forEach(c => clear_canvas(c))
     draw_board(hm, pausing_p, trial_p, bg_canvas, bg_g)
     if (!hide_endstate_p()) {
-        const endstate_blur = 0.2
         es_canvas !== canvas &&
-            (es_canvas.style.filter = `blur(${phys2css(endstate_blur * unit)}px)`)
+            (es_canvas.style.filter = `blur(${phys2css(R.endstate_blur * unit)}px)`)
         const args = [stones, unit, idx2coord, es_g]
         draw_endstate_p &&
             draw_endstate_on_board(...args)

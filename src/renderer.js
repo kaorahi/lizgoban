@@ -23,10 +23,12 @@ const visits_trail_canvas = Q('#visits_trail_canvas')
 const zone_chart_canvas = Q('#zone_chart_canvas')
 let canvas_scale = 1
 function goban_canvas_and_overlays(canvas) {
+    const no_overlays = [canvas, canvas, canvas]
+    if (R.endstate_blur <= 0) {return no_overlays}
     const a = [
         [main_canvas, Q('#goban_overlay1'), Q('#goban_overlay2')],
         [sub_canvas, Q('#sub_goban_overlay1'), Q('#sub_goban_overlay2')],
-        [canvas, canvas, canvas],
+        no_overlays,
     ]
     return a.find(cs => cs[0] === canvas)
 }
@@ -62,6 +64,7 @@ const R = {
     always_show_coordinates: false,
     keep_bright_board: false,
     debug_show_policy: false,
+    endstate_blur: 0.2,  // for debug from Developer Tool
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null
@@ -1031,7 +1034,7 @@ function set_all_overlays(wr_only) {
     const a = [main_canvas, sub_canvas]
     a.forEach(c => {
         const [_, ...os] = goban_canvas_and_overlays(c)
-        os.forEach(o => set_overlay(o, c))
+        os.forEach(o => (o !== c) && set_overlay(o, c))
     })
 }
 
@@ -1486,7 +1489,7 @@ function wink() {effect_gen({opacity: 1}, {opacity: 0.7}, {opacity: 1})}
 function effect_gen(...transforms) {
     const animate = c => c.animate(transforms, effect_duration_millisec)
     in_effect = true
-    goban_canvas_and_overlays(main_canvas).forEach(animate)
+    uniq(goban_canvas_and_overlays(main_canvas)).forEach(animate)
     after_effect(() => {in_effect = false})
 }
 
