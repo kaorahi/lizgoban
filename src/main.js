@@ -810,7 +810,7 @@ function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing() 
 let on_auto_analyze_finished = pause
 function try_auto_analyze(force_next) {
     const done = force_next || (auto_analysis_progress() >= 1)
-    const finish = () => (stop_auto_analyze(), on_auto_analyze_finished())
+    const finish = () => (stop_auto_analyze(), on_auto_analyze_finished(), update_all())
     const next = (pred, proc) => {
         pred() ? proc(auto_analysis_steps) : finish(); update_all()
     }
@@ -885,7 +885,7 @@ function auto_play_ready() {
     return !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
 function do_as_auto_play(playable, proc, silent) {
-    playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause())
+    playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause(), update_all())
     !silent && update_all()
 }
 function update_auto_play_time() {last_auto_play_time = Date.now()}
