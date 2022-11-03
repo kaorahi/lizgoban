@@ -30,6 +30,7 @@ E.average = a => E.sum(a) / a.length
 E.merge = Object.assign
 E.empty = a => !a || (a.length === 0)
 E.last = a => a[a.length - 1]
+E.uniq = a => [...new Set(a)]
 E.sort_by = (a, f) => a.slice().sort((x, y) => f(x) - f(y))
 E.sort_by_key = (a, key) => sort_by(a, h => h[key])
 E.num_sort = a => sort_by(a, E.identity)
@@ -107,7 +108,7 @@ function kilo_str_sub(x, rules) {
 }
 
 // str_sort_uniq('zabcacd') = 'abcdz'
-E.str_sort_uniq = str => [...new Set(str.split(''))].sort().join('')
+E.str_sort_uniq = str => E.uniq(str.split('')).sort().join('')
 
 E.remarkable_aggressiveness = (aggressive_policy, defensive_policy, prior) => {
     const valid = truep(aggressive_policy) && truep(defensive_policy)
