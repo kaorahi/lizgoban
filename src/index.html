@@ -20,7 +20,6 @@
  .controller_row.show_in_exercise input[type="button"] {width: 1em}
  .show_in_match, .show_in_serious_match {display: none;}
  .small {font-size: 70%;}
- #main_div {position: relative;}
  #goban, #sub_goban {background: #f9ca91;}
  #winrate_graph {border: solid 1px #ccc;}
  #winrate_graph:hover {border: solid 1px green;}
@@ -126,7 +125,7 @@
 
 <div id="main_div">
 <img id="preview"></img>
-<div style="position: relative; overflow-y: hidden;">
+<div style="overflow-y: hidden;">
  <canvas id="goban"></canvas>
 </div>
 <div class="hide_in_serious_match"><canvas id="winrate_bar"></canvas></div>
