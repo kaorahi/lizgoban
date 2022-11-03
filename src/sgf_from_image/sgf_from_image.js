@@ -186,8 +186,9 @@ function initialize_electron() {
 function finish_electron() {
     if (!electron) {return}
     const {send} = electron.ipcRenderer
-    send('momorize_settings_for_sgf_from_image', get_settings())
-    send('read_sgf', get_sgf())
+    const settings = get_settings(), sgf = get_sgf()
+    send('momorize_settings_for_sgf_from_image', settings)
+    send('read_sgf', sgf)
     window.close()
 }
 
