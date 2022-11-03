@@ -2,6 +2,10 @@
 
 'use strict'
 
+// idx [i][j] of array: [0][0] = top left, [0][18] = top right
+// coord (x, y) on canvas: (0, 0) = top left, (width, 0) = top right
+// sgfpos: "aa" = top left, "sa" = top right
+
 ///////////////////////////////////////////
 // global state
 
@@ -511,10 +515,10 @@ function grid_params(xy) {
     const [mx, ny] = (mx0 >= 2 && ny0 >= 2) ? [mx0, ny0].map(digitize) : [19, 19]
     const [dx, dy] = [(x - x1) / (mx - 1), (y - y1) / (ny - 1)]
     const radius = Math.min(...[dx, dy].map(Math.abs)) * param.detection_width / 200
-    const is = seq(mx), js = seq(ny)
-    const xy_for = (i, j) => [kth(i, x1, dx), kth(j, y1, dy)]
-    const ij_for = (x, y) => [k_for(x, x1, dx), k_for(y, y1, dy)]
-    const valid_ij = (i, j) => (0 <= i && i < mx && 0 <= j && j < ny)
+    const is = seq(ny), js = seq(mx)
+    const xy_for = (i, j) => [kth(j, x1, dx), kth(i, y1, dy)]
+    const ij_for = (x, y) => [k_for(y, y1, dy), k_for(x, x1, dx)]
+    const valid_ij = (i, j) => (0 <= i && i < ny && 0 <= j && j < mx)
     const each_grid = f => is.forEach(i => js.forEach(j => f(i, j, ...xy_for(i, j))))
     return {x1, y1, mx, ny, dx, dy, radius, is, js, xy_for, ij_for, valid_ij, each_grid}
 }
@@ -614,8 +618,8 @@ function get_sgf() {
     const sgfpos_name = "abcdefghijklmnopqrs"
     const header = `(;SZ[${size}]PL[${to_play}]`, footer = ')'
     const sgfpos = (k, sign) => sgfpos_name[sign > 0 ? k : size - k - 1]
-    const [si, sj] = coord_signs
-    const coords = (i, j) => '[' + sgfpos(i, si) + sgfpos(j, sj) + ']'
+    const [sj, si] = coord_signs
+    const coords = (i, j) => '[' + sgfpos(j, sj) + sgfpos(i, si) + ']'
     const grids =
           guessed_board.flatMap((row, i) => row.map(({stone_color}, j) => [stone_color, i, j]))
     const body = (color, prop) => {
