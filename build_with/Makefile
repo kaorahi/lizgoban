@@ -15,6 +15,7 @@ BIN_DIR = bin
 KATA_DIR = $(BIN_DIR)/win/katago
 KATA_MODEL_DIR = $(BIN_DIR)/common
 KATA_MODEL_FILE = $(KATA_MODEL_DIR)/katanetwork.gz
+KATA_MODEL_D_FILE = $(KATA_DOC_DIR)/katanetwork_disclaimer.txt
 
 TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF) $(KATA_DOC)
 
@@ -63,6 +64,7 @@ KATA_URL1 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-eigen-windows-x64.zip
 KATA_URL2 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-eigenavx2-windows-x64.zip
 KATA_URL3 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-opencl-windows-x64.zip
 KATA_MODEL_URL = https://katagoarchive.org/g170/neuralnets/g170e-b15c192-s1672170752-d466197061.bin.gz
+KATA_MODEL_D_URL = https://katagoarchive.org/g170/DISCLAIMER.txt
 
 katago: $(KATA_DIR) $(KATA_MODEL_FILE)
 
@@ -78,6 +80,7 @@ $(KATA_DIR):
 $(KATA_MODEL_FILE):
 	mkdir -p $(KATA_MODEL_DIR)
 	\wget -O $(KATA_MODEL_FILE) $(KATA_MODEL_URL)
+	\wget -O $(KATA_MODEL_D_FILE) $(KATA_MODEL_D_URL)
 
 #######################################
 # facial stone images
