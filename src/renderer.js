@@ -64,7 +64,7 @@ const R = {
     always_show_coordinates: false,
     keep_bright_board: false,
     debug_show_policy: false,
-    endstate_blur: 0.2,  // for debug from Developer Tool
+    endstate_blur: 0.0,
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null
