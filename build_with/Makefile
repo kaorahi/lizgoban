@@ -62,7 +62,7 @@ KATA_URL_BASE = https://github.com/lightvector/KataGo/releases/download
 KATA_URL1 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-eigen-windows-x64.zip
 KATA_URL2 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-eigenavx2-windows-x64.zip
 KATA_URL3 = $(KATA_URL_BASE)/v1.11.0/katago-v1.11.0-opencl-windows-x64.zip
-KATA_MODEL_URL = https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b15c192-s1672170752-d466197061.txt.gz
+KATA_MODEL_URL = https://katagoarchive.org/g170/neuralnets/g170e-b15c192-s1672170752-d466197061.bin.gz
 
 katago: $(KATA_DIR) $(KATA_MODEL_FILE)
 
