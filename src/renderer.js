@@ -81,7 +81,7 @@ function setq(x, val) {Q(x).textContent = val}
 function setdebug(x) {setq('#debug', JSON.stringify(x)); return x}
 globalize(setdebug)
 
-// for debug from Developper Tool
+// for debug from Developer Tool
 function send_to_leelaz(cmd) {main('send_to_leelaz', cmd)}
 
 /////////////////////////////////////////////////
