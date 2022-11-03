@@ -1606,7 +1606,8 @@ function delete_sequence() {
     delete_sequence_internal()
     const nextp = (sequence_cursor === 0)
     switch_to_nth_sequence(Math.max(sequence_cursor - 1, 0))
-    nextp ? next_sequence_effect() : previous_sequence_effect()
+    // fixme: redundant update_all() for overlay canvases
+    update_all(); nextp ? next_sequence_effect() : previous_sequence_effect()
     autosave_later()
 }
 function delete_sequence_internal() {sequence.splice(sequence_cursor, 1)}
@@ -1614,7 +1615,9 @@ function delete_sequence_internal() {sequence.splice(sequence_cursor, 1)}
 function insert_sequence(new_game, before) {
     if (!new_game) {return}
     const n = sequence_cursor + (before ? 0 : 1)
-    sequence.splice(n, 0, new_game); switch_to_nth_sequence(n); next_sequence_effect()
+    sequence.splice(n, 0, new_game); switch_to_nth_sequence(n)
+    // fixme: redundant update_all() for overlay canvases
+    update_all(); next_sequence_effect()
     autosave_later()
 }
 function replace_sequence(new_game) {
