@@ -31,7 +31,7 @@ const default_option = {
     record_note_to_SGF: false,
     repl: false,
     pv_trail_max_suggestions: 0,
-    endstate_blur: 0.2,
+    endstate_blur: 0.5,
     random_opening: {
         prior_until_movenum: 6,
         random_until_movenum: 40,
