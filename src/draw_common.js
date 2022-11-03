@@ -129,6 +129,9 @@ function hsla(h, s, l, alpha) {return `hsla(${h},${s}%,${l}%,${true_or(alpha, 1)
 ////////////////////////////
 // math
 
+function css2phys(px) {return to_i(px * window.devicePixelRatio)}
+function phys2css(px) {return px / window.devicePixelRatio}
+
 function flip_maybe(x, bturn) {
     return (bturn === undefined ? R.bturn : bturn) ? x : 100 - x
 }
@@ -177,5 +180,6 @@ module.exports = {
     fill_text, fill_text_with_modifier, set_font,
     side_gradation, radial_gradation, skew_radial_gradation, hsla,
     // math
+    css2phys, phys2css,
     flip_maybe, tics_until, log10, f2s,
 }
