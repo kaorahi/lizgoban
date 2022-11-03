@@ -22,6 +22,15 @@ const graph_overlay_canvas = Q('#graph_overlay')
 const visits_trail_canvas = Q('#visits_trail_canvas')
 const zone_chart_canvas = Q('#zone_chart_canvas')
 let canvas_scale = 1
+function goban_canvas_and_overlays(canvas) {
+    const a = [
+        [main_canvas, Q('#goban_overlay1'), Q('#goban_overlay2')],
+        [sub_canvas, Q('#sub_goban_overlay1'), Q('#sub_goban_overlay2')],
+        [canvas, canvas, canvas],
+    ]
+    return a.find(cs => cs[0] === canvas)
+}
+globalize(goban_canvas_and_overlays)
 
 // renderer state
 const R = {
@@ -981,8 +990,7 @@ function set_all_canvas_size() {
     set_canvas_size(winrate_bar_canvas, main_board_size, winrate_bar_height)
     is_sub_canvas_resized = set_canvas_square_size(sub_canvas, sub_board_size)
     set_canvas_size(winrate_graph_canvas, winrate_graph_width, winrate_graph_height)
-    after_effect(() => set_overlay(graph_overlay_canvas,
-                                   wr_only ? main_canvas : winrate_graph_canvas))
+    after_effect(() => set_all_overlays(wr_only))
     set_canvas_size(visits_trail_canvas, rest_size * 0.25, main_board_max_size * 0.13)
     update_all_thumbnails()
     set_cut_button_position_maybe()
@@ -1014,6 +1022,17 @@ function set_canvas_size(canvas, width, height) {
     canvas.style.width = `${w0}px`; canvas.style.height = `${h0}px`
     canvas.width = w; canvas.height = h
     return true
+}
+
+function set_all_overlays(wr_only) {
+    const graph_canvas = wr_only ? main_canvas : winrate_graph_canvas
+    set_overlay(graph_overlay_canvas, graph_canvas)
+    // fixme: wr_only is ignored (harmless on v0.7.0)
+    const a = [main_canvas, sub_canvas]
+    a.forEach(c => {
+        const [_, ...os] = goban_canvas_and_overlays(c)
+        os.forEach(o => set_overlay(o, c))
+    })
 }
 
 function set_overlay(canvas, orig) {
@@ -1465,8 +1484,9 @@ function slide_in(direction) {
 }
 function wink() {effect_gen({opacity: 1}, {opacity: 0.7}, {opacity: 1})}
 function effect_gen(...transforms) {
+    const animate = c => c.animate(transforms, effect_duration_millisec)
     in_effect = true
-    Q('#goban').animate(transforms, effect_duration_millisec)
+    goban_canvas_and_overlays(main_canvas).forEach(animate)
     after_effect(() => {in_effect = false})
 }
 

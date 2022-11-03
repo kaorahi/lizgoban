@@ -250,7 +250,7 @@ function draw_thumbnail_goban(canvas, stones, trial_p) {
 /////////////////////////////////////////////////
 // generic goban
 
-function draw_goban(canvas, given_stones, opts) {
+function draw_goban(given_canvas, given_stones, opts) {
     const {
         draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
         pausing_p, trial_p,
@@ -261,14 +261,21 @@ function draw_goban(canvas, given_stones, opts) {
         hovered_move, show_until, analysis_region,
         main_canvas_p, handle_mouse_on_goban,
     } = opts || {}
-    const {margin, hm, g, idx2coord, coord2idx, unit} = goban_params(canvas)
+    const canvases = goban_canvas_and_overlays(given_canvas)
+    const [bg_canvas, es_canvas, canvas] = canvases
+    const [bg_g, es_g, g] = canvases.map(c => c.getContext("2d"))
+    const {margin, hm, idx2coord, coord2idx, unit} = goban_params(canvas)
     const large_font_p = !main_canvas_p
     const font_unit = Math.min(margin, canvas.height * max_font_for_goban_message)
     const stones = given_stones || R.stones
     // draw
-    draw_board(hm, pausing_p, trial_p, canvas, g)
+    canvases.forEach(c => clear_canvas(c))
+    draw_board(hm, pausing_p, trial_p, bg_canvas, bg_g)
     if (!hide_endstate_p()) {
-        const args = [stones, unit, idx2coord, g]
+        const endstate_blur = 0.2
+        es_canvas !== canvas &&
+            (es_canvas.style.filter = `blur(${phys2css(endstate_blur * unit)}px)`)
+        const args = [stones, unit, idx2coord, es_g]
         draw_endstate_p &&
             draw_endstate_on_board(...args)
         past_endstate_p(draw_endstate_value_p) &&
@@ -299,7 +306,7 @@ function draw_goban(canvas, given_stones, opts) {
     analysis_region && draw_analysis_region(analysis_region, unit, idx2coord, g)
     // mouse events
     const mouse_handler = handle_mouse_on_goban || do_nothing
-    mouse_handler(canvas, coord2idx, read_only)
+    mouse_handler(bg_canvas, coord2idx, read_only)
 }
 
 function draw_board(hm, pausing_p, trial_p, canvas, g) {

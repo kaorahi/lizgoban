@@ -20,10 +20,17 @@
  .controller_row.show_in_exercise input[type="button"] {width: 1em}
  .show_in_match, .show_in_serious_match {display: none;}
  .small {font-size: 70%;}
- #goban, #sub_goban {background: #f9ca91;}
+ #goban_overlay1, #goban_overlay2,
+ #sub_goban_overlay1, #sub_goban_overlay2 {
+  background: transparent;
+ }
  #winrate_graph {border: solid 1px #ccc;}
  #winrate_graph:hover {border: solid 1px green;}
- #graph_overlay {pointer-events: none;}
+ #goban_overlay1, #goban_overlay2,
+ #sub_goban_overlay1, #sub_goban_overlay2,
+ #graph_overlay {
+  pointer-events: none;
+ }
  .thumbbox img {border: solid 2px rgba(0,0,0,0); vertical-align: top;}
  .thumbbox:hover:not(.current) img {border-color: green;}
  .thumbbox.current img {border-color: red;}
@@ -73,7 +80,11 @@
  .close_button {position: absolute; top: 0px; right: 0px;}
  @media (max-aspect-ratio: 13/10) {
   body > * {width: 96vmin; display: block; margin: 1.5vmin; font-size: 3vw;}
-  #graph_overlay, #zone_chart_canvas {position: absolute;}
+  #goban_overlay1, #goban_overlay2,
+  #sub_goban_overlay1, #sub_goban_overlay2,
+  #graph_overlay, #zone_chart_canvas {
+   position: absolute;
+  }
   #thumbnails {white-space: normal;}
   .thumbbox {display: inline-block;}
   .thumbbox img {width: 3vw; height: 3vw;}
@@ -88,7 +99,11 @@
    font-size: calc((96vw - 96vh) * 3/100);
    text-align: left;
   }
-  #graph_overlay, #zone_chart_canvas {position: fixed;}
+  #goban_overlay1, #goban_overlay2,
+  #sub_goban_overlay1, #sub_goban_overlay2,
+  #graph_overlay, #zone_chart_canvas {
+   position: fixed;
+  }
   #thumb_aligner {display: table-cell; text-align: left; width: 5vw;}
   #thumb_height_measurer:hover {position: relative; z-index: 9;}
   .thumbbox {width: 5vw; padding-left: 0.5vh;}
@@ -127,6 +142,8 @@
 <img id="preview"></img>
 <div style="overflow-y: hidden;">
  <canvas id="goban"></canvas>
+ <canvas id="goban_overlay1"></canvas>
+ <canvas id="goban_overlay2"></canvas>
 </div>
 <div class="hide_in_serious_match"><canvas id="winrate_bar"></canvas></div>
 </div>
@@ -142,7 +159,11 @@
 <div id="above_comment_for_height_calculation">
 
 <div class="hide_in_serious_match">
-<div id="sub_goban_container" style="text-align: center;"><canvas id="sub_goban"></canvas></div>
+<div id="sub_goban_container" style="text-align: center;">
+ <canvas id="sub_goban"></canvas>
+ <canvas id="sub_goban_overlay1"></canvas>
+ <canvas id="sub_goban_overlay2"></canvas>
+</div>
 <div><canvas id="winrate_graph"></canvas></div>
 </div>
 
