@@ -8,4 +8,9 @@ function save_blob(blob, filename, callback) {
     reader.readAsArrayBuffer(blob)
 }
 
-module.exports = {save_blob}
+function save_dataURL(url, filename, callback) {
+    const write = ab => fs.writeFile(filename, Buffer.from(ab), callback)
+    fetch(url).then(res => res.arrayBuffer().then(write))
+}
+
+module.exports = {save_blob, save_dataURL}

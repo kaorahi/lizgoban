@@ -199,7 +199,7 @@ const simple_api = {
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
     set_sanity_from_renderer,
     open_image_url,
-    momorize_settings_for_sgf_from_image,
+    momorize_settings_for_sgf_from_image, archive_sgf_from_image,
     enable_menu,
 }
 const api = {
@@ -1212,6 +1212,16 @@ function momorize_settings_for_sgf_from_image(settings) {
 function recall_settings_for_sgf_from_image(win, silent) {
     if (silent && !the_settings_for_sgf_from_image) {return}
     win.webContents.send('restore_settings', the_settings_for_sgf_from_image)
+}
+function archive_sgf_from_image(h) {
+    const dir = option.sgf_from_image_archive_dir
+    if (!dir) {return}
+    const ti = (new Date()).toJSON().replace(/:/g, '') // cannot use ":" in Windows
+    const path = PATH.join(dir, ti), fname = s => `${path}_${s}`
+    const {images} = h; delete h.images
+    fs.writeFile(fname('data.json'), JSON.stringify(h, null, ' '), do_nothing)
+    each_key_value(images, (key, url) =>
+        renderer('save_dataURL', url, fname(key.replace(/_url$/, '') + '.png')))
 }
 function open_clipboard_image() {
     // window

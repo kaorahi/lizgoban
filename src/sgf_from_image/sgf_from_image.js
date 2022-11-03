@@ -11,7 +11,7 @@
 
 let xy_11 = null, xy_22 = null, xy_mn = null
 let coord_signs = [0, 0]
-let guessed_board = []
+let guessed_board = [], unedited_guessed_board = []
 let cw = 0, ch = 0
 let img = null, image_data = []
 let prev_scale = 1
@@ -19,7 +19,7 @@ let is_tuning = false
 let digitizing = false
 let last_xy = [0, 0]
 let fine_tune_xy = null
-let perspective_corners = []
+let perspective_corners = [], transform_image_log = []
 let is_mouse_down = false
 let initial_image_url = null
 
@@ -189,6 +189,7 @@ function finish_electron() {
     const settings = get_settings(), sgf = get_sgf()
     send('momorize_settings_for_sgf_from_image', settings)
     send('read_sgf', sgf)
+    send('archive_sgf_from_image', archived_data({settings, sgf}))
     window.close()
 }
 
@@ -538,6 +539,7 @@ function do_estimate(temporary) {
     guessed_board = is.map(() => [])
     coord_signs = [dx, dy].map(Math.sign)
     each_grid((i, j, x, y) => (guessed_board[i][j] = guess_color(x, y, radius)))
+    unedited_guessed_board = clone(guessed_board)
     const dummy = -777; update_guess(dummy, dummy, temporary, temporary)
 }
 
@@ -612,17 +614,18 @@ function redness([r, g, b, ]) {return (r - b) / 255}
 ///////////////////////////////////////////
 // SGF
 
-function get_sgf() {
+function get_sgf(given_board) {
     // ex. (;SZ[19]AB[bc][bd][cc][db][dc]AW[be][bg][cd][ce][dd][eb][ec][ed][gb])
-    if (!guessed_board) {return ''}
-    const size = get_sgf_size(), {to_play} = param
+    const board = given_board || guessed_board
+    if (!board) {return ''}
+    const size = get_sgf_size(board), {to_play} = param
     const sgfpos_name = "abcdefghijklmnopqrs"
     const header = `(;SZ[${size}]PL[${to_play}]`, footer = ')'
     const sgfpos = (k, sign) => sgfpos_name[sign > 0 ? k : size - k - 1]
     const [sj, si] = coord_signs
     const coords = (i, j) => '[' + sgfpos(j, sj) + sgfpos(i, si) + ']'
     const grids =
-          guessed_board.flatMap((row, i) => row.map(({stone_color}, j) => [stone_color, i, j]))
+          board.flatMap((row, i) => row.map(({stone_color}, j) => [stone_color, i, j]))
     const body = (color, prop) => {
         const s = grids.map(([c, i, j]) => (c === color ? coords(i, j) : '')).join('')
         return (s === '') ? '' : (prop + s)
@@ -630,9 +633,9 @@ function get_sgf() {
     return header + body('black', 'AB') + body('white', 'AW') + footer
 }
 
-function get_sgf_size() {
+function get_sgf_size(board) {
     const sgf_size = to_i(param.sgf_size); if (sgf_size > 0) {return sgf_size}
-    const rows = guessed_board.length, cols = guessed_board[0].length
+    const rows = board.length, cols = board[0].length
     return Math.max(rows, cols)
 }
 
@@ -691,14 +694,17 @@ const digitize_image_soon = skip_too_frequent_requests(digitize_image)
 
 function digitize_image() {
     digitizing = Q('#digitize').disabled = true; Q('#undigitize').disabled = false
-    const dark = param.assume_gray_as_dark / 100
-    const light = 1 - param.assume_gray_as_light / 100
-    const reddish = param.consider_reddish_stone / 100
     // dare to use opacity to show/hide canvas because
     // "hidden = true" or "display = 'none'" caused trouble in Chrome
     // for progress animation.
-    gl_digitize(image_canvas, digitized_canvas, dark, light, reddish) ?
+    digitize_image_internally() ?
         (digitized_canvas.style.opacity = 1) : (cancel_digitize(), hide('#digitizer'))
+}
+function digitize_image_internally() {
+    const dark = param.assume_gray_as_dark / 100
+    const light = 1 - param.assume_gray_as_light / 100
+    const reddish = param.consider_reddish_stone / 100
+    return gl_digitize(image_canvas, digitized_canvas, dark, light, reddish)
 }
 function cancel_digitize() {
     digitizing = Q('#digitize').disabled = false; Q('#undigitize').disabled = true
@@ -916,7 +922,7 @@ function try_perspective_transformation_mouseup(xy) {
 
 function reset_perspective_corners() {perspective_corners = []}
 
-function revert_to_original_image() {draw_image(); reset()}
+function revert_to_original_image() {draw_image(); reset(); transform_image_log = []}
 
 function transform_image(...args) {
     const g = image_ctx, {width, height} = image_canvas
@@ -925,6 +931,7 @@ function transform_image(...args) {
     big_message(g, 'Transforming...', width * 0.5, height * 0.5, 'blue')
     const wait_millisec = 100
     setTimeout(() => transform_image_soon(...args), wait_millisec)
+    transform_image_log.push(args)
 }
 
 const transform_image_soon = skip_too_frequent_requests(do_transform_image)
@@ -947,10 +954,40 @@ function do_transform_image(...args) {
 }
 
 ///////////////////////////////////////////
+// archive
+
+function archived_data(h) {
+    // text
+    const unedited = {
+        unedited_guessed_board,
+        unedited_sgf: get_sgf(unedited_guessed_board),
+        diff_ijs: guessed_board.flatMap((row, i) => row.flatMap(({stone_color}, j) => stone_color === unedited_guessed_board[i][j].stone_color ? [] : [[i, j]])),
+    }
+    const misc = {
+        default_tuning_param,
+        diff_param: Object.keys(default_tuning_param).filter(k => h.settings.param[k] !== default_tuning_param[k]),
+        img_width: img.width, img_height: img.height,
+        canvas_width: image_canvas.width, canvas_height: image_canvas.height,
+        devicePixelRatio: window.devicePixelRatio,
+        transform_image_log,
+    }
+    // images
+    digitize_image_internally()
+    const c2u = c => c.toDataURL('image/png')
+    const [image_url, digitized_url, overlay_url] = canvases.map(c2u)
+    const images = {image_url, digitized_url, overlay_url}
+    !Q('#revert_image').disabled &&
+        // side effects!
+        (draw_image(), images.original_url = c2u(image_canvas))
+    return {...h, misc, guessed_board, unedited, images}
+}
+
+///////////////////////////////////////////
 // util
 
 function to_i(x) {return x | 0}
 function to_f(x) {return x - 0}
+function clone(x) {return JSON.parse(JSON.stringify(x))}
 function each_key_value(h, f){Object.keys(h).forEach(k => f(k, h[k]))}
 function each_value(h, f){each_key_value(h, (_, v) => f(v))}  // for non-array
 function min_max(a, b) {return [Math.min(a, b), Math.max(a, b)]}

@@ -41,6 +41,7 @@ const default_option = {
     },
     screenshot_region_command: null,  // "slop"
     screenshot_capture_command: null,  // "maim -f png -g %s | xclip -t image/png -se c"
+    sgf_from_image_archive_dir: null,
 }
 const option = {}
 let white_preset = []

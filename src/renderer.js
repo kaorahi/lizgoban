@@ -10,7 +10,7 @@ const electron = require('electron'), ipc = electron.ipcRenderer
 const {globalize} = require('./globalize.js')
 globalize(require('./util.js'), require('./coord.js'), require('./draw_common.js'))
 const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
-const {save_blob} = require('./image_exporter.js')
+const {save_blob, save_dataURL} = require('./image_exporter.js')
 const {
     persona_random_code, persona_html_for_code,
 } = require('./persona_param.js')
@@ -264,6 +264,8 @@ ipc.on('save_q_and_a_images', (e, q_filename, a_filename, msg_path) => {
     generate_board_image_blob(q_draw, saver(q_filename, do_nothing))
     generate_board_image_blob(a_draw, saver(a_filename, callback))
 })
+
+ipc.on('save_dataURL', (e, url, filename) => save_dataURL(url, filename, do_nothing))
 
 const direct_ipc = {
     set_match_param,
