@@ -1031,10 +1031,14 @@ function set_all_overlays(wr_only) {
     const graph_canvas = wr_only ? main_canvas : winrate_graph_canvas
     set_overlay(graph_overlay_canvas, graph_canvas)
     // fixme: wr_only is ignored (harmless on v0.7.0)
+    for_each_goban_overlay(set_overlay)
+}
+
+function for_each_goban_overlay(proc) {
     const a = [main_canvas, sub_canvas]
     a.forEach(c => {
         const [_, ...os] = goban_canvas_and_overlays(c)
-        os.forEach(o => (o !== c) && set_overlay(o, c))
+        os.forEach(o => (o !== c) && proc(o, c))
     })
 }
 
