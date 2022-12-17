@@ -85,6 +85,7 @@ function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
     R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     each_stone(displayed_stones, h => {h.displayed_tag = h.tag && h.stone})
+    gray_stones_by_endstate(displayed_stones)
     const s0 = R.suggest[0]
     const expected_move = expected_pv()[0]
     expected_move && !empty(R.suggest) && s0.move !== expected_move &&
@@ -95,6 +96,28 @@ function draw_goban_with_suggest(canvas, opts) {
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
                 draw_endstate_cluster_p: true,
                 mapping_tics_p: !opts.main_canvas_p, ...opts})
+}
+
+function gray_stones_by_endstate(stones) {
+    if (!gray_stones_ready_p(stones)) {return}
+    const alive = 0.5, dead = -0.3, dead_gray = 0.5
+    const clipped_translator = (from, to) => {
+        const [t, _] = translator_pair(from, to)
+        return val => clip(t(val), ...to)
+    }
+    const signed_endstate_to_gray = clipped_translator([alive, dead], [0, dead_gray])
+    each_stone(stones, h => {
+        const target_p = h.stone && truep(h.endstate); if (!target_p) {return}
+        const gray = signed_endstate_to_gray(h.endstate * (h.black ? +1 : -1))
+        gray > 0 && (h.gray_by_endstate = gray)
+    })
+}
+
+function gray_stones_ready_p(stones) {
+    const range_threshold = 0.5
+    const ok = !R.busy && R.show_endstate && !hide_endstate_p() &&
+          truep(stones[0][0].endstate)
+    return ok && stones.flat().some(h => Math.abs(h.endstate) > range_threshold)
 }
 
 function add_movenum_to_stones(stones, from) {
@@ -152,6 +175,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
             s.endstate_diff = es - s.endstate
             s.endstate = es
         })
+        gray_stones_by_endstate(displayed_stones)
     }
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_expected_p: true,
@@ -577,17 +601,25 @@ function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
     const {b_color, w_color, stone_image, style} = stone_style_for(h)
     const hide_loss_p = h.suggest || h.future_stone
     const draw_stone_by_image = () => draw_square_image(stone_image, xy, radius, g)
+    const with_gray_stone = (draw, ...args) => {
+        draw(...args)
+        const gray_p = normal_stone_color_p(b_color, w_color) && h.gray_by_endstate
+        if (!gray_p) {return}
+        const c = R.gray_brightness_by_endstate, alpha = h.gray_by_endstate
+        g.strokeStyle = g.fillStyle = `rgba(${c},${c},${c},${alpha})`
+        draw(...args)
+    }
     const draw_stone_by_gradation = () => {
         const [x, y] = xy, d = radius * 0.5
         g.fillStyle = h.black ?
             skew_radial_gradation(x - d, y - d, 0, x, y, radius, '#444', '#000', g) :
             skew_radial_gradation(x - d, y - d, 0, x, y, radius, '#eee', '#ccc', g)
-        fill_circle(xy, radius, g)
+        with_gray_stone(fill_circle, xy, radius, g)
     }
     const draw_stone_by_paint = () => {
         g.lineWidth = 1; g.strokeStyle = b_color
         g.fillStyle = h.black ? b_color : w_color
-        edged_fill_circle(xy, radius, g)
+        with_gray_stone(edged_fill_circle, xy, radius, g)
     }
     stone_image ? draw_stone_by_image() :
         style === '3D' ? draw_stone_by_gradation() : draw_stone_by_paint()

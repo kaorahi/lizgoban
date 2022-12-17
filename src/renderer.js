@@ -65,6 +65,7 @@ const R = {
     keep_bright_board: false,
     debug_show_policy: false,
     endstate_blur: 0.0,
+    gray_brightness_by_endstate: 150,
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null
