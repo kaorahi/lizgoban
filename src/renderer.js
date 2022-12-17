@@ -22,9 +22,9 @@ const graph_overlay_canvas = Q('#graph_overlay')
 const visits_trail_canvas = Q('#visits_trail_canvas')
 const zone_chart_canvas = Q('#zone_chart_canvas')
 let canvas_scale = 1
-function goban_canvas_and_overlays(canvas) {
+function goban_canvas_and_overlays(canvas, forcep) {
     const no_overlays = [canvas, canvas, canvas]
-    if (R.endstate_blur <= 0) {return no_overlays}
+    if (R.endstate_blur <= 0 && !forcep) {return no_overlays}
     const a = [
         [main_canvas, Q('#goban_overlay1'), Q('#goban_overlay2')],
         [sub_canvas, Q('#sub_goban_overlay1'), Q('#sub_goban_overlay2')],
@@ -181,6 +181,7 @@ ipc.on('render', (e, h, is_board_changed) => {
     keep_selected_variation_maybe(h.suggest)
     // renderer state must be updated before update_ui is called
     merge(R, h)
+    update_goban_overlay_p(R.endstate_blur > 0)
     initialize_image_maybe()
     cancel_obsolete_branch()
     render_in_capacity()
@@ -1034,12 +1035,19 @@ function set_all_overlays(wr_only) {
     for_each_goban_overlay(set_overlay)
 }
 
-function for_each_goban_overlay(proc) {
+function for_each_goban_overlay(proc, forcep) {
     const a = [main_canvas, sub_canvas]
     a.forEach(c => {
-        const [_, ...os] = goban_canvas_and_overlays(c)
+        const [_, ...os] = goban_canvas_and_overlays(c, forcep)
         os.forEach(o => (o !== c) && proc(o, c))
     })
+}
+
+let goban_overlay_p_change_detector = change_detector()
+function update_goban_overlay_p(overlay_p) {
+    if (!goban_overlay_p_change_detector.is_changed(overlay_p)) {return}
+    overlay_p ? set_all_canvas_size() :
+        for_each_goban_overlay((o, _) => clear_canvas(o), true)
 }
 
 function set_overlay(canvas, orig) {
