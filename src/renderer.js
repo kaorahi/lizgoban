@@ -1153,13 +1153,13 @@ document.onkeydown = e => {
         truep(showing_until()) ? increment_showing_until(-1) :
             (!undoable() && e.repeat && !R.busy && !e.shiftKey) ? m('redo_to_end') :
             (!redoable() && e.repeat && !e.shiftKey) ? f(do_nothing) :
-            undoable() ? busy('undo_ntimes', e.shiftKey ? 15 : 1) :
+            undoable() ? skip_maybe('undo_ntimes', e.shiftKey ? 15 : 1) :
             !e.repeat && f(wink); break;
     case "ArrowRight": case "ArrowDown":
         truep(showing_until()) ? increment_showing_until(+1) :
             (!redoable() && e.repeat && !R.busy && !e.shiftKey) ? m('undo_to_start') :
             (!undoable() && e.repeat && !e.shiftKey) ? f(do_nothing) :
-            redoable() ? busy('redo_ntimes', e.shiftKey ? 15 : 1) :
+            redoable() ? skip_maybe('redo_ntimes', e.shiftKey ? 15 : 1) :
             !e.repeat && f(wink); break;
     case "[": skip_maybe('previous_sequence'); break;
     case "]": skip_maybe('next_sequence'); break;
