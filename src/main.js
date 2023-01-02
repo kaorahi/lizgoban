@@ -1444,7 +1444,7 @@ function synchronize_analysis_region(region) {
     renderer('update_analysis_region', region)
 }
 function update_analysis_region(region) {
-    AI.update_analysis_region(region)
+    AI.update_analysis_region(game.analysis_region = region)
 }
 
 function update_engine_log_conf() {
@@ -1639,6 +1639,7 @@ function switch_to_nth_sequence(n) {
     P.renew_game()
     set_game(sequence[sequence_cursor = n])
     update_branch()
+    synchronize_analysis_region(game.analysis_region)
 }
 function next_sequence_effect() {renderer('slide_in', 'next')}
 function previous_sequence_effect() {renderer('slide_in', 'previous')}
