@@ -200,6 +200,7 @@ function render_now() {
     D.update_winrate_trail()
     alter_suggest_by_pv_trail()
     update_goban()
+    try_fast_redo()
 }
 
 function update_exercise() {
@@ -1148,18 +1149,22 @@ document.onkeydown = e => {
     const busy = (...a) =>
           e.repeat ? m('busy', ...a) : m(...a)  // stop analysis in auto-repeat
     const skip_maybe = (...a) => e.repeat ? with_skip(busy, ...a) : busy(...a)
+    const undo_or_redo = command =>
+          e.shiftKey ? skip_maybe(command, 15) :
+          R.long_busy ? start_fast_redo(command) :
+          skip_maybe(command, 1)
     switch (!R.attached && key) {
     case "ArrowLeft": case "ArrowUp":
         truep(showing_until()) ? increment_showing_until(-1) :
             (!undoable() && e.repeat && !R.busy && !e.shiftKey) ? m('redo_to_end') :
             (!redoable() && e.repeat && !e.shiftKey) ? f(do_nothing) :
-            undoable() ? skip_maybe('undo_ntimes', e.shiftKey ? 15 : 1) :
+            undoable() ? undo_or_redo('undo_ntimes') :
             !e.repeat && f(wink); break;
     case "ArrowRight": case "ArrowDown":
         truep(showing_until()) ? increment_showing_until(+1) :
             (!redoable() && e.repeat && !R.busy && !e.shiftKey) ? m('undo_to_start') :
             (!undoable() && e.repeat && !e.shiftKey) ? f(do_nothing) :
-            redoable() ? skip_maybe('redo_ntimes', e.shiftKey ? 15 : 1) :
+            redoable() ? undo_or_redo('redo_ntimes') :
             !e.repeat && f(wink); break;
     case "[": skip_maybe('previous_sequence'); break;
     case "]": skip_maybe('next_sequence'); break;
@@ -1247,6 +1252,7 @@ document.onkeyup = e => {
     const {key} = e, clearp = tag_letters.includes(key) || key === "Shift"
     const order_key_p = (to_i(key) > 0 || key === "0")
     const reset_kb_moves_p = (order_key_p || clearp)
+    stop_fast_redo()
     reset_keyboard_tag();
     reset_kb_moves_p && reset_keyboard_moves(true)
     order_key_p && main('hold_suggestion_for_a_while')
@@ -1375,6 +1381,24 @@ function cancel_alt_up_maybe(e) {
     const cancel_p = (e.key === 'Alt') && cancel_next_alt_up_p
     cancel_p && (e.preventDefault(), (cancel_next_alt_up_p = false))
 }
+
+const fast_redo_moves_per_sec = 100
+let fast_redo_request = null
+function try_fast_redo() {
+    const req = fast_redo_request
+    if (!req || req.move_count === R.move_count) {return}
+    const now = Date.now(), dt_sec = (now - (req.time || now)) / 1000
+    const moves = clip(Math.round(fast_redo_moves_per_sec * dt_sec), 1)
+    req.move_count = R.move_count
+    req.time = now
+    main('busy', req.command, moves)
+}
+function start_fast_redo(command) {
+    if (fast_redo_request) {return}
+    fast_redo_request = {command}
+    try_fast_redo()
+}
+function stop_fast_redo() {fast_redo_request = null}
 
 /////////////////////////////////////////////////
 // drag and drop
