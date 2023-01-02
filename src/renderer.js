@@ -1382,9 +1382,12 @@ function cancel_alt_up_maybe(e) {
     cancel_p && (e.preventDefault(), (cancel_next_alt_up_p = false))
 }
 
-const fast_redo_moves_per_sec = 100
+const fast_redo_moves_per_sec = 100, fast_redo_drawing_interval_millisec = 20
+const [try_fast_redo, cancel_fast_redo] =
+      deferred_procs([try_fast_redo_now, fast_redo_drawing_interval_millisec],
+                     [do_nothing, 0])
 let fast_redo_request = null
-function try_fast_redo() {
+function try_fast_redo_now() {
     const req = fast_redo_request
     if (!req || req.move_count === R.move_count) {return}
     const now = Date.now(), dt_sec = (now - (req.time || now)) / 1000
@@ -1396,9 +1399,9 @@ function try_fast_redo() {
 function start_fast_redo(command) {
     if (fast_redo_request) {return}
     fast_redo_request = {command}
-    try_fast_redo()
+    try_fast_redo_now()
 }
-function stop_fast_redo() {fast_redo_request = null}
+function stop_fast_redo() {cancel_fast_redo(); fast_redo_request = null}
 
 /////////////////////////////////////////////////
 // drag and drop
