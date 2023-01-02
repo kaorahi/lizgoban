@@ -101,10 +101,6 @@ function draw_goban_with_suggest(canvas, opts) {
 function gray_stones_by_endstate(stones) {
     if (!gray_stones_ready_p(stones)) {return}
     const alive = 0.5, dead = -0.3, dead_gray = 0.5
-    const clipped_translator = (from, to) => {
-        const [t, _] = translator_pair(from, to)
-        return val => clip(t(val), ...to)
-    }
     const signed_endstate_to_gray = clipped_translator([alive, dead], [0, dead_gray])
     each_stone(stones, h => {
         const target_p = h.stone && truep(h.endstate); if (!target_p) {return}

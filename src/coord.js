@@ -57,6 +57,10 @@ function translator_pair([from1, from2], [to1, to2]) {
     const trans = (x => x * scale + shift), inv = (z => (z - shift) / scale)
     return [trans, inv]
 }
+function clipped_translator(from, to) {
+    const [t, _] = translator_pair(from, to)
+    return val => clip(t(val), ...to)
+}
 
 function idx2coord_translator_pair(canvas, xmargin, ymargin, is_square) {
     // u = j, v = i
@@ -111,6 +115,6 @@ module.exports = {
     pass_command,
     idx2rowcol, move2idx_maybe,
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
-    translator_pair,
+    translator_pair, clipped_translator,
     board_size, set_board_size, with_board_size, sgfpos2move, move2sgfpos, stars,
 }
