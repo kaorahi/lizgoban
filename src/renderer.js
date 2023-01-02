@@ -747,10 +747,14 @@ function set_analysis_region(idx) {
     const cancel_p = !region || region.every(([p, q]) => p === q)
     analysis_region_start_idx && cancel_p && toast('Canceled')
     analysis_region_start_idx = null
-    update_analysis_region(cancel_p ? null : region)
+    synchronize_analysis_region(cancel_p ? null : region)
+}
+function synchronize_analysis_region(region) {
+    update_analysis_region(region)
+    main('update_analysis_region', region)
 }
 function update_analysis_region(region) {
-    main('update_analysis_region', analysis_region = region)
+    analysis_region = region
     region && toast('Alt+click to cancel region')
 }
 function get_analysis_region_for_display() {
@@ -773,7 +777,7 @@ function shrink_analysis_region(axis, positive) {
     const region = analysis_region || [[0, b], [0, b]]
     const [kmin, kmax] = region[axis], k_for = c => Math.round(kmin * (1 - c) + kmax * c)
     const cs = positive ? [ratio, 1] : [0, 1 - ratio], shrunken = cs.map(k_for)
-    region.splice(axis, 1, shrunken); update_analysis_region(region)
+    region.splice(axis, 1, shrunken); synchronize_analysis_region(region)
 }
 
 // match AI config
@@ -1186,7 +1190,7 @@ document.onkeydown = e => {
     case "A-j": shrink_analysis_region_to('down'); return
     case "A-k": shrink_analysis_region_to('up'); return
     case "A-l": shrink_analysis_region_to('right'); return
-    case "A-[": update_analysis_region(null); return
+    case "A-[": synchronize_analysis_region(null); return
     case "M-z": increment_showing_pv_trail(-1); break;
     case "M-x": increment_showing_pv_trail(+1); break;
     // (for safe_menu)

@@ -222,7 +222,7 @@ const api = {
     debug_increase_komi,
     increase_exercise_stars,
     detach_from_sabaki,
-    update_analysis_region: AI.update_analysis_region,
+    update_analysis_region,
     set_persona_code, set_adjust_sanity_p,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
@@ -1382,7 +1382,7 @@ function add_tsumego_frame(ko_p) {
     set_gorule(default_gorule)
     const [i0, j0, is_black0] = last(fill) || []
     !!is_black0 === !!bturn && do_play(pass_command, !bturn)
-    renderer('update_analysis_region', analysis_region)
+    synchronize_analysis_region(analysis_region)
 }
 
 /////////////////////////////////////////////////
@@ -1437,6 +1437,14 @@ function aggressive() {
     const b = (handicaps === 0 && komi >= 15) && 'b'
     const w = (handicaps > 0 || komi <= 0) && 'w'
     return b || w || ''
+}
+
+function synchronize_analysis_region(region) {
+    update_analysis_region(region)
+    renderer('update_analysis_region', region)
+}
+function update_analysis_region(region) {
+    AI.update_analysis_region(region)
 }
 
 function update_engine_log_conf() {
