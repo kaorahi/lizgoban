@@ -211,7 +211,7 @@ function create_games_from_sgf(sgf_str, cache_suggestions_p) {
     const clipped = clip_sgf(sgf_str)
     // const safely = (f, ...a) => f(...a)  // for debug
     return clipped ? (safely(create_games_from_sgf_unsafe, clipped, cache_suggestions_p) ||
-                      create_games_from_sgf(clipped.slice(0, -1)))
+                      create_games_from_sgf(clipped.slice(0, -1), cache_suggestions_p))
         : []
 }
 function create_games_from_sgf_unsafe(clipped_sgf, cache_suggestions_p) {
