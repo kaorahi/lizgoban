@@ -356,16 +356,13 @@ function get_ambiguity_etc(stones, endstate, game, move_count) {
 
 function get_ambiguity(stones, endstate) {
     // ambiguity = sum of (1 - |ownership|) for all stones on the board.
+    return get_ambiguity_gen(stones, endstate, es => 1 - Math.abs(es))
+}
+
+function get_ambiguity_gen(stones, endstate, func) {
     if (!endstate) {return null}
-    let ambiguity = 0
-    const check_endstate = (h, i, j) => {
-        const is_target = h.stone; if (!is_target) {return}
-        const orig_es = aa_ref(endstate, i, j)
-        const es = Math.abs(orig_es)
-        ambiguity += 1 - es
-    }
-    aa_each(stones, check_endstate)
-    return ambiguity
+    const amb = (h, i, j) => h.stone ? func(aa_ref(endstate, i, j)) : 0
+    return sum(aa_map(stones, amb).flat())
 }
 
 function set_ambiguity_etc_in_game(game) {
