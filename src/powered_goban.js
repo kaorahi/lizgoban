@@ -361,7 +361,7 @@ function get_ambiguity(stones, endstate) {
     const check_endstate = (h, i, j) => {
         const is_target = h.stone; if (!is_target) {return}
         const orig_es = aa_ref(endstate, i, j)
-        const es = Math.abs(orig_es), dead = xor(h.black, orig_es > 0)
+        const es = Math.abs(orig_es)
         ambiguity += 1 - es
     }
     aa_each(stones, check_endstate)
