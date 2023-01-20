@@ -356,7 +356,7 @@ function get_ambiguity_etc(stones, endstate, game, move_count) {
 
 function get_ambiguity(stones, endstate) {
     // ambiguity = sum of (1 - |ownership|) for all stones on the board.
-    if (!endstate) {return {}}
+    if (!endstate) {return null}
     let ambiguity = 0
     const check_endstate = (h, i, j) => {
         const is_target = h.stone; if (!is_target) {return}
