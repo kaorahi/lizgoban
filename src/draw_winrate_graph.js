@@ -271,6 +271,7 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
         g.fillStyle = style; fill_square_around([x, y], radius, g)
     }
     const plot_each = (z, s) => [
+        ['stone_entropy', '#00c', 0.5],
         ['ambiguity', '#800', 1],
         ['shorttermScoreError', '#444', 10],
     ].forEach(a => plot(z, s, ...a))

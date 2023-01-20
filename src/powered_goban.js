@@ -71,6 +71,7 @@ const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 // keys2: optional. single global plot.
 const suggest_keys2 = [
     'endstate', 'endstate_stdev', 'score_without_komi', 'ambiguity',
+    'stone_entropy',
     'shorttermScoreError',
 ]
 
@@ -172,6 +173,7 @@ function set_renderer_state(...args) {
           (endstate_clusters.length === 1 && endstate_clusters[0].ownership_sum === 0)
     const move_history_keys = [
         'move', 'is_black', 'ko_state', 'ambiguity',
+        M.plot_stone_entropy_p() && 'stone_entropy',
         M.plot_shorttermScoreError_p() && 'shorttermScoreError',
     ].filter(truep)
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
@@ -354,12 +356,23 @@ function get_endstate_clusters(endstate, move_count) {
 
 function get_ambiguity_etc(stones, endstate, game, move_count) {
     const ambiguity = get_ambiguity(stones, endstate)
-    return truep(ambiguity) ? {ambiguity} : {}
+    const stone_entropy = get_stone_entropy(stones, endstate)
+    const ret = {ambiguity, stone_entropy}
+    each_key_value(ret, (k, v) => {if (!truep(v)) delete ret[k]})
+    return ret
 }
 
 function get_ambiguity(stones, endstate) {
     // ambiguity = sum of (1 - |ownership|) for all stones on the board.
     return get_ambiguity_gen(stones, endstate, es => 1 - Math.abs(es))
+}
+
+function get_stone_entropy(stones, endstate) {
+    const log2 = p => Math.log(p) / Math.log(2)
+    const h = p => (p > 0) ? (- p * log2(p)) : 0
+    const entropy = p => h(p) + h(1 - p)
+    const stone_entropy = es => entropy((es + 1) / 2)
+    return get_ambiguity_gen(stones, endstate, stone_entropy)
 }
 
 function get_ambiguity_gen(stones, endstate, func) {
