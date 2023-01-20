@@ -69,7 +69,10 @@ const suggest_keys0 = ['engine_bturn']
 // keys1: required. individual plot for each engine.
 const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 // keys2: optional. single global plot.
-const suggest_keys2 = ['endstate', 'endstate_stdev', 'score_without_komi', 'ambiguity', 'shorttermScoreError']
+const suggest_keys2 = [
+    'endstate', 'endstate_stdev', 'score_without_komi', 'ambiguity',
+    'shorttermScoreError',
+]
 
 const too_small_prior = 1e-3
 function suggest_handler(h) {
