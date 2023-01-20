@@ -512,7 +512,8 @@ function create_leelaz () {
         (m = s.match(/Detecting residual layers.*?([0-9]+) channels.*?([0-9]+) blocks/)) &&
             (network_size_text = `${m[1]}x${m[2]}`);
         // for KataGo (ex.) g170e-b20c256x2-s5303129600-d1228401921
-        (m = s.match(/Model name: [a-z0-9]+-b([0-9]+)c([0-9]+).*-s[0-9]+-d.[0-9]+/)) &&
+        // (ex.) b18c384nbt-3659M-lr05
+        (m = s.match(/Model name: (?:[a-z0-9]+-)?b([0-9]+)c([0-9]+).*?(?:-s[0-9]+-d.[0-9]+)?/)) &&
             (network_size_text = `${m[2]}x${m[1]}`);
         // "GTP ready" for KataGo, "feature weights loaded" for Leela 0.11.0
         s.match(/(Setting max tree size)|(GTP ready)|(feature weights loaded)/) &&
