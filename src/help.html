@@ -132,9 +132,10 @@ Main curve: winrate of black
 
 Additional plots [K = KataGo only]:
 <ul>
- <li>orange dots: estimated score of black [K]</li>
- <li>green / pink steps: cumulative score loss [K]</li>
- <li>red dots: ambiguity of stones (low for 100% alive or 100% dead) [K]</li>
+ <li>orange dots: estimated score lead of black [K]</li>
+ <li>green / pink steps: cumulative score loss of black/white [K]</li>
+ <li>red line: ambiguity of stones (low for 100% alive or 100% dead) [K]</li>
+ <li>green / pink dots: black/white territories that are "settled" to some extent. Vertical bars on them are score differences except for these "settled" territories. If a green bar is higher than a pink dot, black has larger latent territory (ATSUMI, MOYO, etc.) and leads in overall estimated score even if "settled" territory is smaller at present. [K]</li>
  <li>alternating circles at the top: ko fights (o/x = resolved by connection/capture)</li>
  <li>color spots between the upper and lower plots: SOPPO (successive misses of the best move) (upper/lower = black/white)</li>
  <li>rainbow square beside the graph: zone color map</li>
