@@ -37,6 +37,7 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     draw_winrate_graph_frame(w, sr2coord, g)
     draw_winrate_graph_frame(w, sq2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
+    draw_winrate_graph_settled_territory(sq2coord, g)
     draw_winrate_graph_ambiguity(sq2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_soppo(w, sr2coord_noclip, g)
@@ -261,6 +262,42 @@ function draw_winrate_graph_ko_fight(sr2coord, g) {
     }
     const f = (z, s) => (key, val) => val && plot(z, s, marker_for[key])
     R.move_history.forEach((z, s) => each_key_value(z.ko_state || {}, f(z, s)))
+}
+
+function draw_winrate_graph_settled_territory(sr2coord, g) {
+    const radius = 4, alpha = 0.2
+    const bar_width = 2, bar_alpha = 0.2
+    const long_bar = 20, long_bar_alpha = 0.2
+    const scores = winrate_history_values_of('score_without_komi')
+          .map(z => truep(z) && (z - R.komi))
+    const plot_dot = (val, s, style) => {
+        const [x, y] = sr2coord(s, val)
+        g.fillStyle = style; fill_circle([x, y], radius, g)
+    }
+    const plot_bar = (from, len, style, s) => {
+        const xy0 = sr2coord(s, from)
+        const xy1 = sr2coord(s, from + len)
+        g.strokeStyle = style, g.lineWidth = bar_width
+        line(xy0, xy1, g)
+    }
+    const plot = (z, s) => {
+        const {black_settled_territory, white_settled_territory} = z
+        const score = scores[s]
+        const ok = truep(black_settled_territory) && truep(white_settled_territory)
+        if (!ok) {return}
+        const black_color = a => `rgba(0,192,0,${a})`
+        const white_color = a => `rgba(255,0,255,${a})`
+        const delta = black_settled_territory - white_settled_territory
+        const bar = score - delta, abs_bar = Math.abs(bar)
+        const a = (abs_bar >= long_bar) ? long_bar_alpha : bar_alpha
+        const [bar_from, bar_color] = bar > 0 ?
+              [black_settled_territory, black_color(a)] :
+              [white_settled_territory, white_color(a)]
+        plot_bar(bar_from, Math.abs(bar), bar_color, s)
+        plot_dot(black_settled_territory, s, black_color(alpha))
+        plot_dot(white_settled_territory, s, white_color(alpha))
+    }
+    R.move_history.forEach(plot)
 }
 
 function draw_winrate_graph_ambiguity(sr2coord, g) {

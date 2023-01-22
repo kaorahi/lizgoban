@@ -72,6 +72,7 @@ const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 const suggest_keys2 = [
     'endstate', 'endstate_stdev', 'score_without_komi', 'ambiguity',
     'stone_entropy',
+    'black_settled_territory', 'white_settled_territory',
     'shorttermScoreError',
 ]
 
@@ -174,6 +175,7 @@ function set_renderer_state(...args) {
     const move_history_keys = [
         'move', 'is_black', 'ko_state', 'ambiguity',
         M.plot_stone_entropy_p() && 'stone_entropy',
+        'black_settled_territory', 'white_settled_territory',
         M.plot_shorttermScoreError_p() && 'shorttermScoreError',
     ].filter(truep)
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
@@ -357,7 +359,12 @@ function get_endstate_clusters(endstate, move_count) {
 function get_ambiguity_etc(stones, endstate, game, move_count) {
     const ambiguity = get_ambiguity(stones, endstate)
     const stone_entropy = get_stone_entropy(stones, endstate)
-    const ret = {ambiguity, stone_entropy}
+    const [black_settled_territory, white_settled_territory] =
+          [true, false].map(black => get_settled_territory(stones, endstate, black))
+    const ret = {
+        ambiguity, stone_entropy,
+        black_settled_territory, white_settled_territory,
+    }
     each_key_value(ret, (k, v) => {if (!truep(v)) delete ret[k]})
     return ret
 }
@@ -379,6 +386,19 @@ function get_ambiguity_gen(stones, endstate, func) {
     if (!endstate) {return null}
     const amb = (h, i, j) => h.stone ? func(aa_ref(endstate, i, j)) : 0
     return sum(aa_map(stones, amb).flat())
+}
+
+function get_settled_territory(stones, endstate, black) {
+    if (!endstate) {return null}
+    const exponent = 3.0
+    const sign = black ? +1 : -1
+    const hama = black ? R.black_hama : R.white_hama
+    const g = es => clip(es * sign, 0) ** exponent
+    const f = (h, i, j) => {
+        const coef = !h.stone ? 1 : xor(h.black, black) ? 2 : 0
+        return g(aa_ref(endstate, i, j)) * coef
+    }
+    return sum(aa_map(stones, f).flat()) + hama
 }
 
 function set_ambiguity_etc_in_game(game) {
