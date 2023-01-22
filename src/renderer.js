@@ -1053,8 +1053,11 @@ function for_each_goban_overlay(proc, forcep) {
 let goban_overlay_p_change_detector = change_detector()
 function update_goban_overlay_p(overlay_p) {
     if (!goban_overlay_p_change_detector.is_changed(overlay_p)) {return}
-    overlay_p ? set_all_canvas_size() :
-        for_each_goban_overlay((o, _) => clear_canvas(o), true)
+    overlay_p ? set_all_canvas_size() : clear_goban_overlays()
+}
+
+function clear_goban_overlays() {
+    for_each_goban_overlay((o, _) => clear_canvas(o), true)
 }
 
 function set_overlay(canvas, orig) {
