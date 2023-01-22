@@ -264,18 +264,34 @@ function draw_winrate_graph_ko_fight(sr2coord, g) {
 }
 
 function draw_winrate_graph_ambiguity(sr2coord, g) {
-    const radius = 2
-    const plot = (z, s, key, style, scale) => {
-        const val = z[key]; if (!truep(val)) {return}
-        const [x, y] = sr2coord(s, val * scale)
-        g.fillStyle = style; fill_square_around([x, y], radius, g)
+    const radius = 2, line_width = 3
+    g.lineWidth = line_width
+    const dots = (...args) => {
+        const xys = args.slice(), g = xys.pop()
+        xys.forEach(xy => fill_square_around(xy, radius, g))
     }
-    const plot_each = (z, s) => [
-        ['stone_entropy', '#00c', 0.5],
-        ['ambiguity', '#800', 1],
-        ['shorttermScoreError', '#444', 10],
-    ].forEach(a => plot(z, s, ...a))
-    R.move_history.forEach(plot_each)
+    const plot = (key, stroke, fill, scale, plotter) => {
+        const to_xy = (z, s) => {
+            const val = z[key]; return truep(val) && sr2coord(s, val * scale)
+        }
+        let xys = R.move_history.map(to_xy).filter(identity)
+        const fill_p = [fill_line, edged_fill_line].includes(plotter)
+        if (fill_p) {
+            const left_bottom = sr2coord(0, 0)
+            const right_bottom = sr2coord(R.move_history.length - 1, 0)
+            xys = [left_bottom, ...xys, right_bottom]
+        }
+        g.strokeStyle = stroke; g.fillStyle = fill;
+        plotter(...xys, g)
+    }
+    const items = [
+        ['stone_entropy', '#008', TRANSPARENT, 0.5, line],
+        // ['ambiguity', TRANSPARENT, '#800', 1, dots],
+        ['ambiguity', '#800', TRANSPARENT, 1, line],
+        // ['ambiguity', RED, 'rgba(255,0,0,0.3)', 1, edged_fill_line],
+        ['shorttermScoreError', TRANSPARENT, '#444', 10, dots],
+    ]
+    items.forEach(a => plot(...a))
 }
 
 function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
