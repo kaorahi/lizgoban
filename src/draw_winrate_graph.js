@@ -281,7 +281,9 @@ function draw_winrate_graph_settled_territory(sr2coord, g) {
         line(xy0, xy1, g)
     }
     const plot = (z, s) => {
-        const {black_settled_territory, white_settled_territory} = z
+        let {black_settled_territory, white_settled_territory} = z
+        R.komi > 0 ? (white_settled_territory += R.komi) :
+            (black_settled_territory -= R.komi)
         const score = scores[s]
         const ok = truep(black_settled_territory) && truep(white_settled_territory)
         if (!ok) {return}
