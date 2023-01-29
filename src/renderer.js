@@ -1000,7 +1000,7 @@ function set_all_canvas_size() {
     set_canvas_size(winrate_bar_canvas, main_board_size, winrate_bar_height)
     is_sub_canvas_resized = set_canvas_square_size(sub_canvas, sub_board_size)
     set_canvas_size(winrate_graph_canvas, winrate_graph_width, winrate_graph_height)
-    after_effect(() => set_all_overlays(wr_only))
+    set_all_overlays(wr_only)
     set_canvas_size(visits_trail_canvas, rest_size * 0.25, main_board_max_size * 0.13)
     update_all_thumbnails()
     set_cut_button_position_maybe()
@@ -1037,7 +1037,11 @@ function set_all_overlays(wr_only) {
     const graph_canvas = wr_only ? main_canvas : winrate_graph_canvas
     set_overlay(graph_overlay_canvas, graph_canvas)
     // fixme: wr_only is ignored (harmless on v0.7.0)
-    for_each_goban_overlay(set_overlay)
+    const set_overlay_now_or_later = (o, c) => {
+        const set_now = () => set_overlay(o, c)
+        c === main_canvas ? after_effect(set_now) : set_now()
+    }
+    for_each_goban_overlay(set_overlay_now_or_later)
 }
 
 function for_each_goban_overlay(proc, forcep) {
