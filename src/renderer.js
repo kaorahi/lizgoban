@@ -1362,7 +1362,7 @@ function set_branch_moves_maybe(key) {
         update_displayed_comment()
         const {at_move_count} = branch
         truep(at_move_count) ?
-            main('goto_move_count', at_move_count) : update_goban()
+            main('goto_move_count_anyway', at_move_count) : update_goban()
     }
     return branch && (set_branch(), true)
 }

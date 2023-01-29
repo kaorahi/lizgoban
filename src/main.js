@@ -210,6 +210,7 @@ const api = {
     play, undo, redo, explicit_undo, pass, undo_ntimes, redo_ntimes, undo_to_start, redo_to_end,
     edit_middle,
     let_me_think_next, goto_next_something, goto_previous_something,
+    goto_move_count_anyway,
     goto_move_count, toggle_auto_analyze, play_best, stop_auto,
     submit_auto_play, submit_auto_replay, auto_play_in_match,
     start_auto_redo,
@@ -345,8 +346,9 @@ function undo_to_start() {undo_ntimes(Infinity)}
 function redo_to_end() {redo_ntimes(Infinity)}
 
 function goto_move_count(count) {
-    game.move_count = clip(count, game.init_len, game.len())
+    goto_move_count_anyway(clip(count, game.init_len, game.len()))
 }
+function goto_move_count_anyway(count) {game.move_count = count}
 
 function goto_next_something() {goto_previous_or_next_something()}
 function goto_previous_something() {goto_previous_or_next_something(true)}
