@@ -1330,7 +1330,7 @@ function edit_middle(move) {
     new_game.brothers = [game]; replace(new_game); clear_sgf(true); update_branch()
 }
 function edit_middle_sub(move, stone_p) {
-    const last_move_p = move === game.ref_current().move
+    const last_move_p = move === game.ref_current().move && game.move_count > game.init_len
     const ed = game.edit_middle
     last_move_p ? ed(explicit_undo) : stone_p ? delete_move(move) : ed(play, move)
 }
