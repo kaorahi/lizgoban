@@ -1127,6 +1127,7 @@ function set_board_type(type, win, keep_let_me_think) {
     if (!type || type === board_type) {return}
     keep_let_me_think || stop_let_me_think()
     merge(prop, {board_type: type, previous_board_type: board_type})
+    update_all()
 }
 
 // handicap stones & komi
@@ -1520,8 +1521,8 @@ function let_me_think_p(strictly) {
 
 function let_me_think_next(board_type) {
     const stay = (board_type === let_me_think_board_type.first_half)
-    stay || (redoable() ? redo() : play_best())
     let_me_think_set_board_type_for(stay ? 'latter_half' : 'first_half')
+    stay || (redoable() ? redo() : play_best())
 }
 
 /////////////////////////////////////////////////
