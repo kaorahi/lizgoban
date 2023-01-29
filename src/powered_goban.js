@@ -279,6 +279,7 @@ function change_endstate_diff_target(proc) {
 }
 
 function set_tentative_endstate_maybe() {
+    if (!R.show_endstate) {return}
     const {endstate, endstate_stdev} = game.ref_current(), pausing = M.is_pausing()
     const update_p = endstate, dummy_p = endstate && empty(endstate[0])
     const reuse_p = !M.is_busy() && is_endstate_nearly_uptodate(pausing ? 0 : 20)
@@ -292,6 +293,7 @@ function set_tentative_endstate_maybe() {
 }
 
 function add_endstate_to_stones(stones, endstate, endstate_stdev, move_count, update_diff_p) {
+    if (!R.show_endstate) {return}
     // if (!endstate) {return}
     add_endstate_stdev_to_stones(stones, endstate_stdev)
     purely_add_endstate_to_stones(stones, endstate)
