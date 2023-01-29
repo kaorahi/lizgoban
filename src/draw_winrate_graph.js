@@ -316,7 +316,7 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
         let xys = R.move_history.map(to_xy).filter(identity)
         const fill_p = [fill_line, edged_fill_line].includes(plotter)
         if (fill_p) {
-            const left_bottom = sr2coord(0, 0)
+            const left_bottom = sr2coord(clip_init_len(0), 0)
             const right_bottom = sr2coord(R.move_history.length - 1, 0)
             xys = [left_bottom, ...xys, right_bottom]
         }
