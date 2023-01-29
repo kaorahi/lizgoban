@@ -22,7 +22,6 @@ const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate
 const graph_overlay_canvas = Q('#graph_overlay')
 const visits_trail_canvas = Q('#visits_trail_canvas')
 const zone_chart_canvas = Q('#zone_chart_canvas')
-let canvas_scale = 1
 function goban_canvas_and_overlays(canvas, forcep) {
     const no_overlays = [canvas, canvas, canvas]
     if (R.endstate_blur <= 0 && !forcep) {return no_overlays}
@@ -725,8 +724,7 @@ function latest_move_count_for_idx(idx) {
 
 function mouse2coord(e) {
     const bbox = e.target.getBoundingClientRect()
-    return [(e.clientX - bbox.left) * canvas_scale,
-            (e.clientY - bbox.top) * canvas_scale]
+    return [e.clientX - bbox.left, e.clientY - bbox.top].map(css2phys)
 }
 function mouse2idx(e, coord2idx) {
     const [i, j] = coord2idx(...mouse2coord(e))
@@ -1027,7 +1025,6 @@ function set_canvas_square_size(canvas, size) {
 }
 
 function set_canvas_size(canvas, width, height) {
-    canvas_scale = window.devicePixelRatio
     const [w0, h0] = [width, height].map(to_i)
     const [w, h] = [w0, h0].map(css2phys)
     if (w === canvas.width && h === canvas.height) {return false}
@@ -1074,7 +1071,7 @@ function copy_canvas_size(canvas, orig) {
 }
 
 function get_canvas_size(canvas) {
-    return [canvas.width / canvas_scale, canvas.height / canvas_scale]
+    return [canvas.width, canvas.height].map(phys2css)
 }
 
 function set_subscript(canvas, orig, size, vertical_relative_pos) {
@@ -1091,7 +1088,7 @@ function set_relative_canvas_position(canvas, orig, shift_x, shift_y) {
     // "canvas.style.position === 'absolute'" does not work
     const absolute_p = portrait_p()  // fixme: is there a better way?
     const set_without_margin = ([xy, wh, scroll, shift]) => {
-        const margin = (rect[wh] - orig[wh] / canvas_scale) / 2
+        const margin = (rect[wh] - phys2css(orig[wh])) / 2
         const scroll_maybe = (absolute_p ? window[scroll] : 0)
         const pos = rect[xy] + scroll_maybe + (shift ? shift(rect[wh]) : margin)
         canvas.style[xy] = `${pos}px`
