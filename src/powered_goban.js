@@ -574,7 +574,10 @@ function add_next_mark_to_stones(stones, game, move_count) {
 function add_branches_to_stones(stones, game, move_count) {
     // update R.branch_for_tag as a side effect (dirty...)
     R.branch_for_tag = []
-    const past = [0, 1]
+    // We need seq(...) here to show "^" mark correctly
+    // when handicap stone was deleted by "b" key + click. [2022-12-28]
+    // (ex.) the black stone [dc] for (;SZ[9]AB[dc][dd]AW[cd])
+    const past = (move_count <= game.init_len) ? seq(move_count + 1) : [0, 1]
     const add_past_branch = delta => {
         const mc = move_count - delta
         const b = branch_or_ladder_at(game, mc, delta === 0 && stones)
