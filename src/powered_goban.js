@@ -72,7 +72,7 @@ const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 const suggest_keys2 = [
     'endstate', 'endstate_stdev', 'score_without_komi', 'ambiguity',
     'stone_entropy',
-    'black_settled_territory', 'white_settled_territory',
+    'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'shorttermScoreError',
 ]
 
@@ -175,7 +175,7 @@ function set_renderer_state(...args) {
     const move_history_keys = [
         'move', 'is_black', 'ko_state', 'ambiguity',
         M.plot_stone_entropy_p() && 'stone_entropy',
-        'black_settled_territory', 'white_settled_territory',
+        'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
         M.plot_shorttermScoreError_p() && 'shorttermScoreError',
     ].filter(truep)
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
@@ -363,9 +363,10 @@ function get_ambiguity_etc(stones, endstate, game, move_count) {
     const stone_entropy = get_stone_entropy(stones, endstate)
     const [black_settled_territory, white_settled_territory] =
           [true, false].map(black => get_settled_territory(stones, endstate, black))
+    const area_ambiguity_ratio = get_area_ambiguity_ratio(endstate)
     const ret = {
         ambiguity, stone_entropy,
-        black_settled_territory, white_settled_territory,
+        black_settled_territory, white_settled_territory, area_ambiguity_ratio,
     }
     each_key_value(ret, (k, v) => {if (!truep(v)) delete ret[k]})
     return ret
@@ -403,6 +404,10 @@ function get_settled_territory(stones, endstate, black) {
         return g(aa_ref(endstate, i, j)) * coef
     }
     return sum(aa_map(stones, f).flat()) + hama
+}
+
+function get_area_ambiguity_ratio(endstate) {
+    return endstate && average(endstate.flat().map(ambiguity_for_endstate))
 }
 
 function set_ambiguity_etc_in_game(game) {

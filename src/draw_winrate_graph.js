@@ -324,6 +324,7 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
         plotter(...xys, g)
     }
     const items = [
+        ['area_ambiguity_ratio', 'rgba(128,128,128,0.4)', TRANSPARENT, 100, line],
         ['stone_entropy', '#008', TRANSPARENT, 0.5, line],
         // ['ambiguity', TRANSPARENT, '#800', 1, dots],
         ['ambiguity', '#800', TRANSPARENT, 1, line],
