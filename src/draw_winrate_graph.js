@@ -36,9 +36,9 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     update_winrate_text_geom(w, sr2coord, coord2sr)
     draw_winrate_graph_frame(w, sr2coord, g)
     draw_winrate_graph_frame(w, sq2coord, g)
-    draw_winrate_graph_ko_fight(sr2coord, g)
     draw_winrate_graph_settled_territory(sq2coord, g)
-    draw_winrate_graph_ambiguity(sq2coord, g)
+    draw_winrate_graph_ambiguity(sr2coord, sq2coord, g)
+    draw_winrate_graph_ko_fight(sr2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_soppo(w, sr2coord_noclip, g)
     draw_winrate_graph_order(sr2coord, g)
@@ -302,13 +302,26 @@ function draw_winrate_graph_settled_territory(sr2coord, g) {
     R.move_history.forEach(plot)
 }
 
-function draw_winrate_graph_ambiguity(sr2coord, g) {
+function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
     const radius = 2, line_width = 3
     g.lineWidth = line_width
     const dots = (...args) => {
         const xys = args.slice(), g = xys.pop()
         xys.forEach(xy => fill_square_around(xy, radius, g))
     }
+    const items_in_lower_chart = [
+        // key, stroke, fill, scale, plotter
+        ['area_ambiguity_ratio', 'rgba(128,128,128,0.4)', TRANSPARENT, 100, line],
+        ['stone_entropy', '#008', TRANSPARENT, 0.5, line],
+        // ['ambiguity', TRANSPARENT, '#800', 1, dots],
+        ['ambiguity', '#800', TRANSPARENT, 1, line],
+        // ['ambiguity', RED, 'rgba(255,0,0,0.3)', 1, edged_fill_line],
+        ['shorttermScoreError', TRANSPARENT, '#444', 10, dots],
+]
+    draw_winrate_graph_ambiguity_sub(items_in_lower_chart, sq2coord, g)
+}
+
+function draw_winrate_graph_ambiguity_sub(items, sr2coord, g) {
     const plot = (key, stroke, fill, scale, plotter) => {
         const to_xy = (z, s) => {
             const val = z[key]; return truep(val) && sr2coord(s, val * scale)
@@ -323,14 +336,6 @@ function draw_winrate_graph_ambiguity(sr2coord, g) {
         g.strokeStyle = stroke; g.fillStyle = fill;
         plotter(...xys, g)
     }
-    const items = [
-        ['area_ambiguity_ratio', 'rgba(128,128,128,0.4)', TRANSPARENT, 100, line],
-        ['stone_entropy', '#008', TRANSPARENT, 0.5, line],
-        // ['ambiguity', TRANSPARENT, '#800', 1, dots],
-        ['ambiguity', '#800', TRANSPARENT, 1, line],
-        // ['ambiguity', RED, 'rgba(255,0,0,0.3)', 1, edged_fill_line],
-        ['shorttermScoreError', TRANSPARENT, '#444', 10, dots],
-    ]
     items.forEach(a => plot(...a))
 }
 
