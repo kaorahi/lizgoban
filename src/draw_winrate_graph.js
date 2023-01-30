@@ -309,6 +309,24 @@ function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
         const xys = args.slice(), g = xys.pop()
         xys.forEach(xy => fill_square_around(xy, radius, g))
     }
+    const highlight_background_above = threshold => (...args) => {
+        const xys = args.slice(), g = xys.pop(), orig_style = g.strokeStyle
+        const y_for = val => sr2coord(clip_init_len(0), val)[1]
+        const [ymax, ymin, y0] = [0, 100, threshold].map(y_for)
+        const high = y => (y <= y0)
+        let left = null, right = null
+        xys.forEach(([x, y], k) => {
+            const prev_high = truep(right), cur_high = high(y)
+            const is_last = k === xys.length - 1
+            cur_high && (right = x, left = true_or(left, right))
+            prev_high && (!cur_high || is_last) &&
+                (fill_rect([left, ymin], [right, ymax], g), left = right = null)
+        })
+    }
+    const items_in_upper_chart = [
+        // key, stroke, fill, scale, plotter
+        ['ambiguity', TRANSPARENT, 'rgba(255,0,0,0.2)', 1, highlight_background_above(20)],
+    ]
     const items_in_lower_chart = [
         // key, stroke, fill, scale, plotter
         ['area_ambiguity_ratio', 'rgba(128,128,128,0.4)', TRANSPARENT, 100, line],
@@ -318,6 +336,7 @@ function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
         // ['ambiguity', RED, 'rgba(255,0,0,0.3)', 1, edged_fill_line],
         ['shorttermScoreError', TRANSPARENT, '#444', 10, dots],
 ]
+    draw_winrate_graph_ambiguity_sub(items_in_upper_chart, sr2coord, g)
     draw_winrate_graph_ambiguity_sub(items_in_lower_chart, sq2coord, g)
 }
 
