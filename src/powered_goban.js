@@ -373,8 +373,10 @@ function get_ambiguity_etc(stones, endstate, game, move_count) {
 
 function get_ambiguity(stones, endstate) {
     // ambiguity = sum of (1 - |ownership|) for all stones on the board.
-    return get_ambiguity_gen(stones, endstate, es => 1 - Math.abs(es))
+    return get_ambiguity_gen(stones, endstate, ambiguity_for_endstate)
 }
+
+function ambiguity_for_endstate(es) {return 1 - Math.abs(es)}
 
 function get_stone_entropy(stones, endstate) {
     const log2 = p => Math.log(p) / Math.log(2)
