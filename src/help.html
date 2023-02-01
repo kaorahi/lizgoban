@@ -176,7 +176,7 @@ to view it in full size.
  <li>thick segment: best move</li>
 </ul>
 
-<h3>Other marks on the board</h3>
+<h3>Other marks on the board, etc.</h3>
 
 See <a href="#Katago">KataGo</a> section.
 
@@ -444,6 +444,26 @@ When the suggested variation is shown, inevitability of each move is indicate by
 
 <p>
 Small blue up/down triangles on suggestions indicate the most preferred moves by "AIs for handicap games" as the stronger/weaker side in the first impression. "Moves like the stronger side" are also shown by sharper triangles in the winrate bar. (They are disabled on slow machines.)
+</p>
+
+<h3>Ownership distribution chart</h3>
+
+<p>
+If "Ownership" is turned on, the ownership distribution is displayed at the bottom left corner of the window as a small square chart with black, white, gray, and orange areas. The x-axis is the grid and the y-axis is its ownership. There are 19x19 = 361 grids in the standard board size. These grids are linearly rearranged on the x-axis and reordered as follows.
+<ul>
+ <li>The center part (between the peaks of black and white mountains) corresponds to empty grids, that is, the territories of black and white. High peak and narrow tail suggest JITSURI (secured territories), while low peak and broad tail suggest ATSUMI (thickness) or MOYO (framework).</li>
+ <li>The two sides just outside of it are alive stones, whose colors match the sign of ownerships. These parts are painted in slightly clear black or white.</li>
+ <li>Further outside of them are dead stones, whose colors do not match the sign of ownerships. The virtually captured white stones are displayed as the leftmost black area, and vice versa.</li>
+</ul>
+The mirror outlines are also shown for comparison of black and white regions. The rightmost white bar corresponds to komi. If komi is negative, the black bar appears on the left edge instead. The upper spaces of the chart is painted orange on the alive and dead stones. These regions correspond to "ambiguity" in the winrate graph. Large orange regions (= many unsettled stones) suggest heated fights on the board.
+<p>
+
+<p>
+The translucent orange square indicates score lead by area and leading player by edge color. The position of its upper edge corresponds to the average height of black and white regions.
+</p>
+
+<p>
+Push "x" key (keep holding down) to enlarge the chart.
 </p>
 
 <hr>

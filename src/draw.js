@@ -37,6 +37,10 @@ const {draw_winrate_graph} = require('./draw_winrate_graph.js')
 const {draw_visits_trail_sub} = require('./draw_visits_trail.js')
 function draw_visits_trail(...args) {draw_visits_trail_sub(get_winrate_trail(), ...args)}
 
+const {
+    draw_endstate_distribution, hide_endstate_distribution,
+} = require('./draw_endstate_dist.js')
+
 /////////////////////////////////////////////////
 // for mapping from goban to winrate bar
 
@@ -195,6 +199,7 @@ module.exports = {
     draw_goban_with_original_pv,
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
+    draw_endstate_distribution, hide_endstate_distribution,
     get_pv_trail_for,
     update_winrate_trail, clear_canvas, is_next_move, latest_move,
     target_move, set_target_move,

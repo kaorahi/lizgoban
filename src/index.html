@@ -88,7 +88,7 @@
   #thumbnails {white-space: normal;}
   .thumbbox {display: inline-block;}
   .thumbbox img {width: 3vw; height: 3vw;}
-  #visits_trail_canvas {display: none;}
+  #visits_trail_canvas, #endstate_distribution_canvas {display: none;}
  }
  @media (min-aspect-ratio: 13/10) {
   body {display: table; text-align: center;}
@@ -101,9 +101,10 @@
   }
   #goban_overlay1, #goban_overlay2,
   #sub_goban_overlay1, #sub_goban_overlay2,
-  #graph_overlay, #zone_chart_canvas {
+  #graph_overlay, #zone_chart_canvas, #endstate_distribution_canvas {
    position: fixed;
   }
+  #endstate_distribution_canvas[data-show='yes'] {border: 1px solid orange;}
   #thumb_aligner {display: table-cell; text-align: left; width: 5.5vw;}
   #thumb_height_measurer:hover {position: relative; z-index: 9;}
   .thumbbox {width: 5vw; padding-left: 0.5vw;}
@@ -129,6 +130,7 @@
    background-color: rgba(128,128,128,0.6); width: max-content;
   }
   #visits_trail_canvas {position: fixed; right: 1vw; bottom: 1vh; z-index: -9;}
+  #endstate_distribution_canvas {position: fixed; z-index: -9;}
  }
  </style>
 </head>
@@ -326,6 +328,7 @@ Exercise ★<span id='exercise_stars'></span>
 
 <span class="hide_in_serious_match">
 <canvas id="visits_trail_canvas"></canvas>
+<canvas id="endstate_distribution_canvas"></canvas>
 </span>
 
 <span class="hide_in_serious_match">

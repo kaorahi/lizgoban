@@ -22,6 +22,7 @@ const winrate_bar_canvas = Q('#winrate_bar'), winrate_graph_canvas = Q('#winrate
 const graph_overlay_canvas = Q('#graph_overlay')
 const visits_trail_canvas = Q('#visits_trail_canvas')
 const zone_chart_canvas = Q('#zone_chart_canvas')
+const endstate_distribution_canvas = Q('#endstate_distribution_canvas')
 function goban_canvas_and_overlays(canvas, forcep) {
     const no_overlays = [canvas, canvas, canvas]
     if (R.endstate_blur <= 0 && !forcep) {return no_overlays}
@@ -520,6 +521,9 @@ function update_goban() {
     const stop_trail_p = finitep(showing_until())
     c.style.visibility = wro ? 'hidden' : 'visible'
     !wro && !stop_trail_p && D.draw_visits_trail(c)
+    R.is_katago && !showing_movenum_p() ?
+        D.draw_endstate_distribution(endstate_distribution_canvas) :
+        D.hide_endstate_distribution(endstate_distribution_canvas)
 }
 
 function update_target_move(m, s) {
@@ -994,8 +998,10 @@ function set_all_canvas_size() {
                    sub_board_max_height(window.innerHeight))
     // use main_board_ratio in winrate_graph_width for portrait layout
     const winrate_graph_height = main_board_max_size * 0.25
-    const winrate_graph_width = (wr_only && !double_boards_p()) ?
-          winrate_graph_height : rest_size * main_board_ratio
+    const winrate_graph_full_width = rest_size * main_board_ratio
+    const winrate_graph_width = !wr_only ? winrate_graph_full_width :
+          double_boards_p() ? winrate_graph_full_width / 2 :
+          winrate_graph_height
     set_canvas_size(main_canvas, main_board_size, main_board_height)
     set_canvas_size(winrate_bar_canvas, main_board_size, winrate_bar_height)
     is_sub_canvas_resized = set_canvas_square_size(sub_canvas, sub_board_size)
@@ -1005,11 +1011,26 @@ function set_all_canvas_size() {
     update_all_thumbnails()
     set_cut_button_position_maybe()
 
+    const px = s => `${s}px`
+    const edc_style =
+          (wr_only && double_boards_p()) ? {
+              top: px(winrate_graph_canvas.getBoundingClientRect().top),
+              right: '1vw', left: 'auto', bottom: 'auto',
+              width: px(winrate_graph_full_width / 2),
+              height: px(winrate_graph_height),
+          } : {
+              left: '0.2vw', bottom: '0.2vw', right: 'auto', top: 'auto',
+              width: '5.3vw', height: '5.3vw',
+          }
+    merge(endstate_distribution_canvas.style, edc_style)
+    update_canvas_resolution(endstate_distribution_canvas)
+
     const wro_main_zone_size = (main_size - main_board_size) * 0.5
     const wro_sub_zone_size = double_boards_p() ? (rest_size - sub_board_size) * 0.5 : 0
     const wro_zone_size = wro_main_zone_size + wro_sub_zone_size
+    const wro_zone_chart_canvas_size = Math.min(wro_zone_size, sub_board_size * 0.5)
     const [zone_chart_canvas_size, zone_chart_base_canvas] = wr_only ?
-          [Math.min(wro_zone_size, sub_board_size * 0.5), main_canvas] :
+          [wro_zone_chart_canvas_size, main_canvas] :
           [rest_size * 0.05, winrate_graph_canvas]
     set_subscript(zone_chart_canvas, zone_chart_base_canvas, zone_chart_canvas_size, 0.5)
     D.draw_zone_color_chart(zone_chart_canvas)  // call this here for efficiency
@@ -1024,13 +1045,20 @@ function set_canvas_square_size(canvas, size) {
     return set_canvas_size(canvas, size, size)
 }
 
-function set_canvas_size(canvas, width, height) {
+function set_canvas_size(canvas, width, height, phys_only) {
     const [w0, h0] = [width, height].map(to_i)
     const [w, h] = [w0, h0].map(css2phys)
     if (w === canvas.width && h === canvas.height) {return false}
-    canvas.style.width = `${w0}px`; canvas.style.height = `${h0}px`
+    if (!phys_only) {
+        canvas.style.width = `${w0}px`; canvas.style.height = `${h0}px`
+    }
     canvas.width = w; canvas.height = h
     return true
+}
+
+function update_canvas_resolution(canvas) {
+    const {width, height} = canvas.getBoundingClientRect()
+    set_canvas_size(canvas, width, height, true)
 }
 
 function set_all_overlays(wr_only) {
