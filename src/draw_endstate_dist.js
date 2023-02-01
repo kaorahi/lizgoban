@@ -110,10 +110,10 @@ function draw_komi(komi, offset, color, p2x, g) {
 function draw_endstate_mirror(ssg, komi, p2x, o2y, g) {
     const reverse_ss = ss => ss.slice().reverse()
     const mirrored_ssg = ssg.map(reverse_ss).reverse()
-    draw_endstate_phantom(mirrored_ssg, - komi, p2x, o2y, g)
+    draw_endstate_outline(mirrored_ssg, - komi, p2x, o2y, g)
 }
 
-function draw_endstate_phantom(ssg, komi, p2x, o2y, g) {
+function draw_endstate_outline(ssg, komi, p2x, o2y, g) {
     g.lineWidth = 2
     const black_color = 'rgba(255,255,255,0.5)', white_color = 'rgba(0,0,0,0.5)'
     const [left, middle, right] = ssg
