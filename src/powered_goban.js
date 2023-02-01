@@ -151,9 +151,9 @@ function set_renderer_state(...args) {
     merge(R, ...args)  // use updated R in below lines
     const {move_count, init_len} = game
     const busy = M.is_busy(), long_busy = M.is_long_busy()
-    const winrate_history = busy ? [] : winrate_from_game()
-    const winrate_history_set = busy ? [[[]], []] : winrate_history_set_from_game()
-    const soppo = busy ? [] : get_soppo()
+    const winrate_history = winrate_from_game()
+    const winrate_history_set = winrate_history_set_from_game()
+    const soppo = get_soppo()
     const su_p = finitep(move_count_for_suggestion())
     const previous_suggest = !su_p && get_previous_suggest()
     const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
@@ -282,7 +282,7 @@ function set_tentative_endstate_maybe() {
     if (!R.show_endstate) {return}
     const {endstate, endstate_stdev} = game.ref_current(), pausing = M.is_pausing()
     const update_p = endstate, dummy_p = endstate && empty(endstate[0])
-    const reuse_p = !M.is_busy() && is_endstate_nearly_uptodate(pausing ? 0 : 20)
+    const reuse_p = is_endstate_nearly_uptodate(pausing ? 0 : 20)
     update_p ? set_endstate_uptodate(endstate) :
         reuse_p ? do_nothing() : set_endstate_obsolete()
     const es = recall_endstate()
@@ -308,7 +308,7 @@ function tentatively_add_endstate_to_stones(stones, endstate, immediately) {
 const endstate_lag_max_diff = 0.2
 const lagged_endstate = make_lagged_aa(endstate_lag_max_diff)
 function purely_add_endstate_to_stones(stones, endstate, immediately) {
-    const aa = lagged_endstate.update_all(M.is_busy() ? null : endstate)
+    const aa = lagged_endstate.update_all(endstate)
     aa_each(stones, (s, i, j) => {
         s.endstate = aa_ref(immediately ? endstate : aa, i, j)
     })
@@ -328,7 +328,7 @@ function update_endstate_diff(endstate, tentatively, immediately) {
     const tentatively_ok = prev_endstate && tentatively
     aa_each(R.stones, (s, i, j) => {
         const current = endstate ? aa_ref(endstate, i, j) : s.endstate
-        const val = (ok || tentatively_ok) && !M.is_busy() ?
+        const val = (ok || tentatively_ok) ?
               sign * (current - aa_ref(prev_endstate, i, j)) : 0
         const lagged = lagged_endstate_diff.update(i, j, val)
         s.endstate_diff = immediately ? val : lagged

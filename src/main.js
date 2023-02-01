@@ -1781,7 +1781,7 @@ function update_state(keep_suggest_p) {
     const amm = get_auto_moves_in_match()
     const in_pair_match = R.in_match && (amm !== 1) && (amm === 3 ? 'pair_match' : amm)
     const persona_code = get_stored('persona_code')
-    const more = (cur.suggest && !is_busy()) ? {background_visits: null, ...cur} :
+    const more = cur.suggest ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
     const {face_image_rule, pv_trail_max_suggestions, endstate_blur} = option
     update_exercise_metadata()
