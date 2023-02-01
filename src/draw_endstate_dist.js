@@ -1,15 +1,15 @@
 'use strict'
 
 function draw_endstate_distribution(canvas) {
-    const ss = sorted_stones(); if (!ss) {hide_endstate_distribution(canvas); return}
+    const ssg = sorted_stone_groups()
+    if (!ssg) {hide_endstate_distribution(canvas); return}
     const {width, height} = canvas, g = canvas.getContext("2d")
     const {komi} = R
-    const points = ss.length + Math.abs(komi)
+    const ss = ssg.flat(), points = ss.length + Math.abs(komi)
     const [p2x, x2p] = translator_pair([0, points], [0, width])
     const [o2y, y2o] = translator_pair([0, 1], [height, 0])
-    draw_komi(komi, p2x, g)
-    draw_endstate(ss, komi, p2x, o2y, g)
-    draw_endstate_mirror(ss, komi, p2x, o2y, g)
+    draw_endstate(ssg, komi, p2x, o2y, g)
+    draw_endstate_mirror(ssg, komi, p2x, o2y, g)
     draw_grids(g)
     draw_score(ss, points, g)
     show_endstate_distribution(canvas)
@@ -24,7 +24,7 @@ function hide_endstate_distribution(canvas) {
 ////////////////////////////////////////////
 // sort
 
-function sorted_stones() {
+function sorted_stone_groups() {
     const copy_immediate_endstate = s => ({...s, endstate: s.immediate_endstate})
     const flat_stones = R.stones.flat().map(copy_immediate_endstate)
     if (!flat_stones.some(s => s.endstate)) {return null}
@@ -32,9 +32,10 @@ function sorted_stones() {
     const [alive_bs, dead_bs] = classify(pick(s => s.stone && s.black))
     const [alive_ws, dead_ws] = classify(pick(s => s.stone && !s.black))
     const ts = pick(s => !s.stone)
-    return [
-        dead_ws.reverse(), alive_bs, ts.reverse(), alive_ws, dead_bs.reverse()
-    ].flat()
+    const left = [dead_ws.reverse(), alive_bs].flat()
+    const middle = ts.reverse()
+    const right = [alive_ws, dead_bs.reverse()].flat()
+    return [left, middle, right]
 }
 
 function alive(s) {return s.endstate * (s.black ? +1 : -1) > 0}
@@ -44,38 +45,64 @@ function classify(ss) {return [ss.filter(alive), ss.filter(dead)]}
 ////////////////////////////////////////////
 // draw
 
-function draw_komi(komi, p2x, g) {
+function draw_komi(komi, offset, color, p2x, g) {
     const {width, height} = g.canvas, epsilon = 1
-    const [top_left, bottom_right, color] = komi < 0 ?
-          [[0, 0], [p2x(- komi) + epsilon, height], '#000'] :
-          [[p2x(1) - epsilon, 0], [width, height], '#fff']
+    const top_left = [p2x(offset) - epsilon, 0]
+    const bottom_right =[p2x(offset + komi) + epsilon, height]
     g.fillStyle = color; fill_rect(top_left, bottom_right, g)
 }
 
-function draw_endstate(ss, komi, p2x, o2y, g) {
-    const offset = komi < 0 ? - komi : 0
+function draw_endstate(ssg, komi, p2x, o2y, g) {
+    const [left, middle, right] = ssg, ss = ssg.flat()
     const stone_ambiguity = sum(ss.map(s => s.stone ? 1 - Math.abs(s.endstate) : 0))
     const hot = clip(Math.floor(stone_ambiguity / 20), 0, 2)
-    const draw = (s, k) =>
-          rect2(k + offset, Math.abs(s.endstate), colors_for(s, hot), p2x, o2y, g)
-    ss.forEach(draw)
-}
-
-function draw_endstate_mirror(ss, komi, p2x, o2y, g) {
-    draw_endstate_phantom(ss.slice().reverse(), - komi, p2x, o2y, g)
-}
-
-function draw_endstate_phantom(ss, komi, p2x, o2y, g) {
-    const offset = komi < 0 ? - komi : 0
-    const get_xyc = ({endstate}, k) => {
-        const x = p2x(k + offset + 0.5), y = o2y(Math.abs(endstate))
-        const c = endstate < 0 ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-        return [x, y, c]
+    const {b_komi, w_komi, bk_offset, wk_offset, l_offset, m_offset, r_offset}
+          = param_for(left, middle, right, komi)
+    const draw_part = (ss, offset) => {
+        const draw = (s, k) =>
+              rect2(k + offset, Math.abs(s.endstate), colors_for(s, hot), p2x, o2y, g)
+        ss.forEach(draw)
     }
-    const xyc_list = ss.map(get_xyc)
+    draw_komi(b_komi, bk_offset, '#000', p2x, g)
+    draw_komi(w_komi, wk_offset, '#fff', p2x, g)
+    draw_part(left, l_offset)
+    draw_part(middle, m_offset)
+    draw_part(right, r_offset)
+}
+
+function draw_endstate_mirror(ssg, komi, p2x, o2y, g) {
+    const reverse_ss = ss => ss.slice().reverse()
+    const mirrored_ssg = ssg.map(reverse_ss).reverse()
+    draw_endstate_phantom(mirrored_ssg, - komi, p2x, o2y, g)
+}
+
+function draw_endstate_phantom(ssg, komi, p2x, o2y, g) {
+    g.lineWidth = 2
+    const black_color = 'rgba(255,255,255,0.5)', white_color = 'rgba(0,0,0,0.5)'
+    const [left, middle, right] = ssg
+    const {b_komi, w_komi, bk_offset, wk_offset, l_offset, m_offset, r_offset}
+          = param_for(left, middle, right, komi)
+    const k2x = k => p2x(k + 0.5)
+    const xyc_list_for = (ss, offset) => {
+        const xyc = ({endstate}, k) => {
+            const x = k2x(k + offset), y = o2y(Math.abs(endstate))
+            const c = endstate < 0 ? black_color : white_color
+            return [x, y, c]
+        }
+        return ss.map(xyc)
+    }
+    const komi_xyc_list = (komi, offset, color) =>
+          komi > 0 ? [[k2x(offset), 0, color], [k2x(komi + offset - 1), 0, color]] : []
+    const xyc_list = [
+        xyc_list_for(left, l_offset),
+        komi_xyc_list(b_komi, bk_offset, black_color),
+        xyc_list_for(middle, m_offset),
+        komi_xyc_list(w_komi, wk_offset, white_color),
+        xyc_list_for(right, r_offset),
+    ].flat()
     const draw = ([x, y, c], k, a) => {
         const [x0, y0, _] = a[k - 1] || []; if (!truep(x)) {return}
-        g.strokeStyle = c; g.lineWidth = 2
+        g.strokeStyle = c
         line([x0, y0], [x, y], g)
     }
     xyc_list.forEach(draw)
@@ -118,8 +145,17 @@ function draw_score(ss, points, g) {
                     [center_x + half_w, average_y + h], g)
 }
 
+function param_for(left, middle, right, komi) {
+    const b_komi = clip(- komi, 0), w_komi = clip(komi, 0)
+    const lengths = [left.length, b_komi, middle.length, w_komi]
+    let length_sum = 0
+    const [l_offset, bk_offset, m_offset, wk_offset, r_offset] =
+          [0, ...lengths.map(w => length_sum += w)]
+    return {b_komi, w_komi, bk_offset, wk_offset, l_offset, m_offset, r_offset}
+}
+
 function colors_for(s, hot) {
-    const black_color = '#111', alt_black_color = '#333'
+    const black_color = '#222', alt_black_color = '#444'
     const white_color = '#eee', alt_white_color = '#ccc'
     const hot_color = [ORANGE, '#f00', '#f0f']
     const stone_void_color = hot_color[hot], territory_void_color = '#888'
