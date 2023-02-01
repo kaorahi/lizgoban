@@ -25,9 +25,9 @@ function hide_endstate_distribution(canvas) {
 // sort
 
 function sorted_stone_groups() {
+    if (!truep((aa_ref(R.stones, 0, 0) || {}).immediate_endstate)) {return null}
     const copy_immediate_endstate = s => ({...s, endstate: s.immediate_endstate})
     const flat_stones = R.stones.flat().map(copy_immediate_endstate)
-    if (!flat_stones.some(s => s.endstate)) {return null}
     const pick = pred => sort_by(flat_stones.filter(pred), s => s.endstate)
     const [alive_bs, dead_bs] = classify(pick(s => s.stone && s.black))
     const [alive_ws, dead_ws] = classify(pick(s => s.stone && !s.black))
