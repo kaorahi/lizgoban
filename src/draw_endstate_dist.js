@@ -43,14 +43,7 @@ function dead(s) {return !alive(s)}
 function classify(ss) {return [ss.filter(alive), ss.filter(dead)]}
 
 ////////////////////////////////////////////
-// draw
-
-function draw_komi(komi, offset, color, p2x, g) {
-    const {width, height} = g.canvas, epsilon = 1
-    const top_left = [p2x(offset) - epsilon, 0]
-    const bottom_right =[p2x(offset + komi) + epsilon, height]
-    g.fillStyle = color; fill_rect(top_left, bottom_right, g)
-}
+// black/white regions
 
 function draw_endstate(ssg, komi, p2x, o2y, g) {
     const [left, middle, right] = ssg, ss = ssg.flat()
@@ -69,6 +62,50 @@ function draw_endstate(ssg, komi, p2x, o2y, g) {
     draw_part(middle, m_offset)
     draw_part(right, r_offset)
 }
+
+function param_for(left, middle, right, komi) {
+    const b_komi = clip(- komi, 0), w_komi = clip(komi, 0)
+    const lengths = [left.length, b_komi, middle.length, w_komi]
+    let length_sum = 0
+    const [l_offset, bk_offset, m_offset, wk_offset, r_offset] =
+          [0, ...lengths.map(w => length_sum += w)]
+    return {b_komi, w_komi, bk_offset, wk_offset, l_offset, m_offset, r_offset}
+}
+
+function colors_for(s, hot) {
+    const black_color = '#222', alt_black_color = '#444'
+    const white_color = '#eee', alt_white_color = '#ccc'
+    const hot_color = [ORANGE, '#f00', '#f0f']
+    const stone_void_color = hot_color[hot], territory_void_color = '#888'
+    const if_alive = (a, d) => s.stone && alive(s) ? a : d
+    const void_color = s.stone ? stone_void_color : territory_void_color
+    const owner_color = s.endstate >= 0 ?
+          if_alive(black_color, alt_black_color) :
+          if_alive(white_color, alt_white_color)
+    return [void_color, owner_color]
+}
+
+function rect2(k, ownership, [color0, color1], p2x, o2y, g) {
+    const x0 = p2x(k), x1 = p2x(k + 1), y = o2y(ownership), y0 = o2y(0)
+    rect1([x0, 0], [x1, y], color0, g)
+    rect1([x0, y], [x1, y0], color1, g)
+}
+
+function rect1([x0, y0], [x1, y1], color, g) {
+    const eps = 0.5
+    g.fillStyle = color
+    fill_rect([x0 - eps, y0], [x1 + eps, y1], g)
+}
+
+function draw_komi(komi, offset, color, p2x, g) {
+    const {width, height} = g.canvas, epsilon = 1
+    const top_left = [p2x(offset) - epsilon, 0]
+    const bottom_right =[p2x(offset + komi) + epsilon, height]
+    g.fillStyle = color; fill_rect(top_left, bottom_right, g)
+}
+
+////////////////////////////////////////////
+// mirror outlines
 
 function draw_endstate_mirror(ssg, komi, p2x, o2y, g) {
     const reverse_ss = ss => ss.slice().reverse()
@@ -108,6 +145,9 @@ function draw_endstate_phantom(ssg, komi, p2x, o2y, g) {
     xyc_list.forEach(draw)
 }
 
+////////////////////////////////////////////
+// grid lines
+
 function draw_grids(g) {
     const x_grids = 2, y_grids = 3, color = ORANGE, line_width = 1
     const {width, height} = g.canvas
@@ -117,6 +157,12 @@ function draw_grids(g) {
     grid_lines(x_grids, width, vertical_line)
     grid_lines(y_grids, height, horizontal_line)
 }
+
+function horizontal_line(y, g) {line([0, y], [g.canvas.width, y], g)}
+function vertical_line(x, g) {line([x, 0], [x, g.canvas.height], g)}
+
+////////////////////////////////////////////
+// score lead rectangle
 
 function draw_score(ss, points, g) {
     const {komi, endstate_sum} = R
@@ -144,43 +190,6 @@ function draw_score(ss, points, g) {
     edged_fill_rect([center_x - half_w, average_y],
                     [center_x + half_w, average_y + h], g)
 }
-
-function param_for(left, middle, right, komi) {
-    const b_komi = clip(- komi, 0), w_komi = clip(komi, 0)
-    const lengths = [left.length, b_komi, middle.length, w_komi]
-    let length_sum = 0
-    const [l_offset, bk_offset, m_offset, wk_offset, r_offset] =
-          [0, ...lengths.map(w => length_sum += w)]
-    return {b_komi, w_komi, bk_offset, wk_offset, l_offset, m_offset, r_offset}
-}
-
-function colors_for(s, hot) {
-    const black_color = '#222', alt_black_color = '#444'
-    const white_color = '#eee', alt_white_color = '#ccc'
-    const hot_color = [ORANGE, '#f00', '#f0f']
-    const stone_void_color = hot_color[hot], territory_void_color = '#888'
-    const if_alive = (a, d) => s.stone && alive(s) ? a : d
-    const void_color = s.stone ? stone_void_color : territory_void_color
-    const owner_color = s.endstate >= 0 ?
-          if_alive(black_color, alt_black_color) :
-          if_alive(white_color, alt_white_color)
-    return [void_color, owner_color]
-}
-
-function rect2(k, ownership, [color0, color1], p2x, o2y, g) {
-    const x0 = p2x(k), x1 = p2x(k + 1), y = o2y(ownership), y0 = o2y(0)
-    rect1([x0, 0], [x1, y], color0, g)
-    rect1([x0, y], [x1, y0], color1, g)
-}
-
-function rect1([x0, y0], [x1, y1], color, g) {
-    const eps = 0.5
-    g.fillStyle = color
-    fill_rect([x0 - eps, y0], [x1 + eps, y1], g)
-}
-
-function horizontal_line(y, g) {line([0, y], [g.canvas.width, y], g)}
-function vertical_line(x, g) {line([x, 0], [x, g.canvas.height], g)}
 
 /////////////////////////////////////////////////
 // exports
