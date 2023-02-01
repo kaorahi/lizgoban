@@ -311,6 +311,7 @@ function purely_add_endstate_to_stones(stones, endstate, immediately) {
     const aa = lagged_endstate.update_all(endstate)
     aa_each(stones, (s, i, j) => {
         s.endstate = aa_ref(immediately ? endstate : aa, i, j)
+        s.immediate_endstate = aa_ref(endstate || aa, i, j)
     })
 }
 
