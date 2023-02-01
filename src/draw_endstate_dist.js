@@ -54,8 +54,10 @@ function draw_komi(komi, p2x, g) {
 
 function draw_endstate(ss, komi, p2x, o2y, g) {
     const offset = komi < 0 ? - komi : 0
+    const stone_ambiguity = sum(ss.map(s => s.stone ? 1 - Math.abs(s.endstate) : 0))
+    const hot = clip(Math.floor(stone_ambiguity / 20), 0, 2)
     const draw = (s, k) =>
-          rect2(k + offset, Math.abs(s.endstate), colors_for(s), p2x, o2y, g)
+          rect2(k + offset, Math.abs(s.endstate), colors_for(s, hot), p2x, o2y, g)
     ss.forEach(draw)
 }
 
@@ -116,10 +118,11 @@ function draw_score(ss, points, g) {
                     [center_x + half_w, average_y + h], g)
 }
 
-function colors_for(s) {
+function colors_for(s, hot) {
     const black_color = '#111', alt_black_color = '#333'
     const white_color = '#eee', alt_white_color = '#ccc'
-    const stone_void_color = ORANGE, territory_void_color = '#888'
+    const hot_color = [ORANGE, '#f00', '#f0f']
+    const stone_void_color = hot_color[hot], territory_void_color = '#888'
     const if_alive = (a, d) => s.stone && alive(s) ? a : d
     const void_color = s.stone ? stone_void_color : territory_void_color
     const owner_color = s.endstate >= 0 ?
