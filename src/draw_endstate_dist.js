@@ -1,10 +1,11 @@
 'use strict'
 
 function draw_endstate_distribution(canvas) {
-    const {ssg} = sorted_stone_groups()
+    const {komi, endstate_sum} = R
+    const {ssg} = sorted_stone_groups(komi)
     if (!ssg) {hide_endstate_distribution(canvas); return}
     const {width, height} = canvas, g = canvas.getContext("2d")
-    const {komi} = R
+    const score_diff = endstate_sum - komi
     const ss = ssg.flat(), points = ss.length + Math.abs(komi)
     const [p2x, x2p] = translator_pair([0, points], [0, width])
     const [o2y, y2o] = translator_pair([0, 1], [height, 0])
@@ -12,7 +13,7 @@ function draw_endstate_distribution(canvas) {
     draw_endstate(ssg, komi, p2x, o2y, g)
     draw_endstate_mirror(ssg, komi, p2x, o2y, g)
     draw_grids(o2y, g)
-    draw_score(ss, points, o2y, g)
+    draw_score(ss, points, score_diff, komi, o2y, g)
     show_endstate_distribution(canvas)
 }
 
@@ -25,7 +26,7 @@ function hide_endstate_distribution(canvas) {
 ////////////////////////////////////////////
 // sort
 
-function sorted_stone_groups() {
+function sorted_stone_groups(komi) {
     if (!truep((aa_ref(R.stones, 0, 0) || {}).immediate_endstate)) {return {}}
     const copy_immediate_endstate = s => ({...s, endstate: s.immediate_endstate})
     const flat_stones = R.stones.flat().map(copy_immediate_endstate)
@@ -166,11 +167,9 @@ function draw_grids(o2y, g) {
 ////////////////////////////////////////////
 // score lead rectangle
 
-function draw_score(ss, points, o2y, g) {
-    const {komi, endstate_sum} = R
+function draw_score(ss, points, score_diff, komi, o2y, g) {
     const {width, height} = get_geometry(o2y, g)
     // <average height>
-    const score_diff = endstate_sum - komi
     const score_sum = sum(ss.map(s => Math.abs(s.endstate))) + Math.abs(komi)
     const average_height = score_sum / points * height
     const average_y = o2y(score_sum / points)
