@@ -66,7 +66,7 @@ function draw_endstate(ssg, komi, p2x, o2y, g) {
 }
 
 function param_for(left, middle, right, komi) {
-    const b_komi = clip(- komi, 0), w_komi = clip(komi, 0)
+    const {b_komi, w_komi} = bw_komi(komi)
     const lengths = [left.length, b_komi, middle.length, w_komi]
     let length_sum = 0
     const [l_offset, bk_offset, m_offset, wk_offset, r_offset] =
@@ -200,6 +200,11 @@ function get_geometry(o2y, g) {
     const left = 0, right = g.canvas.width, top = o2y(1), bottom = o2y(0)
     const width = right - left, height = bottom - top
     return {left, right, top, bottom, width, height}
+}
+
+function bw_komi(komi) {
+    const b_komi = clip(- komi, 0), w_komi = clip(komi, 0)
+    return {b_komi, w_komi}
 }
 
 /////////////////////////////////////////////////
