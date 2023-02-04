@@ -2,18 +2,24 @@
 
 function draw_endstate_distribution(canvas) {
     const {komi, endstate_sum} = R
-    const {ssg} = sorted_stone_groups(komi)
+    const {ssg, es_sums} = sorted_stone_groups(komi)
     if (!ssg) {hide_endstate_distribution(canvas); return}
     const {width, height} = canvas, g = canvas.getContext("2d")
     const score_diff = endstate_sum - komi
     const ss = ssg.flat(), points = ss.length + Math.abs(komi)
-    const [p2x, x2p] = translator_pair([0, points], [0, width])
-    const [o2y, y2o] = translator_pair([0, 1], [height, 0])
     clear_canvas(canvas, '#888')
+    // upper
+    const [p2x, x2p] = translator_pair([0, points], [0, width])
+    const [o2y, y2o] = translator_pair([0, 1], [height * 0.5, 0])
     draw_endstate(ssg, komi, p2x, o2y, g)
     draw_endstate_mirror(ssg, komi, p2x, o2y, g)
     draw_grids(o2y, g)
     draw_score(ss, points, score_diff, komi, o2y, g)
+    // lower
+    const [q2x, x2q] = translator_pair([0, points * 0.6], [width * 0.05, width * 0.95])
+    const [r2y, y2r] = translator_pair([0, 1], [height * 0.55, height * 0.95])
+    draw_bars(es_sums, score_diff > 0, q2x, r2y, g)
+    // show
     show_endstate_distribution(canvas)
 }
 
@@ -28,6 +34,7 @@ function hide_endstate_distribution(canvas) {
 
 function sorted_stone_groups(komi) {
     if (!truep((aa_ref(R.stones, 0, 0) || {}).immediate_endstate)) {return {}}
+    // ssg
     const copy_immediate_endstate = s => ({...s, endstate: s.immediate_endstate})
     const flat_stones = R.stones.flat().map(copy_immediate_endstate)
     const pick = pred => sort_by(flat_stones.filter(pred), s => s.endstate)
@@ -40,7 +47,22 @@ function sorted_stone_groups(komi) {
     const middle = ts.reverse()
     const right = [alive_ws, dead_bs.reverse()].flat()
     const ssg = [left, middle, right]
-    return {ssg}
+    // sum
+    const {b_komi, w_komi} = bw_komi(komi)
+    const pick_territory_between = ([low, high]) =>
+          pick(s => !s.stone && low < s.endstate && s.endstate <= high)
+    const b_es_steps = [[0, 1/3], [1/3, 2/3], [2/3, 1]].reverse()
+    const w_es_steps = b_es_steps.map(([low, high]) => [- high, - low])
+    const territory_bs = b_es_steps.map(pick_territory_between)
+    const territory_ws = w_es_steps.map(pick_territory_between)
+    const get_sum = a => sum(a.map(s => Math.abs(s.endstate)))
+    const get_amb = a => sum(a.map(s => 1 - Math.abs(s.endstate)))
+    const es_sums = {
+        black: [...[alive_bs, dead_ws, ...territory_bs].map(get_sum), b_komi],
+        white: [...[alive_ws, dead_bs, ...territory_ws].map(get_sum), w_komi],
+        amb: [bs, ws, ts].map(get_amb)
+    }
+    return {ssg, es_sums}
 }
 
 function alive(s) {return s.endstate * (s.black ? +1 : -1) > 0}
@@ -192,6 +214,43 @@ function draw_score(ss, points, score_diff, komi, o2y, g) {
     g.fillStyle = 'rgba(252,141,73,0.5)'
     edged_fill_rect([center_x - half_w, average_y],
                     [center_x + half_w, average_y + h], g)
+}
+
+////////////////////////////////////////////
+// bars
+
+function draw_bars({black, white, amb}, is_black_leading, q2x, r2y, g) {
+    // ownership
+    const black_color = ['black', 'white', '#08f', ORANGE, TRANSPARENT, 'black']
+    const white_color = ['white', 'black', '#08f', ORANGE, TRANSPARENT, 'white']
+    const zipped = black.map((_, k) => [
+        black[k], black_color[k], white[k], white_color[k]
+    ])
+    const [b_y1, b_y2, w_y1, w_y2, a_y1, a_y2] =
+          [0.0, 0.3, 0.5, 0.8, 0.9, 1.0].map(r2y)
+    const f = ([b_sum, w_sum], [b, b_color, w, w_color], k) => {
+        const [next_b_sum, next_w_sum] = [b_sum + b, w_sum + w]
+        const [b_sum_x, w_sum_x, next_b_sum_x, next_w_sum_x] =
+              [b_sum, w_sum, next_b_sum, next_w_sum].map(q2x)
+        g.strokeStyle = 'black'; g.fillStyle = b_color
+        edged_fill_rect([b_sum_x, b_y1], [next_b_sum_x, b_y2], g)
+        g.strokeStyle = 'white'; g.fillStyle = w_color
+        edged_fill_rect([w_sum_x, w_y1], [next_w_sum_x, w_y2], g)
+        g.strokeStyle = is_black_leading ? 'black' : 'white'; g.lineWidth = 1
+        line([next_b_sum_x, b_y2], [next_w_sum_x, w_y1], g)
+        k === 0 && line([b_sum_x, b_y2], [w_sum_x, w_y1], g)
+        return [next_b_sum, next_w_sum]
+    }
+    zipped.reduce(f, [0, 0])
+    // ambiguity
+    const amb_color = ['black', 'white', ORANGE]
+    amb.reduce((prev, z, k) => {
+        g.fillStyle = amb_color[k]
+        const next = prev + z
+        const x1 = q2x(prev), x2 = q2x(next)
+        fill_rect([x1, a_y1], [x2, a_y2], g)
+        return next
+    }, 0)
 }
 
 /////////////////////////////////////////////////
