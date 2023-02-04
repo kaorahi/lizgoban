@@ -1,7 +1,7 @@
 'use strict'
 
 function draw_endstate_distribution(canvas) {
-    const ssg = sorted_stone_groups()
+    const {ssg} = sorted_stone_groups()
     if (!ssg) {hide_endstate_distribution(canvas); return}
     const {width, height} = canvas, g = canvas.getContext("2d")
     const {komi} = R
@@ -26,7 +26,7 @@ function hide_endstate_distribution(canvas) {
 // sort
 
 function sorted_stone_groups() {
-    if (!truep((aa_ref(R.stones, 0, 0) || {}).immediate_endstate)) {return null}
+    if (!truep((aa_ref(R.stones, 0, 0) || {}).immediate_endstate)) {return {}}
     const copy_immediate_endstate = s => ({...s, endstate: s.immediate_endstate})
     const flat_stones = R.stones.flat().map(copy_immediate_endstate)
     const pick = pred => sort_by(flat_stones.filter(pred), s => s.endstate)
@@ -36,7 +36,8 @@ function sorted_stone_groups() {
     const left = [dead_ws.reverse(), alive_bs].flat()
     const middle = ts.reverse()
     const right = [alive_ws, dead_bs.reverse()].flat()
-    return [left, middle, right]
+    const ssg = [left, middle, right]
+    return {ssg}
 }
 
 function alive(s) {return s.endstate * (s.black ? +1 : -1) > 0}
