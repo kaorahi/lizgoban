@@ -8,10 +8,11 @@ function draw_endstate_distribution(canvas) {
     const ss = ssg.flat(), points = ss.length + Math.abs(komi)
     const [p2x, x2p] = translator_pair([0, points], [0, width])
     const [o2y, y2o] = translator_pair([0, 1], [height, 0])
+    clear_canvas(canvas, '#888')
     draw_endstate(ssg, komi, p2x, o2y, g)
     draw_endstate_mirror(ssg, komi, p2x, o2y, g)
-    draw_grids(g)
-    draw_score(ss, points, g)
+    draw_grids(o2y, g)
+    draw_score(ss, points, o2y, g)
     show_endstate_distribution(canvas)
 }
 
@@ -56,8 +57,8 @@ function draw_endstate(ssg, komi, p2x, o2y, g) {
               rect2(k + offset, Math.abs(s.endstate), colors_for(s, hot), p2x, o2y, g)
         ss.forEach(draw)
     }
-    draw_komi(b_komi, bk_offset, '#000', p2x, g)
-    draw_komi(w_komi, wk_offset, '#fff', p2x, g)
+    draw_komi(b_komi, bk_offset, '#000', p2x, o2y, g)
+    draw_komi(w_komi, wk_offset, '#fff', p2x, o2y, g)
     draw_part(left, l_offset)
     draw_part(middle, m_offset)
     draw_part(right, r_offset)
@@ -97,10 +98,11 @@ function rect1([x0, y0], [x1, y1], color, g) {
     fill_rect([x0 - eps, y0], [x1 + eps, y1], g)
 }
 
-function draw_komi(komi, offset, color, p2x, g) {
-    const {width, height} = g.canvas, epsilon = 1
-    const top_left = [p2x(offset) - epsilon, 0]
-    const bottom_right =[p2x(offset + komi) + epsilon, height]
+function draw_komi(komi, offset, color, p2x, o2y, g) {
+    const epsilon = 1
+    const {top, bottom} = get_geometry(o2y, g)
+    const top_left = [p2x(offset) - epsilon, top]
+    const bottom_right =[p2x(offset + komi) + epsilon, bottom]
     g.fillStyle = color; fill_rect(top_left, bottom_right, g)
 }
 
@@ -148,9 +150,11 @@ function draw_endstate_outline(ssg, komi, p2x, o2y, g) {
 ////////////////////////////////////////////
 // grid lines
 
-function draw_grids(g) {
+function draw_grids(o2y, g) {
     const x_grids = 2, y_grids = 3, color = ORANGE, line_width = 1
-    const {width, height} = g.canvas
+    const {left, right, top, bottom, width, height} = get_geometry(o2y, g)
+    const horizontal_line = (y, g) => {line([left, y], [right, y], g)}
+    const vertical_line = (x, g) => {line([x, top], [x, bottom], g)}
     const grid_lines = (n, size, plotter) =>
           seq(n - 1, 1).forEach(k => plotter(k * size / n, g))
     g.strokeStyle = color; g.lineWidth = line_width
@@ -158,20 +162,17 @@ function draw_grids(g) {
     grid_lines(y_grids, height, horizontal_line)
 }
 
-function horizontal_line(y, g) {line([0, y], [g.canvas.width, y], g)}
-function vertical_line(x, g) {line([x, 0], [x, g.canvas.height], g)}
-
 ////////////////////////////////////////////
 // score lead rectangle
 
-function draw_score(ss, points, g) {
+function draw_score(ss, points, o2y, g) {
     const {komi, endstate_sum} = R
-    const {width, height} = g.canvas
+    const {width, height} = get_geometry(o2y, g)
     // <average height>
     const score_diff = endstate_sum - komi
     const score_sum = sum(ss.map(s => Math.abs(s.endstate))) + Math.abs(komi)
-    const average_height = (score_sum / points) * height
-    const average_y = height - average_height
+    const average_height = score_sum / points * height
+    const average_y = o2y(score_sum / points)
     // g.lineWidth = 1
     // g.strokeStyle = score_diff > 0 ? '#000' : '#fff'
     // line([0, average_y], [width, average_y], g)
@@ -189,6 +190,15 @@ function draw_score(ss, points, g) {
     g.fillStyle = 'rgba(252,141,73,0.5)'
     edged_fill_rect([center_x - half_w, average_y],
                     [center_x + half_w, average_y + h], g)
+}
+
+/////////////////////////////////////////////////
+// util
+
+function get_geometry(o2y, g) {
+    const left = 0, right = g.canvas.width, top = o2y(1), bottom = o2y(0)
+    const width = right - left, height = bottom - top
+    return {left, right, top, bottom, width, height}
 }
 
 /////////////////////////////////////////////////
