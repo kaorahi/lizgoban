@@ -248,7 +248,7 @@ function draw_endstate_goban(canvas, options) {
     }
     const common = {read_only: true, draw_endstate_value_p,
                     draw_endstate_cluster_p: true,
-                    draw_endstate_stdev_p: draw_endstate_value_p && !past_p}
+                    draw_endstate_level_p: draw_endstate_value_p && !past_p}
     const current = {draw_visits_p: true, draw_next_p: true}
     const past = {draw_visits_p: past_text(R.move_count - past_mc, past_score)}
     const opts = {...common, ...(options || {}), ...(past_p ? past : current),
@@ -277,6 +277,7 @@ function draw_goban(given_canvas, given_stones, opts) {
         draw_loss_p, draw_coordinates_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
         draw_endstate_stdev_p, draw_endstate_cluster_p,
+        draw_endstate_level_p,
         read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
         hovered_move, show_until, analysis_region,
         main_canvas_p, handle_mouse_on_goban,
@@ -301,6 +302,8 @@ function draw_goban(given_canvas, given_stones, opts) {
             draw_endstate_past_on_board(...args)
         draw_endstate_stdev_p &&
             draw_endstate_stdev_on_board(...args)
+        draw_endstate_level_p &&
+            draw_endstate_level_on_board(...args)
     }
     draw_grid(unit, idx2coord, g)
     const coordp = (draw_coordinates_p !== 'never') &&
@@ -462,6 +465,9 @@ function draw_endstate_past_on_board(...args) {
 }
 function draw_endstate_stdev_on_board(...args) {
     draw_endstate_on_board_gen('endstate_stdev', draw_endstate_stdev, ...args)
+}
+function draw_endstate_level_on_board(...args) {
+    draw_endstate_on_board_gen('endstate', draw_endstate_level, ...args)
 }
 function draw_endstate_on_board_gen(key, proc, stones, unit, idx2coord, g) {
     const f = (h, idx) => {
@@ -891,6 +897,14 @@ function draw_endstate(endstate, xy, radius, g) {
 function draw_endstate_stdev(endstate_stdev, xy, radius, g) {
     const thickness = 0.5, alpha = Math.abs(endstate_stdev) * thickness
     g.fillStyle = `rgba(255,0,0,${alpha})`
+    fill_square_around(xy, radius, g)
+}
+
+function draw_endstate_level(endstate, xy, radius, g) {
+    const style = ['#bbb', goban_bg(), '#ff0']
+    const n = style.length
+    const level = clip(Math.floor(Math.abs(endstate) * n), 0, n - 1)
+    g.fillStyle = style[level]
     fill_square_around(xy, radius, g)
 }
 
