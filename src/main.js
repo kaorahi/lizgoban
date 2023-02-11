@@ -881,7 +881,7 @@ function try_auto_play(force_next) {
         random_opening: () => try_play_best(['random_opening']),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
-    auto_play_ready() && proc()
+    auto_play_ready() && let_me_think_play(proc)
     update_let_me_think(true)
 }
 function auto_play_ready() {
@@ -1519,6 +1519,12 @@ function set_let_me_think(val) {
 }
 function let_me_think_p(strictly) {
     return store.get('let_me_think') && !(strictly && R.in_match)
+}
+
+function let_me_think_play(proc) {
+    // explicitly reset board type in advance to avoid flicker
+    let_me_think_p(true) && let_me_think_set_board_type_for('first_half')
+    proc()
 }
 
 function let_me_think_next(board_type) {
