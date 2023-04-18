@@ -25,12 +25,13 @@ function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const [sq2coord, sq2coord_noclip, coord2sq] =
           get_trans(100 + hz, 0, upper_graph_rate, 1)
     const overlay = graph_overlay_canvas.getContext("2d")
+    const show_until_p = truep(show_until)
     clear_canvas(graph_overlay_canvas)
-    truep(show_until) ?
+    show_until_p ?
         draw_winrate_graph_show_until(show_until, w, fontsize,
                                       sr2coord, sq2coord, overlay) :
         draw_winrate_graph_future(w, fontsize, sr2coord, sq2coord, overlay)
-    if (R.busy || show_until) {return}
+    if (R.busy || show_until_p) {return}
     const draw_score = score_drawer(w, sq2coord, g)
     const score_loss_p = !alternative_engine_for_white_p()
     update_winrate_text_geom(w, sr2coord, coord2sr)
