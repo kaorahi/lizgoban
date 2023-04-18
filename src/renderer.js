@@ -553,7 +553,8 @@ function set_temporary_board_type(btype, btype2) {
     const b = (R.board_type === btype) ? btype2 : btype
     if (temporary_board_type === b) {return}
     clear_goban_overlays()
-    temporary_board_type = b; update_board_type(); update_goban()
+    temporary_board_type = b; update_board_type()
+    update_goban()
 }
 
 function toggle_board_type(type) {main('toggle_board_type', R.window_id, type)}
