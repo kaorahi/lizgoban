@@ -552,9 +552,22 @@ function current_board_type() {return temporary_board_type || R.board_type}
 function set_temporary_board_type(btype, btype2) {
     const b = (R.board_type === btype) ? btype2 : btype
     if (temporary_board_type === b) {return}
+    const fix = fix_empty_winrate_graph_after_keyup(b) || do_nothing
     clear_goban_overlays()
     temporary_board_type = b; update_board_type()
+    fix()
     update_goban()
+}
+
+function fix_empty_winrate_graph_after_keyup(b) {
+    // fixme: ugly workaround for "push v", "push x", and "release x"
+    // notes on ugly code at present [2023-02-07]
+    // - draw_winrate_graph() skips drawing when show_until is given.
+    // - showing_until() is too complicated.
+    // - set_showing_until() is passed to powered_goban.js through main.js.
+    return !b && showing_endstate_value_p() &&
+        (temporary_board_type === 'winrate_only') &&
+        (() => D.draw_winrate_graph(winrate_graph_canvas, null, do_nothing))
 }
 
 function toggle_board_type(type) {main('toggle_board_type', R.window_id, type)}
