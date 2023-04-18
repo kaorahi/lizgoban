@@ -502,6 +502,7 @@ function update_goban() {
               draw_past_endstate_value : draw_raw_unclickable
         const graph = double_boards_p() && btype === "winrate_only" &&
               D.draw_visits_trail
+        clear_canvas(graph_overlay_canvas)
         f(draw_current_endstate_value, graph, sub)
     } else if (double_boards_p()) {
         const {normal, raw} = double_boards_rule[R.board_type]
