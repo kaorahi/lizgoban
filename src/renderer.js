@@ -1354,6 +1354,7 @@ function showing_endstate_value_p() {return the_showing_endstate_value_p}
 function set_showing_something_p(val) {
     val && checker_for_showing_until.reset(); update_hover_maybe();
     clear_tentatively_showing_until()
+    clear_goban_overlays()
     update_showing_until(); update_goban()
 }
 function set_showing_movenum_p(val) {
