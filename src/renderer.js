@@ -500,7 +500,9 @@ function update_goban() {
     if (showing_endstate_value_p()) {
         const sub = R.prev_endstate_clusters ?
               draw_past_endstate_value : draw_raw_unclickable
-        f(draw_current_endstate_value, null, sub)
+        const graph = double_boards_p() && btype === "winrate_only" &&
+              D.draw_visits_trail
+        f(draw_current_endstate_value, graph, sub)
     } else if (double_boards_p()) {
         const {normal, raw} = double_boards_rule[R.board_type]
         switch (btype) {
