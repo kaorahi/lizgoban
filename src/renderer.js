@@ -675,14 +675,14 @@ function is_event_to_edit_middle(e) {return R.forced_color_to_play || (e.shiftKe
 
 function handle_mouse_on_winrate_graph(canvas, coord2sr) {
     // helpers
-    const unset_busy = () => main('unset_busy')
+    const unset_busy = () => {hover_off(); main('unset_busy')}
     const goto_here = e => !R.attached && winrate_graph_goto(e, coord2sr)
     const hover_here = e => hover_on_graph(e, coord2sr, canvas)
     // handlers
     const onmousedown = goto_here
     const onmousemove = e => (e.buttons === 1) ? goto_here(e) : hover_here(e)
     const onmouseup = unset_busy
-    const onmouseleave = e => (hover_off(), unset_busy())
+    const onmouseleave = unset_busy
     const handlers = {onmousedown, onmousemove, onmouseup, onmouseleave}
     add_mouse_handlers_with_record(canvas, handlers, hover_here)
 }
