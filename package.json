@@ -17,7 +17,7 @@
     "xyz2sgf": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^22.0.0",
+    "electron": "^23.0.0",
     "electron-builder": "^23.1.0"
   },
   "build": {
