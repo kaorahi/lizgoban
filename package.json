@@ -13,11 +13,11 @@
     "@sabaki/sgf": "^3.4.7",
     "electron-store": "^8.0.2",
     "tmp": "^0.2.1",
-    "twgl.js": "^4.24.0",
+    "twgl.js": "^5.0.4",
     "xyz2sgf": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^20.1.0",
+    "electron": "^21.1.1",
     "electron-builder": "^23.1.0"
   },
   "build": {
