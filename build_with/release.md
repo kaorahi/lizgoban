@@ -2,46 +2,49 @@
 
 # Release notes
 
-## LizGoban 0.7.0
+## LizGoban 0.8.0-pre1
 
-* Upgrade KataGo to [1.11.0](https://github.com/lightvector/KataGo/releases/tag/v1.11.0).
-* Add items to "AI strategy". (See "Help" menu for details)
-  * "persona": Randomly generate various playing styles for weak bots to avoid boredom. It also has "automatic adjustment of strength" and "virtual character system". You can input any name to generate a bot with the parameters based on its name. For example, "jowa" prefers to capture stones, "alex" likes positional plays, etc. Try various names to find your favorite opponents.
-  * "pass": AI plays "pass" if there is room.
-  * "swap n": AI uses either of two engines at random.
-* Support the new feature ["ownershipStdev"](https://github.com/lightvector/KataGo/pull/500) in KataGo 1.10.0 (red backgrounds in the subboard), that looks like a heatmap of "KataGo's eye tracking".
-* Support ["movesOwnership"](https://github.com/lightvector/KataGo/issues/608) in KataGo 1.11.0.
-* Show the preferred moves by "AIs for handicap games" as the stronger/weaker side. (small blue up/down triangles on the board, sharpness of the triangles in the winrate bar)
-* Add automatic adjustment for [[SGF from Image]](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html).
-* Add "Auto overview" into Tool menu so that one can turn it off.
-* Add "Preferences" into Edit menu for convenience.
-* Slightly improve bogus territory counts.
-* Slightly improve ladder continuation.
-* Use change of ownership in addition to ownership itself for facial stones.
-* Guess the rule from komi if RU (rule) property is missing in SGF.
-* Officially support tsumego frame and ladder continuation.
-* Fix SSL issue on Let's Encrypt. ([ref](https://github.com/electron/electron/issues/31212) [ref](https://github.com/electron/electron/pull/31213))
-* The keyboard shortcuts "0" to "9" are deleted for match vs. AI with obsolete strategies.
+* Upgrade KataGo to [1.12.4](https://github.com/lightvector/KataGo/releases/tag/v1.12.4).
+* Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
+* Replace zone indicator with SOPPO indicator for successive misses of the best move.
+* Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
+* Add thin red background for "hot" periods in winrate graph.
+* Add "ambiguity of areas" (faint gray line) and "settled territories" (faint green/pink dots) to score graph.
+* Highlight settled areas by "v" key.
+* Make long press of cursor keys smoother.
+* Fix minor bugs.
 
 Incompatibilities:
 
-* Upgrade libraries (Electron 18, etc.). So you may need to do "npm install" again.
+* Upgrade libraries (Electron 24, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
 
 ### To use it on 64bit Windows immediately
 
 Just download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
 
-* [KataGo 1.11.0](https://github.com/lightvector/KataGo/releases/tag/v1.11.0) (eigen, eigenavx2, opencl) + [15 block network](https://katagotraining.org/networks/) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
+* [KataGo 1.12.4](https://github.com/lightvector/KataGo/releases/tag/v1.12.4) (eigen, eigenavx2, opencl) + [15 block network](https://katagotraining.org/networks/) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
 
 You can switch KataGo versions (CPU, modern CPU, GPU) by [Preset] menu in LizGoban. The first run of the GPU version may take a long time (1 hour on a low-spec machine, for example) for its initial tuning.
 
 ### To customize it on 64bit Windows
 
-If you want to use other engines, network files, options, ...
+If you want to replace built-in network (aka. model, weights)...
 
-1. Prepare engines (Leela Zero and/or KataGo) and their network files (aka. weights, models) by yourself, if necessary.
-2. Download and unzip the same all-in-one package as above.
-3. Copy sample/config.json to the same folder as `LizGoban *.exe` and edit it. See README for its format.
+1. Download and unzip the same all-in-one package as above.
+2. Copy `sample/custom_model/config.json` to the same folder as `LizGoban *.exe`.
+3. [Download your favorite network](https://katagotraining.org/networks/), rename it to `katanetwork.gz`, and place it in the same folder.
+
+If you want to replace built-in katago...
+
+1. Download and unzip the same all-in-one package as above.
+2. Copy `sample/custom_katago/config.json` to the same folder as `LizGoban *.exe`.
+3. Place your favorite katago and its network in the same folder. They must be renamed to `katago.exe` and `katanetwork.gz`, respectively.
+
+If you just want to modify the configurations of built-in katago...
+
+1. Download and unzip the same all-in-one package as above.
+2. Copy `sample/built_in/config.json` to the same folder as `LizGoban *.exe`.
+3. Edit it as you like. See README for its format.
 
 ### To use it on other platforms (Mac, Linux, ...) or Windows with more flexible configuration
 
