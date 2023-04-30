@@ -279,6 +279,16 @@ Please note that this feature is experimental and API etc. may be changed in fut
 
 ## <a name="Changes"></a>Major changes
 
+### 0.8.*
+
+* Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
+* Replace zone indicator with SOPPO indicator for successive misses of the best move.
+* Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
+* Add thin red background for "hot" periods in winrate graph.
+* Add "ambiguity of areas" (faint gray line) and "settled territories" (faint green/pink dots) to score graph.
+* Highlight settled areas by "v" key.
+* Make long press of cursor keys smoother.
+
 ### 0.7.*
 
 * Random generation of various playing styles for matches vs. weak bots.
