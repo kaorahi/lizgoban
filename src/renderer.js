@@ -176,9 +176,9 @@ function main(channel, ...args) {ipc.send(channel, ...args)}
 const render_in_capacity = skip_too_frequent_requests(render_now)
 
 ipc.on('render', (e, h, is_board_changed) => {
-    // !showing_branch is necessary because of "previous branch" feature
+    // showing_past_branch_p is necessary because of "previous branch" feature
     // introduced in 9b00d8403c. See set_branch_moves_maybe().
-    is_board_changed && !showing_branch && reset_keyboard_moves(true)
+    is_board_changed && !showing_past_branch_p() && reset_keyboard_moves(true)
     // for readable variation display
     keep_selected_variation_maybe(h.suggest)
     // renderer state must be updated before update_ui is called
@@ -1423,6 +1423,11 @@ function showing_branch_p() {
     return true_or(at_move_count, move_count) === R.move_count
 }
 globalize({showing_branch_p})
+
+function showing_past_branch_p() {
+    const {move_count, at_move_count} = showing_branch || {}
+    return truep(move_count) && truep(at_move_count) && (at_move_count < move_count)
+}
 
 function undoable() {return R.move_count > R.init_len}
 function redoable() {return R.move_count < R.history_length}
