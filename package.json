@@ -72,6 +72,9 @@
           ]
         }
       ]
+    },
+    "portable": {
+      "splashImage": "build_with/splash.bmp"
     }
   },
   "scripts": {
