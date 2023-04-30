@@ -11,14 +11,14 @@
   },
   "dependencies": {
     "@sabaki/sgf": "^3.4.7",
-    "electron-store": "^8.0.1",
+    "electron-store": "^8.0.2",
     "tmp": "^0.2.1",
-    "twgl.js": "^4.21.2",
+    "twgl.js": "^4.24.0",
     "xyz2sgf": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^18.1.0",
-    "electron-builder": "^23.0.3"
+    "electron": "^19.0.8",
+    "electron-builder": "^23.1.0"
   },
   "build": {
     "files": [
