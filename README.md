@@ -24,12 +24,11 @@ with lots of original gimmicks.
 
 ## <a name="Highlights"></a>Highlights
 
-1. Engines do not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can use any number of trial boards in parallel, discard a needless one by a single action, and restore the deleted one if necessary.
-2. Engine's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose. We can notice the case when we should wait for a little more analysis, and will never miss a new rising candidate like the one in the above screenshot.
-3. Though Lizzie is amazingly useful, its setup is not easy for many Go players because it needs Java. In this project, the core feature of Lizzie is transported to JavaScript so that they can taste the joy of real-time analysis. The all-in-one package of LizGoban works immediately out of the box without installation, configuration, additional downloads, and so on.
-4. Flexibility of JavaScript also enables quick experiments of fun ideas that bring various original features as follows.
+1. AI does not tell the reason of suggestions. So LizGoban aims at a GUI for easy trial of what-if in addition to quick browse of proposed variations. For example, you can use any number of trial boards in parallel, discard a needless one by a single action, and restore the deleted one if necessary.
+2. AI's suggestions are not 100% reliable, of course. We hope to get some signs when the suggested moves are unreliable. LizGoban visualizes convergence and consistency of estimations for this purpose. We can notice the case when we should wait for a little more analysis, and will never miss a new rising candidate like the one in the above screenshot.
+3. AI can make game watching boring if we only focus on win rate. LizGoban provides hints to help us understand the game's development from multiple perspectives. For example, who invested in more thickness? When it was cashed to territories?
 
-You will enjoy LizGoban if you are interested in the process as well as the result of the search by AI. You may also like experiments of new ideas on Go GUI, e.g. [quick ladder check](https://github.com/kaorahi/lizgoban/issues/63), random generation of various playing styles, etc. If you just expect ordinary features and beautiful graphics, probably you will prefer other GUIs.
+You will enjoy LizGoban if you are interested in the process as well as the result of the search by AI. You may also like experiments of various new ideas on Go GUI, e.g. [quick ladder check](https://github.com/kaorahi/lizgoban/issues/63), random generation of various playing styles, etc. If you just expect ordinary features and beautiful graphics, probably you will prefer other GUIs.
 
 ## <a name="Features"></a>Features
 
