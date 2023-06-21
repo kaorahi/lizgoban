@@ -38,6 +38,7 @@ E.argmin_by = (a, f) => {const b = a.map(f), m = Math.min(...b); return b.indexO
 E.min_by = (a, f) => a[E.argmin_by(a, f)]
 E.replace_header = (a, header) => a.splice(0, header.length, ...header)
 E.each_key_value = (h, f) => Object.keys(h).forEach(k => f(k, h[k]))
+E.map_key_value = (h, f) => Object.keys(h).map(k => f(k, h[k]))
 E.each_value = (h, f) => each_key_value(h, (_, v) => f(v))  // for non-array
 E.array2hash = a => {
     // array2hash(['a', 3, 'b', 1, 'c', 4]) ==> {a: 3, b: 1, c: 4}
