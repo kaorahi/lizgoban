@@ -296,7 +296,7 @@ function draw_leadings(es_leadings, is_black_leading, s2x, t2y, g) {
     const bar_width = (1 - sep_width * last_category) / n
     const i2s = (i, category) => bar_width * i + sep_width * category
     // bars
-    let i = 0, label_request = []
+    let i = 0, label_request = [], digits_request = []
     es_leadings.forEach(h => {
         // TRANSPARENT for avoiding any color for "no stone", "no komi", etc.
         const color = h.value === 0 ? TRANSPARENT : h.value > 0 ? BLACK : WHITE
@@ -306,6 +306,7 @@ function draw_leadings(es_leadings, is_black_leading, s2x, t2y, g) {
         const s = i2s(i, h.category)
         edged_fill_rect(scr(s, 0), scr(s + bar_width, h.value), g)
         h.label && label_request.push([s, h.label])
+        h.digits && digits_request.push([s + bar_width / 2, h.value])
         i++
     })
     // base line
@@ -318,6 +319,19 @@ function draw_leadings(es_leadings, is_black_leading, s2x, t2y, g) {
     g.textBaseline = 'top'
     label_request.forEach(([s, label]) =>
         fill_text(g, fontsize, label, ...scr(s, Infinity)))
+    g.restore()
+    // digits
+    g.save()
+    g.textAlign = 'center'
+    digits_request.forEach(([s, v]) => {
+        const [fillStyle, textBaseline, vpos, header] =
+              v > 0 ? [BLACK, 'top', -0.1, 'B'] :
+              v < 0 ? [WHITE, 'bottom', 0.1, 'W'] :
+              [TRANSPARENT, '', 0]
+        const text = `${header}+${f2s(Math.abs(v))}`
+        merge(g, {fillStyle, textBaseline})
+        fill_text(g, fontsize, text, ...scr(s, vpos * max_t))
+    })
     g.restore()
 }
 
