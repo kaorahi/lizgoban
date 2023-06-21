@@ -49,8 +49,9 @@ function sorted_stone_groups(komi) {
     const ssg = [left, middle, right]
     // sum
     const {b_komi, w_komi} = bw_komi(komi)
+    const between = (low, high, z) => low < z && z <= high
     const pick_territory_between = ([low, high]) =>
-          pick(s => !s.stone && low < s.endstate && s.endstate <= high)
+          pick(s => !s.stone && between(low, high, s.endstate))
     const b_es_steps = [[0, 1/3], [1/3, 2/3], [2/3, 1]].reverse()
     const w_es_steps = b_es_steps.map(([low, high]) => [- high, - low])
     const territory_bs = b_es_steps.map(pick_territory_between)
