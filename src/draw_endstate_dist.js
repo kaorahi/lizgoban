@@ -2,23 +2,27 @@
 
 function draw_endstate_distribution(canvas) {
     const {komi, endstate_sum} = R
-    const {ssg, es_sums} = sorted_stone_groups(komi)
+    const score_diff = endstate_sum - komi
+    const {ssg, es_sums, es_leadings} = sorted_stone_groups(komi, score_diff)
     if (!ssg) {hide_endstate_distribution(canvas); return}
     const {width, height} = canvas, g = canvas.getContext("2d")
-    const score_diff = endstate_sum - komi
     const ss = ssg.flat(), points = ss.length + Math.abs(komi)
     clear_canvas(canvas, '#888')
     // upper
     const [p2x, x2p] = translator_pair([0, points], [0, width])
-    const [o2y, y2o] = translator_pair([0, 1], [height * 0.5, 0])
+    const [o2y, y2o] = translator_pair([0, 1], [height * 0.35, 0])
     draw_endstate(ssg, komi, p2x, o2y, g)
     draw_endstate_mirror(ssg, komi, p2x, o2y, g)
     draw_grids(o2y, g)
     draw_score(ss, points, score_diff, komi, o2y, g)
-    // lower
+    // middle
     const [q2x, x2q] = translator_pair([0, points * 0.6], [width * 0.05, width * 0.95])
-    const [r2y, y2r] = translator_pair([0, 1], [height * 0.55, height * 0.95])
+    const [r2y, y2r] = translator_pair([0, 1], [height * 0.4, height * 0.65])
     draw_bars(es_sums, score_diff > 0, q2x, r2y, g)
+    // lower
+    const [s2x, x2s] = translator_pair([0, 1], [width * 0.05, width * 0.95])
+    const [t2y, y2t] = translator_pair([1, -1], [height * 0.7, height * 0.98])
+    draw_leadings(es_leadings, score_diff > 0, s2x, t2y, g)
     // show
     show_endstate_distribution(canvas)
 }
@@ -32,7 +36,7 @@ function hide_endstate_distribution(canvas) {
 ////////////////////////////////////////////
 // sort
 
-function sorted_stone_groups(komi) {
+function sorted_stone_groups(komi, score_diff) {
     if (!truep((aa_ref(R.stones, 0, 0) || {}).immediate_endstate)) {return {}}
     // ssg
     const copy_immediate_endstate = s => ({...s, endstate: s.immediate_endstate})
@@ -63,7 +67,32 @@ function sorted_stone_groups(komi) {
         white: [...[alive_ws, dead_bs, ...territory_ws].map(get_sum), w_komi],
         amb: [bs, ws, ts].map(get_amb)
     }
-    return {ssg, es_sums}
+    // leadings
+    const es_leadings_rule = [
+        {stone: true, range: [2/3, 1], category: 0, emph: true, label: 'stone'},
+        {stone: true, range: [0, 2/3], category: 0, emph: false},
+        {stone: false, range: [2/3, 1], category: 1, emph: true, label: 'territory'},
+        {stone: false, range: [0, 2/3], category: 1, emph: false},
+        {value: - komi, category: 2, emph: true, label: 'komi'},
+        // skip some categories here for wider space before the "total" bar
+        {value: score_diff, category: 5, emph: false, label: 'total', digits: true},
+    ]
+    const sum_between_abs = ([low, high], stone_p) => {
+        // Dead stones are counted as "territories" rather than "stones"
+        // so that capturing of completely dead stones does not change
+        // the counts suddenly.
+        const eql = (a, b) => !!a === !!b
+        const stony = s => s.stone && eql(s.black, s.endstate > 0)
+        const between_abs = s => between(low, high, Math.abs(s.endstate))
+        const pred = s => eql(stony(s), stone_p) && between_abs(s)
+        const picked = flat_stones.filter(pred)
+        return sum(picked.map(s => s.endstate))
+    }
+    const apply_es_leadings_rule = h =>
+          ({...h, ...truep(h.value) ? {} : {value: sum_between_abs(h.range, h.stone)}})
+    const es_leadings = es_leadings_rule.map(apply_es_leadings_rule)
+    // ret
+    return {ssg, es_sums, es_leadings}
 }
 
 function alive(s) {return s.endstate * (s.black ? +1 : -1) > 0}
@@ -252,6 +281,44 @@ function draw_bars({black, white, amb}, is_black_leading, q2x, r2y, g) {
         fill_rect([x1, a_y1], [x2, a_y2], g)
         return next
     }, 0)
+}
+
+////////////////////////////////////////////
+// leadings
+
+function draw_leadings(es_leadings, is_black_leading, s2x, t2y, g) {
+    // coord
+    const max_t = Math.max(...es_leadings.map(h => Math.abs(h.value)), 10)
+    const scr = (s, t) => [s2x(s), t2y(clip(t / max_t, -1, 1))]
+    const n = es_leadings.length
+    const last_category = last(es_leadings).category
+    const sep_width = 0.05
+    const bar_width = (1 - sep_width * last_category) / n
+    const i2s = (i, category) => bar_width * i + sep_width * category
+    // bars
+    let i = 0, label_request = []
+    es_leadings.forEach(h => {
+        // TRANSPARENT for avoiding any color for "no stone", "no komi", etc.
+        const color = h.value === 0 ? TRANSPARENT : h.value > 0 ? BLACK : WHITE
+        const [strokeStyle, fillStyle] =
+              h.emph ? [TRANSPARENT, color] : [color, TRANSPARENT]
+        merge(g, {strokeStyle, fillStyle}); g.lineWidth = 3
+        const s = i2s(i, h.category)
+        edged_fill_rect(scr(s, 0), scr(s + bar_width, h.value), g)
+        h.label && label_request.push([s, h.label])
+        i++
+    })
+    // base line
+    g.strokeStyle = ORANGE; g.lineWidth = 1
+    line(scr(0, 0), scr(1, 0), g)
+    // labels
+    const fontsize = (s2x(1) - s2x(0)) * 0.07
+    g.save()
+    g.fillStyle = WHITE
+    g.textBaseline = 'top'
+    label_request.forEach(([s, label]) =>
+        fill_text(g, fontsize, label, ...scr(s, Infinity)))
+    g.restore()
 }
 
 /////////////////////////////////////////////////
