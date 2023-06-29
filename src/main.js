@@ -1429,7 +1429,7 @@ function set_board() {
     const hist = P.set_board(game)
     const ownership_p = R.show_endstate ||
           weak_move_prop('force_ownership_p', auto_play_weaken)
-    AI.set_board(hist, game.get_komi(), get_gorule(), ownership_p, aggressive())
+    AI.set_board(hist, is_bturn(), game.get_komi(), get_gorule(), ownership_p, aggressive())
     AI.switch_leelaz(); update_let_me_think(true)
 }
 function set_AI_board_size_maybe(bsize) {
