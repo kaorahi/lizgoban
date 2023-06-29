@@ -48,29 +48,27 @@ function sorted_stone_groups(komi, score_diff) {
     const right = [alive_ws, dead_bs.reverse()].flat()
     const ssg = [left, middle, right]
     // leadings
-    const between = (low, high, z) => low < z && z <= high
     const es_leadings_rule = [
-        {stone: true, range: [2/3, 1], category: 0, emph: true, label: 'stone'},
-        {stone: true, range: [0, 2/3], category: 0, emph: false},
-        {stone: false, range: [2/3, 1], category: 1, emph: true, label: 'territory'},
-        {stone: false, range: [0, 2/3], category: 1, emph: false},
+        {stone: true, settled: true, category: 0, emph: true, label: 'stone'},
+        {stone: true, settled: false, category: 0, emph: false},
+        {stone: false, settled: true, category: 1, emph: true, label: 'territory'},
+        {stone: false, settled: false, category: 1, emph: false},
         {value: - komi, category: 2, emph: true, label: 'komi'},
         // skip some categories here for wider space before the "total" bar
         {value: score_diff, category: 5, emph: false, label: 'total', digits: true},
     ]
-    const sum_between_abs = ([low, high], stone_p) => {
+    const conditional_es_sum = (settled_p, stone_p) => {
         // Dead stones are counted as "territories" rather than "stones"
         // so that capturing of completely dead stones does not change
         // the counts suddenly.
         const eql = (a, b) => !!a === !!b
         const stony = s => s.stone && eql(s.black, s.endstate > 0)
-        const between_abs = s => between(low, high, Math.abs(s.endstate))
-        const pred = s => eql(stony(s), stone_p) && between_abs(s)
-        const picked = flat_stones.filter(pred)
-        return sum(picked.map(s => s.endstate))
+        const soft_count = es => es * (settled_p ? es**2 : 1 - es**2)
+        const f = s => eql(stony(s), stone_p) ? soft_count(s.endstate) : 0
+        return sum(flat_stones.map(f))
     }
     const apply_es_leadings_rule = h =>
-          ({...h, ...truep(h.value) ? {} : {value: sum_between_abs(h.range, h.stone)}})
+          ({...h, ...truep(h.value) ? {} : {value: conditional_es_sum(h.settled, h.stone)}})
     const es_leadings = es_leadings_rule.map(apply_es_leadings_rule)
     // ret
     return {ssg, es_leadings}
