@@ -24,7 +24,7 @@ function create_leelaz () {
     // bturn: for parsing engine output (updated when engine sync is finished)
     // js_bturn: for sending analysis command (updated immediately in set_board)
     let move_count = 0, bturn = true, js_bturn = true
-    let handicaps = 0
+    let handicaps = 0, init_len = 0
 
     // util
     const log = (header, s, show_queue_p, category) => {
@@ -187,6 +187,7 @@ function create_leelaz () {
             ['ownershipStdev', 'kata-analyze 1 ownershipStdev true'],
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
+            ['set_position', 'set_position B D4'],
         ]
         const do_check = table => table.forEach(a => check_supported(...a))
         do_check(checks)
@@ -208,7 +209,7 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history, aux) => {
-        // aux = {bturn, komi, gorule, handicaps, ownership_p, aggressive}
+        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, aggressive}
         if (is_in_startup) {return}
         js_bturn = aux.bturn
         change_board_size(board_size())
@@ -228,11 +229,11 @@ function create_leelaz () {
         aggressive = update_kata(aggressive, kata_pda_supported() ? aux.aggressive : '')
         if (empty(history)) {clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)
-        const beg_valid_p = aux.handicaps === handicaps &&
-              beg.length >= handicaps
-        handicaps = aux.handicaps
+        const beg_valid_p = aux.handicaps === handicaps && aux.init_len === init_len &&
+              beg.length >= init_len
+        handicaps = aux.handicaps; init_len = aux.init_len
         const updated_p = beg_valid_p ? update_board_by_undo(history, beg) :
-              update_board_by_clear(history, handicaps)
+              update_board_by_clear(history, handicaps, init_len)
         const update_mc_p = updated_p || update_kata_p
         update_mc_p && update_move_count(history, aux.bturn)
         leelaz_previous_history = history.slice()
@@ -243,11 +244,20 @@ function create_leelaz () {
         do_ntimes(back, undo1); rest.forEach(play1)
         return back > 0 || !empty(rest)
     }
-    const update_board_by_clear = (history, init_len) => {
+    const update_board_by_clear = (history, handicaps, init_len) => {
         clear_leelaz_board(true)
-        const init = history.slice(0, init_len), rest = history.slice(init_len)
-        init_len > 0 &&
-            leelaz(`set_free_handicap ${init.map(h => h.move).join(' ')}`)
+        // katago does not accept pass in set_position
+        init_len > 0 && history[init_len - 1].move === pass_command && init_len--
+        let init = history.slice(0, init_len), rest = history.slice(init_len)
+        const set_handicap = () =>
+              leelaz(`set_free_handicap ${init.map(h => h.move).join(' ')}`)
+        const set_position = () => {
+            const moves = init.flatMap(h => [bw_for(h.is_black), h.move]).join(' ')
+            leelaz(`set_position ${moves}`)
+        }
+        init_len === 0 ? do_nothing() :
+            init_len === handicaps ? set_handicap() :
+            is_supported('set_position') ? set_position() : (rest = history)
         rest.forEach(play1)
         return true
     }

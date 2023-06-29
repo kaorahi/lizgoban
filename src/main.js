@@ -1427,12 +1427,12 @@ function warn_disabled_cache() {
 function set_board() {
     set_AI_board_size_maybe(game.board_size)
     const hist = P.set_board(game)
-    const {handicaps} = game
+    const {handicaps, init_len} = game
     const ownership_p = R.show_endstate ||
           weak_move_prop('force_ownership_p', auto_play_weaken)
     const aux = {
         bturn: is_bturn(), komi: game.get_komi(), grule: get_gorule(),
-        handicaps,
+        handicaps, init_len,
         ownership_p, aggressive: aggressive(),
     }
     AI.set_board(hist, aux)
