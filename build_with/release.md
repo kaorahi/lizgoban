@@ -2,9 +2,19 @@
 
 # Release notes
 
+## LizGoban 0.8.0-pre2
+
+* Upgrade KataGo to [1.13.0](https://github.com/lightvector/KataGo/releases/tag/v1.13.0).
+* Provide simpler methods to replace the built-in engine / network. Details are available in the notes below.
+* Add leadings chart.
+* Delete move numbers from tsumego frame to prevent potential confusion for KataGo.
+
+Incompatibilities:
+
+* Upgrade libraries (Electron 25, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+
 ## LizGoban 0.8.0-pre1
 
-* Upgrade KataGo to [1.12.4](https://github.com/lightvector/KataGo/releases/tag/v1.12.4).
 * Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
 * Replace zone indicator with SOPPO indicator for successive misses of the best move.
 * Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
@@ -14,15 +24,11 @@
 * Make long press of cursor keys smoother.
 * Fix minor bugs.
 
-Incompatibilities:
-
-* Upgrade libraries (Electron 24, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
-
 ### To use it on 64bit Windows immediately
 
 Just download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
 
-* [KataGo 1.12.4](https://github.com/lightvector/KataGo/releases/tag/v1.12.4) (eigen, eigenavx2, opencl) + [15 block network](https://katagotraining.org/networks/) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
+* [KataGo 1.13.0](https://github.com/lightvector/KataGo/releases/tag/v1.13.0) (eigen, eigenavx2, opencl) + [15 block network](https://katagotraining.org/networks/) (g170e-b15c192-s1672 from [KataGo 1.4.5](https://github.com/lightvector/KataGo/releases/tag/v1.4.5))
 
 You can switch KataGo versions (CPU, modern CPU, GPU) by [Preset] menu in LizGoban. The first run of the GPU version may take a long time (1 hour on a low-spec machine, for example) for its initial tuning.
 

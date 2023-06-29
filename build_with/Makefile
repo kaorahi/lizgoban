@@ -80,9 +80,9 @@ $(KATA_DOC): $(KATA_DIR)/README.txt $(DOC)
 # katago
 
 KATA_URL_BASE = https://github.com/lightvector/KataGo/releases/download
-KATA_URL1 = $(KATA_URL_BASE)/v1.12.4/katago-v1.12.4-eigen-windows-x64.zip
-KATA_URL2 = $(KATA_URL_BASE)/v1.12.4/katago-v1.12.4-eigenavx2-windows-x64.zip
-KATA_URL3 = $(KATA_URL_BASE)/v1.12.4/katago-v1.12.4-opencl-windows-x64.zip
+KATA_URL1 = $(KATA_URL_BASE)/v1.13.0/katago-v1.13.0-eigen-windows-x64.zip
+KATA_URL2 = $(KATA_URL_BASE)/v1.13.0/katago-v1.13.0-eigenavx2-windows-x64.zip
+KATA_URL3 = $(KATA_URL_BASE)/v1.13.0/katago-v1.13.0-opencl-windows-x64.zip
 KATA_MODEL_URL = https://katagoarchive.org/g170/neuralnets/g170e-b15c192-s1672170752-d466197061.bin.gz
 KATA_MODEL_D_URL = https://katagoarchive.org/g170/LICENSE.txt
 
