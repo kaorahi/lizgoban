@@ -777,7 +777,11 @@ function draw_cheap_shadow([x, y], radius, g) {
 // See "suggestion reader" section in engine.js for suggestion_data.
 
 function draw_suggest(h, xy, radius, large_font_p, g) {
-    if (R.debug_show_policy) {draw_suggest_policy(h, xy, radius, 6, 0.5, g); return}
+    if (R.debug_show_policy) {
+        !R.lizzie_style && draw_suggest_policy_with_text(h, xy, radius, 6, 0.5, g)
+        draw_suggest_policy(h, xy, radius, 6, 0.5, g)
+        return
+    }
     if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
     if (minor_suggest_p(h)) {draw_minor_suggest(h, xy, radius, g); return}
     const suggest = h.data, {stroke, fill} = suggest_color(suggest)
@@ -840,6 +844,13 @@ function draw_minor_suggest(h, xy, radius, g) {
 
 function draw_suggest_0visits(h, xy, radius, g) {
     draw_suggest_policy(h, xy, radius, 1, 0.2, g)
+}
+
+function draw_suggest_policy_with_text(h, xy, radius, line_width, alpha, g) {
+    const prior1000 = Math.round(h.data.prior * 1000)
+    const prior_text = prior1000 > 0 ? prior1000 : Math.round(log10(h.data.prior))
+    draw_suggest_policy(h, xy, radius, line_width, alpha, g)
+    draw_text_on_stone(prior_text, prior1000 > 0 ? BLACK : RED, xy, radius, g)
 }
 
 function draw_suggest_policy(h, xy, radius, line_width, alpha, g) {
