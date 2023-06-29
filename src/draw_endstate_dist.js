@@ -63,9 +63,10 @@ function sorted_stone_groups(komi, score_diff) {
         // the counts suddenly.
         const eql = (a, b) => !!a === !!b
         const stony = s => s.stone && eql(s.black, s.endstate > 0)
+        const is_target = s => eql(stony(s), stone_p)
         const soft_count = es => es * (settled_p ? es**2 : 1 - es**2)
-        const f = s => eql(stony(s), stone_p) ? soft_count(s.endstate) : 0
-        return sum(flat_stones.map(f))
+        const f = (acc, s) => is_target(s) ? acc + soft_count(s.endstate) : acc
+        return flat_stones.reduce(f, 0)
     }
     const apply_es_leadings_rule = h =>
           ({...h, ...truep(h.value) ? {} : {value: conditional_es_sum(h.settled, h.stone)}})
