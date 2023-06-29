@@ -24,6 +24,7 @@ function create_leelaz () {
     // bturn: for parsing engine output (updated when engine sync is finished)
     // js_bturn: for sending analysis command (updated immediately in set_board)
     let move_count = 0, bturn = true, js_bturn = true
+    let handicaps = 0
 
     // util
     const log = (header, s, show_queue_p, category) => {
@@ -207,7 +208,7 @@ function create_leelaz () {
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
     const set_board = (history, aux) => {
-        // aux = {bturn, komi, gorule, ownership_p, aggressive}
+        // aux = {bturn, komi, gorule, handicaps, ownership_p, aggressive}
         if (is_in_startup) {return}
         js_bturn = aux.bturn
         change_board_size(board_size())
@@ -227,7 +228,11 @@ function create_leelaz () {
         aggressive = update_kata(aggressive, kata_pda_supported() ? aux.aggressive : '')
         if (empty(history)) {clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)
-        const updated_p = update_board_by_undo(history, beg)
+        const beg_valid_p = aux.handicaps === handicaps &&
+              beg.length >= handicaps
+        handicaps = aux.handicaps
+        const updated_p = beg_valid_p ? update_board_by_undo(history, beg) :
+              update_board_by_clear(history, handicaps)
         const update_mc_p = updated_p || update_kata_p
         update_mc_p && update_move_count(history, aux.bturn)
         leelaz_previous_history = history.slice()
@@ -237,6 +242,14 @@ function create_leelaz () {
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
         return back > 0 || !empty(rest)
+    }
+    const update_board_by_clear = (history, init_len) => {
+        clear_leelaz_board(true)
+        const init = history.slice(0, init_len), rest = history.slice(init_len)
+        init_len > 0 &&
+            leelaz(`set_free_handicap ${init.map(h => h.move).join(' ')}`)
+        rest.forEach(play1)
+        return true
     }
     const play1 = h => {
         const {move, is_black} = h
@@ -265,7 +278,7 @@ function create_leelaz () {
     const [update_later] = deferred_procs([update_now, endstate_delay_millisec])
     // avoid flicker of endstate
     const update = () => is_supported('endstate') ? update_later() : update_now()
-    const clear_leelaz_board = () => {leelaz("clear_board"); leelaz_previous_history = []; update()}
+    const clear_leelaz_board = silent => {leelaz("clear_board"); leelaz_previous_history = []; silent || update()}
     const start_args = () => arg
     const network_size = () => network_size_text
     const get_komi = () => komi
