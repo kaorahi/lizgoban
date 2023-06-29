@@ -227,12 +227,16 @@ function create_leelaz () {
         aggressive = update_kata(aggressive, kata_pda_supported() ? aux.aggressive : '')
         if (empty(history)) {clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)
+        const updated_p = update_board_by_undo(history, beg)
+        const update_mc_p = updated_p || update_kata_p
+        update_mc_p && update_move_count(history, aux.bturn)
+        leelaz_previous_history = history.slice()
+    }
+    const update_board_by_undo = (history, beg) => {
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
-        const update_mc_p = back > 0 || !empty(rest) || update_kata_p
-        update_mc_p && update_move_count(history, aux.bturn)
-        leelaz_previous_history = history.slice()
+        return back > 0 || !empty(rest)
     }
     const play1 = h => {
         const {move, is_black} = h
