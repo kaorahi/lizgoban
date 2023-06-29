@@ -1,3 +1,5 @@
+const {get_stones_and_set_ko_state} = require('./rule.js')
+
 const engine_log_conf = {}
 const assuming_broken_GTP = true
 
@@ -252,7 +254,9 @@ function create_leelaz () {
         const set_handicap = () =>
               leelaz(`set_free_handicap ${init.map(h => h.move).join(' ')}`)
         const set_position = () => {
-            const moves = init.flatMap(h => [bw_for(h.is_black), h.move]).join(' ')
+            const {stones} = get_stones_and_set_ko_state(init)
+            const f = (s, i, j) => s.stone ? [bw_for(s.black), idx2move(i, j)] : []
+            const moves = aa_map(stones, f).flat().flat().join(' ')
             leelaz(`set_position ${moves}`)
         }
         init_len === 0 ? do_nothing() :
