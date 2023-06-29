@@ -206,9 +206,10 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
-    const set_board = (history, new_bturn, new_komi, new_gorule, new_ownership_p, new_aggressive) => {
+    const set_board = (history, aux) => {
+        // aux = {bturn, komi, gorule, ownership_p, aggressive}
         if (is_in_startup) {return}
-        js_bturn = new_bturn
+        js_bturn = aux.bturn
         change_board_size(board_size())
         let update_kata_p = false
         const update_kata = (val, new_val, command, setter) => {
@@ -220,17 +221,17 @@ function create_leelaz () {
             setter && setter(new_val)  // tentatively
             update_kata_p = true; return new_val
         }
-        update_kata(komi, new_komi, 'komi', z => {komi = z})
-        update_kata(gorule, new_gorule, 'kata-set-rules', z => {gorule = z})
-        ownership_p = update_kata(ownership_p, new_ownership_p)
-        aggressive = update_kata(aggressive, kata_pda_supported() ? new_aggressive : '')
+        update_kata(komi, aux.komi, 'komi', z => {komi = z})
+        update_kata(gorule, aux.gorule, 'kata-set-rules', z => {gorule = z})
+        ownership_p = update_kata(ownership_p, aux.ownership_p)
+        aggressive = update_kata(aggressive, kata_pda_supported() ? aux.aggressive : '')
         if (empty(history)) {clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
         const update_mc_p = back > 0 || !empty(rest) || update_kata_p
-        update_mc_p && update_move_count(history, new_bturn)
+        update_mc_p && update_move_count(history, aux.bturn)
         leelaz_previous_history = history.slice()
     }
     const play1 = h => {
