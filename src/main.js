@@ -1386,6 +1386,7 @@ function add_tsumego_frame(ko_p) {
     set_gorule(default_gorule)
     const [i0, j0, is_black0] = last(fill) || []
     !!is_black0 === !!bturn && do_play(pass_command, !bturn)
+    game.init_len = game.move_count
     synchronize_analysis_region(analysis_region)
 }
 
