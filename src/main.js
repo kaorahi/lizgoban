@@ -1431,7 +1431,7 @@ function set_board() {
     const ownership_p = R.show_endstate ||
           weak_move_prop('force_ownership_p', auto_play_weaken)
     const aux = {
-        bturn: is_bturn(), komi: game.get_komi(), grule: get_gorule(),
+        bturn: is_bturn(), komi: game.get_komi(), gorule: get_gorule(),
         handicaps, init_len,
         ownership_p, aggressive: aggressive(),
     }
