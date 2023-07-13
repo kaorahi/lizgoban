@@ -229,10 +229,10 @@ function create_leelaz () {
         update_kata(gorule, aux.gorule, 'kata-set-rules', z => {gorule = z})
         ownership_p = update_kata(ownership_p, aux.ownership_p)
         aggressive = update_kata(aggressive, kata_pda_supported() ? aux.aggressive : '')
-        if (empty(history)) {clear_leelaz_board(); update_move_count([], true); return}
+        if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const beg_valid_p = aux.handicaps === handicaps && aux.init_len === init_len &&
-              beg.length >= init_len
+              beg >= init_len
         handicaps = aux.handicaps; init_len = aux.init_len
         const updated_p = beg_valid_p ? update_board_by_undo(history, beg) :
               update_board_by_clear(history, handicaps, init_len)
