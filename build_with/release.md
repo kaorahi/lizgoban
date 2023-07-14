@@ -2,6 +2,10 @@
 
 # Release notes
 
+## LizGoban 0.8.0-pre3
+
+* Fix bugs. (wrong ruleset, reset of visit count)
+
 ## LizGoban 0.8.0-pre2
 
 * Upgrade KataGo to [1.13.0](https://github.com/lightvector/KataGo/releases/tag/v1.13.0).
