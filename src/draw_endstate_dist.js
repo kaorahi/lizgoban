@@ -2,7 +2,7 @@
 
 function draw_endstate_distribution(canvas) {
     const {komi, endstate_sum} = R
-    const score_diff = endstate_sum - komi
+    const score_diff = truep(endstate_sum) && (endstate_sum - komi)
     const {ssg, es_leadings} = sorted_stone_groups(komi, score_diff)
     if (!ssg) {hide_endstate_distribution(canvas); return}
     const {width, height} = canvas, g = canvas.getContext("2d")
@@ -69,7 +69,7 @@ function sorted_stone_groups(komi, score_diff) {
         return flat_stones.reduce(f, 0)
     }
     const apply_es_leadings_rule = h =>
-          ({...h, ...truep(h.value) ? {} : {value: conditional_es_sum(h.settled, h.stone)}})
+          ({...h, ...(h.value !== undefined) ? {} : {value: conditional_es_sum(h.settled, h.stone)}})
     const es_leadings = es_leadings_rule.map(apply_es_leadings_rule)
     // ret
     return {ssg, es_leadings}
@@ -202,6 +202,7 @@ function draw_grids(o2y, g) {
 // score lead rectangle
 
 function draw_score(ss, points, score_diff, komi, o2y, g) {
+    if (!truep(score_diff)) {return}
     const {width, height} = get_geometry(o2y, g)
     // <average height>
     const score_sum = sum(ss.map(s => Math.abs(s.endstate))) + Math.abs(komi)
@@ -241,15 +242,16 @@ function draw_leadings(es_leadings, is_black_leading, s2x, t2y, g) {
     // bars
     let i = 0, label_request = [], digits_request = []
     es_leadings.forEach(h => {
+        const ok = truep(h.value)
         // TRANSPARENT for avoiding any color for "no stone", "no komi", etc.
         const color = h.value === 0 ? TRANSPARENT : h.value > 0 ? BLACK : WHITE
         const [strokeStyle, fillStyle] =
               h.emph ? [TRANSPARENT, color] : [color, TRANSPARENT]
         merge(g, {strokeStyle, fillStyle}); g.lineWidth = 3
         const s = i2s(i, h.category)
-        edged_fill_rect(scr(s, 0), scr(s + bar_width, h.value), g)
+        ok && edged_fill_rect(scr(s, 0), scr(s + bar_width, h.value), g)
         h.label && label_request.push([s, h.label])
-        h.digits && digits_request.push([s + bar_width / 2, h.value])
+        ok && h.digits && digits_request.push([s + bar_width / 2, h.value])
         i++
     })
     // base line

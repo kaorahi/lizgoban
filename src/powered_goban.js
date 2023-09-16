@@ -169,6 +169,7 @@ function set_renderer_state(...args) {
     const komi = game.get_komi(), bsize = board_size()
     const cur = game.ref_current(), {note} = cur, comment = cur.comment || ''
     const comment_note = [comment, note].filter(identity).join(' / ')
+    if (empty(R.suggest)) {R.score_without_komi = null}
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
     const endstate = aa_map(R.stones, h => h.endstate || 0)
