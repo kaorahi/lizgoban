@@ -13,8 +13,8 @@ E.xor = (a, b) => (!a === !!b)
 // truep() returns BOOLEAN so that availability() is safely serialized and
 // passed to renderer in main.js. [2020-09-05]
 E.truep = x => (!!x || x === 0 || x === '')
-E.true_or = (x, y) => truep(x) ? x : y
-E.finitep = x => truep(x) && x !== Infinity
+E.true_or = (x, y) => E.truep(x) ? x : y
+E.finitep = x => E.truep(x) && x !== Infinity
 E.finite_or = (x, y) => E.finitep(x) ? x : y
 E.do_nothing = () => {}
 E.identity = x => x
@@ -58,7 +58,7 @@ E.big_blunder_threshold = -5
 E.black_to_play_p = (forced, bturn) => forced ? (forced === 'black') : bturn
 
 // seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
-E.seq = (n, from) => [...Array(clip(n, 0))].map((_, i) => i + (from || 0))
+E.seq = (n, from) => [...Array(E.clip(n, 0))].map((_, i) => i + (from || 0))
 E.seq_from_to = (from, to) => E.seq(to - from + 1, from)
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
 
