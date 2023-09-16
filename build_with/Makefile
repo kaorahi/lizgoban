@@ -97,7 +97,7 @@ $(KATA_DIR):
 	unzip -o tmp_kata2.zip -d $@ && cd $@ && mv katago.exe katago-eigenavx2.exe
 	unzip -o tmp_kata3.zip -d $@ && cd $@ && mv katago.exe katago-opencl.exe
 
-$(KATA_MODEL_FILE):
+$(KATA_MODEL_FILE): $(KATA_DOC)
 	mkdir -p $(KATA_MODEL_DIR)
 	\wget -O $(KATA_MODEL_FILE) $(KATA_MODEL_URL)
 	\wget -O $(KATA_MODEL_D_FILE) $(KATA_MODEL_D_URL)
