@@ -54,7 +54,7 @@ function sorted_stone_groups(komi, score_diff) {
         {stone: false, settled: true, category: 1, emph: true, label: 'territory'},
         {stone: false, settled: false, category: 1, emph: false},
         {value: - komi, category: 2, emph: true, label: 'komi'},
-        // skip some categories here for wider space before the "total" bar
+        // skip several categories here for wider space before the "total" bar
         {value: score_diff, category: 5, emph: false, label: 'total', digits: true},
     ]
     const conditional_es_sum = (settled_p, stone_p) => {
