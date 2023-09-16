@@ -73,6 +73,7 @@ const suggest_keys2 = [
     'endstate', 'endstate_stdev', 'score_without_komi', 'ambiguity',
     'stone_entropy',
     'endstate_surprise',
+    'score_stdev',
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'shorttermScoreError',
 ]
@@ -87,6 +88,7 @@ function suggest_handler(h) {
     h.ownership_stdev &&
         (h.endstate_stdev = endstate_from_ownership_destructive(h.ownership_stdev))
     h.endstate && (h.endstate_surprise = endstate_surprise(h.endstate))
+    !empty(h.suggest) && (h.score_stdev = h.suggest[0].scoreStdev)
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
     const cur_by_engine = cur.by[engine_id]
     const prefer_cached_p = cur_by_engine.visits > h.visits &&
@@ -178,6 +180,7 @@ function set_renderer_state(...args) {
         'move', 'is_black', 'ko_state', 'ambiguity',
         M.plot_stone_entropy_p() && 'stone_entropy',
         M.plot_endstate_surprise_p() && 'endstate_surprise',
+        M.plot_score_stdev_p() && 'score_stdev',
         'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
         M.plot_shorttermScoreError_p() && 'shorttermScoreError',
     ].filter(truep)

@@ -140,6 +140,7 @@ globalize({  // for powered_goban.js
         plot_aggressiveness_p: () => option.plot_aggressiveness_p,
         plot_stone_entropy_p: () => option.plot_stone_entropy_p,
         plot_endstate_surprise_p: () => option.plot_endstate_surprise_p,
+        plot_score_stdev_p: () => option.plot_score_stdev_p,
         plot_shorttermScoreError_p: () => option.plot_shorttermScoreError_p,
     }
 })
