@@ -57,7 +57,8 @@ E.blunder_threshold = -2
 E.big_blunder_threshold = -5
 E.black_to_play_p = (forced, bturn) => forced ? (forced === 'black') : bturn
 
-// seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ]
+// seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ], seq(-2) = []
+// seq_from_to(3,5) = [3, 4, 5], seq_from_to(5,3) = []
 E.seq = (n, from) => [...Array(E.clip(n, 0))].map((_, i) => i + (from || 0))
 E.seq_from_to = (from, to) => E.seq(to - from + 1, from)
 E.do_ntimes = (n, f) => E.seq(n).forEach(f)
