@@ -69,7 +69,7 @@ function sorted_stone_groups(komi, score_diff) {
         return flat_stones.reduce(f, 0)
     }
     const apply_es_leadings_rule = h =>
-          ({...h, ...(h.value !== undefined) ? {} : {value: conditional_es_sum(h.settled, h.stone)}})
+          ({...h, ...(h.value === undefined) ? {value: conditional_es_sum(h.settled, h.stone)} : {}})
     const es_leadings = es_leadings_rule.map(apply_es_leadings_rule)
     // ret
     return {ssg, es_leadings}
