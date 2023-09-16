@@ -5,7 +5,12 @@ const zone_indicator_height_percent = 6
 const upper_graph_rate = 0.5
 
 function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
-    const w = canvas.width, g = canvas.getContext("2d")
+    const g = canvas.getContext("2d")
+    draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_graph)
+}
+
+function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_graph) {
+    const w = canvas.width
     const xmargin = w * 0.04, fontsize = to_i(w * 0.04)
     // s = move_count, r = winrate
     // q = winrate for lower graph, c = canvas rate (0 = top, 1 = bottom)
