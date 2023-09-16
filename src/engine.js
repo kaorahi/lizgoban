@@ -321,7 +321,8 @@ function create_leelaz () {
     const peek_kata_raw_nn = (move, cont) => {
         if (!is_supported('kata-raw-nn')) {return false}
         const receiver = h => {leelaz('undo'); h && cont(h)}
-        leelaz(`play ${bw_for(js_bturn)} ${move}`); kata_raw_nn(receiver)
+        const on_response = (ok, _) => ok && kata_raw_nn(receiver)
+        leelaz(`play ${bw_for(js_bturn)} ${move}`, on_response)
         return true
     }
 
