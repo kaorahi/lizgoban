@@ -256,7 +256,8 @@ function draw_leadings(es_leadings, is_black_leading, s2x, t2y, g) {
     g.strokeStyle = ORANGE; g.lineWidth = 1
     line(scr(0, 0), scr(1, 0), g)
     // labels
-    const fontsize = (s2x(1) - s2x(0)) * 0.07
+    const width = s2x(1) - s2x(0), height = t2y(-1) - t2y(1)
+    const fontsize = Math.min(width * 0.07, height * 0.25)
     g.save()
     g.fillStyle = WHITE
     g.textBaseline = 'top'
@@ -273,7 +274,7 @@ function draw_leadings(es_leadings, is_black_leading, s2x, t2y, g) {
               [TRANSPARENT, '', 0]
         const text = `${header}+${f2s(Math.abs(v))}`
         merge(g, {fillStyle, textBaseline})
-        fill_text(g, fontsize, text, ...scr(s, vpos * max_t))
+        fill_text(g, fontsize, text, ...scr(s, vpos * max_t), width * 0.2)
     })
     g.restore()
 }
