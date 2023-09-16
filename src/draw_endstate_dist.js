@@ -114,7 +114,8 @@ function colors_for(s, hot) {
     const white_color = '#eee', alt_white_color = '#ccc'
     const hot_color = [ORANGE, '#f00', '#f0f']
     const territory_void_color = '#888'
-    const stone_void_color = hot_color[hot]
+    const stone_void_color = truep(R.endstate_sum) ?
+          hot_color[hot] : territory_void_color
     const if_alive = (a, d) => s.stone && alive(s) ? a : d
     const void_color = s.stone ? stone_void_color : territory_void_color
     const owner_color = s.endstate >= 0 ?
