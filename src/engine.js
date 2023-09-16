@@ -696,7 +696,10 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     ]
     missing_rule.forEach(if_missing)
     const turn_sign = bturn ? 1 : -1
-    const cook1 = (f, key) => {const val = f(h[key]); truep(val) && (h[key] = val)}
+    const cook1 = (f, key) => {
+        const val = f(h[key])
+        truep(val) && (h[key] = val)
+    }
     const cook = ([f, ...keys]) => keys.forEach(k => cook1(f, k))
     const to_ary = f => a => Array.isArray(a) && a.map(f)
     const to_f_by_turn = z => to_f(z) * turn_sign
