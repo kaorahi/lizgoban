@@ -72,6 +72,7 @@ const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 const suggest_keys2 = [
     'endstate', 'endstate_stdev', 'score_without_komi', 'ambiguity',
     'stone_entropy',
+    'endstate_surprise',
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'shorttermScoreError',
 ]
@@ -85,6 +86,7 @@ function suggest_handler(h) {
     h.ownership && (h.endstate = endstate_from_ownership_destructive(h.ownership))
     h.ownership_stdev &&
         (h.endstate_stdev = endstate_from_ownership_destructive(h.ownership_stdev))
+    h.endstate && (h.endstate_surprise = endstate_surprise(h.endstate))
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})
     const cur_by_engine = cur.by[engine_id]
     const prefer_cached_p = cur_by_engine.visits > h.visits &&
@@ -175,6 +177,7 @@ function set_renderer_state(...args) {
     const move_history_keys = [
         'move', 'is_black', 'ko_state', 'ambiguity',
         M.plot_stone_entropy_p() && 'stone_entropy',
+        M.plot_endstate_surprise_p() && 'endstate_surprise',
         'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
         M.plot_shorttermScoreError_p() && 'shorttermScoreError',
     ].filter(truep)
@@ -319,6 +322,17 @@ function add_endstate_stdev_to_stones(stones, endstate_stdev) {
     endstate_stdev && aa_each(stones, (s, i, j) => {
         s.endstate_stdev = aa_ref(endstate_stdev, i, j)
     })
+}
+
+function endstate_surprise(endstate) {
+    const delta = 12, eps = 1e-10
+    const prev = game.ref(game.move_count - delta).endstate
+    if (!(endstate && prev)) {return 0}
+    const pr = o => clip((o + 1) / 2, eps, 1 - eps)
+    const f = (p, q) => p * Math.log(p / q)
+    const kl = (p, q) => f(p, q) + f(1 - p, 1 - q)
+    const o_kl = (c, i, j) => kl(pr(c), pr(aa_ref(prev, i, j)))
+    return sum(aa_map(endstate, o_kl).flat())
 }
 
 const lagged_endstate_diff = make_lagged_aa(endstate_lag_max_diff)
