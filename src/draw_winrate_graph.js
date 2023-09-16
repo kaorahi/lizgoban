@@ -6,7 +6,10 @@ const upper_graph_rate = 0.5
 
 function draw_winrate_graph(canvas, show_until, handle_mouse_on_winrate_graph) {
     const g = canvas.getContext("2d")
+    g.save()
+    g.lineJoin = 'round'
     draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_graph)
+    g.restore()
 }
 
 function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_graph) {
