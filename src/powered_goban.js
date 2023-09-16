@@ -174,8 +174,6 @@ function set_renderer_state(...args) {
     const endstate = aa_map(R.stones, h => h.endstate || 0)
     const endstate_clusters = get_endstate_clusters(endstate)
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
-    const invalid_endstate_p =
-          (endstate_clusters.length === 1 && endstate_clusters[0].ownership_sum === 0)
     const move_history_keys = [
         'move', 'is_black', 'ko_state', 'ambiguity',
         M.plot_stone_entropy_p() && 'stone_entropy',
