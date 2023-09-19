@@ -42,7 +42,6 @@ const R = {
     history_length: 0, suggest: [], engine_bturn: true, visits: 1,
     visits_per_sec: 0,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
-    soppo: [],
     future_moves: [],
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
     in_match: false, in_pair_match: null,
