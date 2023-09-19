@@ -379,11 +379,14 @@ function get_ambiguity(stones, endstate) {
 function ambiguity_for_endstate(es) {return 1 - Math.abs(es)}
 
 function get_stone_entropy(stones, endstate) {
+    return get_ambiguity_gen(stones, endstate, endstate_entropy)
+}
+
+function endstate_entropy(es) {
     const log2 = p => Math.log(p) / Math.log(2)
     const h = p => (p > 0) ? (- p * log2(p)) : 0
     const entropy = p => h(p) + h(1 - p)
-    const stone_entropy = es => entropy((es + 1) / 2)
-    return get_ambiguity_gen(stones, endstate, stone_entropy)
+    return entropy((es + 1) / 2)
 }
 
 function get_ambiguity_gen(stones, endstate, func) {
