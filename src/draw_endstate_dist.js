@@ -87,10 +87,10 @@ function classify(ss) {return [ss.filter(alive), ss.filter(dead)]}
 function draw_endstate(ssg, komi, p2x, o2y, g) {
     const hotness_table = [
         // [stone_ambiguity threshold, hotness]
-        [40, 2], [20, 1], [- Infinity, 0]
+        [30, 2], [20, 1], [- Infinity, 0]
     ]
     const [left, middle, right] = ssg, ss = ssg.flat()
-    const stone_ambiguity = sum(ss.map(s => s.stone ? 1 - Math.abs(s.endstate) : 0))
+    const stone_ambiguity = sum(ss.map(s => s.stone ? endstate_entropy(s.endstate) : 0)) * 0.5
     const hot = hotness_table.find(([t, _]) => stone_ambiguity >= t)[1]
     const {b_komi, w_komi, bk_offset, wk_offset, l_offset, m_offset, r_offset}
           = param_for(left, middle, right, komi)
