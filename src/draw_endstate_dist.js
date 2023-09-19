@@ -20,7 +20,7 @@ function draw_endstate_distribution(canvas) {
     const [t2y, y2t] = translator_pair([1, -1], [height * 0.55, height * 0.98])
     draw_leadings(es_leadings, score_diff > 0, s2x, t2y, g)
     // overlay
-    draw_amb_gain(width, height, g)
+    R.amb_gain && draw_amb_gain(width, height, g)
     // show
     show_endstate_distribution(canvas)
 }

@@ -159,7 +159,7 @@ function set_renderer_state(...args) {
     const winrate_history = winrate_from_game()
     const winrate_history_set = winrate_history_set_from_game()
     const soppo = get_soppo()
-    const amb_gain = get_amb_gain(game)
+    const amb_gain = M.plot_amb_gain_p() && get_amb_gain(game)
     const su_p = finitep(move_count_for_suggestion())
     const previous_suggest = !su_p && get_previous_suggest()
     const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
