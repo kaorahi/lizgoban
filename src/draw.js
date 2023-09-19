@@ -166,7 +166,7 @@ const zone_hue_knot = [
 
 function zone_hue(direction) {
     // 0 <= direction <= 1
-    const epsilon = 1e-8, d = clip(direction, 0, 1 - epsilon)
+    const epsilon = 1e-8, d = clip((direction + 0.25) % 1, 0, 1 - epsilon)
     // piecewise linear interpolation
     const n = zone_hue_knot.length - 1
     const k = Math.floor(d * n), s = d * n - k
