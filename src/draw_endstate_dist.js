@@ -298,7 +298,7 @@ function draw_amb_gain(width, height, g) {
 
 function draw_amb_gain_sub(is_black, color, hx, hy, g) {
     const line_width = 4, relative_radius = 0.08
-    const amb_scale = 0.33, moyo_scale = 0.33, pow = 0.5
+    const amb_scale = 0.33, moyo_scale = 0.33, pow = 3.0
     const r = Math.min(hx, hy)
     const {ambiguity_gain, moyolead_gain} = R.amb_gain
     const f = (a, scale) => amb_emphasize(a[is_black] * scale, pow)
@@ -310,7 +310,8 @@ function draw_amb_gain_sub(is_black, color, hx, hy, g) {
 }
 
 function amb_emphasize(orig, power) {
-    return Math.sign(orig) * Math.abs(orig)**power
+    const conv = z => 1 - (1 - z)**power  // convert [0,1] to [0,1]
+    return Math.sign(orig) * conv(Math.abs(orig))
 }
 
 /////////////////////////////////////////////////
