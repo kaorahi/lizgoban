@@ -5,6 +5,7 @@
 
 const {create_game} = require('./game.js')
 const {endstate_clusters_for} = require('./area.js')
+const {get_amb_gain} = require('./amb_gain.js')
 
 // state
 let endstate_diff_interval = 12, showing_until = null, the_move_count_for_suggestion = null
@@ -158,6 +159,7 @@ function set_renderer_state(...args) {
     const winrate_history = winrate_from_game()
     const winrate_history_set = winrate_history_set_from_game()
     const soppo = get_soppo()
+    const amb_gain = get_amb_gain(game)
     const su_p = finitep(move_count_for_suggestion())
     const previous_suggest = !su_p && get_previous_suggest()
     const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
@@ -188,7 +190,7 @@ function set_renderer_state(...args) {
     const different_engine_for_white_p = AI.leelaz_for_white_p()
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
-              soppo,
+              soppo, amb_gain,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               different_engine_for_white_p,

@@ -19,6 +19,8 @@ function draw_endstate_distribution(canvas) {
     const [s2x, x2s] = translator_pair([0, 1], [width * 0.05, width * 0.95])
     const [t2y, y2t] = translator_pair([1, -1], [height * 0.55, height * 0.98])
     draw_leadings(es_leadings, score_diff > 0, s2x, t2y, g)
+    // overlay
+    draw_amb_gain(width, height, g)
     // show
     show_endstate_distribution(canvas)
 }
@@ -112,7 +114,7 @@ function param_for(left, middle, right, komi) {
 function colors_for(s, hot) {
     const black_color = '#222', alt_black_color = '#444'
     const white_color = '#eee', alt_white_color = '#ccc'
-    const hot_color = [ORANGE, '#f00', '#f0f']
+    const hot_color = [ORANGE, '#f00', '#60f']
     const territory_void_color = '#888'
     const stone_void_color = truep(R.endstate_sum) ?
           hot_color[hot] : territory_void_color
@@ -281,6 +283,29 @@ function draw_leadings(es_leadings, is_black_leading, s2x, t2y, g) {
         fill_text(g, fontsize, text, ...scr(s, vpos * max_t), width * 0.2)
     })
     g.restore()
+}
+
+////////////////////////////////////////////
+// amb gain
+
+function draw_amb_gain(width, height, g) {
+    const black_color = 'rgba(0,255,0,0.5)', white_color = 'rgba(255,0,255,0.5)'
+    const hx = width * 0.5, hy = height * 0.5
+    const table = [[true, black_color], [false, white_color]]
+    R.bturn || table.reverse()
+    table.map(a => draw_amb_gain_sub(...a, hx, hy, g))
+}
+
+function draw_amb_gain_sub(is_black, color, hx, hy, g) {
+    const line_width = 4, relative_radius = 0.08
+    const amb_scale = 0.5, moyo_scale = 0.5
+    const r = Math.min(hx, hy)
+    const {ambiguity_gain, moyolead_gain} = R.amb_gain
+    const amb = ambiguity_gain[is_black] * amb_scale
+    const moyo = moyolead_gain[is_black] * moyo_scale
+    const hxy = [hx, hy], xy = [hx + amb * r, hy - moyo * r]
+    g.lineWidth = line_width; g.strokeStyle = g.fillStyle = color
+    line(hxy, xy, g); fill_circle(xy, r * relative_radius, g)
 }
 
 /////////////////////////////////////////////////
