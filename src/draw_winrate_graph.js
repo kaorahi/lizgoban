@@ -49,6 +49,7 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
     draw_winrate_graph_ambiguity(sr2coord, sq2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
+    draw_winrate_graph_amb_gain(w, sr2coord_noclip, g)
     draw_winrate_graph_order(sr2coord, g)
     draw_winrate_graph_aggressiveness(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
@@ -414,6 +415,34 @@ function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
     // scale
     const at_r = [80, 60, 40, 20], to_loss = r => (100 - offset - r) / scale
     draw_winrate_graph_scale(at_r, to_loss, style.b, w * 0.995, sr2coord, g)
+}
+
+function draw_winrate_graph_amb_gain(w, sr2coord, g) {
+    const rmin = - zone_indicator_height_percent
+    const x_for = s => Math.round(sr2coord(s, 0)[0])  // "round" to avoid gaps
+    const y_for = r => sr2coord(R.init_len, r)[1]
+    const [y1, y2] = [0, rmin].map(y_for)
+    const scores = winrate_history_values_of('score_without_komi')
+          .map(z => true_or(z, NaN))  // komi is canceled in 'd_score' below
+    // bottom space for zone indicator
+    g.fillStyle = DARK_GRAY; fill_rect([0, y_for(0)], [w, y_for(rmin)], g)
+    R.move_history.forEach((cur, mc, a) => {
+        const {amb_gain} = cur; if (!amb_gain) {return}
+        const {ambiguity_gain, moyolead_gain} = amb_gain
+        const diff = v => v[true] - v[false]
+        const amb = diff(ambiguity_gain), moyo = diff(moyolead_gain)
+        if (!truep(amb) || !truep(moyo)) {return}
+        const bsize = board_size()
+        const scale = 0.33, pow = 3.0
+        const conv = z => 1 - (1 - z)**pow  // convert [0,1] to [0,1]
+        const f = orig => (Math.sign(orig) * conv(clip((Math.abs(orig) * scale), 0, 1)) + 1) * 0.5 * (bsize - 1)
+        const j = f(amb), i = f(- moyo)
+        // draw
+        const xy1 = [x_for(mc - 0.5), y1]
+        const xy2 = [x_for(mc + 0.5), y2]
+        g.fillStyle = zone_color(i, j, 1.0)
+        fill_rect(xy1, xy2, g)
+    })
 }
 
 function draw_winrate_graph_order(sr2coord, g) {
