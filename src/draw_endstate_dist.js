@@ -317,7 +317,7 @@ function draw_amb_gain_sub(is_black, color, hx, hy, g) {
 
 function amb_emphasize(orig, power) {
     const conv = z => 1 - (1 - z)**power  // convert [0,1] to [0,1]
-    return Math.sign(orig) * conv(Math.abs(orig))
+    return Math.tanh(Math.sign(orig) * conv(Math.abs(orig)))
 }
 
 /////////////////////////////////////////////////
