@@ -136,9 +136,41 @@ function winrate_bar_order_set_style(s, fontsize, g) {
 function zone_color(i, j, alpha) {
     if (i < 0 || j < 0) {return TRANSPARENT}
     const mid = (board_size() - 1) / 2
-    const direction = (Math.atan2(i - mid, j - mid) / Math.PI + 1) * 180
+    // right = 0/4, top = 1/4, left = 2/4, bottom = 3/4, right = 4/4
+    const direction = (Math.atan2(i - mid, mid - j) / Math.PI + 1) * 0.5
     const height = 1 - Math.max(...[i, j].map(k => Math.abs(k - mid))) / mid
-    return hsla((direction + 270) % 360, 70, height * 50 + 50, alpha)
+    const h = zone_hue(direction), l = 50 + 50 * height
+    return hsla(h, 70, l, alpha)
+}
+
+const zone_hue_knot = [
+    // These colors looks approximately equidistant for my eyes.
+    0, // red
+    15,
+    30, // orange
+    45,
+    60, // yellow
+    70, //        (very near to yellow)
+    120, // green
+    160, //        (near to cyan)
+    180, // cyan
+    200, //        (near to cyan)
+    240, // blue
+    270, //        (near to purple)
+    280, // purple
+    290, //        (near to purple)
+    320, // pink
+    340,
+    360, // (red)
+]
+
+function zone_hue(direction) {
+    // 0 <= direction <= 1
+    const epsilon = 1e-8, d = clip(direction, 0, 1 - epsilon)
+    // piecewise linear interpolation
+    const n = zone_hue_knot.length - 1
+    const k = Math.floor(d * n), s = d * n - k
+    return (1 - s) * zone_hue_knot[k] + s * zone_hue_knot[k + 1]
 }
 
 /////////////////////////////////////////////////
