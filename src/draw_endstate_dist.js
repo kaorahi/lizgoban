@@ -298,14 +298,19 @@ function draw_amb_gain(width, height, g) {
 
 function draw_amb_gain_sub(is_black, color, hx, hy, g) {
     const line_width = 4, relative_radius = 0.08
-    const amb_scale = 0.5, moyo_scale = 0.5
+    const amb_scale = 0.33, moyo_scale = 0.33, pow = 0.5
     const r = Math.min(hx, hy)
     const {ambiguity_gain, moyolead_gain} = R.amb_gain
-    const amb = ambiguity_gain[is_black] * amb_scale
-    const moyo = moyolead_gain[is_black] * moyo_scale
+    const f = (a, scale) => amb_emphasize(a[is_black] * scale, pow)
+    const amb = f(ambiguity_gain, amb_scale)
+    const moyo = f(moyolead_gain, moyo_scale)
     const hxy = [hx, hy], xy = [hx + amb * r, hy - moyo * r]
     g.lineWidth = line_width; g.strokeStyle = g.fillStyle = color
     line(hxy, xy, g); fill_circle(xy, r * relative_radius, g)
+}
+
+function amb_emphasize(orig, power) {
+    return Math.sign(orig) * Math.abs(orig)**power
 }
 
 /////////////////////////////////////////////////
