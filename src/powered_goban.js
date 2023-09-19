@@ -358,25 +358,17 @@ function get_endstate_clusters(endstate, move_count) {
 }
 
 function get_ambiguity_etc(stones, endstate) {
-    const ambiguity = get_ambiguity(stones, endstate)
     const stone_entropy = get_stone_entropy(stones, endstate)
     const [black_settled_territory, white_settled_territory] =
           [true, false].map(black => get_settled_territory(stones, endstate, black))
     const area_ambiguity_ratio = get_area_ambiguity_ratio(endstate)
     const ret = {
-        ambiguity, stone_entropy,
+        stone_entropy,
         black_settled_territory, white_settled_territory, area_ambiguity_ratio,
     }
     each_key_value(ret, (k, v) => {if (!truep(v)) delete ret[k]})
     return ret
 }
-
-function get_ambiguity(stones, endstate) {
-    // ambiguity = sum of (1 - |ownership|) for all stones on the board.
-    return get_ambiguity_gen(stones, endstate, ambiguity_for_endstate)
-}
-
-function ambiguity_for_endstate(es) {return 1 - Math.abs(es)}
 
 function get_stone_entropy(stones, endstate) {
     return get_ambiguity_gen(stones, endstate, endstate_entropy)
