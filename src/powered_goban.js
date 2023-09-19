@@ -186,7 +186,7 @@ function set_renderer_state(...args) {
         M.plot_shorttermScoreError_p() && 'shorttermScoreError',
     ].filter(truep)
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
-    const move_history = [{}, ...game.map(get_move_history)]
+    const move_history = [get_move_history(game.ref(0)), ...game.map(get_move_history)]
     const different_engine_for_white_p = AI.leelaz_for_white_p()
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
