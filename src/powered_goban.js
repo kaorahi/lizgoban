@@ -408,7 +408,7 @@ function get_settled_territory(stones, endstate, black) {
 }
 
 function get_area_ambiguity_ratio(endstate) {
-    return endstate && average(endstate.flat().map(ambiguity_for_endstate))
+    return endstate && average(endstate.flat().map(endstate_entropy))
 }
 
 function set_ambiguity_etc_in_game(game) {
