@@ -1007,10 +1007,12 @@ function mapping_line_coords(b_winrate, unit, canvas) {
 
 function draw_zone_color_chart(canvas) {
     const {g, idx2coord, half_unit} = goban_params(canvas)
+    // "round" to avoid gaps
+    const int_xy = (i, j) => idx2coord(i, j).map(Math.round)
+    const vertices = (i, j) => [-0.5, +0.5].map(d => int_xy(i + d, j + d))
     clear_canvas(canvas, TRANSPARENT, g)
     seq(board_size()).forEach(i => seq(board_size()).forEach(j => {
-        const xy = idx2coord(i, j)
-        g.fillStyle = zone_color(i, j); fill_square_around(xy, half_unit, g)
+        g.fillStyle = zone_color(i, j); fill_rect(...vertices(i, j), g)
     }))
 }
 
