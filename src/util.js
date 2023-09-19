@@ -160,6 +160,13 @@ E.orig_suggest_p = s => s.order >= 0
 E.endstate_from_ownership_destructive =
     ownership => aa_new(board_size(), board_size(), () => ownership.shift())
 
+E.endstate_entropy = es => {
+    const log2 = p => Math.log(p) / Math.log(2)
+    const h = p => (p > 0) ? (- p * log2(p)) : 0
+    const entropy = p => h(p) + h(1 - p)
+    return entropy((es + 1) / 2)
+}
+
 E.change_detector = init_val => {
     let prev
     const is_changed = val => {const changed = (val != prev); prev = val; return changed}
