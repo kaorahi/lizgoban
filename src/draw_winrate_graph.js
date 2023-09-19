@@ -334,14 +334,12 @@ function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
     }
     const items_in_upper_chart = [
         // key, stroke, fill, scale, plotter
-        ['ambiguity', TRANSPARENT, 'rgba(255,0,0,0.2)', 1, highlight_background_above(20)],
+        ['stone_entropy', TRANSPARENT, 'rgba(255,0,0,0.2)', 0.5, highlight_background_above(20)],
     ]
     const items_in_lower_chart = [
         // key, stroke, fill, scale, plotter
         ['area_ambiguity_ratio', 'rgba(128,128,128,0.4)', TRANSPARENT, 100, line],
-        ['stone_entropy', '#008', TRANSPARENT, 0.5, line],
-        // ['ambiguity', TRANSPARENT, '#800', 1, dots],
-        ['ambiguity', '#800', TRANSPARENT, 1, line],
+        ['stone_entropy', '#800', TRANSPARENT, 0.5, line],
         // ['ambiguity', RED, 'rgba(255,0,0,0.3)', 1, edged_fill_line],
         ['endstate_surprise', '#660', TRANSPARENT, 1, line],
         ['score_stdev', '#066', TRANSPARENT, 1, line],
