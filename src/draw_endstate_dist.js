@@ -66,7 +66,7 @@ function sorted_stone_groups(komi, score_diff) {
         const eql = (a, b) => !!a === !!b
         const stony = s => s.stone && eql(s.black, s.endstate > 0)
         const is_target = s => eql(stony(s), stone_p)
-        const weight = es => settled_p ? es**2 : 1 - es**2
+        const weight = es => settled_p ? 1 - endstate_entropy(es) : endstate_entropy(es)
         const soft_count = es => es * weight(es)
         const f = (acc, s) => is_target(s) ? acc + soft_count(s.endstate) : acc
         return flat_stones.reduce(f, 0)
