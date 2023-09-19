@@ -26,6 +26,7 @@ E.clip = (x, lower, upper) =>
     Math.max(lower, Math.min(x, E.truep(upper) ? upper : Infinity))
 E.sum = a => a.reduce((r,x) => r + x, 0)
 E.average = a => E.sum(a) / a.length
+E.weighted_average = (a, w) => E.sum(a.map((z, k) => z * w[k])) / E.sum(w)
 // E.clone = x => JSON.parse(JSON.stringify(x))
 E.merge = Object.assign
 E.empty = a => !a || (a.length === 0)
