@@ -7,18 +7,19 @@ function get_amb_gain(game) {
 }
 
 function get_amb_gain_sub(f, keys, game) {
-    // "recent_moves" should be an odd number so that the opponent's values
+    // "recent" should be an even number so that the opponent's values
     // are kept unchanged.
-    const recent_moves = 51, discount_factor = 0.9
+    const recent = 50
+    const weight_for = distance => 1 + Math.cos(Math.PI * distance / recent)
     const {move_count} = game
-    const from = Math.max(game.init_len, move_count - recent_moves + 1)
+    const from = Math.max(game.init_len, move_count - recent)
     const rev = seq_from_to(from, move_count).toReversed().map(game.ref)
           .map(h => pick_keys(h, ...keys, 'move_count', 'is_black'))
     rev.map(f).forEach((z, k, a) => rev[k].gain = z - a[k + 1])
     return aa2hash([true, false].map(is_black => {
         const color_p = h => !xor(h.is_black, is_black)
         const hs = rev.filter(color_p).filter(h => truep(h.gain))
-        const weights = hs.map(h => discount_factor**(hs[0].move_count - h.move_count))
+        const weights = hs.map(h => weight_for(hs[0].move_count - h.move_count))
         const average_gain = weighted_average(hs.map(h => h.gain), weights)
         return [is_black, average_gain]
     }))
