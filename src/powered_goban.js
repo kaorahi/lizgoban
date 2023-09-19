@@ -397,10 +397,9 @@ function get_ambiguity_gen(stones, endstate, func) {
 
 function get_settled_territory(stones, endstate, black) {
     if (!endstate) {return null}
-    const exponent = 3.0
     const sign = black ? +1 : -1
     const hama = black ? R.black_hama : R.white_hama
-    const g = es => clip(es * sign, 0) ** exponent
+    const g = es => clip(es * sign, 0) * (1 - endstate_entropy(es))
     const f = (h, i, j) => {
         const coef = !h.stone ? 1 : xor(h.black, black) ? 2 : 0
         return g(aa_ref(endstate, i, j)) * coef
