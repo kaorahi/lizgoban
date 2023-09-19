@@ -169,7 +169,7 @@ function set_renderer_state(...args) {
     const komi = game.get_komi(), bsize = board_size()
     const cur = game.ref_current(), {note} = cur, comment = cur.comment || ''
     const comment_note = [comment, note].filter(identity).join(' / ')
-    const amb_gain = get_amb_gain(game)
+    const amb_gain = get_amb_gain(game, M.amb_gain_recent())
     amb_gain && merge(cur, {amb_gain})
     if (empty(R.suggest)) {R.score_without_komi = null}
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
