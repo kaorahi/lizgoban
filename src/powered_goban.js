@@ -158,7 +158,6 @@ function set_renderer_state(...args) {
     const busy = M.is_busy(), long_busy = M.is_long_busy()
     const winrate_history = winrate_from_game()
     const winrate_history_set = winrate_history_set_from_game()
-    const amb_gain = get_amb_gain(game)
     const su_p = finitep(move_count_for_suggestion())
     const previous_suggest = !su_p && get_previous_suggest()
     const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
@@ -170,6 +169,7 @@ function set_renderer_state(...args) {
     const komi = game.get_komi(), bsize = board_size()
     const cur = game.ref_current(), {note} = cur, comment = cur.comment || ''
     const comment_note = [comment, note].filter(identity).join(' / ')
+    const amb_gain = get_amb_gain(game)
     amb_gain && merge(cur, {amb_gain})
     if (empty(R.suggest)) {R.score_without_komi = null}
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
