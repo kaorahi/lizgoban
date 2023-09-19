@@ -20,7 +20,7 @@ function draw_endstate_distribution(canvas) {
     const [t2y, y2t] = translator_pair([1, -1], [height * 0.55, height * 0.98])
     draw_leadings(es_leadings, score_diff > 0, s2x, t2y, g)
     // overlay
-    R.amb_gain && draw_amb_gain(width, height, g)
+    draw_amb_gain(width, height, g)
     // show
     show_endstate_distribution(canvas)
 }
@@ -300,7 +300,8 @@ function draw_amb_gain_sub(is_black, color, hx, hy, g) {
     const line_width = 4, relative_radius = 0.08
     const amb_scale = 0.33, moyo_scale = 0.33, pow = 3.0
     const r = Math.min(hx, hy)
-    const {ambiguity_gain, moyolead_gain} = R.amb_gain
+    const {amb_gain} = R.move_history[R.move_count] || {}; if (!amb_gain) {return}
+    const {ambiguity_gain, moyolead_gain} = amb_gain
     const f = (a, scale) => amb_emphasize(a[is_black] * scale, pow)
     const amb = f(ambiguity_gain, amb_scale)
     const moyo = f(moyolead_gain, moyo_scale)

@@ -159,7 +159,7 @@ function set_renderer_state(...args) {
     const winrate_history = winrate_from_game()
     const winrate_history_set = winrate_history_set_from_game()
     const soppo = get_soppo()
-    const amb_gain = M.plot_amb_gain_p() && get_amb_gain(game)
+    const amb_gain = get_amb_gain(game)
     const su_p = finitep(move_count_for_suggestion())
     const previous_suggest = !su_p && get_previous_suggest()
     const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
@@ -171,6 +171,7 @@ function set_renderer_state(...args) {
     const komi = game.get_komi(), bsize = board_size()
     const cur = game.ref_current(), {note} = cur, comment = cur.comment || ''
     const comment_note = [comment, note].filter(identity).join(' / ')
+    amb_gain && merge(cur, {amb_gain})
     if (empty(R.suggest)) {R.score_without_komi = null}
     const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
           AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
@@ -184,13 +185,14 @@ function set_renderer_state(...args) {
         M.plot_score_stdev_p() && 'score_stdev',
         'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
         M.plot_shorttermScoreError_p() && 'shorttermScoreError',
+        M.plot_amb_gain_p() && 'amb_gain',
     ].filter(truep)
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
     const move_history = [get_move_history(game.ref(0)), ...game.map(get_move_history)]
     const different_engine_for_white_p = AI.leelaz_for_white_p()
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
-              soppo, amb_gain,
+              soppo,
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               different_engine_for_white_p,
