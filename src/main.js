@@ -1917,8 +1917,8 @@ ${info_for('weight', weight_file)}
     const message = `Engine is down. What to do?
 ${info}
 ${log}`
-    const buttons = ["RESTORE", "retry", "load weights", "(ignore)"]
-    const actions = [AI.restore, restart, load_weight, do_nothing]
+    const buttons = ["RESTORE", "retry", "load weights", "default preset", "(ignore)"]
+    const actions = [AI.restore, restart, load_weight, apply_first_preset, do_nothing]
     const do_action =
           z => {actions[z.response](); asking_recovery = false; update_all()}
     const recover = () => {
@@ -1927,6 +1927,10 @@ ${log}`
     };
     (Date.now() - last_restart_time >= option.minimum_auto_restart_millisec) ?
         (restart(), last_restart_time = Date.now()) : (asking_recovery || recover())
+}
+
+function apply_first_preset() {
+    apply_preset(option.preset[0], get_windows()[0])
 }
 
 // util
