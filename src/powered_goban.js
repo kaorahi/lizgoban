@@ -179,7 +179,7 @@ function set_renderer_state(...args) {
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
     const move_history_keys = [
         'move', 'is_black', 'ko_state', 'ambiguity',
-        M.plot_stone_entropy_p() && 'stone_entropy',
+        'stone_entropy',
         M.plot_endstate_surprise_p() && 'endstate_surprise',
         M.plot_score_stdev_p() && 'score_stdev',
         'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
