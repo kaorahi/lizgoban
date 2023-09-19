@@ -142,7 +142,6 @@ globalize({  // for powered_goban.js
         plot_endstate_surprise_p: () => option.plot_endstate_surprise_p,
         plot_score_stdev_p: () => option.plot_score_stdev_p,
         plot_shorttermScoreError_p: () => option.plot_shorttermScoreError_p,
-        plot_amb_gain_p: () => option.plot_amb_gain_p,
     }
 })
 const P = require('./powered_goban.js')

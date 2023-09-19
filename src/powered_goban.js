@@ -184,7 +184,7 @@ function set_renderer_state(...args) {
         M.plot_score_stdev_p() && 'score_stdev',
         'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
         M.plot_shorttermScoreError_p() && 'shorttermScoreError',
-        M.plot_amb_gain_p() && 'amb_gain',
+        'amb_gain',
     ].filter(truep)
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
     const move_history = [get_move_history(game.ref(0)), ...game.map(get_move_history)]

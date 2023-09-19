@@ -139,6 +139,7 @@ Additional plots [K = KataGo only]:
  <li>faint green / pink dots: black/white territories (+ komi) that are "settled" to some extent. Vertical bars on them are score differences except for these "settled" territories. If a green bar is higher than a pink dot, black has larger latent territory (ATSUMI, MOYO, etc.) and leads in overall estimated score even if "settled" territory is smaller at present. [K]</li>
  <li>alternating circles at the top: ko fights (o/x = resolved by connection/capture)</li>
  <li>thin red background: "hot" periods with high ambiguity of stones [K]</li>
+ <li>color band between the upper and lower plots: difference of playing styles between black and white. Red/Cyan (Yellow/Purple) = "Compared with white, recent black moves have increased/decreased ambiguous stones (territories)". (See the next "zone color chart" and green/pink lines in <a href="#OwnershipDistrib">Ownership distribution chart</a>) [K]</li>
  <li>rainbow square beside the graph: zone color map</li>
 </ul>
 
@@ -445,7 +446,7 @@ When the suggested variation is shown, inevitability of each move is indicate by
 Small blue up/down triangles on suggestions indicate the most preferred moves by "AIs for handicap games" as the stronger/weaker side in the first impression. "Moves like the stronger side" are also shown by sharper triangles in the winrate bar. (They are disabled on slow machines.)
 </p>
 
-<h3>Ownership distribution chart</h3>
+<h3><a name="OwnershipDistrib"></a>Ownership distribution chart</h3>
 
 <p>
 If "Ownership" is turned on, the ownership distribution is displayed at the bottom left corner of the window as a small rectangular chart with black, white, gray, and orange areas. The x-axis is the grid and the y-axis is its ownership. There are 19x19 = 361 grids in the standard board size. These grids are linearly rearranged on the x-axis and reordered as follows.
@@ -477,6 +478,10 @@ The bars below the chart represents the differences of the following scores (fro
  <li>total</li>
 </ul>
 The direction and the color of each bar correspond to the leading side. The length of each bar corresponds to the amount of the lead.
+</p>
+
+<p>
+Additionally, green and pink lines extend from the center to indicate the playing styles of black and white, respectively. The horizontal axis measures the change in "total ambiguity of all the stones on the board" due to recent moves, while the vertical axis measures the change in "lead of ambiguous territories". These correspond to the previously mentioned red line and faint vertical bars plotted below the winrate graph.
 </p>
 
 <hr>
