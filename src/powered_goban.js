@@ -303,7 +303,7 @@ function add_endstate_to_stones(stones, endstate, endstate_stdev, move_count, up
     add_endstate_stdev_to_stones(stones, endstate_stdev)
     purely_add_endstate_to_stones(stones, endstate)
     update_diff_p && update_endstate_diff(endstate)
-    merge(game.ref(move_count), get_ambiguity_etc(stones, endstate, game, move_count))
+    merge(game.ref(move_count), get_ambiguity_etc(stones, endstate))
 }
 function tentatively_add_endstate_to_stones(stones, endstate, immediately) {
     // if (!endstate) {return}
@@ -375,7 +375,7 @@ function get_endstate_clusters(endstate, move_count) {
     return endstate_clusters_for(endstate, stones)
 }
 
-function get_ambiguity_etc(stones, endstate, game, move_count) {
+function get_ambiguity_etc(stones, endstate) {
     const ambiguity = get_ambiguity(stones, endstate)
     const stone_entropy = get_stone_entropy(stones, endstate)
     const [black_settled_territory, white_settled_territory] =
@@ -430,7 +430,7 @@ function get_area_ambiguity_ratio(endstate) {
 function set_ambiguity_etc_in_game(game) {
     game.forEach(h => {
         const {endstate, move_count} = h, stones = game.stones_at(move_count)
-        merge(h, get_ambiguity_etc(stones, endstate, game, move_count))
+        merge(h, get_ambiguity_etc(stones, endstate))
     })
 }
 
