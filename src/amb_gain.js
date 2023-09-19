@@ -1,7 +1,7 @@
 'use strict'
 
 function get_amb_gain(game) {
-    const ambiguity_gain = get_amb_gain_sub(h => h.ambiguity, ['ambiguity'], game)
+    const ambiguity_gain = get_amb_gain_sub(h => h.stone_entropy, ['stone_entropy'], game)
     const moyolead_gain = get_moyolead_gain(game)
     return {ambiguity_gain, moyolead_gain}
 }
