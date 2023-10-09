@@ -431,7 +431,7 @@ function draw_winrate_graph_amb_gain(w, sr2coord, g) {
         const amb = diff(ambiguity_gain), moyo = diff(moyolead_gain)
         if (!truep(amb) || !truep(moyo)) {return}
         const bsize = board_size()
-        const amb_scale = 0.33, moyo_scale = 0.66, pow = 3.0
+        const amb_scale = 0.2, moyo_scale = 0.4, pow = 3.0
         const conv = z => 1 - (1 - z)**pow  // convert [0,1] to [0,1]
         const f = (orig, scale) => (Math.sign(orig) * conv(clip((Math.abs(orig) * scale), 0, 1)) + 1) * 0.5 * (bsize - 1)
         const j = f(amb, amb_scale), i = f(- moyo, moyo_scale)
