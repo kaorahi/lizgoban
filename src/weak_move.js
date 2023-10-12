@@ -253,8 +253,20 @@ function select_weak_move_by_goodness_order(orig_suggest, goodness, typical_orde
 
 function weak_move_candidates(suggest, threshold) {
     const acceptable = s => s.order === 0 ||
-          s.visits > R.visits * (threshold || 0.02)
+          s.visits > R.visits * (threshold || 0.02) && natural_pv_p(s)
     return suggest.filter(acceptable)
+}
+function natural_pv_p(s) {
+    const tenuki_threshold = 4.0
+    const distance = (a, b) => {
+        const [[ai, aj], [bi, bj]] = [a, b].map(move2idx)
+        const pass_distance = Infinity
+        return (ai < 0 || bi < 0) ? pass_distance :
+            Math.abs(ai - bi) + Math.abs(aj - bj)
+    }
+    const {move, pv} = s
+    return pv.length >= 2 &&
+        distance(move, pv[0]) <= distance(move, pv[1]) * tenuki_threshold
 }
 
 function make_commented_move(move, comment) {return move + '#' + comment}
