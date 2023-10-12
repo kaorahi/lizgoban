@@ -252,8 +252,9 @@ function select_weak_move_by_goodness_order(orig_suggest, goodness, typical_orde
 // util
 
 function weak_move_candidates(suggest, threshold) {
-    const too_small_visits = (suggest[0] || {}).visits * (threshold || 0.02)
-    return suggest.filter(s => s.visits > too_small_visits)
+    const acceptable = s => s.order === 0 ||
+          s.visits > R.visits * (threshold || 0.02)
+    return suggest.filter(acceptable)
 }
 
 function make_commented_move(move, comment) {return move + '#' + comment}
