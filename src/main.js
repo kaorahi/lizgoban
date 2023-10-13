@@ -1068,6 +1068,7 @@ function try_play_best(weaken) {
         orig_suggest: suggest,
         is_bturn: is_bturn(),
         movenum: game.move_count - game.init_len,
+        last_move: game.ref_current().move,
         stones: R.stones,
         orig_winrate: winrate_after(game.move_count),
         orig_score_without_komi: game.ref_current().score_without_komi,

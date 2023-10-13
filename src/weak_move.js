@@ -216,7 +216,7 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
     // weight = MY (on my stone), YOUR (on your stone), or SPACE
     // (ex.) your = [1.0, 0.1] means "Try to kill your stones
     // eagerly if they seems alive and slightly if they seems rather dead".
-    const {orig_suggest, is_bturn, stones, is_moves_ownership_supported} = state
+    const {orig_suggest, is_bturn, last_move, stones, is_moves_ownership_supported} = state
     if (!is_moves_ownership_supported) {return {}}
     const [my, your, space] = param
     const sign_for_me = is_bturn ? 1 : -1
@@ -234,12 +234,12 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
         return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
     }
     debug_log(`select_weak_move_by_moves_ownership: ${JSON.stringify({my, your, space, typical_order, threshold})}`)
-    return select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, threshold)
+    return select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, last_move, threshold)
 }
 
-function select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, threshold) {
+function select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, last_move, threshold) {
     // shuffle candidates so that "goodness = const." corresponds to "random"
-    const candidates = sort_by(weak_move_candidates(orig_suggest, threshold), Math.random)
+    const candidates = sort_by(weak_move_candidates(orig_suggest, last_move, threshold), Math.random)
     const evaluated = candidates.map(s => ({suggest: s, bad: - goodness(s)}))
     const ordered = sort_by_key(evaluated, 'bad').map((h, k) => ({...h, order: k}))
     const weight = h => Math.exp(- h.order / typical_order)
@@ -251,9 +251,27 @@ function select_weak_move_by_goodness_order(orig_suggest, goodness, typical_orde
 ///////////////////////////////////////////////
 // util
 
-function weak_move_candidates(suggest, threshold) {
+function weak_move_candidates(suggest, last_move, threshold) {
     const too_small_visits = (suggest[0] || {}).visits * (threshold || 0.02)
-    return suggest.filter(s => s.visits > too_small_visits)
+    const acceptable = s => s.order === 0 ||
+          s.visits > too_small_visits && natural_pv_p(s, last_move)
+    return suggest.filter(acceptable)
+}
+function natural_pv_p(s, last_move) {
+    if (!last_move) {return true}
+    const tenuki_threshold = 4.0, tenuki_distance = tenuki_threshold * 1.01
+    const distance = (a, b) => {
+        const [[ai, aj], [bi, bj]] = [a, b].map(move2idx)
+        const pass_distance = Infinity
+        return (ai < 0 || bi < 0) ? pass_distance :
+            Math.abs(ai - bi) + Math.abs(aj - bj)
+    }
+    const [my_move, your_next_move] = s.pv
+    const my_distance = distance(my_move, last_move)
+    if (!your_next_move) {return my_distance < tenuki_distance}
+    const your_distance = distance(your_next_move, last_move)
+    const is_tenuki_punished = my_distance > your_distance * tenuki_threshold
+    return !is_tenuki_punished
 }
 
 function make_commented_move(move, comment) {return move + '#' + comment}
