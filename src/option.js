@@ -145,6 +145,7 @@ const stored_keys_spec = [
     ['let_me_think', false, 'Let me think first', 'M'],
     ['auto_overview', true, 'Auto overview', 'v'],
     ['random_opening_p', false, 'Random opening', 'r'],
+    ['sound', true, 'Sound', 's'],
     ['gorule', default_gorule],
     ['stone_image_p', true],
     ['board_image_p', true],
