@@ -85,8 +85,8 @@ function random_opening_move(state) {
         const v_ok = s.visits >= top_visits * param.relative_visits
         return o_ok && w_ok && s_ok && v_ok
     }
-    const candidates = suggest.filter(admissible), uniform = () => 1
-    const selected = weighted_random_choice(candidates, uniform)
+    const candidates = suggest.filter(admissible)
+    const selected = random_choice(candidates)
     log(selected, 'candidates', candidates.map(h => h.order))
     const cs = candidates.map(c => c.move).join(','), clen = candidates.length
     const com = (clen === 1) ? 'Only this move is acceptable.' :
