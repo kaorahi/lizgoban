@@ -102,7 +102,7 @@ function weak_move(state, weaken_percent) {
     // (1) Converge winrate to 0 with move counts
     // (2) Occasionally play good moves with low probability
     // (3) Do not play too bad moves
-    const {orig_suggest, movenum, orig_winrate} = state
+    const {orig_suggest, movenum, last_move, orig_winrate} = state
     const r = clip((weaken_percent || 0) / 100, 0, 1)
     const initial_target_winrate = 40 * 10**(- r)
     const target = initial_target_winrate * 2**(- movenum / 100)  // (1)
@@ -111,7 +111,7 @@ function weak_move(state, weaken_percent) {
     const u = Math.random()**(1 - r) * r  // (2)
     const next_target = current_winrate * (1 - u) + target * u  // (3)
     const {selected, not_too_bad} =
-          select_nearest_move_to_winrate(orig_suggest, next_target)
+          select_nearest_move_to_winrate(orig_suggest, next_target, last_move)
     const {move, winrate} = selected, f = Math.round
     const com = `\
 winrates: move=${f(winrate)}%, target=${f(next_target)}%, long_target=${f(target)}%
@@ -120,8 +120,8 @@ candidates = ${not_too_bad.length}\
     return make_commented_move(move, com)
 }
 
-function select_nearest_move_to_winrate(orig_suggest, target_winrate) {
-    const suggest = weak_move_candidates(orig_suggest)
+function select_nearest_move_to_winrate(orig_suggest, target_winrate, last_move) {
+    const suggest = weak_move_candidates(orig_suggest, last_move)
     const not_too_bad = suggest.filter(s => s.winrate >= target_winrate)
     const selected = min_by(empty(not_too_bad) ? suggest : not_too_bad,
                             s => Math.abs(s.winrate - target_winrate))
