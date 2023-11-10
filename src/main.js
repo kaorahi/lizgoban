@@ -2199,7 +2199,7 @@ function start_repl() {
         // unoffical: may be changed in future
         game, sequence, sequence_cursor, option, R, api, update_all,
         // official
-        mimic,
+        mimic, app,
     }
     repl = require('repl').start('LizGoban> ')
     repl.on('exit', () => {repl = null; console.log('REPL is closed.'); update_all()})
