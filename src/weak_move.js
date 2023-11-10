@@ -136,12 +136,12 @@ function select_nearest_move_to_winrate(orig_suggest, target_winrate, last_move)
 // strategy: lose_score
 
 function weak_move_by_score(state, average_losing_points) {
-    const {orig_suggest, is_bturn, orig_score_without_komi, katago_p} = state
+    const {orig_suggest, is_bturn, last_move, orig_score_without_komi, katago_p} = state
     if (!katago_p) {
         const com = 'Play normally because "lose_score" is not supported for this engine.'
         return make_commented_move(best_move(state), com)
     }
-    const suggest = weak_move_candidates(orig_suggest)
+    const suggest = weak_move_candidates(orig_suggest, last_move)
     const current_score = orig_score_without_komi || 0
     const losing_points = Math.random() * average_losing_points * 2
     const sign = is_bturn ? 1 : -1
