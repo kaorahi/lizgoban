@@ -38,7 +38,7 @@ function persona_random_code() {return code_for_param(random_param())}
 
 function persona_html_for_code(code) {
     const board_labels = ["AI's stone", "your stone", "empty grid"]
-    const ownership_labels = ["AI's ownership", "your ownership"]
+    const ownership_labels = ["score + amb", "score - amb"]
     const param = param_for_code(code)
     const p_rows = aa_transpose(param)
     const format = z => Math.round(z * 5)

@@ -224,9 +224,14 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
     const my_ownership_p = es => sign_for_me * es > 0
     const weight = (z, es) => {
         const w = !z.stone ? space : my_color_p(z) ? my : your
-        return is_a(w, 'number') ? w : w[my_ownership_p(es) ? 0 : 1]
+        const [u, v] = is_a(w, 'number') ? [w, 0] : w
+        return [u + v, u - v]
     }
-    const evaluate = (z, es) => sign_for_me * weight(z, es) * es
+    const evaluate = (z, es) => {
+        const [a, b] = weight(z, es)
+        const entropy_term = (z.stone ? 1 : es) * endstate_entropy(es)
+        return sign_for_me * (a * es + b * entropy_term)
+    }
     const sum_on_stones = f => sum(aa_map(stones, f).flat().filter(truep))
     const goodness = suggest => {
         const copied_ownership = [...suggest.movesOwnership]
