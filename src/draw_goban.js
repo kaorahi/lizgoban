@@ -733,6 +733,7 @@ function draw_branches(h, xy, radius, g) {
 
 // ref. https://github.com/featurecat/lizzie/issues/671#issuecomment-586090067
 function draw_loss(h, xy, radius, g) {
+    draw_low_policy(h, xy, radius, g)
     const {gain, punished} = h, NOTHING = []
     const [color, size, draw, min_width] = !truep(gain) ? NOTHING :
           (gain <= big_blunder_threshold) ? [RED, 1, rev_triangle_around, 0.7] :
@@ -744,6 +745,17 @@ function draw_loss(h, xy, radius, g) {
     const line_width = truep(punished) ? clip(punished * 0.2, min_width, 3) : 1
     g.strokeStyle = color; g.lineWidth = line_width
     draw(xy, radius * size - line_width, g)
+}
+
+function draw_low_policy(h, xy, radius, g) {
+    const very_low_policy = 0.01, low_policy = 0.1, very_high_policy = 0.7
+    const {policy, max_policy} = h; if (!max_policy) {return}
+    const draw = (line_width) => {
+        g.strokeStyle = '#888'; g.lineWidth = line_width
+        square_around(xy, radius * 0.7 - line_width, g)
+    }
+    max_policy > very_high_policy && policy < low_policy ? draw(3) :
+        policy < very_low_policy ? draw(1) : null
 }
 
 function draw_shadow_maybe(h, xy, radius, cheap_shadow_p, g) {

@@ -461,6 +461,10 @@ function winrate_from_game(engine_id) {
             merge(cur, {gain})
             s <= game.move_count && merge_to_stone_at(cur, {gain})
             record_punished(gain)
+            const {suggest} = prev; if (!suggest) {return}
+            const max_policy = Math.max(...suggest.map(h => h.prior))
+            const policy = (suggest.find(h => h.move === cur.move) || {}).prior || 0.0
+            merge_to_stone_at(cur, {policy, max_policy})
         }
         const record_punished = gain => {
             const prev_gain = (prev || {}).gain
