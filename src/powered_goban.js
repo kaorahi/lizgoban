@@ -460,9 +460,9 @@ function winrate_from_game(engine_id) {
             if (engine_id || s === 0 || !truep(score_without_komi_at(s - 1))) {return}
             merge(cur, {gain})
             s <= game.move_count && merge_to_stone_at(cur, {gain})
-            record_panished(gain)
+            record_punished(gain)
         }
-        const record_panished = gain => {
+        const record_punished = gain => {
             const prev_gain = (prev || {}).gain
             truep(prev_gain) &&
                 // prev_punished = prev_loss - cur_loss
