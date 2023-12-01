@@ -455,17 +455,26 @@ function menu_template(win) {
     const insert_if = (pred, ...items) => pred ? items : []
     const lz_white = AI.leelaz_for_white_p()
     const dup = until_current_move_p =>
-          () => duplicate_sequence(until_current_move_p, true)
-    const file_menu = menu('File', [
-        item('New game', 'CmdOrCtrl+N', (this_item, win) => ask_new_game(win), true),
-        R.in_match ?
+        () => duplicate_sequence(until_current_move_p, true)
+        const get_recent_files=function() {
+            const files = store.get('recent_files') || [];
+            const item = files.map(file => ({
+                label: file,
+                click() { load_sgf_etc(file) }
+            }))
+            return item;
+        }
+        const file_menu = menu('File', [
+            item('New game', 'CmdOrCtrl+N', (this_item, win) => ask_new_game(win), true),
+            R.in_match ?
             item('Stop match', 'Shift+G',
-                 (this_item, win) => stop_match(window_prop(win).window_id), true) :
+            (this_item, win) => stop_match(window_prop(win).window_id), true) :
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
-        item('Pair match', undefined,
-             (this_item, win) => start_match(win, 3), true, !(R.in_match && R.in_pair_match)),
-        sep,
-        item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
+            item('Pair match', undefined,
+            (this_item, win) => start_match(win, 3), true, !(R.in_match && R.in_pair_match)),
+            sep,
+            item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
+            menu('Recent Files', get_recent_files()),
         item('Save SGF with analysis...', 'CmdOrCtrl+S', () => save_sgf(true), true),
         item('Save SGF...', 'CmdOrCtrl+Shift+S', () => save_sgf(false), true),
         sep,
@@ -2003,6 +2012,10 @@ function open_sgf_etc_in(dir, proc) {
     select_files('Select SGF etc.', dir).forEach(proc || load_sgf_etc)
 }
 function load_sgf_etc(filename) {
+    const files = store.get('recent_files') || []
+    if (!files.includes(filename)) {
+        set_stored('recent_files', [filename, ...files])
+    }
     const res = sgf_str => {read_sgf(sgf_str, filename); update_all()}
     const rej = () => {load_sgf(filename); update_all()}
     XYZ2SGF.fileToConvertedString(filename).then(res, rej)
