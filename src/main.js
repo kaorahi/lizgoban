@@ -2009,7 +2009,7 @@ function load_sgf_etc(filename) {
     const rej = () => {load_sgf(filename); update_all()}
     XYZ2SGF.fileToConvertedString(filename).then(res, rej)
     const recent = new Set([filename, ...store.get('recent_files', [])])
-    store.set('recent_files', [...recent].slice(0, option.max_resent_files))
+    store.set('recent_files', [...recent].slice(0, option.max_recent_files))
 }
 function load_sgf(filename, internally) {
     read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename, internally)
