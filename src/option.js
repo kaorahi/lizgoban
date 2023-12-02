@@ -26,6 +26,7 @@ const default_option = {
     sgf_dir: undefined,
     exercise_dir: 'exercise',
     max_cached_engines: 3,
+    max_recent_files: 10,
     face_image_rule: null,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     record_note_to_SGF: false,
