@@ -12,6 +12,8 @@
   "dependencies": {
     "@sabaki/sgf": "^3.4.7",
     "electron-store": "^8.0.2",
+    "iconv-lite": "^0.6.3",
+    "jschardet": "^3.0.0",
     "tmp": "^0.2.1",
     "twgl.js": "^5.0.4",
     "xyz2sgf": "^0.1.0"

@@ -36,6 +36,7 @@ const ELECTRON_STORE = safely(require, 'electron-store') ||
 globalize({ELECTRON_STORE})
 const store = new ELECTRON_STORE({name: 'lizgoban'})
 const http = require('http'), https = require('https')
+const jschardet = require('jschardet'), iconv = require('iconv-lite')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 const {select_weak_move, weak_move_prop} = require('./weak_move.js')
@@ -2012,7 +2013,24 @@ function load_sgf_etc(filename) {
     store.set('recent_files', [...recent].slice(0, option.max_recent_files))
 }
 function load_sgf(filename, internally) {
-    read_sgf(fs.readFileSync(filename, {encoding: 'utf8'}), filename, internally)
+    read_sgf(read_file_with_iconv(filename), filename, internally)
+}
+function read_file_with_iconv(filename, given_encoding) {
+    const buffer = fs.readFileSync(filename)
+    const encoding = given_encoding || fixed_encoding(jschardet.detect(buffer))
+    return iconv.decode(buffer, encoding)
+}
+function fixed_encoding(detected_by_jschardet) {
+    // not sure whether these fixes are necessary
+    const {encoding, confidence} = detected_by_jschardet
+    // cf. Sabaki (ugf.js)
+    if (confidence <= 0.2) {return 'utf8'}
+    // cf. KaTrain (sgf_parser.py)
+    const fix = {
+        'windows-1252': 'gbk',
+        gb2312: 'gbk',
+    }
+    return fix[encoding] || encoding
 }
 
 function save_sgf(cache_suggestions_p) {
