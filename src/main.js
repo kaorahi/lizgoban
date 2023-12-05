@@ -2006,9 +2006,10 @@ function open_sgf_etc_in(dir, proc) {
     select_files('Select SGF etc.', dir).forEach(proc || load_sgf_etc)
 }
 function load_sgf_etc(filename) {
+    const content = read_file_with_iconv(filename)
     const res = sgf_str => {read_sgf(sgf_str, filename); update_all()}
-    const rej = () => {load_sgf(filename); update_all()}
-    XYZ2SGF.fileToConvertedString(filename).then(res, rej)
+    const rej = () => res(content)
+    XYZ2SGF.xyz2sgf(content, XYZ2SGF.getExtension(filename)).then(res, rej)
     const recent = new Set([filename, ...store.get('recent_files', [])])
     store.set('recent_files', [...recent].slice(0, option.max_recent_files))
 }
