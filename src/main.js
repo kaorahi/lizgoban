@@ -466,7 +466,7 @@ function menu_template(win) {
              (this_item, win) => start_match(win, 3), true, !(R.in_match && R.in_pair_match)),
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
-        menu('Open recent...', store.get('recent_files', []).map(f =>
+        menu('Open recent', store.get('recent_files', []).map(f =>
             item(f, undefined, () => load_sgf_etc(f)))),
         item('Save SGF with analysis...', 'CmdOrCtrl+S', () => save_sgf(true), true),
         item('Save SGF...', 'CmdOrCtrl+Shift+S', () => save_sgf(false), true),
