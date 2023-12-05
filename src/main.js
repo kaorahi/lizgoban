@@ -2013,8 +2013,8 @@ function load_sgf_etc(filename) {
     const recent = new Set([filename, ...store.get('recent_files', [])])
     store.set('recent_files', [...recent].slice(0, option.max_recent_files))
 }
-function load_sgf(filename, internally) {
-    read_sgf(read_file_with_iconv(filename), filename, internally)
+function load_sgf_internally(filename) {
+    read_sgf(read_file_with_iconv(filename), filename, true)
 }
 function read_file_with_iconv(filename, given_encoding) {
     const buffer = fs.readFileSync(filename)
@@ -2122,7 +2122,7 @@ function load_exercise(selector, win, random_flip_p) {
     update_exercise_metadata({seen_at: (new Date()).toJSON()})
 }
 function load_as_exercise(file) {
-    load_sgf(file, true); goto_move_count(exercise_move_count(file)); game.trial = true
+    load_sgf_internally(file); goto_move_count(exercise_move_count(file)); game.trial = true
 }
 function open_exercise_dir() {open_sgf_etc_in(exercise_dir(), load_as_exercise)}
 function delete_exercise() {
