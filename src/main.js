@@ -1896,12 +1896,14 @@ function load_leelaz_for_black() {load_weight()}
 function load_leelaz_for_white() {load_weight(true)}
 
 function select_weight_file(dir) {
-    return select_files('Select weight file for engine', dir)[0]
+    const filter = {name: 'Weight Files', extensions: ['gz']}
+    return select_files('Select weight file for engine', dir, filter)[0]
 }
-function select_files(title, dir) {
+function select_files(title, dir, filter) {
     return dialog.showOpenDialogSync(null, {
         properties: ['openFile'], title: title,
         defaultPath: dir,
+        filters: [filter, {name: 'All Files', extensions: ['*']}],
     }) || []
 }
 
@@ -2003,7 +2005,10 @@ function paste_sgf_or_url_from_clipboard() {
 
 function open_sgf_etc() {open_sgf_etc_in(option_path('sgf_dir'))}
 function open_sgf_etc_in(dir, proc) {
-    select_files('Select SGF etc.', dir).forEach(proc || load_sgf_etc)
+    const filter = {name: 'Game Records', extensions: [
+        'sgf', 'gib', 'ngf', 'ugf', 'ugi',
+    ]}
+    select_files('Select SGF etc.', dir, filter).forEach(proc || load_sgf_etc)
 }
 function load_sgf_etc(filename) {
     const content = read_file_with_iconv(filename)
