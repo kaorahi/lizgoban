@@ -1901,7 +1901,8 @@ function load_leelaz_for_black() {load_weight()}
 function load_leelaz_for_white() {load_weight(true)}
 
 function select_weight_file(dir) {
-    const filter = {name: 'Weight Files', extensions: ['gz']}
+    // *.bin for TamaGo [2023-12-22]
+    const filter = {name: 'Weight Files (.gz, .bin)', extensions: ['gz', 'bin']}
     return select_files('Select weight file for engine', dir, filter)[0]
 }
 function select_files(title, dir, filter) {
