@@ -196,6 +196,7 @@ Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or 
   * match: Set it true for match vs. AI. Set it 3 for pair match (= AI plays 3 moves after your move).
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
   * stone_style: One of "2D", "2.5D", "3D", or "Face". (You need to set "face_image_rule" for "Face". See the next section.)
+  * wait_for_startup: Set it false for engines other than Leela Zero, Leela, and KataGo.
 
 (*1) In these items, you can use relative paths from the "working directory", that is the folder of `LizGoban*.exe` itself in the all-in-one package or `external/` otherwise. For example, you can simply write "leelaz" for `external/leelaz`.
 

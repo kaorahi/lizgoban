@@ -768,7 +768,7 @@ function apply_preset(rule, win) {
 
 function update_engines_by_preset(rule) {
     const {label, label_for_white, engine_for_white,
-           weight_file, weight_file_for_white} = rule
+           weight_file, weight_file_for_white, wait_for_startup_for_white} = rule
     const cur = AI.engine_info().black, extended = {...cur, ...rule}
     const f = h => JSON.stringify([h.leelaz_command, h.leelaz_args])
     const need_restart = cur && (f(cur) !== f(extended))
@@ -781,17 +781,17 @@ function update_engines_by_preset(rule) {
     weight_file && load_weight_file(weight_file)
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
         (is_engine_specified_explicitly && unload_leelaz_for_white())
-    engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label_for_white)
+    engine_for_white && AI.set_engine_for_white(engine_for_white, preset_label_for_white, wait_for_startup_for_white)
     const is_updated =
           need_restart || weight_file || weight_file_for_white || engine_for_white
     return is_updated
 }
 
 function restart_leelaz_by_preset(rule, first_p) {
-    const {leelaz_command, leelaz_args, label} = rule
+    const {leelaz_command, leelaz_args, label, wait_for_startup} = rule
     if (!leelaz_command || !leelaz_args) {no_engine_error(first_p); return false}
     unload_leelaz_for_white(); kill_all_leelaz()
-    start_leelaz(leelaz_command, leelaz_args, label)
+    start_leelaz(leelaz_command, leelaz_args, label, wait_for_startup)
     return true
 }
 
@@ -1945,18 +1945,18 @@ function apply_first_preset() {
 }
 
 // util
-function leelaz_start_args(leelaz_command, given_leelaz_args, label) {
+function leelaz_start_args(leelaz_command, given_leelaz_args, label, wait_for_startup) {
     const {working_dir} = option
     const leelaz_args = given_leelaz_args.slice()
     const preset_label = {label: label || ''}
-    const h = {leelaz_command, leelaz_args, preset_label, working_dir, illegal_handler,
+    const h = {leelaz_command, leelaz_args, preset_label, wait_for_startup, working_dir, illegal_handler,
                // weight_file is set for consistency with set_engine_for_white()
                // so that cached engines are reused correctly
                // (cf. start_args_equal())
                tuning_handler: make_tuning_handler(), weight_file: null,
                engine_log_snip_similar_lines: get_stored('engine_log_snip_similar_lines'),
                restart_handler: auto_restart, ready_handler: on_ready}
-    const opts = ['analyze_interval_centisec', 'wait_for_startup',
+    const opts = ['analyze_interval_centisec',
                   'minimum_suggested_moves']
     opts.forEach(key => h[key] = option[key])
     return {...h, ...leelaz_start_args_for_board_size(board_size())}

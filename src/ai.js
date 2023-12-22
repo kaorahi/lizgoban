@@ -121,10 +121,10 @@ function swap_leelaz_for_black_and_white() {
 function switch_to_random_leelaz(percent) {
     switch_leelaz(xor(is_bturn(), Math.random() < percent / 100))
 }
-function set_engine_for_white(command_args, preset_label) {
+function set_engine_for_white(command_args, preset_label, wait_for_startup) {
     const [leelaz_command, ...leelaz_args] = command_args
     const start_args = {...leelaz_for_black.start_args(), weight_file: null,
-                        leelaz_command, leelaz_args, preset_label}
+                        leelaz_command, leelaz_args, preset_label, wait_for_startup}
     start_engine_for_white(start_args)
 }
 function start_engine_for_white(start_args) {

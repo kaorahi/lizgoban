@@ -75,8 +75,10 @@ function parse_option(cur, succ) {
     const update_white_preset = preset => {
         const new_white_preset = (preset || []).map(h => {
             const {label, leelaz_command, leelaz_args, engine_for_white} = h
+            const wfs_for_white = 'wait_for_startup' in h ?
+                  {wait_for_startup_for_white: h.wait_for_startup} : {}
             return (leelaz_command && leelaz_args && !engine_for_white) &&
-                {label, label_for_white: label,
+                {label, label_for_white: label, ...wfs_for_white,
                  engine_for_white: [leelaz_command, ...leelaz_args]}
         }).filter(truep)
         !empty(new_white_preset) && (white_preset = new_white_preset)
@@ -103,7 +105,8 @@ function expand_preset(preset) {
         const {engine} = rule; if (!engine) {return}
         const [command, ...leelaz_args] = engine.map(expand)
         const leelaz_command = resolve_engine_path(command)
-        merge(rule, {leelaz_command, leelaz_args})
+        const {wait_for_startup} = option
+        merge(rule, {wait_for_startup, ...rule, leelaz_command, leelaz_args})
     })
 }
 
