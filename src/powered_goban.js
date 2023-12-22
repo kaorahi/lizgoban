@@ -77,6 +77,7 @@ const suggest_keys2 = [
     'score_stdev',
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'shorttermScoreError',
+    'amb_gain',
 ]
 
 const too_small_prior = 1e-3
