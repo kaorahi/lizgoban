@@ -179,6 +179,7 @@ function create_leelaz () {
             ['kata-analyze', 'kata-analyze interval 1'],
             ['kata-set-rules', `kata-set-rules ${gorule}`],
             ['kata-get-param', 'kata-get-param playoutDoublingAdvantage'],
+            ['set_free_handicap', 'set_free_handicap A1'],
             ['set_position', 'set_position'],  // = clear_board
         ]
         const checks_without_startup_log = [  // avoid too long log
@@ -252,7 +253,9 @@ function create_leelaz () {
         init_len > 0 && history[init_len - 1].move === pass_command && init_len--
         let init = history.slice(0, init_len), rest = history.slice(init_len)
         const set_handicap = () =>
-              leelaz(`set_free_handicap ${init.map(h => h.move).join(' ')}`)
+              is_supported('set_free_handicap') ?
+              leelaz(`set_free_handicap ${init.map(h => h.move).join(' ')}`) :
+              leelaz(init.map(h => `play b ${h.move}`).join(';'))
         const set_position = () => {
             const {stones} = get_stones_and_set_ko_state(init)
             const f = (s, i, j) => s.stone ? [bw_for(s.black), idx2move(i, j)] : []
