@@ -203,7 +203,7 @@ const simple_api = {
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
     set_sanity_from_renderer,
     open_image_url,
-    momorize_settings_for_sgf_from_image, archive_sgf_from_image,
+    memorize_settings_for_sgf_from_image, archive_sgf_from_image,
     enable_menu,
 }
 const api = {
@@ -1218,7 +1218,7 @@ function set_persona_code(code) {set_stored('persona_code', code)}
 function set_adjust_sanity_p(bool) {adjust_sanity_p = bool}
 function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
 let the_settings_for_sgf_from_image = null
-function momorize_settings_for_sgf_from_image(settings) {
+function memorize_settings_for_sgf_from_image(settings) {
     the_settings_for_sgf_from_image = settings
 }
 function recall_settings_for_sgf_from_image(win, silent) {
