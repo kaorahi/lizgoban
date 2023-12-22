@@ -753,7 +753,10 @@ function apply_preset(rule, win) {
     const stored = ['stone_style', 'random_opening_p', 'auto_overview']
     stored.forEach(key => (rule[key] !== undefined) && set_stored(key, rule[key]))
     const {empty_board, board_type, match, rules, handicap, komi} = rule
-    empty_board && !game.is_empty() && new_empty_board()
+    const bsize = rule.board_size
+    const new_board_p = (empty_board && !game.is_empty()) ||
+          (bsize && bsize !== board_size())
+    new_board_p && new_empty_board(bsize)
     handicap && add_handicap_stones(handicap)
     rules && set_gorule(rules)
     truep(komi) && set_komi(komi)

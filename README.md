@@ -189,6 +189,7 @@ Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or 
   * engine_for_white: Alternative engine is used for white if this is set. (*1)
   * label_for_white: Additional item name when engine_for_white is given.
   * empty_board: Set it true for creating new empty board.
+  * board_size: 9, 13, etc.
   * rules: See the comments for "rules" in gtp_example.cfg of KataGo.
   * komi: 7.5, 6.5, 0, -0.5, etc. (for KataGo)
   * handicap: Number of handicap stones.
