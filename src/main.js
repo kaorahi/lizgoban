@@ -2005,9 +2005,8 @@ function paste_sgf_or_url_from_clipboard() {
 
 function open_sgf_etc() {open_sgf_etc_in(option_path('sgf_dir'))}
 function open_sgf_etc_in(dir, proc) {
-    const filter = {name: 'Game Records', extensions: [
-        'sgf', 'gib', 'ngf', 'ugf', 'ugi',
-    ]}
+    const extensions = ['sgf', 'gib', 'ngf', 'ugf', 'ugi']
+    const filter = {name: 'Game Records', extensions}
     select_files('Select SGF etc.', dir, filter).forEach(proc || load_sgf_etc)
 }
 function load_sgf_etc(filename) {
