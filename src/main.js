@@ -772,6 +772,8 @@ function update_engines_by_preset(rule) {
     const preset_label_for_white = {label: label_for_white || (label || '') + '(W)'}
     const is_engine_specified_explicitly = rule.leelaz_command || weight_file
     need_restart && restart_leelaz_by_preset(extended)
+    !need_restart && is_engine_specified_explicitly && label &&
+        (AI.all_start_args().black.preset_label = {label})
     // backward compatibility for obsolete "weight_file" and "weight_file_for_white"
     weight_file && load_weight_file(weight_file)
     weight_file_for_white ? load_weight_file(weight_file_for_white, true) :
