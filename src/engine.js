@@ -179,6 +179,7 @@ function create_leelaz () {
             ['kata-analyze', 'kata-analyze interval 1'],
             ['kata-set-rules', `kata-set-rules ${gorule}`],
             ['kata-get-param', 'kata-get-param playoutDoublingAdvantage'],
+            ['set_position', 'set_position'],  // = clear_board
         ]
         const checks_without_startup_log = [  // avoid too long log
             ['minmoves', 'lz-analyze interval 1 minmoves 30'],
@@ -189,7 +190,6 @@ function create_leelaz () {
             ['ownershipStdev', 'kata-analyze 1 ownershipStdev true'],
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
-            ['set_position', 'set_position B D4'],
         ]
         const do_check = table => table.forEach(a => check_supported(...a))
         do_check(checks)
