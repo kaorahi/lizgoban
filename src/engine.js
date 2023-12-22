@@ -396,7 +396,10 @@ function create_leelaz () {
         return leelaz_args
     }
     const weight_option_pos_in_leelaz_args = h => {
-        const weight_options = ['-w', '--weights', '-model']  // -model for KataGo
+        const weight_options = [
+            '-w', '--weights',  // Leela Zero
+            '-model',  // KataGo
+        ]
         const idx = h.leelaz_args.findIndex(z => weight_options.includes(z))
         return (idx >= 0) && (idx + 1)
     }
