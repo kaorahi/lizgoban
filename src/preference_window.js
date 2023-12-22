@@ -42,7 +42,7 @@ window.onload = () => {
 }
 
 document.onkeydown = e => {
-    if (e.key === "Escape" || e.ctrlKey && e.key === "[") {window.close(); return}
+    if (e.key === "Escape" || e.ctrlKey && ["[", ","].includes(e.key)) {window.close(); return}
     if (e.ctrlKey || e.altKey || e.metaKey) {return}
     const action = shortcut_action[e.key]
     action && (e.preventDefault(), action())
