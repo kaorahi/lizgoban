@@ -399,6 +399,7 @@ function create_leelaz () {
         const weight_options = [
             '-w', '--weights',  // Leela Zero
             '-model',  // KataGo
+            '--model',  // TamaGo
         ]
         const idx = h.leelaz_args.findIndex(z => weight_options.includes(z))
         return (idx >= 0) && (idx + 1)
