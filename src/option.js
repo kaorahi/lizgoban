@@ -96,6 +96,12 @@ function option_path(key) {
     return ret
 }
 
+function option_expand_path(name) {
+    const path1 = default_path_for(name)
+    const path2 = PATH.resolve(option.working_dir, name)
+    return [path1, path2].find(p => fs.existsSync(p))
+}
+
 function expand_preset(preset) {
     const expand_ary = ([a, b]) => a === 'built-in' ? default_path_for(b) : b
     const expand = z => stringp(z) ? z : expand_ary(z)
@@ -169,6 +175,7 @@ function keep_backward_compatibility_of_stone_style(get_stored, set_stored) {
 module.exports = {
     option,
     option_path,
+    option_expand_path,
     image_paths,
     white_preset,
     preference_spec,

@@ -17,7 +17,7 @@ globalize(require('./util.js'), require('./coord.js'))
 const PATH = require('path'), fs = require('fs')
 
 const {
-    option, option_path, image_paths, white_preset,
+    option, option_path, option_expand_path, image_paths, white_preset,
     preference_spec,
     default_for_stored_key, stored_keys_for_renderer,
     keep_backward_compatibility_of_stone_style,
