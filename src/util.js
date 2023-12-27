@@ -168,6 +168,10 @@ E.endstate_entropy = es => {
     return entropy((es + 1) / 2)
 }
 
+E.cached = f => {
+    let cache = {}; return key => cache[key] || (cache[key] = f(key))
+}
+
 E.change_detector = init_val => {
     let prev
     const is_changed = val => {const changed = (val != prev); prev = val; return changed}

@@ -267,9 +267,6 @@ function mimic(channel, ...args) {
 
 // special commands
 
-function cached(f) {
-    let cache = {}; return key => cache[key] || (cache[key] = f(key))
-}
 const busy_handler_for =
       cached(subchannel => api_handler(subchannel, api[subchannel], true))
 ipc.on('busy', (e, subchannel, ...args) => busy_handler_for(subchannel)(e, ...args))
