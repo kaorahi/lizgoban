@@ -21,6 +21,7 @@ function create_leelaz () {
     let startup_log = [], is_in_startup = true
     let analysis_region = null, instant_analysis_p = false
     let obtained_pda_policy = null
+    let known_name_p = false
 
     // game state
     // bturn: for parsing engine output (updated when engine sync is finished)
@@ -174,6 +175,7 @@ function create_leelaz () {
 
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
+        leelaz('name', on_name_response)
         const checks = [
             ['lz-setoption', 'lz-setoption name visits value 0'],
             ['kata-analyze', 'kata-analyze interval 1'],
@@ -298,7 +300,7 @@ function create_leelaz () {
     const clear_leelaz_board = silent => {leelaz("clear_board"); leelaz_previous_history = []; silent || update()}
     const start_args = () => arg
     const network_size = () => network_size_text
-    const get_komi = () => komi
+    const get_komi = () => known_name_p ? komi : NaN
     const get_engine_id = () =>
           `${base_engine_id}-${gorule}-${komi}${aggressive}${analysis_region}`
     const peek_value = (move, cont) =>
@@ -542,6 +544,11 @@ function create_leelaz () {
         const append = v => (h[key] || (h[key] = [])).push(v)
         tokens.forEach(t => t.match(numeric) ? append(to_f(t)) : (key = t))
         receiver(h)
+    }
+
+    const on_name_response = (ok, result) => {
+        const known_names = ['Leela Zero', 'KataGo']
+        known_name_p = known_names.includes(result)
     }
 
     /////////////////////////////////////////////////

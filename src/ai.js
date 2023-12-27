@@ -181,8 +181,8 @@ function engine_info() {
                 aggressive_p: !!lz.aggressive(),
                 weight_file, network_size: lz.network_size()}
     }
-    const cur_lz = leelaz_for_this_turn()
-    return {engine_komi: cur_lz.get_komi(),
+    const cur_lz = leelaz_for_this_turn(), cur_lz_komi = cur_lz.get_komi()
+    return {engine_komi: valid_numberp(cur_lz_komi) ? cur_lz_komi : '?',
             leelaz_for_white_p: leelaz_for_white_p(), current: f(cur_lz),
             really_current: f(leelaz),  // for switch_to_random_leelaz
             black: f(leelaz_for_black), white: f(leelaz_for_white)}

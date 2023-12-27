@@ -908,7 +908,7 @@ function auto_play_progress() {
 }
 function ask_auto_play_sec(win, replaying) {
     const mismatched_komi = !replaying && AI.different_komi_for_black_and_white()
-    const warning = mismatched_komi ? '(Different komi for black & white) ' : ''
+    const warning = mismatched_komi ? '(Different komi for black & white?) ' : ''
     const label = 'Auto play seconds:'
     const cannel = replaying ? 'submit_auto_replay' : 'submit_auto_play'
     generic_input_dialog(win, label, default_auto_play_sec, cannel, warning)
