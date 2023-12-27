@@ -80,6 +80,7 @@ E.weighted_random_choice = (ary, weight_of) => {
     const magic = (...args) => - Math.log(Math.random()) / (weight_of(...args) + 1e-18)
     return E.min_by(ary, magic)
 }
+E.random_choice = ary => weighted_random_choice(ary, () => 1)
 
 // array of array
 E.aa_new = (m, n, f) => E.seq(m).map(i => E.seq(n).map(j => f(i, j)))
