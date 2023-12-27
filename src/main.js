@@ -1621,7 +1621,7 @@ function switch_to_game_id(id, move_count) {
 let cut_first_p = false
 function cut_sequence() {
     cut_first_p = (sequence_cursor === 0)
-    push_deleted_sequence(game); delete_sequence()
+    game.is_empty() || push_deleted_sequence(game); delete_sequence()
 }
 function uncut_sequence() {
     const insert_before = (cut_first_p && sequence_cursor === 0)
