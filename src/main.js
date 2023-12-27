@@ -316,6 +316,7 @@ function play(move, force_create, default_tag, comment, auto_play_in_match_sec) 
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     do_play(move, black_to_play_now_p(), tag || default_tag || undefined, comment)
     pass && wink()
+    play_move_sound(pass)
     truep(auto_play_in_match_sec) &&
         auto_play_in_match(auto_play_in_match_sec, get_auto_moves_in_match())
     autosave_later()
@@ -537,6 +538,9 @@ function menu_template(win) {
             item(`Ownership diff (${P.get_endstate_diff_interval()} moves)`,
                  undefined, (this_item, win) => ask_endstate_diff_interval(win),
                  false, R.show_endstate, true)),
+        ...insert_if(option.sound_file,
+                     sep,
+                     store_toggler_menu_item('Sound', 'sound')),
     ])
     const tool_menu = menu('Tool', [
         item('Quick overview', 'Shift+V', start_quick_overview, true),
@@ -883,7 +887,7 @@ function try_auto_play(force_next) {
     const weaken =
           auto_play_weaken_for_current_bw() || partner_weaken || auto_play_weaken
     const proc = {
-        replay: () => do_as_auto_play(redoable(), redo),
+        replay: () => do_as_auto_play(redoable(), () => {redo(); play_move_sound()}),
         best: () => try_play_best(weaken),
         random_opening: () => try_play_best(['random_opening']),
     }[auto_playing_strategy]
@@ -1181,6 +1185,19 @@ function ask_choice(message, values, proc) {
         const v = values[z.response]; truep(v) && proc(v); update_all()
     }
     dialog.showMessageBox(null, {type: "question", message, buttons}).then(action)
+}
+
+// sound
+function play_move_sound(pass_p) {
+    const {sound_file} = option; if (!R.sound || !sound_file) {return}
+    const c = game.ref_current()
+    // ugly! (set ko_state as side effect in current_stones())
+    c.ko_state || game.current_stones()
+    pass_p === undefined && (pass_p = is_pass(c.move))
+    const move_type = pass_p ? 'pass' :
+          c.ko_state.captured ? 'capture' : 'stone'
+    const path = option_expand_path(random_choice(sound_file[move_type]))
+    path && renderer('play_sound', path)
 }
 
 // misc.

@@ -216,6 +216,22 @@ on Mac or Linux. The latter option overwrites the former one in the second examp
 
 In addition, LizGoban reads external/config.json (and config.json in the "working directory" in the above (*1)) beforehand if they exist.
 
+#### To play stone sounds:
+
+Prepare sound files and put them into `external/` directory. Then add "sound_file" into config.json like this.
+
+~~~~
+{
+    ...
+    "sound_file" : {
+        "stone": ["stone1.wav", "stone2.wav", "stone3.wav"],
+        "capture": ["capture.wav"],
+        "pass": ["pass.wav"]
+    },
+    ...
+}
+~~~~
+
 #### To show ownerships of stones by facial expressions:
 
 Prepare stone images and put them into `external/` directory.

@@ -270,6 +270,9 @@ ipc.on('ask_game_info', (e, params) => {
     show_dialog('#game_info_dialog', asking_komi_p && '#komi')
 })
 
+const get_audio = cached(file => new Audio(file))
+ipc.on('play_sound', (e, file) => get_audio(file).play())
+
 ipc.on('save_q_and_a_images', (e, q_filename, a_filename, msg_path) => {
     const q_draw = canvas => D.draw_raw_goban(canvas, {draw_last_p: true})
     const a_draw = canvas => D.draw_goban_with_principal_variation(canvas, {})
