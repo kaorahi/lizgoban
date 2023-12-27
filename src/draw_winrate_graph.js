@@ -269,7 +269,7 @@ function draw_winrate_graph_ko_fight(sr2coord, g) {
         g.fillStyle = zone_color_for_move(z.move, alpha)
         marker([x, cy], radius, g)
     }
-    const f = (z, s) => (key, val) => val && plot(z, s, marker_for[key])
+    const f = (z, s) => (key, val) => val && plot(z, s, marker_for[key] || do_nothing)
     R.move_history.forEach((z, s) => each_key_value(z.ko_state || {}, f(z, s)))
 }
 

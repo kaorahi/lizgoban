@@ -88,6 +88,7 @@ function check_map(ij, {checked_map}) {
 
 function check_ko(ij, is_black, surrounded, captured_opponents, stones, ko_pool) {
     remove_obsolete_ko(stones, ko_pool)
+    const captured = !empty(captured_opponents)
     const ko_captured =
           check_ko_captured(ij, is_black, surrounded, captured_opponents, ko_pool)
     const resolved_by_connection = check_resolved_by_connection(ij, ko_pool)
@@ -95,7 +96,9 @@ function check_ko(ij, is_black, surrounded, captured_opponents, stones, ko_pool)
     // check_resolved_by_capture() is necessary anyway even if ko_captured is true.
     const resolved_by_capture =
           check_resolved_by_capture(stones, ko_pool) && !ko_captured
-    return {ko_captured, resolved_by_connection, resolved_by_capture}
+    // ugly! The element "captured" is just a by-product here and it is used
+    // for "capturing sound" effect, that is unrelated to "ko" actually.
+    return {captured, ko_captured, resolved_by_connection, resolved_by_capture}
 }
 
 function remove_obsolete_ko(stones, ko_pool) {
