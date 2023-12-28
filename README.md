@@ -218,12 +218,12 @@ In addition, LizGoban reads external/config.json (and config.json in the "workin
 
 #### To play stone sounds:
 
-Prepare sound files and put them into `external/` directory. Then add "sound_file" into config.json like this.
+Prepare the sound files by yourself and place them in the `external/` directory. Then add the entry "sound_file" to config.json as shown below. In this setup, one of the three sound files will be played randomly for each move.
 
 ~~~~
 {
     ...
-    "sound_file" : {
+    "sound_file": {
         "stone": ["stone1.wav", "stone2.wav", "stone3.wav"],
         "capture": ["capture.wav"],
         "pass": ["pass.wav"]
