@@ -878,6 +878,7 @@ function start_auto_play(strategy, sec, count) {
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
 }
 
+let doing_auto_play_p = false
 function try_auto_play(force_next) {
     // In pair matches, the specified weaken method is applied only to
     // the opponent AI. The partner AI ignores it and plays normally.
@@ -892,13 +893,14 @@ function try_auto_play(force_next) {
         random_opening: () => try_play_best(['random_opening']),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
-    auto_play_ready() && let_me_think_play(proc)
+    auto_play_ready() && ((doing_auto_play_p = true), let_me_think_play(proc))
     update_let_me_think(true)
 }
 function auto_play_ready() {
-    return !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
+    return !doing_auto_play_p && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
 function do_as_auto_play(playable, proc, silent) {
+    doing_auto_play_p = false
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause(), update_all())
     !silent && update_all()
 }
