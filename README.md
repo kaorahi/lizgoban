@@ -299,12 +299,22 @@ Please note that this feature is experimental and API etc. may be changed in fut
 ### 0.8.*
 
 * Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
-* Replace zone indicator with SOPPO indicator for successive misses of the best move.
+* Replace zone indicator with playing styles indicator.
 * Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
 * Add thin red background for "hot" periods in winrate graph.
 * Add "ambiguity of areas" (faint gray line) and "settled territories" (faint green/pink dots) to score graph.
 * Highlight settled areas by "v" key.
 * Make long press of cursor keys smoother.
+* Add sound feature. (You need to prepare and set sound files by yourself.)
+* Change playing style of persona strategy. This is still being tested and might change in the future.
+* Avoid unnatural tenuki in match vs. weakened AI.
+* Add "Open recent" to File menu.
+* Detect encoding of SGF files etc.
+* Support [TamaGo](https://github.com/kobanium/TamaGo). (You need [a patch](https://github.com/kobanium/TamaGo/pull/80) currently on 2023-12-28.)
+
+Incompatibilities:
+
+* Upgrade libraries (Electron 28, etc.). So you may need to do "npm install" again.
 
 ### 0.7.*
 
