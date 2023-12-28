@@ -6,8 +6,10 @@
 // public
 
 function select_weak_move(...args) {
+    const [state, ..._] = args
     const ret = get_move_etc(...args), {move, comment} = ret
-    return {...ret, comment: prepend_common_comment(move, comment, ...args)}
+    const selected = {...ret, comment: prepend_common_comment(move, comment, ...args)}
+    state.cont(selected)
 }
 
 function weak_move_prop(prop, weaken) {

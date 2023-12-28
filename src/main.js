@@ -1088,9 +1088,13 @@ function try_play_best(weaken) {
         katago_p: AI.katago_p(),
         is_moves_ownership_supported: AI.is_moves_ownership_supported(),
         preset_label_text: AI.engine_info().really_current.preset_label_text,
+        cont: selected => play_selected_weak_move(selected, weaken, weaken_method),
     }
-    const {move, comment, new_weaken_args, new_sanity} =
-          select_weak_move(state, weaken_method, weaken_args)
+    select_weak_move(state, weaken_method, weaken_args)
+}
+
+function play_selected_weak_move(selected, weaken, weaken_method) {
+    const {move, comment, new_weaken_args, new_sanity} = selected
     // clean me: side effect!
     new_weaken_args && weaken.splice(0, Infinity, weaken_method, ...new_weaken_args)
     new_sanity && adjust_sanity_p && !auto_play_weaken_for_current_bw()
