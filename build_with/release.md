@@ -2,6 +2,35 @@
 
 # Release notes
 
+## LizGoban 0.8.0-pre4
+
+* Upgrade KataGo to [1.14.0](https://github.com/lightvector/KataGo/releases/tag/v1.14.0).
+* Add sound feature. (You need to prepare and set sound files by yourself.)
+* Replace SOPPO indicator with playing styles indicator.
+* Add playing styles indicator to ownership distribution chart.
+* Change playing style of persona strategy. This is still being tested and might change in the future.
+* Avoid unnatural tenuki in match vs. weakened AI.
+* Add "Open recent" to File menu.
+* Detect encoding of SGF files etc.
+* Support [TamaGo](https://github.com/kobanium/TamaGo). (You need [a patch](https://github.com/kobanium/TamaGo/pull/80) currently on 2023-12-28.)
+
+Minor changes:
+
+* Add "board_size" and "wait_for_startup" to preset in config.json.
+* Make `Ctrl-,` key toggle preferences window.
+* Enable app.quit() in REPL for external control.
+* Add "default preset" to "Engine is down" dialog for SSH disconnection.
+* Use entropy as the ambiguity measure.
+* Fix bugs.
+
+Incompatibilities:
+
+* Upgrade libraries (Electron 28, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+
+Acknowledgement:
+
+* Thanks to [qcgm1978](https://github.com/qcgm1978) for the contributions and suggestions.
+
 ## LizGoban 0.8.0-pre3
 
 * Fix bugs. (wrong ruleset, reset of visit count)
