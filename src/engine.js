@@ -697,7 +697,7 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     // aa = [['move', 'D17', 'order', '0' ], ['pv', ['D17', 'C4']], ['pvVisits', ['20', '14']]]
     // orig h = {move: 'D17', order: '0', pv: ['D17', 'C4'], pvVisits: ['20', '14']}
     // cooked h = {move: 'D17', order: 0, pv: ['D17', 'C4'], pvVisits: [20, 14]}
-    const pat = /\s*(?=(?:pv|pvVisits|pvEdgeVisits|movesOwnership)\b)/  // keys for variable-length fields
+    const pat = /\s*(?=(?:pv|pvVisits|pvEdgeVisits|lizgobanPvWinrate|movesOwnership)\b)/  // keys for variable-length fields
     const to_key_value = a => a[0].match(pat) ? [a[0], a.slice(1)] : a
     const aa = s.trim().split(pat).map(z => z.split(/\s+/)).map(to_key_value)
     const h = array2hash([].concat(...aa))
@@ -721,6 +721,7 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
         [to_percent, 'winrate', 'prior', 'lcb'],
         [to_f, 'scoreStdev'],
         [to_ary(to_i), 'pvVisits', 'pvEdgeVisits'],
+        [to_ary(to_percent), 'lizgobanPvWinrate'],
         [to_ary(to_f_by_turn), 'movesOwnership'],
     ]
     cooking_rule.forEach(cook)

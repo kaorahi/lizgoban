@@ -143,11 +143,13 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     const bturn = opts.stones ? opts.bturn : R.bturn
     variation.forEach((move, k) => {
         const b = xor(bturn, k % 2 === 1), w = !b
-        const {pvVisits, pvEdgeVisits, uptodate_len} = suggest
+        const {pvVisits, pvEdgeVisits, uptodate_len, lizgobanPvWinrate} = suggest
         const pv0 = (pvVisits || [])[k - 1], pv = (pvEdgeVisits || pvVisits || [])[k]
+        const winrate = (lizgobanPvWinrate || [])[k]
         const supplementary_info = suggested_variation_p && {
             inevitability: pv0 && pv && (pv / pv0),
             obsolete_pv_p: (k === uptodate_len),
+            winrate,
         }
         const pv_stone = {
             stone: true, black: b, white: w,
@@ -680,7 +682,8 @@ function draw_movenums(h, xy, radius, g) {
     const color = (mn0 === 1) ? GREEN : h.variation_last ? RED : bw[h.black ? 1 : 0]
     const min_rad_coef = 0.3, max_rad_coef = 1.2  // max is uselss actually
     const rad_coef = clip(Math.sqrt(true_or(h.inevitability, 1)), min_rad_coef, max_rad_coef)
-    draw_text_on_stone(movenums.join(','), color, xy, radius * rad_coef, g)
+    const wr_color = truep(h.winrate) && suggest_color({winrate: h.winrate}).fill
+    draw_text_on_stone(movenums.join(','), wr_color || color, xy, radius * rad_coef, g)
 }
 
 function draw_pv_changes(h, xy, radius, g) {
