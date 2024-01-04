@@ -1,3 +1,7 @@
+# Animate MCTS steps with TamaGo and LizGoban
+
+See https://github.com/kaorahi/TamaGo/tree/mcts_step
+
 # LizGoban - Leela Zero & KataGo visualizer
 
 LizGoban is an analysis tool of the game Go with
