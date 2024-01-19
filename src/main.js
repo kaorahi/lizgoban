@@ -564,7 +564,7 @@ function menu_template(win) {
                          ...insert_if(is_exercise_file(game.sgf_file),
                                       item('Delete this', 'CmdOrCtrl+!', delete_exercise)),
                      ]),
-                     item('Open exercise', 'Alt+?', open_exercise_dir, true),
+                     item('Open exercise', 'Alt+?', () => open_exercise_dir(win), true),
                      sep),
         item("Tsumego frame", 'Shift+f',
              () => add_tsumego_frame(), true, game.move_count > 0),
@@ -2140,15 +2140,16 @@ function load_exercise(selector, win, random_flip_p) {
     const retry = () => {seen_exercises = []; load_exercise(selector, win, random_flip_p)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files, metadata); seen_exercises.push(fn)
-    start_match(win, 'reset_param'); load_as_exercise(expand_exercise_filename(fn))
+    load_as_exercise(expand_exercise_filename(fn), win)
     random_flip_p && game.random_flip_rotate()
     game.set_last_loaded_element(); tag_or_untag()
     update_exercise_metadata({seen_at: (new Date()).toJSON()})
 }
-function load_as_exercise(file) {
+function load_as_exercise(file, win) {
+    start_match(win, 'reset_param')
     load_sgf_internally(file); goto_move_count(exercise_move_count(file)); game.trial = true
 }
-function open_exercise_dir() {open_sgf_etc_in(exercise_dir(), load_as_exercise)}
+function open_exercise_dir(win) {open_sgf_etc_in(exercise_dir(), file => load_as_exercise(file, win))}
 function delete_exercise() {
     const dir = exercise_dir(), file = game.sgf_file, name = PATH.basename(file)
     if (!is_exercise_file(file)) {wink(); return}
