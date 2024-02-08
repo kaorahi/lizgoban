@@ -275,8 +275,7 @@ function ipc_with_sender_window(channel, proc) {
     ipc.on(channel,
            (e, ...args) => apply_api(channel, (...a) => {
                stop_auto()
-               get_windows().forEach(win => (win.webContents === e.sender) &&
-                                     proc(win, ...a))
+               proc(electron.BrowserWindow.fromWebContents(e.sender), ...a)
            }, args))
 }
 each_key_value({
