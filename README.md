@@ -18,6 +18,7 @@ with lots of original gimmicks.
 
 * [Highlights](#Highlights)
 * [Features](#Features)
+* [Setup](#Setup)
 * [Usage](#Usage)
 * [Major changes](#Changes)
 * [Links](#Links)
@@ -82,7 +83,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Translucent stones for too long variations as the above screenshot
 * Ownerships of stones by facial expressions
 
-## <a name="Usage"></a>Usage
+## <a name="Setup"></a>Setup
 
 ### 64bit Windows
 
@@ -314,6 +315,10 @@ $ echo 'mimic("play", "D3"); mimic("play", "R4")' | npm start -- -j '{"repl": tr
 See `const api = ...` in src/main.js for the list of commands. "Debug log" in "Debug" menu will be also useful if you want to observe which API is called for each mouse/keyboard operation. For debugging, you may prefer to type `mimic(...)` directly on the console with "REPL" in "Debug" menu.
 
 Please note that this feature is experimental and API etc. may be changed in future.
+
+## <a name="Usage"></a>Usage
+
+For information about the displayed marks, shortcut keys, and other features, refer to the "Help" menu in the app.
 
 ## <a name="Changes"></a>Major changes
 
