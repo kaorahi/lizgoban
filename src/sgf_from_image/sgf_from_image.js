@@ -188,9 +188,8 @@ function finish_electron() {
     const {send} = electron.ipcRenderer
     const settings = get_settings(), sgf = get_sgf()
     send('memorize_settings_for_sgf_from_image', settings)
-    send('read_sgf', sgf)
+    send('read_sgf_from_image', sgf)
     send('archive_sgf_from_image', archived_data({settings, sgf}))
-    window.close()
 }
 
 function get_settings() {return {param, points: [xy_11, xy_22, xy_mn]}}

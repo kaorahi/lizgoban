@@ -68,6 +68,9 @@ function new_window(default_board_type) {
         board_type: prop.board_type, previous_board_type: prop.previous_board_type,
         position: win.getPosition(), size: win.getSize(), maximized: win.isMaximized(),
     }))
+    // Hidden sgf_from_image windows prevent 'window-all-closed' event.
+    // So we need an explicit check here to trigger app.quit().
+    win.on('closed', () => empty(get_windows()) && electron.app.quit())
     win.once('ready-to-show', () => win.show())
     return win
 }

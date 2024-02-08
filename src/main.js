@@ -279,7 +279,7 @@ function ipc_with_sender_window(channel, proc) {
            }, args))
 }
 each_key_value({
-    close_window_or_cut_sequence, ask_new_game,
+    close_window_or_cut_sequence, ask_new_game, read_sgf_from_image,
 }, (channel, proc) => ipc_with_sender_window(channel, proc))
 
 ipc.on('app_version', e => (e.returnValue = app.getVersion()))
@@ -489,6 +489,8 @@ function menu_template(win) {
         item('Copy SGF', 'CmdOrCtrl+Shift+C', () => copy_sgf_to_clipboard(false), true),
         item('Copy SGF with analysis', 'CmdOrCtrl+C', () => copy_sgf_to_clipboard(true), true),
         item('Paste (SGF, URL, image)', 'CmdOrCtrl+V', paste_sgf_or_url_from_clipboard, true),
+        item('Reopen image', undefined, reveal_sgf_from_image_window, true,
+             hidden_sgf_from_image_window_p()),
         sep,
         item('Delete board', 'CmdOrCtrl+X', cut_sequence, true),
         item('Undelete board', 'CmdOrCtrl+Z', uncut_sequence, true,
@@ -1242,7 +1244,10 @@ function open_clipboard_image() {
         {role: 'toggleDevTools'}
     ]}
     const menu = [
-        {label: 'File', submenu: [{role: 'close'}]},
+        {label: 'File', submenu: [
+            {label: 'Close', accelerator: 'CmdOrCtrl+W',
+             click: () => close_or_hide_sgf_from_image_window(win)},
+        ]},
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
         {label: 'Tool', submenu: [recall]},
@@ -1255,6 +1260,31 @@ function open_clipboard_image() {
 }
 function open_demo_image() {open_image_url('demo_auto.png')}
 function open_demo_image2() {open_image_url('demo_hand.png')}
+function read_sgf_from_image(win, sgf) {
+    win.hide(); read_sgf(sgf) && (game.sgf_from_image_window = win)
+}
+function with_sgf_from_image_window(func, failed_value) {
+    const win = game.sgf_from_image_window, valid = win && !win.isDestroyed()
+    return valid ? func(win) : failed_value
+}
+function hidden_sgf_from_image_window_p() {
+    // never return "undefined", that confuses menu entries
+    return with_sgf_from_image_window(win => !win.isVisible(), false)
+}
+function reveal_sgf_from_image_window() {with_sgf_from_image_window(win => win.show())}
+function keep_sgf_from_image_p(win, excepted_game) {
+    const pred = gm => gm.sgf_from_image_window === win && game !== excepted_game
+    return sequence.some(pred)
+}
+function close_or_hide_sgf_from_image_window(win) {
+    const close_p = !keep_sgf_from_image_p(win)
+    close_p ? win.close() : win.hide()
+    return close_p
+}
+function expire_sgf_from_image_window() {
+    const win = with_sgf_from_image_window(identity)
+    win && !keep_sgf_from_image_p(win, game) && (game.sgf_from_image_window = null)
+}
 
 // misc.
 function force_color_to_play(bturn) {R.forced_color_to_play = bturn ? 'black' : 'white'}
@@ -1636,6 +1666,7 @@ function switch_to_game_id(id, move_count) {
 let cut_first_p = false
 function cut_sequence() {
     cut_first_p = (sequence_cursor === 0)
+    expire_sgf_from_image_window()
     game.is_empty() || push_deleted_sequence(game); delete_sequence()
 }
 function uncut_sequence() {

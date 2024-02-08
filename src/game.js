@@ -36,6 +36,7 @@ function create_game(init_history, init_prop) {
         trial: false, last_loaded_element: null, engines: {}, current_engine: null,
         analysis_region: null,
         needs_cooking_lizzie_cache: false,
+        sgf_from_image_window: null,
     }
     const update_move_count_after = f => (...args) => {
         const ret = f(...args); self.move_count = self.len(); return ret
