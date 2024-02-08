@@ -1199,40 +1199,7 @@ function play_move_sound(pass_p) {
     path && renderer('play_sound', path)
 }
 
-// misc.
-function force_color_to_play(bturn) {R.forced_color_to_play = bturn ? 'black' : 'white'}
-function cancel_forced_color() {R.forced_color_to_play = null}
-function toggle_trial() {game.trial = !game.trial}
-function close_window_or_cut_sequence(win) {
-    get_windows().length > 1 ? win.close() :
-        attached ? null :
-        (sequence.length <= 1 && game.is_empty()) ? win.close() : cut_sequence()
-}
-function help() {open_help('help.html')}
-function open_help(file_name) {
-    const menu = [
-        {label: '←', click: (it, win) => win.webContents.goBack()},
-        {label: '→', click: (it, win) => win.webContents.goForward()},
-        {label: 'File', submenu: [{role: 'close'}]},
-        {label: 'View',
-         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
-    ]
-    const opt = {webPreferences}
-    get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
-}
-function open_preference() {
-    const menu = [
-        {label: 'File', submenu: [{role: 'close'}]},
-        {label: 'View',
-         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
-        !app.isPackaged && {label: 'Debug', submenu: [{role: 'toggleDevTools'}]},
-    ].filter(truep)
-    const w = get_new_window('preference_window.html', {webPreferences})
-    w.setMenu(Menu.buildFromTemplate(menu))
-}
-function set_persona_code(code) {set_stored('persona_code', code)}
-function set_adjust_sanity_p(bool) {adjust_sanity_p = bool}
-function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
+// SGF from board image
 let the_settings_for_sgf_from_image = null
 function memorize_settings_for_sgf_from_image(settings) {
     the_settings_for_sgf_from_image = settings
@@ -1288,6 +1255,41 @@ function open_clipboard_image() {
 }
 function open_demo_image() {open_image_url('demo_auto.png')}
 function open_demo_image2() {open_image_url('demo_hand.png')}
+
+// misc.
+function force_color_to_play(bturn) {R.forced_color_to_play = bturn ? 'black' : 'white'}
+function cancel_forced_color() {R.forced_color_to_play = null}
+function toggle_trial() {game.trial = !game.trial}
+function close_window_or_cut_sequence(win) {
+    get_windows().length > 1 ? win.close() :
+        attached ? null :
+        (sequence.length <= 1 && game.is_empty()) ? win.close() : cut_sequence()
+}
+function help() {open_help('help.html')}
+function open_help(file_name) {
+    const menu = [
+        {label: '←', click: (it, win) => win.webContents.goBack()},
+        {label: '→', click: (it, win) => win.webContents.goForward()},
+        {label: 'File', submenu: [{role: 'close'}]},
+        {label: 'View',
+         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
+    ]
+    const opt = {webPreferences}
+    get_new_window(file_name, opt).setMenu(Menu.buildFromTemplate(menu))
+}
+function open_preference() {
+    const menu = [
+        {label: 'File', submenu: [{role: 'close'}]},
+        {label: 'View',
+         submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
+        !app.isPackaged && {label: 'Debug', submenu: [{role: 'toggleDevTools'}]},
+    ].filter(truep)
+    const w = get_new_window('preference_window.html', {webPreferences})
+    w.setMenu(Menu.buildFromTemplate(menu))
+}
+function set_persona_code(code) {set_stored('persona_code', code)}
+function set_adjust_sanity_p(bool) {adjust_sanity_p = bool}
+function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
 function info_text() {
     const f = (label, s) => s ?
           `<${label}>\n` + JSON.stringify(s) + '\n\n' : ''
