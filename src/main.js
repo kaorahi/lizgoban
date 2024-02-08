@@ -2019,6 +2019,9 @@ function copy_sgf_to_clipboard(cache_suggestions_p) {
     clipboard.writeText(game.to_sgf(cache_suggestions_p)); wink()
 }
 function paste_sgf_or_url_from_clipboard() {
+    // clipboard.read is experimental in Electron v28 [2024-02-02]
+    const mac_url = clipboard.read('public.file-url')  // for Cmd-C on Finder (Mac)
+    if (mac_url) {open_url(mac_url); return}
     if (!clipboard.readImage().isEmpty()) {open_clipboard_image(); return}
     const s = clipboard.readText(); s.match('^(file|https?)://') ? open_url(s) : read_sgf(s)
 }
