@@ -2076,7 +2076,9 @@ function load_sgf_internally(filename) {
     read_sgf(read_file_with_iconv(filename), filename, true)
 }
 function read_file_with_iconv(filename, given_encoding) {
-    const buffer = fs.readFileSync(filename)
+    return read_buffer_with_iconv(fs.readFileSync(filename), given_encoding)
+}
+function read_buffer_with_iconv(buffer, given_encoding) {
     const encoding = given_encoding || fixed_encoding(jschardet.detect(buffer))
     return iconv.decode(buffer, encoding)
 }
