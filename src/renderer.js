@@ -590,9 +590,9 @@ function handle_mouse_on_goban(canvas, coord2idx, read_only) {
           (set_showing_movenum_p(false), hover_off(canvas))
     const onmouseup = e => {
         if (!is_setting_analysis_region()) {return}
-        const idx = is_event_to_set_analysis_region(e) && mouse2idx(e, coord2idx)
+        const idx = mouse2idx(e, coord2idx)
         set_analysis_region(idx); hover_off(canvas)
-        idx && cancel_next_alt_up()
+        is_event_to_set_analysis_region(e) && cancel_next_alt_up()
     }
     const ondblclick = onmousedown
     const onmousemove = e => {unset_stone_is_clicked(); hover_here(e, coord2idx, canvas)}
@@ -1318,6 +1318,7 @@ document.onkeyup = e => {
     default: !reset_kb_moves_p && clear_selected_variation()
         // Don't call clear_selected_variation for z, x, ... to avoid flicker.
     }
+    set_analysis_region(null)
     clearp && clear_tentatively_showing_until()
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
     immediately_update_showing_until()
