@@ -216,7 +216,7 @@ on Mac or Linux. The latter option overwrites the former one in the second examp
 
 In addition, LizGoban reads external/config.json (and config.json in the "working directory" in the above (*1)) beforehand if they exist.
 
-#### To play stone sounds:
+#### <a name="sound"></a>To play stone sounds:
 
 Prepare the sound files by yourself and place them in the `external/` directory. Then add the entry "sound_file" to config.json as shown below. In this setup, one of the three sound files will be played randomly for each move.
 
@@ -275,6 +275,27 @@ The former is applied only if the latter says null. Namely, when "ownership" = O
 
 Set KataGo as the engine and select View > Stone > Face. You need to enable View > Ownership if you have disabled it.
 
+#### <a name="TamaGo"></a>To use [TamaGo](https://github.com/kobanium/TamaGo) 0.9.0 or later
+
+Set "board_size" and "wait_for_startup" in config.json as follows.
+
+~~~~
+{
+    ...,
+    "preset": [
+        ...,
+        {
+            "label": "TamaGo",
+            "engine": ["/bin/python3", "/PATH/TO/main.py", "--model", "/PATH/TO/model.bin"],
+            "board_size": 9,
+            "komi": 7,
+            "wait_for_startup": false
+        },
+        ...
+    ]
+}
+~~~~
+
 #### To replace images of board and stones (Experimental)
 
 Put your favorite images of board and stones as `external/board.png`, `external/black.png`, and `external/white.png` (before starting LizGoban).
@@ -305,12 +326,12 @@ Please note that this feature is experimental and API etc. may be changed in fut
 * Add "ambiguity of areas" (faint gray line) and "settled territories" (faint green/pink dots) to score graph.
 * Highlight settled areas by "v" key.
 * Make long press of cursor keys smoother.
-* Add sound feature. (You need to prepare and set sound files by yourself.)
+* Add sound feature. (You need to [prepare and set sound files](#sound) by yourself.)
 * Change playing style of persona strategy. This is still being tested and might change in the future.
 * Avoid unnatural tenuki in match vs. weakened AI.
 * Add "Open recent" to File menu.
 * Detect encoding of SGF files etc.
-* Support [TamaGo](https://github.com/kobanium/TamaGo). (You need [a patch](https://github.com/kobanium/TamaGo/pull/80) currently on 2023-12-28.)
+* [Support TamaGo](#TamaGo).
 
 Incompatibilities:
 
