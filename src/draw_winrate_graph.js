@@ -49,12 +49,14 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
     draw_winrate_graph_ambiguity(sr2coord, sq2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
-    draw_winrate_graph_amb_gain(w, sr2coord_noclip, g)
     draw_winrate_graph_order(sr2coord, g)
     draw_winrate_graph_aggressiveness(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     draw_score('score') || draw_no_score(w, sq2coord, fontsize, g)
+    // draw amb_gain after score so that overflowed score points
+    // are distinguishable by semi-occlusion
+    draw_winrate_graph_amb_gain(w, sr2coord_noclip, g)
     draw_winrate_graph_current(g)
     // mouse events
     handle_mouse_on_winrate_graph(canvas, coord2sr)
@@ -214,7 +216,7 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 function score_drawer(w, sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
           .map(z => truep(z) && (z - R.komi))
-    const max_score = Math.max(...scores.filter(truep).map(Math.abs))
+    const max_score = max_until_near_future(scores, Math.abs)
     if (max_score === - Infinity) {return command => ({score: () => false})[command]()}
     const color = "rgba(235,148,0,1)"
     const margin = 3, scale_list = [5, 2, 1, 0.5, 0.2, 0.1]
@@ -229,6 +231,14 @@ function score_drawer(w, sr2coord, g) {
         return true
     }
     return command => ({score: draw_score})[command]()
+}
+
+function max_until_near_future(vals, converter) {
+    const min_moves = 50, future_moves = 1
+    const concerned_moves = clip(R.move_count + future_moves, min_moves)
+    // +1 for the val of initial board
+    const concerned_vals = vals.slice(0, concerned_moves + 1).filter(truep)
+    return Math.max(...concerned_vals.map(converter))
 }
 
 function draw_score_text(w, to_r, sr2coord, g) {
@@ -378,8 +388,8 @@ function draw_winrate_graph_score_loss(w, sr2coord, large_graph, g) {
     const line_width = 1, blunder_width = large_graph ? 4 : 2
     const offset = 0, turn = R.bturn ? 'b' : 'w'
     const current = (R.winrate_history[R.move_count].cumulative_score_loss || {})[turn]
-    const worst = Math.max(...R.winrate_history.map(h => h.cumulative_score_loss)
-                           .map(csl => csl ? Math.max(csl['b'], csl['w']) : - Infinity))
+    const csls = R.winrate_history.map(h => h.cumulative_score_loss)
+    const worst = max_until_near_future(csls, csl => Math.max(csl['b'], csl['w']))
     const ks = [0.5, 1, 2, 5, 10, 20, 50, 100], range = 100 - offset
     const scale = 1 / (ks.find(k => worst <= k * range) || last(ks))
     const to_r = loss => 100 - offset - loss * scale
