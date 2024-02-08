@@ -2092,7 +2092,7 @@ function fixed_encoding(detected_by_jschardet) {
         'windows-1252': 'gbk',
         gb2312: 'gbk',
     }
-    return fix[encoding] || encoding
+    return fix[encoding.toLowerCase()] || encoding
 }
 
 function save_sgf(cache_suggestions_p) {
