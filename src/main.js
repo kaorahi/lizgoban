@@ -2138,10 +2138,13 @@ function open_url_sub(url, u) {
         if (res.statusCode !== 200) {
             toast(`Failed to get ${url}`); res.resume(); return
         }
-        let str = ''
-        res.setEncoding('utf8')
-        res.on('data', chunk => {str += chunk})
-        res.on('end', () => {read_sgf(str); update_all()})
+        // cf. https://github.com/ashtuchkin/iconv-lite/wiki/Use-Buffers-when-decoding
+        const chunks = []
+        res.on('data', chunk => chunks.push(chunk))
+        res.on('end', () => {
+            const buf = Buffer.concat(chunks), str = read_buffer_with_iconv(buf)
+            read_sgf(str); update_all()
+        })
     }
     switch (u.protocol) {
     case 'https:': https.get(url, on_get); break;
