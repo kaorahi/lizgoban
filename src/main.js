@@ -2077,15 +2077,16 @@ function save_sgf_to(filename, if_success, force_short_p, force_note_p) {
 function read_sgf(sgf_str, filename, internally) {
     const new_games = create_games_from_sgf(sgf_str, R.use_cached_suggest_p)
     if (empty(new_games)) {
-        dialog.showErrorBox("Failed to read SGF", snip(sgf_str, 200)); return
+        dialog.showErrorBox("Failed to read SGF", snip(sgf_str, 200)); return false
     }
     const trunk = new_games[0]
     const common_props = {sgf_file: filename || "", brothers: new_games}
     const auto_p = store.get('auto_overview')
     new_games.forEach(g => merge(g, common_props, {trial: g !== trunk}))
     trunk.merge_common_header(game); backup_and_replace_game(trunk)
-    if (internally) {return}
+    if (internally) {return true}
     auto_p ? (!AI.leelaz_for_white_p() && start_quick_overview()) : undo_to_start()
+    return true
 }
 
 function open_url(url) {
