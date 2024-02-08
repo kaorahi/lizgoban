@@ -1318,7 +1318,6 @@ document.onkeyup = e => {
     default: !reset_kb_moves_p && clear_selected_variation()
         // Don't call clear_selected_variation for z, x, ... to avoid flicker.
     }
-    set_analysis_region(null)
     clearp && clear_tentatively_showing_until()
     with_skip(do_nothing)  // cancel deferred proc (necessary!)
     immediately_update_showing_until()
