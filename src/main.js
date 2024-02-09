@@ -2149,7 +2149,7 @@ function open_url_sub(url, u) {
     switch (u.protocol) {
     case 'https:': https.get(url, on_get); break;
     case 'http:': http.get(url, on_get); break;
-    case 'file:': load_sgf_etc(u.pathname); break;
+    case 'file:': load_sgf_etc(decodeURIComponent(u.pathname)); break;
     default: toast(`Unsupported protocol: ${url}`); break;
     }
 }
