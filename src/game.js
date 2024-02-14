@@ -90,6 +90,10 @@ function create_game(init_history, init_prop) {
         transform: command => {
             history.splice(0, Infinity, ...TRANSFORM[command](history))
         },
+        swap_stone_colors: () =>
+        self.similar_game(history.map(h => ({...h, is_black: !h.is_black})), {
+            player_black: self.player_white, player_white: self.player_black
+        }),
         to_sgf: (cache_suggestions_p, force_note_p) =>
             game_to_sgf(self, cache_suggestions_p, force_note_p),
         load_sabaki_gametree: (gametree, index, cache_suggestions_p) =>

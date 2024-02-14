@@ -507,6 +507,7 @@ function menu_template(win) {
                 .map(key => key ? item(key.replace(/_/g, ' '), undefined,
                                        () => transform_board(key)) : sep)),
             sep,
+            item('Swap stone colors', undefined, swap_stone_colors),
             item('resize to 19x19 (bottom left)', undefined, resize_to_19x19),
         ]),
         item(`Komi (${game.get_komi()})`, undefined, () => ask_komi(win)),
@@ -1369,6 +1370,10 @@ function transform_board(key) {
 function resize_to_19x19() {
     // use SGF to clear recorded analysis
     read_sgf(game.shallow_copy({board_size: 19}).to_sgf(), null, true)
+}
+function swap_stone_colors() {
+    // use SGF to clear recorded analysis
+    read_sgf(game.swap_stone_colors().to_sgf(), null, true)
 }
 function save_q_and_a_images() {
     const pre = 'qa', format = {pre, sep: '_', post: ''}, dir = exercise_dir()
