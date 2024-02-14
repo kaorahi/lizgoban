@@ -167,7 +167,7 @@ function weak_move_by_score(state, average_losing_points) {
 function weak_move_etc_by_persona(state, persona_code, current_sanity, adjust_sanity_p) {
     const new_sanity = adjust_sanity_p && adjust_sanity(state, current_sanity)
     const sanity = true_or(new_sanity, current_sanity)
-    const {orig_suggest, generate_persona_param} = state
+    const {generate_persona_param} = state
     const typical_order = 1, threshold_range = [1e-3, 0.3]
     const param = generate_persona_param(persona_code).get()
     const log_threshold_range = threshold_range.map(Math.log)
