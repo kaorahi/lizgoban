@@ -462,6 +462,8 @@ function winrate_from_game(engine_id) {
             merge(cur, {gain})
             s <= game.move_count && merge_to_stone_at(cur, {gain})
             record_punished(gain)
+            overlooked_high_policy_p(cur, prev) &&
+                merge_to_stone_at(cur, {overlooked_high_policy: true})
         }
         const record_punished = gain => {
             const prev_gain = (prev || {}).gain
@@ -535,6 +537,13 @@ function winrate_suggested(move_count, engine_id) {
     const {suggest} = get_estimation(move_count - 1, engine_id)
     const sw = ((suggest || []).find(h => h.move === move && h.visits > 0) || {}).winrate
     return truep(sw) && (is_black ? sw : 100 - sw)
+}
+
+function overlooked_high_policy_p(cur, prev) {
+    const {suggest} = prev; if (!suggest || empty(suggest)) {return false}
+    const best_move_policy = suggest[0].prior  // assume sorted by 'order'
+    const policy = (suggest.find(h => h.move === cur.move) || {}).prior || 0.0
+    return best_move_policy > blunder_high_policy && policy < blunder_low_policy
 }
 
 /////////////////////////////////////////////////
@@ -656,6 +665,7 @@ module.exports = {
     update_info_in_stones, add_next_mark_to_stones,
     get_initial_b_winrate, add_info_to_stones, renew_game,
     set_ambiguity_etc_in_game,
+    overlooked_high_policy_p,
     delete_cache, undelete_cache,
     hold_suggestion_for_a_while,
 }

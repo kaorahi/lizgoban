@@ -368,6 +368,7 @@ function goto_previous_or_next_something(backwardp) {
             (resolved_by_connection || resolved_by_capture) && 'ko',
             h.illegal && 'illegal',
             check_blunder(ary[k + sign] || {}),  // show the board BEFORE the blunder
+            P.overlooked_high_policy_p(ary[k + sign] || {}, h) && 'policy',
         ].filter(truep).join(' / '); return reason
     }
     const all = game.array_until(Infinity); backwardp && all.reverse()

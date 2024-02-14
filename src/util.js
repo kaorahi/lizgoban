@@ -56,6 +56,8 @@ E.handicap_komi = -0.5
 E.default_gorule = 'chinese'
 E.blunder_threshold = -2
 E.big_blunder_threshold = -5
+E.blunder_low_policy = 0.1
+E.blunder_high_policy = 0.75
 E.black_to_play_p = (forced, bturn) => forced ? (forced === 'black') : bturn
 
 // seq(3) = [ 0, 1, 2 ], seq(3, 5) = [ 5, 6, 7 ], seq(-2) = []
