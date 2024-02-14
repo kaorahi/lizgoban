@@ -252,7 +252,7 @@ function create_leelaz () {
     const update_board_by_clear = (history, handicaps, init_len) => {
         clear_leelaz_board(true)
         // katago does not accept pass in set_position
-        init_len > 0 && history[init_len - 1].move === pass_command && init_len--
+        init_len > 0 && history[init_len - 1]?.move === pass_command && init_len--
         let init = history.slice(0, init_len), rest = history.slice(init_len)
         const set_handicap = () =>
               is_supported('set_free_handicap') ?
