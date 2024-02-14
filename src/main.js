@@ -609,6 +609,8 @@ function menu_template(win) {
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
         simple_toggler_menu_item('Keep bright board', 'keep_bright_board'),
+        item('Copy GTP sequence', undefined,
+             () => {clipboard.writeText(game.array_until(game.move_count).map(({move, is_black}) => `play ${is_black ? 'B' : 'W'} ${move}`).join('\\n')); wink()}, true, true, true),
         simple_toggler_menu_item('Show policy', 'debug_show_policy'),
         item(`Force aggressive (${debug_force_aggressive || "none"})`, 'Meta+a', () => {
             const next = R.bturn ?
