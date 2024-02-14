@@ -42,6 +42,7 @@ function stones_until(show_until, all_p, for_endstate) {
     // fixme: need cleaning (for_endstate)
     const recent_moves = Math.min(3, show_until - R.init_len), thick_moves = 7
     const near_future_moves = 7
+    const max_multi_movenums = 2
     const unnumbered =
           clip_init_len(for_endstate ? Infinity : all_p ? 0 : show_until - recent_moves)
     const highlighted_after = for_endstate ? Infinity :
@@ -49,6 +50,10 @@ function stones_until(show_until, all_p, for_endstate) {
     const thin_before =  for_endstate ? 0 :
           all_p ? highlighted_after - thick_moves + 1 : 0
     const displayed_stones = copy_stones_for_display()
+    const omit_long = a => a.length <= max_multi_movenums ? a :
+          ['', ...a.slice(- max_multi_movenums)]
+    const past_movenums = (ss, m) =>
+          ss.map(z => z.move_count - unnumbered).filter(k => k <= m)
     each_stone(displayed_stones, (h, idx) => {
         const ss = h.anytime_stones
         const [target, future] = latest_move_and_nearest_future_move(ss, show_until)
@@ -63,7 +68,7 @@ function stones_until(show_until, all_p, for_endstate) {
             const thin_movenums = (target.move_count < thin_before)
             const movenums = all_p ?
                   // clean me: to_s to avoid highlight of "1"
-                  ss.map(z => z.move_count - unnumbered).filter(k => k <= m).map(to_s) :
+                  omit_long(past_movenums(ss, m)).map(to_s) :
                   [m === recent_moves ? '1' : 'abcdefghijklmnopqrstuvwxyz'[m - 1]]
             m > 0 && merge(h, {movenums, variation_last,
                                thin_movenums, tag: null})
