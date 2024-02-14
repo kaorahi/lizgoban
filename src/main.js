@@ -1334,7 +1334,7 @@ function info_text() {
 }
 function ask_new_game(win) {ask_game_info(win, false, true)}
 function ask_game_info(win, asking_komi_p, initial_p) {
-    const {board_size, handicaps} = game
+    const {handicaps} = game
     const params = {
         info_text: info_text(), sgf_rule: game.sgf_gorule, current_rule: get_gorule(),
         supported_rules: AI.is_gorule_supported() && katago_supported_rules,
