@@ -30,7 +30,7 @@ E.weighted_average = (a, w) => E.sum(a.map((z, k) => z * w[k])) / E.sum(w)
 // E.clone = x => JSON.parse(JSON.stringify(x))
 E.merge = Object.assign
 E.empty = a => !a || (a.length === 0)
-E.last = a => a[a.length - 1]
+E.last = a => a.at(-1)
 E.uniq = a => [...new Set(a)]
 E.sort_by = (a, f) => a.slice().sort((x, y) => f(x) - f(y))
 E.sort_by_key = (a, key) => sort_by(a, h => h[key])
