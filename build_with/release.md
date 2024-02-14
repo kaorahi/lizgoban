@@ -67,7 +67,7 @@ You can switch KataGo versions (CPU, modern CPU, GPU) by [Preset] menu in LizGob
 
 ### To customize it on 64bit Windows
 
-If you want to replace built-in network (aka. model, weights)...
+If you want to use another network (aka. model, weights), you can simply click the Engine menu and select "Load network weights". In addition, if you want to replace the built-in network...
 
 1. Download and unzip the same all-in-one package as above.
 2. Copy `sample/custom_model/config.json` to the same folder as `LizGoban *.exe`.
