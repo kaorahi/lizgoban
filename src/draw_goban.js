@@ -61,10 +61,11 @@ function stones_until(show_until, all_p, for_endstate) {
             const m = target.move_count - unnumbered
             const variation_last = (target.move_count > highlighted_after)
             const thin_movenums = (target.move_count < thin_before)
-            const movenum_for = k => all_p ? to_s(k) :
-                  k === recent_moves ? '1' : 'abcdefghijklmnopqrstuvwxyz'[k - 1]
-            // clean me: to_s to avoid highlight of "1"
-            m > 0 && merge(h, {movenums: [movenum_for(m)], variation_last,
+            const movenums = all_p ?
+                  // clean me: to_s to avoid highlight of "1"
+                  ss.map(z => z.move_count - unnumbered).filter(k => k <= m).map(to_s) :
+                  [m === recent_moves ? '1' : 'abcdefghijklmnopqrstuvwxyz'[m - 1]]
+            m > 0 && merge(h, {movenums, variation_last,
                                thin_movenums, tag: null})
         } else {
             for_endstate && (h.stone = false)
