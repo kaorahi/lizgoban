@@ -719,7 +719,7 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     const cooking_rule = [
         [to_i, 'visits', 'order'],
         [to_percent, 'winrate', 'prior', 'lcb'],
-        [to_f, 'scoreStdev'],
+        [to_f, 'scoreMean', 'scoreLead', 'scoreStdev'],
         [to_ary(to_i), 'pvVisits', 'pvEdgeVisits'],
         [to_ary(to_f_by_turn), 'movesOwnership'],
     ]
