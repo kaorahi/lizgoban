@@ -1813,7 +1813,8 @@ function store_session(cache_suggestions_p) {
     stored_session.set('sequences_gz_b64', stored)
     debug_log('store_session done')
 }
-function restore_session() {
+function restore_session() {verbose_safely(restore_session_unsafe)}
+function restore_session_unsafe() {
     debug_log('restore_session start')
     deleted_sequences.push(...stored_session.get('sequences_gz_b64', []).map((stored, k, all) => {
         toast(`restoring autosaved games (${k + 1}/${all.length})...`)

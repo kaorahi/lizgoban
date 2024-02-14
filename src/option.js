@@ -65,7 +65,8 @@ function parse_argv() {
 }
 function parse_option(cur, succ) {
     const read_file = path => safely(fs.readFileSync, path) || '{}'
-    const merge_json = str => merge_with_preset(JSON.parse(str))
+    const merge_json = str => verbose_safely(merge_json_unsafe, str)
+    const merge_json_unsafe = str => merge_with_preset(JSON.parse(str))
     const merge_with_preset = orig => {
         // accept obsolete key "shortcut" for backward compatibility
         orig.shortcut && (orig.preset = [...(orig.preset || []), ...orig.shortcut])
