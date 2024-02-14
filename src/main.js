@@ -1723,8 +1723,11 @@ function sequence_prop_of(given_game) {
         const h_copy = P.append_implicit_tags_maybe(h); return h_copy.tag || ''
     }
     const tags = exclude_implicit_tags(given_game.map(pick_tag).join(''))
-    const {player_black, player_white, init_len, move_count, trial} = given_game
-    return {player_black, player_white, init_len, move_count, trial, len: given_game.len(), tags}
+    const keys = [
+        'player_black', 'player_white',
+        'init_len', 'move_count', 'trial',
+    ]
+    return {...pick_keys(given_game, ...keys), len: given_game.len(), tags}
 }
 
 function sequences_and_brothers() {return [...sequence, ...game.brothers]}
