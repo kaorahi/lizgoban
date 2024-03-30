@@ -952,9 +952,12 @@ function draw_endstate_diff(diff, xy, radius, g) {
 // mapping from goban to winrate bar
 
 function draw_winrate_mapping_line(h, xy, unit, g) {
-    if (minor_suggest_p(h)) {return}
+    const special_order = h.next_move ? 0 : null
+    if (minor_suggest_p(h) && !truep(special_order)) {return}
     const b_winrate = flip_maybe(fake_winrate(h.data))
-    const order = h.next_move ? 0 : Math.min(h.data.order, h.data.winrate_order)
+    // fake order can be negative!
+    const safe_min0 = (...a) => clip(Math.min(...a.filter(truep)), 0)
+    const order = safe_min0(special_order, h.data.order, h.data.winrate_order)
     g.lineWidth = 1.5 / (order * 2 + 1)
     g.strokeStyle = RED
     line(xy, ...mapping_line_coords(b_winrate, unit, g.canvas), g)
