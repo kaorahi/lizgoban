@@ -7,9 +7,12 @@
 
 function select_weak_move(...args) {
     const [state, ..._] = args
-    const ret = get_move_etc(...args), {move, comment} = ret
-    const selected = {...ret, comment: prepend_common_comment(move, comment, ...args)}
-    state.cont(selected)
+    const then = ret => {
+        const {move, comment} = ret
+        const selected = {...ret, comment: prepend_common_comment(move, comment, ...args)}
+        state.cont(selected)
+    }
+    get_move_etc(...args, then)
 }
 
 function weak_move_prop(prop, weaken) {
@@ -22,7 +25,7 @@ function weak_move_prop(prop, weaken) {
 
 // private
 
-function get_move_etc(state, weaken_method, weaken_args) {
+function get_move_etc(state, weaken_method, weaken_args, then) {
     const f = {
         random_candidate: weak_move,
         lose_score: weak_move_by_score,
@@ -30,7 +33,8 @@ function get_move_etc(state, weaken_method, weaken_args) {
         persona: weak_move_etc_by_persona,
     }[weaken_method] || best_move
     const ret = f(state, ...weaken_args)
-    return stringp(ret) ? parse_commented_move(ret) : ret
+    return functionp(ret) ? ret(then) :
+        stringp(ret) ? then(parse_commented_move(ret)) : then(ret)
 }
 
 function prepend_common_comment(move, comment, state, weaken_method, weaken_args) {
