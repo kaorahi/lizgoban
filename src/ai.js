@@ -52,9 +52,9 @@ function set_pondering(pausing, busy, game_node) {
     const b = (leelaz === leelaz_for_black)
     const humansl_p = leelaz_for_humansl && pondering &&
           (prev_humansl_game_node !== game_node)
-    const {humansl_metas} = M.humansl_engine() || {}
-    humansl_p && humansl_metas && game_node &&
-        (leelaz_for_humansl.humansl_query(humansl_metas, game_node),
+    const {metas} = M.humansl_engine() || {}
+    humansl_p && metas && game_node &&
+        (leelaz_for_humansl.humansl_query(metas, game_node),
          prev_humansl_game_node = game_node)
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)

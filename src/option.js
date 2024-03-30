@@ -24,7 +24,7 @@ const default_option = {
     // humansl_engine --- for Human supervised learning early test net
     // (example config)
     // "humansl_engine": {
-    //     "humansl_metas": [
+    //     "metas": [
     //         ["K", {"source": "kgs", "rank": "5k", "tc": "fast", "date": 2023}],
     //         ["D", {"rank": "1d"}]
     //     ],

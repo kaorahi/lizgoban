@@ -138,14 +138,14 @@ function create_leelaz () {
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
     }
-    const humansl_query = (humansl_metas, game_node) => {
+    const humansl_query = (metas, game_node) => {
         const ready = arg.humansl_handler
         // const ready =
-        //       arg.humansl_handler && humansl_metas && is_supported('humansl')
+        //       arg.humansl_handler && metas && is_supported('humansl')
         if (!ready) {return}
-        const changes = humansl_metas.map(([_, change]) => change)
+        const changes = metas.map(([_, change]) => change)
         const command = `hs-query-for-metas ${JSON.stringify(changes)}`
-        const kth_label = k => humansl_metas[k][0]
+        const kth_label = k => metas[k][0]
         const format = (res, k) => ({label: kth_label(k), response: res})
         const on_response = (ok, result) => ok &&
               arg.humansl_handler(JSON.parse(result).map(format), game_node)
