@@ -44,7 +44,7 @@ const R = {
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
     future_moves: [],
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
-    in_match: false, in_pair_match: null,
+    in_match: false, in_pair_match: null, random_pair_match_rate: null,
     hide_suggest: false,
     expand_winrate_bar: false, let_me_think: false, score_bar: false,
     max_visits: 1, board_type: 'double_boards', previous_board_type: '',

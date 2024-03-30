@@ -931,7 +931,13 @@ function increment_auto_play_count(n) {
     auto_playing(true) && stop_auto_play()
     auto_play_count += (n || 1)  // It is Infinity after all if n === Infinity
 }
-function decrement_auto_play_count() {auto_play_count--}
+function decrement_auto_play_count() {
+    auto_play_count--
+    const random_pair_match_p = (pair_match_info() === 'pair_match') &&
+          truep(R.random_pair_match_rate) && (auto_play_count % 2 === 0)
+    random_pair_match_p &&
+        (auto_play_count = (Math.random() < R.random_pair_match_rate) ? 2 : 0)
+}
 function stop_auto_play() {
     if (!auto_playing()) {return}
     auto_play_count = 0; let_me_think_exit_autoplay()
@@ -951,9 +957,10 @@ function default_weaken() {
 
 // match
 let auto_play_weaken = [], pondering_in_match = false
-function start_match(win, auto_moves_in_match) {
+function start_match(win, auto_moves_in_match, random_pair_match_rate) {
     const resetp = (auto_moves_in_match === 'reset_param')
     set_auto_moves_in_match(resetp ? 1 : to_i(auto_moves_in_match))
+    merge(R, {random_pair_match_rate})
     renderer(resetp ? 'reset_match_param' : 'set_match_param')
     set_board_type('raw', win); R.in_match = true
 }
