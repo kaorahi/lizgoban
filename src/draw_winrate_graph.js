@@ -324,6 +324,7 @@ function draw_winrate_graph_settled_territory(sr2coord, g) {
 function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
     const radius = 2, line_width = 3
     g.lineWidth = line_width
+    const wide_line = (...a) => {g.save(); g.lineWidth = 10; line(...a); g.restore()}
     const dots = (...args) => {
         const xys = args.slice(), g = xys.pop()
         xys.forEach(xy => fill_square_around(xy, radius, g))
@@ -355,6 +356,7 @@ function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
         ['score_stdev', '#066', TRANSPARENT, 1, line],
         ['root_rawStScoreError', '#00f', TRANSPARENT, 10, line],
         // ['root_rawStScoreError', TRANSPARENT, '#444', 10, dots],
+        ['root_rawVarTimeLeft', 'rgba(128,128,128,0.4)', TRANSPARENT, 2, wide_line],
 ]
     draw_winrate_graph_ambiguity_sub(items_in_upper_chart, sr2coord, g)
     draw_winrate_graph_ambiguity_sub(items_in_lower_chart, sq2coord, g)
