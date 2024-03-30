@@ -688,7 +688,11 @@ function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     const split_pattern = /\b(?=^dummy_header|ownership|ownershipStdev)\b/
     const splitted = `dummy_header ${s}`.split(split_pattern)
     const part = aa2hash(splitted.map(str => str.trim().split(/(?<=^\S+)\s+/)))
-    const {dummy_header: i_str, ownership: o_str, ownershipStdev: o_stdev_str} = part
+    const {
+        dummy_header: i_str,
+        ownership: o_str,
+        ownershipStdev: o_stdev_str,
+    } = part
     const ownership = ownership_parser(o_str, bturn)
     const ownership_stdev = ownership_parser(o_stdev_str, true)
     const parser = (z, k) => suggest_parser(z, k, bturn, komi, katago_p)
