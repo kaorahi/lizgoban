@@ -43,7 +43,8 @@ function humansl_handler(responses, game_node) {
 }
 function cook_humansl_for_renderer(humansl_info) {
     if (!humansl_info) {return null}
-    const best_moves = humansl_best_moves(humansl_info)
+    // const best_moves = humansl_best_moves(humansl_info)
+    const best_moves = null
     const heatmap = humansl_heatmap(humansl_info)
     const {thickness} = M.humansl_engine()
     return {best_moves, heatmap, thickness}
