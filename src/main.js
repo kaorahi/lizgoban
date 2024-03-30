@@ -467,8 +467,7 @@ function menu_template(win) {
         ]),
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
-        menu('Open recent', store.get('recent_files', []).map(f =>
-            item(f, undefined, () => load_sgf_etc(f)))),
+        menu('Open recent', openrecent_submenu(item, sep)),
         item('Save SGF with analysis...', 'CmdOrCtrl+S', () => save_sgf(true), true),
         item('Save SGF...', 'CmdOrCtrl+Shift+S', () => save_sgf(false), true),
         sep,
@@ -656,6 +655,20 @@ function pair_match_menu(random_pair_match_percentage, item) {
     const label = truep(r) ? `Random (AI ${rp}%)` : 'Alternative'
     const action = (this_item, win) => {start_match(win, 3, r); update_menu()}
     return item(label, undefined, action, true)
+}
+
+function openrecent_submenu(item, sep) {
+    // files
+    const item_for_file = f => item(f, undefined, () => load_sgf_etc(f))
+    const file_items = store.get('recent_files', []).map(item_for_file)
+    // deleted boards
+    const del = deleted_sequences.slice(- option.max_recent_deleted).reverse()
+    const desc = pg => is_pgame(pg) ?
+          stored_from_pgame(pg).desc : game_description(pg)
+    const item_for_deleted = pg =>
+          item(desc(pg), undefined, () => uncut_this_sequence(pg))
+    const deleted_items = del.map(item_for_deleted)
+    return [...file_items, sep, ...deleted_items]
 }
 
 function board_type_menu_item(label, type, win) {
@@ -1698,11 +1711,14 @@ function cut_sequence() {
     cut_first_p = (sequence_cursor === 0)
     expire_sgf_from_image_window()
     game.is_empty() || push_deleted_sequence(game); delete_sequence()
+    update_menu()
 }
-function uncut_sequence() {
+function uncut_sequence() {uncut_this_sequence()}
+function uncut_this_sequence(pgame) {
     const insert_before = (cut_first_p && sequence_cursor === 0)
     exist_deleted_sequence() &&
-        backup_and_replace_game(pop_deleted_sequence(), insert_before)
+        backup_and_replace_game(pop_deleted_sequence(pgame), insert_before)
+    update_menu()
 }
 
 function duplicate_sequence(until_current_move_p, explicit) {

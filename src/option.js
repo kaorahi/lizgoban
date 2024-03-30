@@ -27,6 +27,7 @@ const default_option = {
     exercise_dir: 'exercise',
     max_cached_engines: 3,
     max_recent_files: 10,
+    max_recent_deleted: 20,
     face_image_rule: null,
     preset: [{label: "leelaz", engine: ["leelaz", "-g", "-w", "network.gz"]}],
     record_note_to_SGF: false,
