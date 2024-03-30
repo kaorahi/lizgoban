@@ -20,7 +20,23 @@ const default_option = {
     autosave_sec: 300,
     wait_for_startup: true,
     use_bogoterritory: true,
-    endstate_leelaz: null,
+    humansl_engine: null,
+    // humansl_engine --- for Human supervised learning early test net
+    // (example config)
+    // "humansl_engine": {
+    //     "humansl_metas": [
+    //         ["16K", {"source": "kgs", "rank": "16k", "tc": "fast", "date": 2023}],
+    //         ["8K", {"rank": "8k"}],
+    //         ["1D", {"rank": "1d"}],
+    //         ["9D", {"rank": "9d"}]
+    //     ],
+    //     "engine": [
+    //         "/bin/python", "/KATAGO_SRC_PATH/python/humanslnet_gtp.py",
+    //         "/bin/python", "/KATAGO_SRC_PATH/python/humanslnet_server.py",
+    //         "-checkpoint", "/PATH/TO/b18c384nbt-humanv0-test.ckpt",
+    //         "-device", "cpu"
+    //     ]
+    // },
     working_dir: process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.'),
     weight_dir: undefined,
     sgf_dir: undefined,

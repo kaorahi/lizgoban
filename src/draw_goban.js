@@ -90,6 +90,8 @@ function stones_until(show_until, all_p, for_endstate) {
 function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
     R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
+    R.humansl?.best_moves?.forEach(({label, move, prior}) =>
+        merge_stone_at(move, displayed_stones, {humansl_best_move: {label, prior}}))
     each_stone(displayed_stones, h => {h.displayed_tag = h.tag && h.stone})
     gray_stones_by_endstate(displayed_stones)
     const s0 = R.suggest[0]
@@ -516,6 +518,8 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                             draw_exp(h.unexpected_move, false, h, xy))
         R.lizzie_style && h.suggest && draw_suggest_lizzie(h, xy, stone_radius, g)
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
+        h.humansl_best_move &&
+            draw_humansl_best_move(h.humansl_best_move, xy, stone_radius, g)
         draw_endstate_diff_p && !hide_endstate_p() &&
             draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
@@ -704,6 +708,35 @@ function draw_text_on_stone(text, color, xy, radius, g) {
     g.save()
     g.textAlign = 'center'; g.textBaseline = 'middle'
     g.fillStyle = color; fill_text(g, fontsize, text, x, y, max_width)
+    g.restore()
+}
+
+function draw_humansl_best_move(humansl_best_move, xy, radius, g) {
+    const f = R.lizzie_style ?
+          draw_humansl_best_move_lizzie : draw_humansl_best_move_lizgoban
+    f(humansl_best_move, xy, radius, g)
+}
+function draw_humansl_best_move_lizgoban({label, prior}, [x, y], radius, g) {
+    const d = 0.0 * radius, w = 1.0 * radius, half = w * 0.5
+    const max_width = w, fontsize = w * 0.9
+    g.save()
+    g.fillStyle = 'rgba(0,0,255,0.5)'
+    fill_rect([x - d, y - half], [x - d - w, y + half], g)
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = 'rgba(255,255,255,1.0)'
+    fill_text(g, fontsize, label, x + d - half, y + d, max_width)
+    g.restore()
+}
+function draw_humansl_best_move_lizzie({label, prior}, [x, y], radius, g) {
+    const d = 0.0 * radius
+    const w = 1.6 * radius, half = w * 0.5
+    const max_width = w
+    const fontsize = w * 0.7
+    g.save()
+    g.fillStyle = 'rgba(255,0,0,1.0)'
+    fill_rect([x - half, y - half], [x + half, y + half], g)
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = 'rgba(255,255,255,1.0)'; fill_text(g, fontsize, label, x, y, max_width)
     g.restore()
 }
 

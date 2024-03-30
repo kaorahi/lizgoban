@@ -11,18 +11,18 @@ function create_leelaz() {return create_leelaz_proxy()}
 
 // leelaz
 let leelaz = create_leelaz(), leelaz_for_black = leelaz
-let leelaz_for_white = null, leelaz_for_endstate = null
+let leelaz_for_white = null, leelaz_for_humansl = null
 
 // from powered_goban.js
-let suggest_handler, endstate_handler
-function set_handlers(h) {({suggest_handler, endstate_handler} = h)}
+let suggest_handler, humansl_handler
+function set_handlers(h) {({suggest_handler, humansl_handler} = h)}
 
 /////////////////////////////////////////////////
 // leelaz
 
-function start_leelaz(start_args, endstate_option) {
+function start_leelaz(start_args, humansl_option) {
     leelaz.start(with_handlers(start_args))
-    endstate_option && start_endstate(start_args, endstate_option)
+    humansl_option && start_humansl(start_args, humansl_option)
 }
 function update_leelaz() {leelaz.update()}
 function restart(h, new_weight_p) {
@@ -37,7 +37,7 @@ function set_board(hist, aux) {
     const aux_for = z => ({...aux,
                            aggressive: aggressive_for(z, aux.aggressive)})
     const set_it = z => z.set_board(hist, aux_for(z))
-    each_leelaz(set_it, katago_p())
+    each_leelaz(set_it)
 }
 function aggressive_for(lz, aggressive) {
     const maybe = (val, lz_for) =>
@@ -46,14 +46,16 @@ function aggressive_for(lz, aggressive) {
 }
 function cancel_past_requests() {each_leelaz(z => z.clear_leelaz_board())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
-let prev_pondering
-function set_pondering(pausing, busy) {
+let prev_humansl_game_node
+function set_pondering(pausing, busy, game_node) {
     const pondering = !pausing && !busy
     const b = (leelaz === leelaz_for_black)
+    const humansl_p = leelaz_for_humansl && pondering &&
+          (prev_humansl_game_node !== game_node)
+    humansl_p && game_node && (leelaz_for_humansl.humansl_best_moves(game_node),
+                               prev_humansl_game_node = game_node)
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
-    leelaz_for_endstate && pondering && !prev_pondering && leelaz_for_endstate.endstate()
-    prev_pondering = pondering
 }
 function all_start_args() {
     const f = lz => lz && lz.start_args()
@@ -68,9 +70,9 @@ function leelaz_weight_file(white_p) {
     return lz && lz.get_weight_file()
 }
 
-function each_leelaz(f, for_black_and_white_only) {
+function each_leelaz(f) {
     [leelaz_for_black, leelaz_for_white,
-     !for_black_and_white_only && leelaz_for_endstate].forEach(z => z && f(z))
+     leelaz_for_humansl].forEach(z => z && f(z))
 }
 function with_handlers(h) {
     const more = h.ready_handler ?
@@ -88,26 +90,24 @@ function is_moves_ownership_supported() {
 
 let analysis_region = null
 function update_analysis_region(region) {
-    analysis_region = region; each_leelaz(apply_current_analysis_region, true)
+    analysis_region = region; each_leelaz(apply_current_analysis_region)
 }
 function apply_current_analysis_region(lz) {lz.update_analysis_region(analysis_region)}
 
 function set_instant_analysis(instant_p) {each_leelaz(lz => lz.set_instant_analysis(instant_p))}
 
 /////////////////////////////////////////////////
-// leelaz for endstate
+// leelaz for humansl
 
-function start_endstate(given_start_args, endstate_option) {
-    const [lz_command, x] = endstate_option, x_type = typeof x
-    const weight = (x_type === 'string') && x
-    const more = (x_type === 'object') ? {leelaz_args: x} : {}
-    const start_args = {...given_start_args, weight, endstate_handler,
-                        leelaz_command: lz_command, ready_handler: do_nothing, ...more}
-    leelaz_for_endstate = create_leelaz()
-    leelaz_for_endstate.start(start_args)
-    leelaz_for_endstate.set_pondering(false)
+function start_humansl(given_start_args, humansl_option) {
+    const {engine: [leelaz_command, ...leelaz_args], humansl_metas} = humansl_option
+    const start_args = {...given_start_args, humansl_handler, humansl_metas,
+                        wait_for_startup: false,
+                        leelaz_command, leelaz_args, ready_handler: do_nothing}
+    leelaz_for_humansl = create_leelaz()
+    leelaz_for_humansl.start(start_args)
+    leelaz_for_humansl.set_pondering(false)
 }
-function support_endstate_p() {return katago_p()}
 
 /////////////////////////////////////////////////
 // another leelaz for white
@@ -165,7 +165,7 @@ function switch_to_another_leelaz(next_leelaz) {
 /////////////////////////////////////////////////
 // misc.
 
-function another_leelaz_for_endstate_p() {return !!leelaz_for_endstate}
+function another_leelaz_for_humansl_p() {return !!leelaz_for_humansl}
 
 function engine_info() {
     // fixme: duplication with all_start_args()
@@ -302,7 +302,7 @@ module.exports = {
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only
-    set_handlers, another_leelaz_for_endstate_p, engine_ids,
+    set_handlers, another_leelaz_for_humansl_p, engine_ids,
     // both
-    katago_p, support_endstate_p, engine_info, is_gorule_supported,
+    katago_p, support_endstate_p: katago_p, engine_info, is_gorule_supported,
 }

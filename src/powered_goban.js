@@ -36,29 +36,10 @@ function renew_game() {set_endstate_obsolete(); clear_endstate()}
 /////////////////////////////////////////////////
 // receive analysis from leelaz
 
-// (obsolete comment & variable. but keep conventional code as far as possible here.)
-// This is not equal to R.move_count and game.move_count
-// for repeated (fast) undo/redo since showboard is deferred
-// in this case for efficiency.
-let leelaz_move_count = 0
-
-// (obsolete. but keep conventional code as far as possible here.)
-function endstate_handler(h) {
-    if (M.is_pausing()) {return}
-    const endstate_setter = update_p => {
-        const leelaz_move_count = R.endstate_move_count
-        const add_endstate_to_history = z => {
-            z.endstate = R.endstate; if (!update_p) {return}
-            z.endstate_sum = sum(R.endstate.flat())
-        }
-        // need add_endstate_to_history before add_endstate_to_stones
-        // because update_endstate_diff depends on game.ref_current().endstate
-        leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
-        add_endstate_to_stones(R.stones, R.endstate, null, leelaz_move_count, update_p)
-        set_endstate_uptodate(R.endstate, leelaz_move_count)
-    }
-    set_renderer_state(h)
-    AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
+function humansl_handler(best_moves, game_node) {
+    const humansl = {best_moves}
+    merge(game_node, {humansl})
+    set_and_render(false)
 }
 
 const hold_suggestion_millisec = 1000
@@ -78,6 +59,7 @@ const suggest_keys2 = [
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'root_rawStScoreError', 'root_rawVarTimeLeft',
     'amb_gain',
+    'humansl',
 ]
 
 const too_small_prior = 1e-3
@@ -168,7 +150,7 @@ function set_renderer_state(...args) {
     const weight_info = weight_info_text()
     const is_katago = AI.katago_p()
     const komi = game.get_komi(), bsize = board_size()
-    const cur = game.ref_current(), {note} = cur, comment = cur.comment || ''
+    const cur = game.ref_current(), {note, humansl} = cur, comment = cur.comment || ''
     const comment_note = [comment, note].filter(identity).join(' / ')
     const amb_gain = get_amb_gain(game, M.amb_gain_recent())
     amb_gain && merge(cur, {amb_gain})
@@ -193,6 +175,7 @@ function set_renderer_state(...args) {
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
+              humansl,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               different_engine_for_white_p,
               previous_suggest, future_moves, winrate_trail}, endstate_d_i)
@@ -630,7 +613,7 @@ function branch_or_ladder_at(game, move_count, stones) {
 /////////////////////////////////////////////////
 // exports
 
-AI.set_handlers({suggest_handler, endstate_handler})
+AI.set_handlers({suggest_handler, humansl_handler})
 
 module.exports = {
     // basic

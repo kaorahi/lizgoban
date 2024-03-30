@@ -107,7 +107,7 @@ function set_game(new_game) {
 
 // renderer state
 // (cf.) "set_renderer_state" in powered_goban.js
-// (cf.) "the_endstate_handler" and "the_suggest_handler" in engine.js
+// (cf.) "humansl_handler" and "suggest_handler" in powered_goban.js
 const R = {stones: game.current_stones(), bturn: true, ...renderer_preferences()}
 game.komi = get_stored('komi_for_new_game')
 
@@ -180,7 +180,7 @@ app.on('quit', () => {store_session(true); kill_all_leelaz()})
 
 function start_leelaz(...args) {
     debug_log("option: " + JSON.stringify(option))
-    AI.start_leelaz(leelaz_start_args(...args), option.endstate_leelaz)
+    AI.start_leelaz(leelaz_start_args(...args), option.humansl_engine)
 }
 function kill_all_leelaz() {AI.kill_all_leelaz()}
 
@@ -1510,7 +1510,7 @@ function set_or_unset_busy(bool) {
 }
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
-function update_ponder() {AI.set_pondering(pausing, busy)}
+function update_ponder() {AI.set_pondering(pausing, busy, game.ref_current())}
 function init_from_renderer() {
     const proc = () => {warn_disabled_cache(), restore_session()}
     setTimeout(proc, 100)
