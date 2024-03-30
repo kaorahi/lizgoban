@@ -1157,7 +1157,7 @@ let prev_portait_p = false
 function portrait_p() {
     const [my, sy] = ['#main_div', '#rest_div'].map(z => Q(z).getBoundingClientRect().y)
     const now_portrait_p = (my < sy)
-    now_portrait_p && !prev_portait_p && toast('Portrait layout is obsolete.')
+    // now_portrait_p && !prev_portait_p && toast('Portrait layout is obsolete.')
     prev_portait_p = now_portrait_p
     return now_portrait_p
 }
