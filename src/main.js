@@ -462,7 +462,7 @@ function menu_template(win) {
                  (this_item, win) => stop_match(window_prop(win).window_id), true) :
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
         item('Pair match', undefined,
-             (this_item, win) => start_match(win, 3), true, !(R.in_match && R.in_pair_match)),
+             (this_item, win) => start_match(win, 3), true, !pair_match_info()),
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
         menu('Open recent', store.get('recent_files', []).map(f =>
@@ -888,7 +888,7 @@ function try_auto_play(force_next) {
     // In pair matches, the specified weaken method is applied only to
     // the opponent AI. The partner AI ignores it and plays normally.
     const is_partner =
-          (R.in_pair_match === 'pair_match') && (auto_play_count === 2)
+          (pair_match_info() === 'pair_match') && (auto_play_count === 2)
     const partner_weaken = is_partner && default_weaken()
     const weaken =
           auto_play_weaken_for_current_bw() || partner_weaken || auto_play_weaken
@@ -1866,8 +1866,7 @@ function update_state(keep_suggest_p) {
     const subboard_stones_suggest = prev_su && prev_su.suggest && {
         ...subboard_stones_suggest_for(su, prev_su), gain: cur.gain,
     }
-    const amm = get_auto_moves_in_match()
-    const in_pair_match = R.in_match && (amm !== 1) && (amm === 3 ? 'pair_match' : amm)
+    const in_pair_match = pair_match_info()
     const persona_code = get_stored('persona_code')
     const more = cur.suggest ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
@@ -1889,6 +1888,10 @@ function subboard_stones_suggest_for(su, prev_su) {
     const stones = game.stones_at(su - 1)
     P.add_next_mark_to_stones(stones, game, su - 1)
     return {stones, suggest, bturn}
+}
+function pair_match_info() {
+    const amm = get_auto_moves_in_match()
+    return R.in_match && (amm !== 1) && (amm === 3 ? 'pair_match' : amm)
 }
 
 function update_ui() {
