@@ -1839,17 +1839,25 @@ function store_session(cache_suggestions_p) {
     const cache_lim = Math.max(rev_seq.length, option.autosave_cached_suggestions)
     const cache_p = k => cache_suggestions_p && (saved_seq.length - k) <= cache_lim
     const stored = saved_seq.map((g, k) => stored_from_pgame(g, cache_p(k)))
-    stored_session.set('sequences_gz_b64', stored)
+    stored_session.set('sequences_gz_b64_v2', stored)
     debug_log('store_session done')
 }
 function restore_session() {verbose_safely(restore_session_unsafe)}
 function restore_session_unsafe() {
     debug_log('restore_session start')
-    deleted_sequences.push(...stored_session.get('sequences_gz_b64', []).map((stored, k, all) => {
+    upgrade_stored_session_for_compatibility()
+    deleted_sequences.push(...stored_session.get('sequences_gz_b64_v2', []).map((stored, k, all) => {
         toast(`restoring autosaved games (${k + 1}/${all.length})...`)
         return pgame_from_stored(stored)
     }))
     debug_log('restore_session done')
+}
+function upgrade_stored_session_for_compatibility() {
+    const old_key = 'sequences_gz_b64', new_key = 'sequences_gz_b64_v2'
+    const old_val = stored_session.get(old_key, null); if (!old_val) {return}
+    const convert = sgfgz => ({sgfgz, desc: '(no info)'})
+    const new_val = [...stored_session.get(new_key, []), ...old_val.map(convert)]
+    stored_session.set(new_key, new_val); stored_session.delete(old_key)
 }
 
 let autosave_timer = null
