@@ -528,6 +528,7 @@ function menu_template(win) {
         board_type_menu_item('Principal variation', 'variation', win),
         board_type_menu_item('Raw board', 'raw', win),
         board_type_menu_item('Winrate graph', 'winrate_only', win),
+        board_type_menu_item('Human SL heatmap', 'humansl', win),
         sep,
         store_toggler_menu_item('Let me think first', 'let_me_think', 'Shift+M',
                                 toggle_let_me_think),

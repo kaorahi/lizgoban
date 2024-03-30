@@ -519,6 +519,7 @@ function update_goban() {
         }
     } else {
         switch (btype) {
+        case "humansl": f(draw_humansl); break;
         case "winrate_only": f(draw_wr_graph, draw_raw_unclickable); break;
         case "raw": f(draw_raw_clickable); break;
         case "variation": f(draw_pv); break;
