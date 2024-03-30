@@ -91,7 +91,7 @@ function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
     R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
     merge_hsl_best_moves_to_stones(displayed_stones)
-    merge_hsl_heatmap_to_stones(displayed_stones)
+    !R.lizzie_style && merge_hsl_heatmap_to_stones(displayed_stones)
     each_stone(displayed_stones, h => {h.displayed_tag = h.tag && h.stone})
     gray_stones_by_endstate(displayed_stones)
     const s0 = R.suggest[0]
