@@ -143,10 +143,9 @@ function create_leelaz () {
         // const ready =
         //       arg.humansl_handler && metas && is_supported('humansl')
         if (!ready) {return}
-        const changes = metas.map(([_, change]) => change)
+        const changes = metas.map(z => z.change)
         const command = `hs-query-for-metas ${JSON.stringify(changes)}`
-        const kth_label = k => metas[k][0]
-        const format = (res, k) => ({label: kth_label(k), response: res})
+        const format = (res, k) => ({label: metas[k].label, response: res})
         const on_response = (ok, result) => ok &&
               arg.humansl_handler(JSON.parse(result).map(format), game_node)
         leelaz(command, on_response)

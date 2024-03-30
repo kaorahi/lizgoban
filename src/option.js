@@ -25,8 +25,8 @@ const default_option = {
     // (example config)
     // "humansl_engine": {
     //     "metas": [
-    //         ["K", {"source": "kgs", "rank": "5k", "tc": "fast", "date": 2023}],
-    //         ["D", {"rank": "1d"}]
+    //         {"label": "K", "change": {"source": "kgs", "rank": "5k", "tc": "fast", "date": 2023}},
+    //         {"label": "D", "change": {"rank": "1d"}}
     //     ],
     //     "thickness": 0.5,
     //     "engine": [
