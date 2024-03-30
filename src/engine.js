@@ -639,7 +639,7 @@ function create_leelaz () {
 
     const parse_endstate_line = (line) => {
         const b_endstate = s => to_i(s) / 1000
-        return !line.match(/endstate sum/) && line.trim().split(/\s+/).map(b_endstate)
+        return !line.match(/endstate sum/) && trim_split(line, /\s+/).map(b_endstate)
     }
 
     const endstate_reader = multiline_reader(parse_endstate_line, finish_endstate_reader)
@@ -678,6 +678,7 @@ function unique_identifier() {return new Object}
 function hash(str) {
     return sha256sum(str).slice(0, 8)
 }
+function trim_split(str, reg) {return str.trim().split(reg)}
 
 /////////////////////////////////////////////////
 // parser for {lz,kata}-analyze
@@ -687,7 +688,7 @@ const top_suggestions = 5
 function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     const split_pattern = /\b(?=^dummy_header|ownership|ownershipStdev)\b/
     const splitted = `dummy_header ${s}`.split(split_pattern)
-    const part = aa2hash(splitted.map(str => str.trim().split(/(?<=^\S+)\s+/)))
+    const part = aa2hash(splitted.map(str => trim_split(str, /(?<=^\S+)\s+/)))
     const {
         dummy_header: i_str,
         ownership: o_str,
@@ -752,7 +753,7 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     // cooked h = {move: 'D17', order: 0, pv: ['D17', 'C4'], pvVisits: [20, 14]}
     const pat = /\s*(?=(?:pv|pvVisits|pvEdgeVisits|movesOwnership)\b)/  // keys for variable-length fields
     const to_key_value = a => a[0].match(pat) ? [a[0], a.slice(1)] : a
-    const aa = s.trim().split(pat).map(z => z.split(/\s+/)).map(to_key_value)
+    const aa = trim_split(s, pat).map(z => z.split(/\s+/)).map(to_key_value)
     const h = array2hash([].concat(...aa))
     const if_missing = ([key, val]) => !truep(h[key]) && (h[key] = val)
     const missing_rule = [
@@ -785,7 +786,7 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
     return h
 }
 function ownership_parser(s, bturn) {
-    return s && s.trim().split(/\s+/).map(z => to_f(z) * (bturn ? 1 : -1))
+    return s && trim_split(s, /\s+/).map(z => to_f(z) * (bturn ? 1 : -1))
 }
 
 /////////////////////////////////////////////////
