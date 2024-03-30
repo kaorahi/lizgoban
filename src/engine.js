@@ -745,7 +745,6 @@ function append_pda_policy(h, pda_policy) {
 // (sample "kata-analyze interval 10 ownership true")
 // info move D17 visits 2 utility 0.0280885 winrate 0.487871 scoreMean -0.773097 scoreStdev 32.7263 prior 0.105269 order 0 pv D17 C4 ... pv D17 R16 ownership -0.0261067 -0.0661169 ... 0.203051
 function suggest_parser(s, fake_order, bturn, komi, katago_p) {
-    const to_percent = str => to_f(str) * (katago_p ? 100 : 1/100)
     // (ex)
     // s = 'move D17 order 0 pv D17 C4 pvVisits 20 14'
     // aa = [['move', 'D17', 'order', '0' ], ['pv', ['D17', 'C4']], ['pvVisits', ['20', '14']]]
@@ -762,6 +761,15 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
         ['lcb', h.winrate],
     ]
     missing_rule.forEach(if_missing)
+    cook_analyze(h, bturn, katago_p)
+    h.prior = h.prior / 100
+    const turn_sign = bturn ? 1 : -1
+    truep(h.scoreMean) &&
+        (h.score_without_komi = h.scoreMean * turn_sign + komi)
+    return h
+}
+function cook_analyze(h, bturn, katago_p) {
+    const to_percent = str => to_f(str) * (katago_p ? 100 : 1/100)
     const turn_sign = bturn ? 1 : -1
     const cook1 = (f, key) => {
         const z = h[key], val = truep(z) && f(z)
@@ -780,10 +788,6 @@ function suggest_parser(s, fake_order, bturn, komi, katago_p) {
         [to_ary(to_f_by_turn), 'movesOwnership'],
     ]
     cooking_rule.forEach(cook)
-    h.prior = h.prior / 100
-    truep(h.scoreMean) &&
-        (h.score_without_komi = h.scoreMean * turn_sign + komi)
-    return h
 }
 function ownership_parser(s, bturn) {
     return s && trim_split(s, /\s+/).map(z => to_f(z) * (bturn ? 1 : -1))
