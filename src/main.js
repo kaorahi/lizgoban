@@ -1754,7 +1754,7 @@ function sequence_prop_of(given_game) {
     }
     const tags = exclude_implicit_tags(given_game.map(pick_tag).join(''))
     const keys = [
-        'player_black', 'player_white',
+        'player_black', 'player_white', 'handicaps',
         'init_len', 'move_count', 'trial',
     ]
     return {...pick_keys(given_game, ...keys), len: given_game.len(), tags}
@@ -1784,8 +1784,10 @@ function push_deleted_sequence(sequence) {
     const expired = deleted_sequences.length - max_deleted_sequences
     expired > 0 && deleted_sequences.splice(0, expired)
 }
-function pop_deleted_sequence() {
-    return game_from_pgame(deleted_sequences.pop(), R.use_cached_suggest_p)
+function pop_deleted_sequence(pgame) {
+    const remove = (x, ary) => {const k = ary.indexOf(x); k >= 0 && ary.splice(k, 1)}
+    pgame ? remove(pgame, deleted_sequences) : (pgame = deleted_sequences.pop())
+    return game_from_pgame(pgame, R.use_cached_suggest_p)
 }
 function exist_deleted_sequence() {return !empty(deleted_sequences)}
 function empty_deleted_sequence_p(pgame) {
@@ -1810,7 +1812,7 @@ function stored_from_pgame(pgame, cache_suggestions_p) {
 }
 function pgame_from_stored(stored) {
     const too_large = 20 * 400  // rough bound of letters * moves
-    const shorter = (stored.length < too_large) ? stored :
+    const shorter = (stored.sgfgz.length < too_large) ? stored :
           stored_from_game(game_from_stored(stored, true, true))
     return make_pgame(stored, shorter)
 }
@@ -1818,10 +1820,23 @@ function pgame_from_stored(stored) {
 // internal
 function game_from_stored(stored, cache_suggestions_p, internal_p) {
     const f = internal_p ? create_games_from_sgf_internal : create_games_from_sgf
-    return f(uncompress(stored), cache_suggestions_p)[0]
+    return f(uncompress(stored.sgfgz), cache_suggestions_p)[0]
 }
 function stored_from_game(game, cache_suggestions_p) {
-    return compress(game.to_sgf(cache_suggestions_p, true))
+    return {
+        sgfgz: compress(game.to_sgf(cache_suggestions_p, true)),
+        desc: game_description(game, true)
+    }
+}
+function game_description(game, stored_p) {
+    const g = game, {len, tags} = sequence_prop_of(game), missing = '???'
+    const stored = stored_p && '-'
+    const trial = g.trial && ' '
+    const players = `${g.player_black || missing}/${g.player_white || missing}`
+    const length = stored_p ? `(${len})` : `(${g.move_count}/${len})`
+    const size = g.board_size !== 19 && `[${g.board_size}x${g.board_size}]`
+    const prop = !stored_p && tags
+    return [stored, trial, players, length, size, prop].filter(truep).join(' ')
 }
 
 /////////////////////////////////////////////////
