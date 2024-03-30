@@ -96,7 +96,7 @@ Just download the [all-in-one package](https://github.com/kaorahi/lizgoban/relea
 1. Install [Node.js](https://nodejs.org/) v12 or later.
 2. Type `git clone https://github.com/kaorahi/lizgoban; cd lizgoban; npm install` on a terminal.
 3. Put Leela Zero binary (version 0.17 or later) as `external/leelaz` together with its network weight as `external/network.gz`.
-4. Type `npm start`. (Windows: Double-click `lizgoban_windows.vbs`.)
+4. Type `npm start`. (Windows: Double-click `lizgoban_windows.vbs` or  `lizgoban_windows.ps1`.)
 
 Use `npm start -- --no-sandbox` if you get an error like "The SUID sandbox helper binary was found, but is not configured correctly" and you do not want to fix it.
 
