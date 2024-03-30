@@ -194,7 +194,7 @@ Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or 
   * rules: See the comments for "rules" in gtp_example.cfg of KataGo.
   * komi: 7.5, 6.5, 0, -0.5, etc. (for KataGo)
   * handicap: Number of handicap stones.
-  * match: Set it true for match vs. AI. Set it 3 for pair match (= AI plays 3 moves after your move).
+  * match: Set it true for match vs. AI. Set it 3 for pair match (= AI plays 3 moves after your move) and [3, 0.2] for random pair match (you and the pair AI play with probability 0.8 and 0.2, respectively).
   * board_type: One of "double_boards", "double_boards_raw", "double_boards_swap", "double_boards_raw_pv", "raw", "suggest", "variation", "winrate_only". See [View] menu for their appearances.
   * stone_style: One of "2D", "2.5D", "3D", or "Face". (You need to set "face_image_rule" for "Face". See the next section.)
   * wait_for_startup: Set it false for engines other than Leela Zero, Leela, and KataGo.

@@ -461,8 +461,10 @@ function menu_template(win) {
             item('Stop match', 'Shift+G',
                  (this_item, win) => stop_match(window_prop(win).window_id), true) :
             item('Match vs. AI', 'Shift+G', (this_item, win) => start_match(win), true),
-        item('Pair match', undefined,
-             (this_item, win) => start_match(win, 3), true, !pair_match_info()),
+        menu('Pair match', [
+            pair_match_menu(null, item), sep,
+            ...[90, 75, 50, 25, 10].map(r => pair_match_menu(r, item)),
+        ]),
         sep,
         item('Open SGF etc....', 'CmdOrCtrl+O', open_sgf_etc, true),
         menu('Open recent', store.get('recent_files', []).map(f =>
@@ -649,6 +651,13 @@ function menu_template(win) {
             help_menu]
 }
 
+function pair_match_menu(random_pair_match_percentage, item) {
+    const rp = random_pair_match_percentage, r = truep(rp) && rp * 0.01
+    const label = truep(r) ? `Random (AI ${rp}%)` : 'Alternative'
+    const action = (this_item, win) => {start_match(win, 3, r); update_menu()}
+    return item(label, undefined, action, true)
+}
+
 function board_type_menu_item(label, type, win) {
     return {label, type: 'radio', checked: window_prop(win).board_type === type,
             click: (this_item, win) => (set_board_type(type, win), update_all())}
@@ -767,7 +776,7 @@ function apply_preset(rule, win) {
     rules && set_gorule(rules)
     truep(komi) && set_komi(komi)
     board_type && set_board_type(board_type, win)
-    match && start_match(win, to_i(match))
+    match && start_match(win, ...(is_a(match, 'object') ? match : [to_i(match)]))
     const is_engine_updated = update_engines_by_preset(rule)
     AI.backup(); is_engine_updated && resume()
 }

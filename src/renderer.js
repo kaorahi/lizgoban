@@ -195,6 +195,8 @@ function render_now() {
     setq('#white_hama', R.white_hama)
     setq('#history_length', ' (' + D.max_movenum() + ')')
     setq('#every_n_moves', R.in_pair_match)
+    setq('#random_pair_match_rate',
+         truep(R.random_pair_match_rate) ? ` ${to_i(R.random_pair_match_rate * 100)}%` : '')
     set_sanity_from_main()
     update_displayed_comment()
     D.update_winrate_trail()
