@@ -1522,6 +1522,7 @@ function update_button_etc(availability) {
                       R.different_engine_for_white_p)
     update_ui_element('.moves_ownership_only', availability.moves_ownership)
     update_ui_element('#sanity_div', availability.match_ai_conf)
+    update_ui_element('.show_in_humansl', R.board_type === 'humansl')
 }
 
 function in_match_p(serious) {return R.in_match && (!serious || R.board_type === 'raw')}
@@ -1586,6 +1587,31 @@ function toast(message, millisec) {
     const keyframes = [{opacity: 1}, {opacity: 0.8}, {opacity: 0}]
     last_toast_animation = Q('#toast').animate(keyframes, millisec || 3000)
 }
+
+/////////////////////////////////////////////////
+// humansl
+
+// from KataGo's humanslnet_gui.py
+
+const humansl_rank_options = [
+    "KG","9d","8d","7d","6d","5d","4d","3d","2d","1d","1k","2k","3k","4k","5k","6k","7k","8k","9k","10k","11k","12k","13k","14k","15k","16k","17k","18k","19k","20k"
+]
+
+function update_humansl_input(text_only_p) {
+    const humansl0_rank = humansl_rank_options[to_i(Q("#humansl0_rank").value)]
+    setq("#humansl0_rank_label", `rank ${humansl0_rank}`)
+    const humansl1_rank = humansl_rank_options[to_i(Q("#humansl1_rank").value)]
+    setq("#humansl1_rank_label", `rank ${humansl1_rank}`)
+    const humansl_thickness = to_f(Q("#humansl_thickness").value)
+    setq("#humansl_thickness_label", `boldness ${humansl_thickness}`)
+    if (text_only_p) {return}
+    main('update_humansl_param', {
+        humansl0_rank,
+        humansl1_rank,
+        humansl_thickness,
+    })
+}
+update_humansl_input(true)
 
 /////////////////////////////////////////////////
 // init

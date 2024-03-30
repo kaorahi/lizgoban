@@ -132,6 +132,9 @@
   #visits_trail_canvas {position: fixed; right: 1vw; bottom: 1vh; z-index: -9;}
   #endstate_distribution_canvas {position: fixed; z-index: -9;}
  }
+ #humansl_box {border: solid 1px white; padding: 0.5em}
+ #humansl_box div {margin: 0.5em;}
+ #humansl_box input[type="range"] {width: 70%;}
  </style>
 </head>
 
@@ -159,6 +162,22 @@
 <div id="rest_div">
 
 <div id="above_comment_for_height_calculation">
+
+<div id="humansl_box" class="show_in_humansl">
+ <div>"Human SL net" policy comparison</div>
+ <div>
+  <input type="range" id="humansl1_rank" value="9" min="0", max="29", step="1" oninput="update_humansl_input()"></input>
+  <label id="humansl1_rank_label" for="humansl_rank0" style='color: white; background-color: blue;'>rank</label>
+ </div>
+ <div>
+  <input type="range" id="humansl0_rank" value="14" min="0", max="29", step="1" oninput="update_humansl_input()"></input>
+  <label id="humansl0_rank_label" for="humansl_rank0" style='color: white; background-color: red;'>rank</label>
+ </div>
+ <div>
+  <input type="range" id="humansl_thickness" value="1.0" min="0", max="4", step="0.1" oninput="update_humansl_input()"></input>
+  <label id="humansl_thickness_label" for="humansl_thickness">color enhance</label>
+ </div>
+</div>
 
 <div class="hide_in_serious_match">
 <div id="sub_goban_container" style="text-align: center;">

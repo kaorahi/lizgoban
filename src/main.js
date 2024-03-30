@@ -297,6 +297,19 @@ ipc.on('get_preferences',
              preference_spec.map(([key, label, shortcut]) => [key, get_stored(key), label, shortcut])))
 ipc.on('set_preference', (e, key, val) => {set_stored(key, val); update_all()})
 
+ipc.on('update_humansl_param', (e, p) => {
+    const h = option.humansl_engine; if (!h) {return}
+    const {metas} = h; if (!metas) {return}
+    metas[0].change.rank = p.humansl0_rank
+    metas[1].change.rank = p.humansl1_rank
+    // fixme: dirty! (setting R here is ugly!)
+    h.thickness = (R.humansl || {}).thickness = p.humansl_thickness
+    // force updating via double toggle
+    toggle_pause(); update_ponder()
+    toggle_pause(); update_ponder()
+    update_all()
+})
+
 // update after every command
 
 function update_all(keep_board) {

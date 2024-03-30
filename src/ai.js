@@ -46,16 +46,20 @@ function aggressive_for(lz, aggressive) {
 }
 function cancel_past_requests() {each_leelaz(z => z.clear_leelaz_board())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
-let prev_humansl_game_node
+let prev_humansl_game_node, prev_humansl_setting
 function set_pondering(pausing, busy, game_node) {
     const pondering = !pausing && !busy
     const b = (leelaz === leelaz_for_black)
-    const humansl_p = leelaz_for_humansl && pondering &&
-          (prev_humansl_game_node !== game_node)
     const {metas} = M.humansl_engine() || {}
+    const humansl_setting = JSON.stringify(metas)
+    const humansl_same_query_p =
+          (prev_humansl_game_node === game_node) &&
+          (prev_humansl_setting === humansl_setting)
+    const humansl_p = leelaz_for_humansl && pondering && !humansl_same_query_p
     humansl_p && metas && game_node &&
         (leelaz_for_humansl.humansl_query(metas, game_node),
-         prev_humansl_game_node = game_node)
+         (prev_humansl_game_node = game_node),
+         (prev_humansl_setting = humansl_setting))
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
 }
