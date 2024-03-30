@@ -38,13 +38,15 @@ function renew_game() {set_endstate_obsolete(); clear_endstate()}
 
 function humansl_handler(responses, game_node) {
     const humansl = {responses}
-    merge(game_node, {humansl})
+    merge(game_node, {humansl: cook_humansl_for_renderer(humansl)})
     set_and_render(false)
 }
 function cook_humansl_for_renderer(humansl_info) {
     if (!humansl_info) {return null}
     const best_moves = humansl_best_moves(humansl_info)
-    return {best_moves}
+    const heatmap = humansl_heatmap(humansl_info)
+    const {thickness} = M.humansl_engine()
+    return {best_moves, heatmap, thickness}
 }
 function humansl_best_moves(humansl_info) {
     const find_best_move = ({label, response: {gtp_moves_and_probs0}}) => {
@@ -52,6 +54,33 @@ function humansl_best_moves(humansl_info) {
         return move && {label, move, prior}
     }
     return humansl_info.responses.map(find_best_move).filter(truep)
+}
+function humansl_heatmap(humansl_info) {
+    // labels
+    const labels = humansl_info.responses.map(({label, response}) => label)
+    const [label0, label1, label2, label3] = labels
+    // heatmap
+    const bsize = board_size()
+    const heatmap = aa_new(bsize, bsize, () => ({raw: []}))
+    const add_to_heatmap = (key, f) => aa_each(heatmap, h => h[key] = f(h.raw))
+    const prior_of = (label, a) => a.find(raw => raw.label === label)?.prior || 0
+    // raw priors
+    const add_prior_to_heatmap1 = (label, move, prior) =>
+          (aa_ref(heatmap, ...move2idx(move)) || null)?.raw.push({label, prior})
+    const add_prior_to_heatmap = ({label, response: {gtp_moves_and_probs0}}) =>
+          gtp_moves_and_probs0.forEach(([move, prior]) =>
+              add_prior_to_heatmap1(label, move, prior))
+    humansl_info.responses.forEach(add_prior_to_heatmap)
+    //
+    const comparison2 = a => {
+        const prior0 = prior_of(label0, a), prior1 = prior_of(label1, a)
+        const log_diff = Math.log(prior1) - Math.log(prior0)
+        const max_prior = Math.max(prior0, prior1)
+        return {log_diff, max_prior, prior0, prior1}
+    }
+    add_to_heatmap('comparison2', comparison2)
+    // ret
+    return heatmap
 }
 
 const hold_suggestion_millisec = 1000
@@ -187,7 +216,7 @@ function set_renderer_state(...args) {
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
-              humansl: cook_humansl_for_renderer(humansl),
+              humansl,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               different_engine_for_white_p,
               previous_suggest, future_moves, winrate_trail}, endstate_d_i)

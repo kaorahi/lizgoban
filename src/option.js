@@ -25,11 +25,10 @@ const default_option = {
     // (example config)
     // "humansl_engine": {
     //     "humansl_metas": [
-    //         ["16K", {"source": "kgs", "rank": "16k", "tc": "fast", "date": 2023}],
-    //         ["8K", {"rank": "8k"}],
-    //         ["1D", {"rank": "1d"}],
-    //         ["9D", {"rank": "9d"}]
+    //         ["K", {"source": "kgs", "rank": "5k", "tc": "fast", "date": 2023}],
+    //         ["D", {"rank": "1d"}]
     //     ],
+    //     "thickness": 0.5,
     //     "engine": [
     //         "/bin/python", "/KATAGO_SRC_PATH/python/humanslnet_gtp.py",
     //         "/bin/python", "/KATAGO_SRC_PATH/python/humanslnet_server.py",

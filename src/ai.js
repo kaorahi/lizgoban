@@ -52,8 +52,9 @@ function set_pondering(pausing, busy, game_node) {
     const b = (leelaz === leelaz_for_black)
     const humansl_p = leelaz_for_humansl && pondering &&
           (prev_humansl_game_node !== game_node)
-    humansl_p && game_node &&
-        (leelaz_for_humansl.humansl_query(game_node),
+    const {humansl_metas} = M.humansl_engine() || {}
+    humansl_p && humansl_metas && game_node &&
+        (leelaz_for_humansl.humansl_query(humansl_metas, game_node),
          prev_humansl_game_node = game_node)
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)
@@ -101,8 +102,8 @@ function set_instant_analysis(instant_p) {each_leelaz(lz => lz.set_instant_analy
 // leelaz for humansl
 
 function start_humansl(given_start_args, humansl_option) {
-    const {engine: [leelaz_command, ...leelaz_args], humansl_metas} = humansl_option
-    const start_args = {...given_start_args, humansl_handler, humansl_metas,
+    const {engine: [leelaz_command, ...leelaz_args]} = humansl_option
+    const start_args = {...given_start_args, humansl_handler,
                         wait_for_startup: false,
                         leelaz_command, leelaz_args, ready_handler: do_nothing}
     leelaz_for_humansl = create_leelaz()

@@ -422,6 +422,7 @@ const draw_another = (...args) => {
         D.draw_goban_with_expected_variation(...args) :
         D.draw_goban_with_future_moves(...args)
 }
+const draw_humansl = with_opts(D.draw_goban_with_humansl_heatmap)
 const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
@@ -480,7 +481,7 @@ function do_on_sub_canvas(proc) {
 
 const double_boards_rule = {
     double_boards: {  // [on main_canvas, on sub_canvas]
-        normal: [draw_main, draw_pv], raw: [draw_raw_pure, draw_pv]
+        normal: [draw_main, draw_pv], raw: [draw_raw_pure, draw_humansl]
     },
     double_boards_raw: {
         normal: [draw_main, draw_raw_unclickable], raw: [draw_raw_pure, draw_pv]

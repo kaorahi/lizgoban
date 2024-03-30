@@ -22,6 +22,7 @@ const {
     draw_goban_with_future_moves,
     draw_goban_with_subboard_stones_suggest,
     draw_goban_with_original_pv,
+    draw_goban_with_humansl_heatmap,
     draw_endstate_goban, draw_thumbnail_goban, draw_zone_color_chart,
     target_move, set_target_move,
 } = require('./draw_goban.js')
@@ -229,6 +230,7 @@ module.exports = {
     draw_goban_with_future_moves,
     draw_goban_with_subboard_stones_suggest,
     draw_goban_with_original_pv,
+    draw_goban_with_humansl_heatmap,
     draw_endstate_goban,
     draw_winrate_graph, draw_winrate_bar, draw_visits_trail, draw_zone_color_chart,
     draw_endstate_distribution, hide_endstate_distribution,

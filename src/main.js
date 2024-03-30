@@ -143,6 +143,7 @@ globalize({  // for powered_goban.js
             'plot_score_stdev_p',
             'plot_shorttermScoreError_p',
             'amb_gain_recent',
+            'humansl_engine',
         ].map(key => [key, () => option[key]])),
     }
 })

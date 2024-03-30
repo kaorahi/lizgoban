@@ -51,7 +51,6 @@ function create_leelaz () {
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file, working_dir, default_board_size,
                minimum_suggested_moves, ready_handler,
-               humansl_metas,
                humansl_handler, suggest_handler, restart_handler, error_handler,
                illegal_handler, tuning_handler, command_failure_handler}
               = arg || {}
@@ -139,14 +138,14 @@ function create_leelaz () {
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
     }
-    const humansl_query = game_node => {
-        const ready = arg.humansl_handler && arg.humansl_metas
+    const humansl_query = (humansl_metas, game_node) => {
+        const ready = arg.humansl_handler
         // const ready =
-        //       arg.humansl_handler && arg.humansl_metas && is_supported('humansl')
+        //       arg.humansl_handler && humansl_metas && is_supported('humansl')
         if (!ready) {return}
-        const changes = arg.humansl_metas.map(([_, change]) => change)
+        const changes = humansl_metas.map(([_, change]) => change)
         const command = `hs-query-for-metas ${JSON.stringify(changes)}`
-        const kth_label = k => arg.humansl_metas[k][0]
+        const kth_label = k => humansl_metas[k][0]
         const format = (res, k) => ({label: kth_label(k), response: res})
         const on_response = (ok, result) => ok &&
               arg.humansl_handler(JSON.parse(result).map(format), game_node)
