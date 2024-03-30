@@ -446,15 +446,6 @@ function winrate_from_game(engine_id) {
         }
         const orders = M.plot_order_p() ?
               {order_b: order_of(true), order_w: order_of(false)} : {}
-        const aggressiveness_of = is_black => {
-            if (s <= game.init_len || xor(is_black, cur.is_black)) {return null}
-            const {suggest} = prev, {move} = cur
-            const hit = (suggest || []).find(z => z.move === move)
-            const {aggressive_policy, defensive_policy, prior} = hit || {}
-            return remarkable_aggressiveness(aggressive_policy, defensive_policy, prior)
-        }
-        const aggressiveness = M.plot_aggressiveness_p() ?
-              {aggressiveness_b: aggressiveness_of(true), aggressiveness_w: aggressiveness_of(false)} : {}
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const pass = implicit_pass || M.is_pass(h.move) || h.illegal
         const score_without_komi = score_without_komi_at(s)
@@ -499,7 +490,7 @@ function winrate_from_game(engine_id) {
         return {
             r, move_b_eval, move_eval, tag, score_without_komi, cumulative_score_loss,
             turn_letter,
-            ...(pass ? {pass} : {predict}), ...orders, ...aggressiveness,
+            ...(pass ? {pass} : {predict}), ...orders,
         }
     })
 }
