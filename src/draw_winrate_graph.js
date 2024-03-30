@@ -353,7 +353,8 @@ function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
         // ['ambiguity', RED, 'rgba(255,0,0,0.3)', 1, edged_fill_line],
         ['endstate_surprise', '#660', TRANSPARENT, 1, line],
         ['score_stdev', '#066', TRANSPARENT, 1, line],
-        ['shorttermScoreError', TRANSPARENT, '#444', 10, dots],
+        ['shorttermScoreError', '#00f', TRANSPARENT, 10, line],
+        // ['shorttermScoreError', TRANSPARENT, '#444', 10, dots],
 ]
     draw_winrate_graph_ambiguity_sub(items_in_upper_chart, sr2coord, g)
     draw_winrate_graph_ambiguity_sub(items_in_lower_chart, sq2coord, g)
