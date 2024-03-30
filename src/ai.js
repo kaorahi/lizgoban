@@ -286,7 +286,7 @@ function engine_ids() {
     return engines.map(lz => lz && lz.engine_id()).filter(truep)
 }
 
-const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi', 'is_supported']
+const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi', 'is_supported', 'analyze_move']
 
 module.exports = {
     // main.js only

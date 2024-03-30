@@ -105,7 +105,7 @@ function create_leelaz () {
         call(args, call_nn, start_analysis_actually)
         return true
     }
-    const start_analysis_actually = () => {
+    const start_analysis_actually = on_response => {
         const allow = is_supported('allow') && analysis_region_string()
         // for a bug in KataGo v1.10.0:
         // https://github.com/lightvector/KataGo/issues/602
@@ -129,7 +129,7 @@ function create_leelaz () {
             is_supported('pvEdgeVisits') && 'pvEdgeVisits true',
             is_supported('movesOwnership') && ownership_p && 'movesOwnership true',
             allow,
-        ].filter(truep).join(' '), on_analysis_response)
+        ].filter(truep).join(' '), on_response || on_analysis_response)
     }
     const stop_analysis = () => {leelaz('name')}
     const set_pondering = bool => {
@@ -213,6 +213,10 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
+    const get_aux = () => ({
+        bturn: js_bturn,
+        komi, gorule, handicaps, init_len, ownership_p, aggressive,
+    })
     const set_board = (history, aux) => {
         // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, aggressive}
         if (is_in_startup) {return}
@@ -270,11 +274,12 @@ function create_leelaz () {
         rest.forEach(play1)
         return true
     }
-    const play1 = h => {
+    const play1_gen = (h, cont) => {
         const {move, is_black} = h
-        const f = ok => !ok && !h.illegal && ((h.illegal = true), arg.illegal_handler(h))
+        const f = ok => {!ok && !h.illegal && ((h.illegal = true), arg.illegal_handler(h)); cont(ok)}
         leelaz('play ' + bw_for(is_black) + ' ' + move, f)
     }
+    const play1 = h => play1_gen(h, do_nothing)
     const bw_for = bool => (bool ? 'b' : 'w')
     const undo1 = () => {leelaz('undo')}
     let old_board_size
@@ -360,6 +365,42 @@ function create_leelaz () {
         const untildepth = 1
         const for_color = player => `allow ${player} ${vertices} ${untildepth}`
         return ['B', 'W'].map(for_color).join(' ')
+    }
+
+    // analyze specified move temporarily
+    let state_of_analyze_move = null
+    const analyze_move = (move, is_black, sec, then) => {
+        with_temp_move(move, is_black, recover => {
+            state_of_analyze_move = {recover}
+            let parsed = null
+            const call_then = () => {recover_from_analyze_move(); then(parsed)}
+            const on_response = with_temp_handler(z => parsed = z, on_analysis_response)
+            pondering = true
+            start_analysis_actually(on_response)
+            state_of_analyze_move.timer = setTimeout(call_then, sec * 1000)
+        })
+    }
+    const recover_from_analyze_move = () => {
+        if (!state_of_analyze_move) {return}
+        const {recover, timer} = state_of_analyze_move
+        truep(timer) && (clearTimeout(timer), stop_analysis())
+        recover()
+        state_of_analyze_move = null
+    }
+    const with_temp_move = (move, is_black, proc) => {
+        const history = leelaz_previous_history, aux = get_aux()
+        const recover = () => set_board(history, aux)
+        set_board([...history, {move, is_black}], {...aux, bturn: !is_black})
+        proc(recover)  // recover() can be called asyncronously
+    }
+    const with_temp_handler = (handler, func) => {
+        return (...a) => {
+            const {suggest_handler} = arg
+            arg.suggest_handler = handler
+            const ret = func(...a)
+            arg.suggest_handler = suggest_handler
+            return ret
+        }
     }
 
     /////////////////////////////////////////////////
@@ -615,16 +656,21 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // exported methods
 
-    return {
+    const exported = {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
         update_analysis_region, set_instant_analysis,
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,
+        analyze_move,
         // for debug
         send_to_leelaz,
     }
+    const wrapped_method = f => (...a) => (recover_from_analyze_move(), f(...a))
+    each_key_value(exported, (key, func) => exported[key] = wrapped_method(func))
+
+    return exported
 
 }  // end create_leelaz
 
