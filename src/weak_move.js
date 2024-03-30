@@ -204,7 +204,43 @@ function weak_move_etc_by_persona(state, persona_code, current_sanity, adjust_sa
           `Persona "${persona_code}" = {${f(0, "my")}, ${f(1, "your")}, ${f(2, "space")}}`
     // (total comment)
     const comment = [com_move, com_sanity, com_persona].join("\n")
-    return {move, comment, new_sanity, new_weaken_args}
+    // final check
+    const sec = 0.5, max_winrate_loss = 30.0, max_score_loss = 10.0
+    const sanity_coef = translator_pair(sanity_range, [1, 0.01])[0](sanity)
+    const loss_threshold = {
+        winrate: max_winrate_loss * sanity_coef,
+        score: max_score_loss * sanity_coef,
+    }
+    const selected = {move, comment, new_sanity, new_weaken_args}
+    return then => final_check(selected, state, sec, loss_threshold, then)
+}
+
+function final_check(selected, state, sec, loss_threshold, then) {
+    // At this time, I'm opting to endure the complexity of
+    // callback hell rather than using async/await. [2023-12-27]
+    // (Asynchrony)
+    // The surrounding code, which is part of the frequently used
+    // core features, has been written synchronously. Introducing
+    // async/await could unintentionally change behavior and risk
+    // creating race condition bugs.
+    // (Memory leak)
+    // In AI.analyze_move(), the callback is discarded if it's
+    // interrupted by other operations. Using async/await raises
+    // concerns about not releasing resources in such scenarios.
+    const {move, comment} = selected
+    const is_black = state.is_bturn, sign = is_black ? +1 : -1
+    const callback = ({b_winrate, score_without_komi}) => {
+        const best = state.orig_suggest[0]
+        const winrate_loss = (best.winrate - 50) - sign * (b_winrate - 50)
+        const score_loss = sign * (best.score_without_komi - score_without_komi)
+        const ok = (best.move === move) ||
+              (winrate_loss < loss_threshold.winrate &&
+               score_loss < loss_threshold.score)
+        const finally_selected = ok ? selected :
+              commented_best_move(state, `Play normally because ${move} was too bad in the final check. (winrate_loss=${winrate_loss.toFixed(1)}, score_loss=${score_loss.toFixed(1)})\nInfo of refused ${move}:\n${comment || ''}`)
+        then(finally_selected)
+    }
+    AI.analyze_move(move, is_black, sec, callback)
 }
 
 function adjust_sanity(state, sanity) {
