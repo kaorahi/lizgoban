@@ -130,6 +130,7 @@ function create_leelaz () {
             maybe('pvVisits'),
             maybe('pvEdgeVisits'),
             o_maybe('movesOwnership'),
+            maybe('rootInfo'),
             allow,
         ].filter(truep).join(' '), on_response || on_analysis_response)
     }
@@ -194,6 +195,7 @@ function create_leelaz () {
             ['pvEdgeVisits', 'kata-analyze 1 pvEdgeVisits true'],
             ['ownershipStdev', 'kata-analyze 1 ownershipStdev true'],
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
+            ['rootInfo', 'kata-analyze 1 rootInfo true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
         ]
         const do_check = table => table.forEach(a => check_supported(...a))
@@ -688,16 +690,19 @@ function trim_split(str, reg) {return str.trim().split(reg)}
 const top_suggestions = 5
 
 function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
-    const split_pattern = /\b(?=^dummy_header|ownership|ownershipStdev)\b/
+    const split_pattern = /\b(?=^dummy_header|ownership|ownershipStdev|rootInfo)\b/
     const splitted = `dummy_header ${s}`.split(split_pattern)
     const part = aa2hash(splitted.map(str => trim_split(str, /(?<=^\S+)\s+/)))
     const {
         dummy_header: i_str,
         ownership: o_str,
         ownershipStdev: o_stdev_str,
+        rootInfo: r_str,
     } = part
     const ownership = ownership_parser(o_str, bturn)
     const ownership_stdev = ownership_parser(o_stdev_str, true)
+    const root_info = r_str ? array2hash(trim_split(r_str, /\s+/)) : {}
+    cook_analyze(root_info, bturn, katago_p)
     const parser = (z, k) => suggest_parser(z, k, bturn, komi, katago_p)
     const unsorted_suggest =
           i_str.split(/info/).slice(1).map(parser).filter(truep)
@@ -723,7 +728,7 @@ function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     ]
     pda_policy && (suggest.forEach(h => (append_pda_policy(h, pda_policy))),
                    pda_order_keys.forEach(a => add_order(...a)))
-    const {shorttermScoreError} = best_suggest
+    const shorttermScoreError = root_info.rawStScoreError || best_suggest.shorttermScoreError
     const more = truep(shorttermScoreError) ?
           {shorttermScoreError: to_f(shorttermScoreError)} : {}
     const engine_bturn = bturn
@@ -785,6 +790,7 @@ function cook_analyze(h, bturn, katago_p) {
         [to_percent, 'winrate', 'prior', 'lcb'],
         [to_f,
          'scoreMean', 'scoreLead', 'scoreStdev',
+         'rawStWrError', 'rawStScoreError', 'rawVarTimeLeft',
         ],
         [to_ary(to_i), 'pvVisits', 'pvEdgeVisits'],
         [to_ary(to_f_by_turn), 'movesOwnership'],
