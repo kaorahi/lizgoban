@@ -139,7 +139,7 @@ function weak_move_by_score(state, average_losing_points) {
     const {orig_suggest, is_bturn, last_move, orig_score_without_komi, katago_p} = state
     if (!katago_p) {
         const com = 'Play normally because "lose_score" is not supported for this engine.'
-        return make_commented_move(best_move(state), com)
+        return commented_best_move(state, com)
     }
     const suggest = weak_move_candidates(orig_suggest, last_move)
     const current_score = orig_score_without_komi || 0
@@ -177,7 +177,7 @@ function weak_move_etc_by_persona(state, persona_code, current_sanity, adjust_sa
           select_weak_move_by_moves_ownership(state, param, typical_order, threshold)
     if (!suggest) {
         const com = 'Play normally because persona is not supported for this engine.'
-        return make_commented_move(best_move(state), com)
+        return commented_best_move(state, com)
     }
     const {move} = suggest
     const new_weaken_args = truep(new_sanity) && [persona_code, new_sanity, adjust_sanity_p]
@@ -283,6 +283,10 @@ function make_commented_move(move, comment) {return move + '#' + comment}
 function parse_commented_move(commented_move) {
     const [move, ...rest] = commented_move.split('#'), comment = rest.join('#')
     return {move, comment}
+}
+
+function commented_best_move(state, comment) {
+    return {move: best_move(state), comment}
 }
 
 ///////////////////////////////////////////////
