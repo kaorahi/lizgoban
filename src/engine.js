@@ -139,15 +139,15 @@ function create_leelaz () {
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
     }
-    const humansl_best_moves = game_node => {
+    const humansl_query = game_node => {
         const ready = arg.humansl_handler && arg.humansl_metas
         // const ready =
         //       arg.humansl_handler && arg.humansl_metas && is_supported('humansl')
         if (!ready) {return}
         const changes = arg.humansl_metas.map(([_, change]) => change)
-        const command = `hs-best-moves-for-metas ${JSON.stringify(changes)}`
+        const command = `hs-query-for-metas ${JSON.stringify(changes)}`
         const kth_label = k => arg.humansl_metas[k][0]
-        const format = (z, k) => ({label: kth_label(k), move: z[0], prior: z[1]})
+        const format = (res, k) => ({label: kth_label(k), response: res})
         const on_response = (ok, result) => ok &&
               arg.humansl_handler(JSON.parse(result).map(format), game_node)
         leelaz(command, on_response)
@@ -523,7 +523,7 @@ function create_leelaz () {
 
     const command_matcher = re => (task => task.command.match(re))
     const pondering_command_p = command_matcher(/((lz|kata)-analyze|kata-raw-nn)/)
-    const humansl_command_p = command_matcher(/^hs-best-moves-for-metas/)
+    const humansl_command_p = command_matcher(/^hs-query-for-metas/)
     const peek_command_p = command_matcher(/play.*undo/)
     const changer_command_p = command_matcher(/play|undo|clear_board/)
     const clear_command_p = command_matcher(/clear_board/)
@@ -656,7 +656,7 @@ function create_leelaz () {
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
         update_analysis_region, set_instant_analysis,
         is_supported, clear_leelaz_board,
-        humansl_best_moves, is_ready: () => is_ready, engine_id: get_engine_id,
+        humansl_query, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,
         analyze_move,
         // for debug

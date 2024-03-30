@@ -52,7 +52,7 @@ function set_pondering(pausing, busy, game_node) {
     const b = (leelaz === leelaz_for_black)
     const humansl_p = leelaz_for_humansl && pondering &&
           (prev_humansl_game_node !== game_node)
-    humansl_p && game_node && (leelaz_for_humansl.humansl_best_moves(game_node),
+    humansl_p && game_node && (leelaz_for_humansl.humansl_query(game_node),
                                prev_humansl_game_node = game_node)
     leelaz_for_black.set_pondering(pondering && b)
     leelaz_for_white && leelaz_for_white.set_pondering(pondering && !b)

@@ -36,10 +36,22 @@ function renew_game() {set_endstate_obsolete(); clear_endstate()}
 /////////////////////////////////////////////////
 // receive analysis from leelaz
 
-function humansl_handler(best_moves, game_node) {
-    const humansl = {best_moves}
+function humansl_handler(responses, game_node) {
+    const humansl = {responses}
     merge(game_node, {humansl})
     set_and_render(false)
+}
+function cook_humansl_for_renderer(humansl_info) {
+    if (!humansl_info) {return null}
+    const best_moves = humansl_best_moves(humansl_info)
+    return {best_moves}
+}
+function humansl_best_moves(humansl_info) {
+    const find_best_move = ({label, response: {gtp_moves_and_probs0}}) => {
+        const [move, prior] = min_by(gtp_moves_and_probs0, ([m, p]) => - p) || []
+        return move && {label, move, prior}
+    }
+    return humansl_info.responses.map(find_best_move).filter(truep)
 }
 
 const hold_suggestion_millisec = 1000
@@ -175,7 +187,7 @@ function set_renderer_state(...args) {
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
-              humansl,
+              humansl: cook_humansl_for_renderer(humansl),
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               different_engine_for_white_p,
               previous_suggest, future_moves, winrate_trail}, endstate_d_i)
