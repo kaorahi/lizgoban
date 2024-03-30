@@ -702,6 +702,8 @@ function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     const ownership_stdev = ownership_parser(o_stdev_str, true)
     const root_info = r_str ? array2hash(trim_split(r_str, /\s+/)) : {}
     cook_analyze(root_info, bturn, katago_p)
+    const prefixed_root_info =
+          aa2hash(map_key_value(root_info, (k, v) => [`root_${k}`, v]))
     const parser = (z, k) => suggest_parser(z, k, bturn, komi, katago_p)
     const unsorted_suggest =
           i_str.split(/info/).slice(1).map(parser).filter(truep)
@@ -727,13 +729,11 @@ function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     ]
     pda_policy && (suggest.forEach(h => (append_pda_policy(h, pda_policy))),
                    pda_order_keys.forEach(a => add_order(...a)))
-    const shorttermScoreError = root_info.rawStScoreError
-    const more = truep(shorttermScoreError) ?
-          {shorttermScoreError: to_f(shorttermScoreError)} : {}
     const engine_bturn = bturn
     return {
+        ...prefixed_root_info,
         suggest, engine_bturn, visits, b_winrate, score_without_komi,
-        ownership, ownership_stdev, komi, ...more,
+        ownership, ownership_stdev, komi,
     }
 }
 

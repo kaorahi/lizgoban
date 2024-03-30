@@ -76,7 +76,7 @@ const suggest_keys2 = [
     'endstate_surprise',
     'score_stdev',
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
-    'shorttermScoreError',
+    'root_rawStScoreError',
     'amb_gain',
 ]
 
@@ -184,7 +184,7 @@ function set_renderer_state(...args) {
         M.plot_endstate_surprise_p() && 'endstate_surprise',
         M.plot_score_stdev_p() && 'score_stdev',
         'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
-        M.plot_shorttermScoreError_p() && 'shorttermScoreError',
+        M.plot_shorttermScoreError_p() && 'root_rawStScoreError',
         'amb_gain',
     ].filter(truep)
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
