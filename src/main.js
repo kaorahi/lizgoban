@@ -480,8 +480,8 @@ function menu_template(win) {
                                      n === 19 || AI.katago_p())),
         item('(new window)', undefined,
              (this_item, win) => {
-                 const message = '"New window" is no longer maintained and will be removed in future versions. If you have a special reason to use this feature, please post it to GitHub issues from the link "Project Home" at the bottom of "Help > en".'
-                 dialog.showErrorBox('Obsolete feature', message)
+                 // const message = '"New window" is no longer maintained and will be removed in future versions. If you have a special reason to use this feature, please post it to GitHub issues from the link "Project Home" at the bottom of "Help > en".'
+                 // dialog.showErrorBox('Obsolete feature', message)
                  new_window(window_prop(win).board_type === 'suggest' ?
                             'variation' : 'suggest')
              }),
