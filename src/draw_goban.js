@@ -90,8 +90,7 @@ function stones_until(show_until, all_p, for_endstate) {
 function draw_goban_with_suggest(canvas, opts) {
     const displayed_stones = copy_stones_for_display()
     R.suggest.forEach(h => merge_stone_at(h.move, displayed_stones, {suggest: true, data: h}))
-    R.humansl?.best_moves?.forEach(({label, move, prior}) =>
-        merge_stone_at(move, displayed_stones, {humansl_best_move: {label, prior}}))
+    merge_hsl_best_moves_to_stones(displayed_stones)
     each_stone(displayed_stones, h => {h.displayed_tag = h.tag && h.stone})
     gray_stones_by_endstate(displayed_stones)
     const s0 = R.suggest[0]
@@ -104,6 +103,13 @@ function draw_goban_with_suggest(canvas, opts) {
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
                 draw_endstate_cluster_p: true,
                 mapping_tics_p: !opts.main_canvas_p, ...opts})
+}
+
+function merge_hsl_best_moves_to_stones(stones) {
+    const hsl = R.humansl?.best_moves || []
+    if (uniq(hsl.map(z => z.move)).length <= 1) {return}
+    hsl.forEach(({label, move, prior}) =>
+        merge_stone_at(move, stones, {humansl_best_move: {label, prior}}))
 }
 
 function gray_stones_by_endstate(stones) {
