@@ -985,7 +985,7 @@ function draw_endstate_diff(diff, xy, radius, g) {
 // mapping from goban to winrate bar
 
 function draw_winrate_mapping_line(h, xy, unit, g) {
-    const special_order = h.next_move ? 0 : null
+    const special_order = h.next_move ? 0 : h.humansl_best_move ? 1 : null
     if (minor_suggest_p(h) && !truep(special_order)) {return}
     const b_winrate = flip_maybe(fake_winrate(h.data))
     // fake order can be negative!
