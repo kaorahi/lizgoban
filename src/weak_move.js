@@ -69,7 +69,7 @@ function random_opening_move(state) {
     const log = (selected, label, val) => selected !== best && debug_log(`random_opening_move: movenum=${movenum + 1}, order=${selected.order}, ${label}=${JSON.stringify(val)}, visits=${selected.visits}, w_loss=${best.winrate - selected.winrate}, s_loss=${best.scoreMean - selected.scoreMean}`)
     // main
     if (movenum < p_until && best.prior) {
-        const selected = weighted_random_choice(suggest, s => s.prior)
+        const selected = select_randomly_by_prior(suggest)
         const {move, prior} = selected
         log(selected, 'prior', prior)
         const com = `Play randomly by the policy in the first ${p_until} moves.` +
@@ -99,6 +99,10 @@ function random_opening_move(state) {
           `Select a random move unifromly` +
           ` from ${clen} admissible candidates (${cs}).`
     return make_commented_move(selected.move, com)
+}
+
+function select_randomly_by_prior(suggest) {
+    return weighted_random_choice(suggest, s => s.prior)
 }
 
 ///////////////////////////////////////////////
