@@ -23,6 +23,12 @@ const {
     keep_backward_compatibility_of_stone_style,
 } = require('./option.js')
 
+const {humansl_engine} = option
+humansl_engine && (humansl_engine.metas = [
+    {"label": "k", "change": {"source": "kgs", "rank": "5k", "tc": "fast", "date": 2023}},
+    {"label": "d", "change": {"rank": "1d"}}
+])
+
 /////////////////////////////////////////////////
 // setup
 
