@@ -906,25 +906,37 @@ function draw_suggestion_order(h, xy, radius, color, large_font_p, g) {
 function draw_suggestion_order_lizzie(h, xy, radius, g) {
     draw_suggestion_order_gen(true, h, xy, radius, null, false, g)
 }
-function draw_suggestion_order_gen(lizzie, h, [x, y], radius, color, large_font_p, g) {
+function draw_suggestion_order_gen(lizzie, h, xy, radius, given_color, large_font_p, g) {
     if (h.data.order >= 9) {return}
     const both_champ = (h.data.order + h.data.winrate_order === 0)
     const either_champ = (h.data.order * h.data.winrate_order === 0)
-    const huge = [2, -1], large = [1.5, -0.5], normal = [1, -0.1], small = [0.8, 0.3]
     const font_modifier = large_font_p && both_champ && 'bold '
     const either = (champ, other) => both_champ ? champ : other
-    const [fontsize, d] = (lizzie ? small : large_font_p ? huge : either(large, normal))
-          .map(c => c * radius)
-    const w = fontsize, x0 = x + d + w / 2, y0 = y - d - w / 2
+    const size = lizzie ? 'small' : large_font_p ? 'huge' : either('large', 'normal')
     const lizzie_mark =
           if_top_pda_policy(h, fill_triangle_around, fill_rev_triangle_around)
+    const mark = lizzie && (lizzie_mark || true)
+    const color = lizzie ? WHITE : either_champ ? RED : given_color
+    const text = to_s(h.data.order + 1)
+    draw_suggestion_order_sub(text, xy, radius, {color, size, mark, font_modifier}, g)
+}
+function draw_suggestion_order_sub(text, [x, y], radius, prop, g) {
+    const {color, size, mark, font_modifier} = prop
+    const size_table = {
+        huge: [2, -1],
+        large: [1.5, -0.5],
+        normal: [1, -0.1],
+        small: [0.8, 0.3]
+    }
+    const [fontsize, d] = size_table[size].map(c => c * radius)
+    const w = fontsize, x0 = x + d + w / 2, y0 = y - d - w / 2
     g.save()
     g.fillStyle = BLUE
-    lizzie && (lizzie_mark ? lizzie_mark([x0, y0], w * 0.8, g) :
-               fill_rect([x + d, y - d - w], [x + d + w, y - d], g))
-    g.fillStyle = lizzie ? WHITE : either_champ ? RED : color
+    functionp(mark) ? mark([x0, y0], w * 0.8, g) :
+        mark ? fill_rect([x + d, y - d - w], [x + d + w, y - d], g) : null
+    g.fillStyle = color
     g.textAlign = 'center'; g.textBaseline = 'middle'
-    fill_text_with_modifier(g, font_modifier, fontsize, h.data.order + 1, x0, y0, w)
+    fill_text_with_modifier(g, font_modifier, fontsize, text, x0, y0, w)
     g.restore()
 }
 
