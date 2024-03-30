@@ -175,6 +175,11 @@ function weak_move_by_score(state, average_losing_points) {
 // strategy: persona
 
 function weak_move_etc_by_persona(state, persona_code, current_sanity, adjust_sanity_p) {
+    if (state.movenum < 10) {
+        const {move, prior} = select_randomly_by_prior(state.orig_suggest)
+        const com = `Play randomly by the policy in first moves.`
+        return make_commented_move(move, com)
+    }
     const new_sanity = adjust_sanity_p && adjust_sanity(state, current_sanity)
     const sanity = true_or(new_sanity, current_sanity)
     const {generate_persona_param} = state
