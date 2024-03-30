@@ -148,7 +148,6 @@ function create_leelaz () {
             if (!h) {return}
             const {
                 whiteWin, whiteLead, whiteOwnership, policy, policyPass,
-                shorttermScoreError,
             } = h
             const conv_gen = base =>
                   a => a.map(z => to_s(bturn ? base - z : z)).join(' ')
@@ -159,7 +158,7 @@ function create_leelaz () {
             const k = argmin_by(extended_policy, p => isNaN(p) ? Infinity : - p)
             const move = idx2move(Math.floor(k / bsize), k % bsize) || pass_command
             const prior = to_s(extended_policy[k]), pv = move
-            const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} shorttermScoreError ${true_or(shorttermScoreError, -1)} pv ${pv} ownership ${ownership}`
+            const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
             suggest_reader_maybe(fake_suggest)
         })
         // CAUTION:
@@ -728,7 +727,7 @@ function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     ]
     pda_policy && (suggest.forEach(h => (append_pda_policy(h, pda_policy))),
                    pda_order_keys.forEach(a => add_order(...a)))
-    const shorttermScoreError = root_info.rawStScoreError || best_suggest.shorttermScoreError
+    const shorttermScoreError = root_info.rawStScoreError
     const more = truep(shorttermScoreError) ?
           {shorttermScoreError: to_f(shorttermScoreError)} : {}
     const engine_bturn = bturn
