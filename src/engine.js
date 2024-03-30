@@ -117,17 +117,19 @@ function create_leelaz () {
         const is_katago_until_1_10_0 = is_katago() && !is_supported('pvEdgeVisits')
         const workaround_for_katago_bug = allow && is_katago_until_1_10_0 &&
               `kata-analyze ${bw_for(js_bturn)} interval 999999;`
+        const maybe = key => is_supported(key) && `${key} true`
+        const o_maybe = key => ownership_p && maybe(key)
         pondering && leelaz([
             workaround_for_katago_bug,
             is_katago() ? 'kata-analyze' : 'lz-analyze',
             bw_for(js_bturn),
             `interval ${arg.analyze_interval_centisec}`,
             is_katago() && ownership_p && 'ownership true',
-            is_supported('ownershipStdev') && ownership_p && 'ownershipStdev true',
+            o_maybe('ownershipStdev'),
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
-            is_supported('pvVisits') && 'pvVisits true',
-            is_supported('pvEdgeVisits') && 'pvEdgeVisits true',
-            is_supported('movesOwnership') && ownership_p && 'movesOwnership true',
+            maybe('pvVisits'),
+            maybe('pvEdgeVisits'),
+            o_maybe('movesOwnership'),
             allow,
         ].filter(truep).join(' '), on_response || on_analysis_response)
     }
