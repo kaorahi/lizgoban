@@ -1603,7 +1603,7 @@ function update_humansl_input(text_only_p) {
     const humansl1_rank = humansl_rank_options[to_i(Q("#humansl1_rank").value)]
     setq("#humansl1_rank_label", `rank ${humansl1_rank}`)
     const humansl_thickness = to_f(Q("#humansl_thickness").value)
-    setq("#humansl_thickness_label", `boldness ${humansl_thickness}`)
+    setq("#humansl_thickness_label", `color enhance ${humansl_thickness}`)
     if (text_only_p) {return}
     main('update_humansl_param', {
         humansl0_rank,
@@ -1612,6 +1612,13 @@ function update_humansl_input(text_only_p) {
     })
 }
 update_humansl_input(true)
+
+function update_humansl_match_input() {
+    const humansl_match_rank = Q("#humansl_match_rank").value
+    main('update_humansl_match_param', {
+        humansl_match_rank,
+    })
+}
 
 /////////////////////////////////////////////////
 // init

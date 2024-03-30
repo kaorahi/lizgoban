@@ -309,6 +309,11 @@ ipc.on('update_humansl_param', (e, p) => {
     toggle_pause(); update_ponder()
     update_all()
 })
+ipc.on('update_humansl_match_param', (e, p) => {
+    const args = `source kgs rank ${p.humansl_match_rank} tc fast date 2023`
+    AI.send_to_leelaz(`hs-set-meta ${args}`)
+    update_all()
+})
 
 // update after every command
 
