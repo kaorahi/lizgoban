@@ -502,11 +502,14 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
                              stone_radius, g)
         return
     }
+    const only_once = f => (...a) => {f && f(...a); f = null}
     // (1) halo, (2) shadow, (3) stone etc. in this order
     R.lizzie_style && !R.busy &&
         each_coord((h, xy, idx) => draw_halo_lizzie(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
     each_coord((h, xy, idx) => {
+        const draw_hsl = only_once(() =>
+            draw_humansl_best_move(h, xy, stone_radius, g))
         h.stone &&
             draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g)
         if (R.busy) {return}
@@ -516,10 +519,9 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         draw_next_p && h.branches && draw_branches(h, xy, stone_radius, g)
         draw_expected_p && (draw_exp(h.expected_move, true, h, xy),
                             draw_exp(h.unexpected_move, false, h, xy))
-        R.lizzie_style && h.suggest && draw_suggest_lizzie(h, xy, stone_radius, g)
+        R.lizzie_style && h.suggest && draw_suggest_lizzie(h, xy, stone_radius, draw_hsl, g)
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
-        h.humansl_best_move &&
-            draw_humansl_best_move(h.humansl_best_move, xy, stone_radius, g)
+        draw_hsl()
         draw_endstate_diff_p && !hide_endstate_p() &&
             draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
     })
@@ -711,11 +713,13 @@ function draw_text_on_stone(text, color, xy, radius, g) {
     g.restore()
 }
 
-function draw_humansl_best_move(humansl_best_move, xy, radius, g) {
+function draw_humansl_best_move(h, xy, radius, g) {
+    const {humansl_best_move} = h; if (!humansl_best_move) {return}
     const f = R.lizzie_style ?
           draw_humansl_best_move_lizzie : draw_humansl_best_move_lizgoban
     f(humansl_best_move, xy, radius, g)
 }
+
 function draw_humansl_best_move_lizgoban({label, prior}, [x, y], radius, g) {
     const d = 0.0 * radius, w = 1.0 * radius, half = w * 0.5
     const max_width = w, fontsize = w * 0.9
@@ -727,17 +731,10 @@ function draw_humansl_best_move_lizgoban({label, prior}, [x, y], radius, g) {
     fill_text(g, fontsize, label, x + d - half, y + d, max_width)
     g.restore()
 }
-function draw_humansl_best_move_lizzie({label, prior}, [x, y], radius, g) {
-    const d = 0.0 * radius
-    const w = 1.6 * radius, half = w * 0.5
-    const max_width = w
-    const fontsize = w * 0.7
-    g.save()
-    g.fillStyle = 'rgba(255,0,0,1.0)'
-    fill_rect([x - half, y - half], [x + half, y + half], g)
-    g.textAlign = 'center'; g.textBaseline = 'middle'
-    g.fillStyle = 'rgba(255,255,255,1.0)'; fill_text(g, fontsize, label, x, y, max_width)
-    g.restore()
+function draw_humansl_best_move_lizzie({label, prior}, xy, radius, g) {
+    // const prop = {color: WHITE, background: RED, size: 'huge', mark: true}
+    const prop = {color: WHITE, background: GREEN, size: 'small', mark: true, bottom: true}
+    draw_suggestion_order_sub(label, xy, radius, prop, g)
 }
 
 function draw_last_move(h, xy, radius, g) {
@@ -846,7 +843,7 @@ function if_top_pda_policy(h, aggressive, defensive) {
         top_a ? aggressive : top_d ? defensive : null
 }
 
-function draw_suggest_lizzie(h, xy, radius, g) {
+function draw_suggest_lizzie(h, xy, radius, draw_hsl, g) {
     const suggest = h.data; if (suggest.visits === 0 || minor_suggest_p(h)) {return}
     const lizzie_text_color = 'rgba(0,0,0,0.7)'
     const [x, y] = xy, max_width = radius * 1.8, champ_color = RED
@@ -856,6 +853,7 @@ function draw_suggest_lizzie(h, xy, radius, g) {
     const score_text = score_bar_p() && f2s(suggest.score_without_komi - R.komi)
     const orig_p = orig_suggest_p(suggest)
     orig_p && draw_suggestion_order_lizzie(h, xy, radius, g)
+    draw_hsl()
     g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'
     g.fillStyle = suggest.winrate_order === 0 ? champ_color : lizzie_text_color
     fill_text(g, fontsize, score_text || winrate_text, x, y_upper, max_width)
@@ -921,7 +919,7 @@ function draw_suggestion_order_gen(lizzie, h, xy, radius, given_color, large_fon
     draw_suggestion_order_sub(text, xy, radius, {color, size, mark, font_modifier}, g)
 }
 function draw_suggestion_order_sub(text, [x, y], radius, prop, g) {
-    const {color, size, mark, font_modifier} = prop
+    const {color, background, size, mark, font_modifier, left, bottom} = prop
     const size_table = {
         huge: [2, -1],
         large: [1.5, -0.5],
@@ -929,11 +927,12 @@ function draw_suggestion_order_sub(text, [x, y], radius, prop, g) {
         small: [0.8, 0.3]
     }
     const [fontsize, d] = size_table[size].map(c => c * radius)
-    const w = fontsize, x0 = x + d + w / 2, y0 = y - d - w / 2
+    const w = fontsize, dx = left ? - d - w : d, dy = bottom ? d : - d - w
+    const x0 = x + dx + w / 2, y0 = y + dy + w / 2
     g.save()
-    g.fillStyle = BLUE
+    g.fillStyle = background || BLUE
     functionp(mark) ? mark([x0, y0], w * 0.8, g) :
-        mark ? fill_rect([x + d, y - d - w], [x + d + w, y - d], g) : null
+        mark ? fill_rect([x + dx, y + dy], [x + dx + w, y + dy + w], g) : null
     g.fillStyle = color
     g.textAlign = 'center'; g.textBaseline = 'middle'
     fill_text_with_modifier(g, font_modifier, fontsize, text, x0, y0, w)
