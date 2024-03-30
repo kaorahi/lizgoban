@@ -137,11 +137,13 @@ globalize({  // for powered_goban.js
         auto_progress, is_busy, is_long_busy, is_pausing, is_bogoterritory,
         branch_at, ladder_branches,
         tuning_message: () => tuning_message,
-        plot_order_p: () => option.plot_order_p,
-        plot_endstate_surprise_p: () => option.plot_endstate_surprise_p,
-        plot_score_stdev_p: () => option.plot_score_stdev_p,
-        plot_shorttermScoreError_p: () => option.plot_shorttermScoreError_p,
-        amb_gain_recent: () => option.amb_gain_recent,
+        ...aa2hash([
+            'plot_order_p',
+            'plot_endstate_surprise_p',
+            'plot_score_stdev_p',
+            'plot_shorttermScoreError_p',
+            'amb_gain_recent',
+        ].map(key => [key, () => option[key]])),
     }
 })
 const P = require('./powered_goban.js')
