@@ -861,7 +861,7 @@ function draw_suggest(h, xy, radius, large_font_p, g) {
     g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_circle(xy, radius, g)
     draw_top_pda_policy(h, xy, radius, g)
-    !R.lizzie_style && draw_suggestion_order(h, xy, radius, stroke, large_font_p, g)
+    !R.lizzie_style && draw_suggestion_order(h, xy, radius, 'rgba(0,0,0,0.5)', large_font_p, g)
 }
 
 function draw_top_pda_policy(h, [x, y], radius, g) {
