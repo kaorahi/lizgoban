@@ -433,7 +433,8 @@ function create_leelaz () {
         // const eq = (a, b) => a === b ||
         //       (is_a(a, 'object') && is_a(b, 'object') &&
         //        Object.keys({...a, ...b}).every(k => eq(a[k], b[k])))
-        return eq(arg, cook_arg(h))
+        const cooked_h = cook_arg(h)
+        return eq(arg, cooked_h)
     }
     const get_weight_file = () => {
         const pos = arg && weight_option_pos_in_leelaz_args(arg)
