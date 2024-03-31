@@ -434,7 +434,15 @@ function create_leelaz () {
         //       (is_a(a, 'object') && is_a(b, 'object') &&
         //        Object.keys({...a, ...b}).every(k => eq(a[k], b[k])))
         const cooked_h = cook_arg(h)
-        return eq(arg, cooked_h)
+        const more_checks = [
+            // JSON.stringify(f) is undefined if f is a function.
+            // (ex.) JSON.stringify({foo: _=>3}) ==> '{}'
+            // So we need a separated check.
+            'suggest_handler',
+            // Other handlers are omitted at present due to my laziness...
+        ]
+        return eq(arg, cooked_h) &&
+            more_checks.every(key => arg[key] === cooked_h[key])
     }
     const get_weight_file = () => {
         const pos = arg && weight_option_pos_in_leelaz_args(arg)
