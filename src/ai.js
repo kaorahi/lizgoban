@@ -108,6 +108,7 @@ function set_instant_analysis(instant_p) {each_leelaz(lz => lz.set_instant_analy
 function start_humansl(given_start_args, humansl_option) {
     const {engine: [leelaz_command, ...leelaz_args]} = humansl_option
     const start_args = {...given_start_args, humansl_handler,
+                        command_failure_handler,
                         wait_for_startup: false,
                         leelaz_command, leelaz_args, ready_handler: do_nothing}
     leelaz_for_humansl = create_leelaz()
