@@ -152,8 +152,14 @@ function create_leelaz () {
     const analyze_command_interval_arg = () =>
           `interval ${arg.analyze_interval_centisec}`
     const humansl_profile_setter = profile => `kata-set-param humanSLProfile ${profile}`
-    const humansl_profile_restorer = () => is_supported('humanSLProfile') ?
-          humansl_profile_setter(humansl_profile) : 'name'
+    const humansl_profile_restorer = (forcep) => {
+        // if -human-model is given, profile should be applied
+        // only for kata-raw-human-nn and genmove etc.
+        const profile_for_sub_model = forcep ? humansl_profile : ''
+        const p = is_supported('main_model_humanSL') ? humansl_profile :
+              is_supported('sub_model_humanSL') ? profile_for_sub_model : null
+        return truep(p) ? humansl_profile_setter(p) : 'name'
+    }
     const humansl_profile_updater = () => {
         const command = 'kata-get-param humanSLProfile'
         const on_response = (ok, res) => ok && (humansl_profile = (res || '').trim())
@@ -227,7 +233,7 @@ function create_leelaz () {
     }
     const genmove_gen = (sec, command_for_color, on_response) => {
         const color = bw_for(js_bturn)
-        const command = `time_settings 0 ${sec} 1;${command_for_color(color)}`
+        const command = `time_settings 0 ${sec} 1;${humansl_profile_restorer(true)};${command_for_color(color)}`
         leelaz(command, on_response)
     }
     const on_genmove_responsor = (callback, cancellable) => {
