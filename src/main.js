@@ -1006,7 +1006,7 @@ function try_auto_play(force_next) {
     update_let_me_think(true)
 }
 function auto_play_ready() {
-    return !doing_auto_play_p && !auto_genmove_p(true) && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
+    return !doing_auto_play_p && !auto_genmove_analyze_p() && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
 function do_as_auto_play(playable, proc, silent) {
     doing_auto_play_p = false
@@ -1064,21 +1064,19 @@ function default_weaken() {
 function get_auto_play_weaken() {
     return auto_play_weaken_for_current_bw() || auto_play_weaken
 }
-function auto_genmove_p(analyze_p) {
-    const name = analyze_p ? 'genmove_analyze' : 'genmove'
-    return auto_playing() && (auto_playing_strategy === 'best') &&
-        (get_auto_play_weaken()?.[0] === name)
+function auto_genmove_p() {return auto_genmove_func() === genmove}
+function auto_genmove_analyze_p() {return auto_genmove_func() === genmove_analyze}
+function auto_genmove_func() {
+    const weaken_method = get_auto_play_weaken()?.[0]
+    const genmove_func = {genmove, genmove_analyze}[weaken_method]
+    return auto_playing() && (auto_playing_strategy === 'best') && genmove_func
 }
 function start_auto_genmove_maybe() {
-    auto_genmove_p() ? start_auto_genmove() :
-        auto_genmove_p(true) ? start_auto_genmove(true) : null
-}
-function start_auto_genmove(analyze_p) {
+    const genmove_func = auto_genmove_func(); if (!genmove_func) {return}
     const play_func = (move, comment) =>
           play_selected_weak_move({move, comment}, get_auto_play_weaken())
     resume(); update_all()  // just for bright board effect
-    const f = analyze_p ? genmove_analyze : genmove
-    f(auto_play_sec, play_func)
+    genmove_func(auto_play_sec, play_func)
 }
 
 // match
