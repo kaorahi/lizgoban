@@ -616,7 +616,7 @@ function create_leelaz () {
     const up_to_date_response = () => {return last_response_id >= last_command_id}
 
     const command_matcher = re => (task => task.command.match(re))
-    const pondering_command_p = command_matcher(/(lz|kata)-analyze/)
+    const pondering_command_p = command_matcher(/(lz|kata)-(genmove_)?analyze|kata-search_analyze/)
     const cancellable_command_p = command_matcher(/(lz|kata)-analyze/)
     const raw_nn_command_p = command_matcher(/kata-raw(-human)?-nn/)
     const endstate_command_p = command_matcher(/^endstate_map/)
