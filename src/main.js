@@ -99,6 +99,7 @@ let pausing = false, busy = false
 let exercise_metadata = null
 let adjust_sanity_p = false
 let auto_play_weaken_for_bw = {}; clear_auto_play_weaken_for_bw()
+let debug_menu_p = !app.isPackaged
 
 function set_game(new_game) {
     game = new_game
@@ -640,6 +641,9 @@ function menu_template(win) {
             obsolete_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
             sep,
             item("Save Q&&A images", 'PrintScreen', save_q_and_a_images),
+            ...(debug_menu_p ? [] :
+                [sep, item('Enable debug menu', undefined,
+                           () => {debug_menu_p = true})]),
         ]),
     ])
     const white_unloader_item =
@@ -697,7 +701,7 @@ function menu_template(win) {
     ])
     return [file_menu, edit_menu, view_menu, tool_menu, engine_menu,
             ...preset_menu_maybe({menu, item, sep, white_unloader_item, win}),
-            ...(app.isPackaged ? [] : [debug_menu]),
+            ...(debug_menu_p ? [debug_menu] : []),
             help_menu]
 }
 
