@@ -73,7 +73,6 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Real-time display of area counts by KataGo
 * Analysis of gains and losses in recent moves on the board that reveals overlooked side effects
 * Larger fonts for inevitable moves in the suggested variation
-* Marks for the preferred moves by "AIs for handicap games"
 * Highlighting of unexpected good moves that are overlooked by engines
 * Detection of inconsistency between analyses before/after a move as a check of their reliability
 * Additional plots
@@ -337,6 +336,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 * Add "Open recent" to File menu.
 * Detect encoding of SGF files etc.
 * [Support TamaGo](#TamaGo).
+* Deprecate the display of preferred moves by "AIs for handicap games".
 
 Incompatibilities:
 

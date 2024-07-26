@@ -814,22 +814,7 @@ function draw_suggest(h, xy, radius, large_font_p, g) {
     const suggest = h.data, {stroke, fill} = suggest_color(suggest)
     g.lineWidth = 1; g.strokeStyle = stroke; g.fillStyle = fill
     edged_fill_circle(xy, radius, g)
-    draw_top_pda_policy(h, xy, radius, g)
     !R.lizzie_style && draw_suggestion_order(h, xy, radius, stroke, large_font_p, g)
-}
-
-function draw_top_pda_policy(h, [x, y], radius, g) {
-    const f = if_top_pda_policy(h, fill_triangle_around, fill_rev_triangle_around)
-    if (!f) {return}
-    const q = radius / 2, cx = x - radius + q, cy = y - radius + q
-    g.fillStyle = BLUE; f([cx, cy], q, g)
-}
-
-function if_top_pda_policy(h, aggressive, defensive) {
-    const keys = ['aggressive_policy_order', 'defensive_policy_order']
-    const [top_a, top_d] = keys.map(k => h.data[k] === 0)
-    return (top_a && top_d) ? null :
-        top_a ? aggressive : top_d ? defensive : null
 }
 
 function draw_suggest_lizzie(h, xy, radius, g) {
@@ -862,7 +847,6 @@ function draw_halo_lizzie(h, xy, stone_radius, g) {
 }
 
 function draw_minor_suggest(h, xy, radius, g) {
-    draw_top_pda_policy(h, xy, radius, g)
     if (too_minor_suggest_p(h)) {return}
     g.lineWidth = 1; g.strokeStyle = 'rgba(0,0,0,0.2)'
     triangle_around(xy, radius * 0.5, g)
