@@ -219,8 +219,10 @@ function create_leelaz () {
     }
 
     const genmove = (sec, callback) => {
-        const command_for_color = color => `genmove ${color}`
-        const on_response = on_genmove_responsor(callback)
+        const cancellable = is_supported('kata-search_cancellable')
+        const com = cancellable ? 'kata-search_cancellable' : 'genmove'
+        const command_for_color = color => `${com} ${color}`
+        const on_response = on_genmove_responsor(callback, cancellable)
         return genmove_gen(sec, command_for_color, on_response)
     }
     const genmove_gen = (sec, command_for_color, on_response) => {
@@ -228,26 +230,28 @@ function create_leelaz () {
         const command = `time_settings 0 ${sec} 1;${command_for_color(color)}`
         leelaz(command, on_response)
     }
-    const on_genmove_responsor = callback => {
+    const on_genmove_responsor = (callback, cancellable) => {
         const bturn0 = js_bturn
         return (ok, res) => {
-            if (ok) {
+            if (ok && !cancellable) {
                 const move = res; push_to_history(move, bturn0)
                 bturn = js_bturn = !bturn0
             }
-            callback(ok, res)
+            res !== 'cancelled' && callback(ok, res)
         }
     }
 
     const genmove_analyze = (sec, callback) => {
-        const com = is_katago() ? 'kata-genmove_analyze' : 'lz-genmove_analyze'
+        const cancellable = is_supported('kata-search_cancellable')
+        const com = cancellable ? 'kata-search_analyze_cancellable' :
+              is_katago() ? 'kata-genmove_analyze' : 'lz-genmove_analyze'
         const interval = analyze_command_interval_arg()
         const command_for_color = color => `${com} ${color} ${interval}`
-        const on_response = on_genmove_analyze_responsor(callback)
+        const on_response = on_genmove_analyze_responsor(callback, cancellable)
         return genmove_gen(sec, command_for_color, on_response)
     }
-    const on_genmove_analyze_responsor = callback => {
-        const on_move = on_genmove_responsor(callback)
+    const on_genmove_analyze_responsor = (callback, cancellable) => {
+        const on_move = on_genmove_responsor(callback, cancellable)
         return (ok, res) => {
             const move = ok && res.match(/^play\s+(.*)/)?.[1]
             return move ? on_move(ok, move) : on_analysis_response(ok, res)
@@ -275,6 +279,8 @@ function create_leelaz () {
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['rootInfo', 'kata-analyze 1 rootInfo true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
+            // use kata-search_analyze_cancellable for immediate cancel
+            ['kata-search_cancellable', 'kata-search_analyze_cancellable B'],
             ['humanSLProfile', ...humansl_profile_updater()],
             ['kata-raw-human-nn',
              `${humansl_profile_setter('rank_1d')};kata-raw-human-nn 0`,
