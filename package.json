@@ -50,16 +50,7 @@
       ]
     },
     "win": {
-      "target": "portable",
-      "extraFiles": [
-        {
-          "from": "build_with/bin/win",
-          "to": "resources/external",
-          "filter": [
-            "katago/{katago*.exe,*.dll,default_gtp.cfg}"
-          ]
-        }
-      ]
+      "target": "portable"
     },
     "portable": {
       "splashImage": "build_with/splash.bmp"
