@@ -156,7 +156,8 @@ function create_leelaz () {
         // if -human-model is given, profile should be applied
         // only for kata-raw-human-nn and genmove etc.
         const profile_for_sub_model = forcep ? humansl_profile : ''
-        const p = is_supported('main_model_humanSL') ? humansl_profile :
+        const p =
+              is_supported('main_model_humanSL') ? humansl_profile :
               is_supported('sub_model_humanSL') ? profile_for_sub_model : null
         return truep(p) ? humansl_profile_setter(p) : 'name'
     }
@@ -757,7 +758,8 @@ function create_leelaz () {
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log,
-        humansl_profile: () => humansl_profile, humansl_request_profile,
+        humansl_profile: () => humansl_profile,
+        humansl_request_profile,
         analyze_move, genmove, genmove_analyze,
         // for debug
         send_to_leelaz,
