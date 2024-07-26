@@ -212,7 +212,7 @@ function create_leelaz () {
             const on_response =
                   on_multiline_response_at_once(on_kata_raw_nn_response(receiver))
             send_to_leelaz(humansl_profile_setter(profile))
-            send_task_to_leelaz({command: 'kata-raw-human-nn 0', on_response})
+            send_to_leelaz('kata-raw-human-nn 0', on_response)
         }
         leelaz(`lizgoban_kata-raw-human-nn PROFILE=${profile}`, proc)
     }
