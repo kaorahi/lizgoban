@@ -871,6 +871,7 @@ function apply_preset(rule, win) {
     truep(komi) && set_komi(komi)
     board_type && set_board_type(board_type, win)
     match && start_match(win, ...(is_a(match, 'object') ? match : [to_i(match)]))
+    !match && (match !== undefined) && stop_match(window_prop(win).window_id)
     const set_weaken = (bw, val) => truep(val) && set_auto_play_weaken_for_bw(bw, val)
     set_weaken('black', auto_play_weaken_for_b)
     set_weaken('white', auto_play_weaken_for_w)
