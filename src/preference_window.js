@@ -63,11 +63,18 @@ document.onkeydown = e => {
 /////////////////////////////////////////////
 // humanSL comparison
 
-const humansl_profile_options = [
-    ...humansl_rank_profiles.toReversed(),
-    ...humansl_preaz_profiles.toReversed(),
-    ...humansl_proyear_profiles,
+const humansl_profile_lists = [
+    humansl_rank_profiles.toReversed(),
+    humansl_preaz_profiles.toReversed(),
+    humansl_proyear_profiles,
 ]
+function cum_len(aa) {
+    const las = a => a.length - 1
+    const f = (r, ps) => [...r, r[las(r)] + ps.length]
+    return aa.slice(0, las(aa)).reduce(f, [0])
+}
+const humansl_profile_options = [].concat(...humansl_profile_lists)
+const humansl_profile_markers = cum_len(humansl_profile_lists)
 
 function initialize_humansl_comparison() {
     const h = humansl_comparison, hpo = humansl_profile_options
@@ -78,6 +85,12 @@ function initialize_humansl_comparison() {
     stronger_slider.value = hpo.indexOf(h.humansl_stronger_profile)
     weaker_slider.value = hpo.indexOf(h.humansl_weaker_profile)
     Q('#humansl_color_enhance').value = h.humansl_color_enhance
+    const markers = Q('#humansl_profile_markers')
+    humansl_profile_markers.forEach(m => {
+        const option = create('option')
+        option.value = m
+        markers.appendChild(option)
+    })
     update_humansl_comparison(true)
 }
 
