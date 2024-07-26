@@ -104,7 +104,7 @@ function suggest_handler(h) {
     // because we need to copy falsy value too.
     preferred_h.background_visits =
         cur.background_visits = ((h !== preferred_h) && h.visits)
-    const copy_vals = (keys, to, allow_false_p) =>
+    const copy_vals = (keys, to, allow_false_p) => !h.is_suggest_by_genmove &&
           keys.forEach(k => (truep(preferred_h[k]) || allow_false_p) && (to[k] = preferred_h[k]))
     copy_vals(suggest_keys0, cur, true)
     copy_vals(suggest_keys0, cur_by_engine, true)
