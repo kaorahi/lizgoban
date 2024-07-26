@@ -105,13 +105,11 @@ function option_expand_path(name) {
 }
 
 function expand_preset(preset) {
-    const expand_ary = ([a, b]) => a === 'built-in' ? default_path_for(b) : b
-    const expand = z => stringp(z) ? z : expand_ary(z)
     preset.forEach(rule => {
         // merge rule.option for backward compatibility to 1a88dd40
         merge(rule, rule.option || {})
         const {engine} = rule; if (!engine) {return}
-        const [command, ...leelaz_args] = engine.map(expand)
+        const [command, ...leelaz_args] = engine
         const leelaz_command = resolve_engine_path(command)
         const {wait_for_startup} = option
         merge(rule, {wait_for_startup, ...rule, leelaz_command, leelaz_args})
