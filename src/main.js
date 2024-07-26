@@ -1646,6 +1646,7 @@ function set_board() {
         bturn: is_bturn(), komi: game.get_komi(), gorule: get_gorule(),
         handicaps, init_len,
         ownership_p, aggressive: aggressive(),
+        analysis_after_raw_nn_p: !auto_analyzing(),
         ...stored,
     }
     AI.set_board(hist, aux)

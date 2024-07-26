@@ -20,6 +20,7 @@ function create_leelaz () {
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
     let startup_log = [], is_in_startup = true
     let analysis_region = null, instant_analysis_p = false
+    let analysis_after_raw_nn_p = true
     let obtained_pda_policy = null
     let known_name_p = false
     let humansl_profile = ''
@@ -82,7 +83,8 @@ function create_leelaz () {
     const start_analysis = () => {
         obtained_pda_policy = null;
         (instant_analysis_p && kata_raw_nn()) ||
-            start_analysis_after_raw_nn() || start_analysis_actually()
+            (analysis_after_raw_nn_p && start_analysis_after_raw_nn()) ||
+            start_analysis_actually()
     }
     const pda_for_checking_policy_aggressiveness = 2.0
     const start_analysis_after_raw_nn = () => {
@@ -318,11 +320,13 @@ function create_leelaz () {
         bturn: js_bturn,
         komi, gorule, handicaps, init_len, ownership_p, aggressive,
         humansl_stronger_profile, humansl_weaker_profile,
+        analysis_after_raw_nn_p,
     })
     const set_board = (history, aux) => {
-        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, aggressive, humansl_stronger_profile, humansl_weaker_profile}
+        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, aggressive, humansl_stronger_profile, humansl_weaker_profile, analysis_after_raw_nn_p}
         if (is_in_startup) {return}
         js_bturn = aux.bturn
+        analysis_after_raw_nn_p = aux.analysis_after_raw_nn_p
         change_board_size(board_size())
         let update_kata_p = false
         const update_kata = (val, new_val, command, setter) => {
