@@ -158,24 +158,16 @@ function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color,
     const bturn = s.bturn === undefined ? R.engine_bturn : s.bturn
     const plot_params = winrate_bar_xy(s, w, h, true, bturn)
     const [x, y, r, max_radius, x_puct, y_puct] = plot_params
-    const max_taper = 1.5, taper = clip(aggressiveness(s), 1 / max_taper, max_taper)
-    const half_center_angle = 60 / 2 / taper, max_slant = large_bar ? 45 : 30
-    const radius = r * Math.sqrt(taper)
+    const half_center_angle = 60 / 2, max_slant = large_bar ? 45 : 30
     const direction =
           (bturn ? 180 : 0) + winrate_trail_rising(s) * max_slant * (bturn ? -1 : 1)
     const degs = [direction - half_center_angle, direction + half_center_angle]
     const draw_fan = () => {
         g.lineWidth = 1; [g.strokeStyle, g.fillStyle] = [stroke, fill]
-        edged_fill_fan([x, y], radius, degs, g)
+        edged_fill_fan([x, y], r, degs, g)
     }
     draw_with_aura(draw_fan,
                    s, h, plot_params, large_bar && aura_color, force_puct_p, g)
-}
-
-function aggressiveness(suggest) {
-    const {aggressive_policy, defensive_policy} = suggest
-    const available = truep(aggressive_policy) && truep(defensive_policy)
-    return available ? (aggressive_policy / defensive_policy) : 1.0
 }
 
 function draw_with_aura(proc,
