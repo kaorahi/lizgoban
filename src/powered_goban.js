@@ -78,6 +78,7 @@ const suggest_keys2 = [
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'root_rawStScoreError', 'root_rawVarTimeLeft',
     'amb_gain',
+    'humansl_stronger_policy', 'humansl_weaker_policy',
 ]
 
 const too_small_prior = 1e-3
@@ -111,6 +112,9 @@ function suggest_handler(h) {
     copy_vals(suggest_keys2, cur)
     !prefer_cached_p && copy_vals(suggest_keys2, cur_by_engine)
     game.engines[engine_id] = true; game.current_engine = engine_id
+    // decrease useless data traffic to renderer
+    delete R.humansl_stronger_policy
+    delete R.humansl_weaker_policy
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, endstate_stdev, score_without_komi} = {...cur, ...preferred_h}
     R.show_endstate && add_endstate_to_stones(R.stones, endstate, endstate_stdev, mc, true)
