@@ -125,6 +125,8 @@ Start LizGoban as
 
 Never set `reportAnalysisWinratesAs` and `ponderingEnabled` in your *.cfg.
 
+For the human-style features from [KataGo v1.15.0](https://github.com/lightvector/KataGo/releases/tag/v1.15.0), review the sample config.json in the [Windows package](https://github.com/kaorahi/lizgoban/releases).
+
 #### To configure LizGoban:
 
 Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or later.
