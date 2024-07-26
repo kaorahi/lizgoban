@@ -960,8 +960,9 @@ function set_auto_analysis_signed_visits(visits) {
 }
 function auto_analyzing() {return auto_analysis_signed_visits < Infinity}
 function auto_analysis_progress() {
-    const best = P.orig_suggest()[0]
-    return !auto_analyzing() ? -1 : !best ? 0 : best.visits / auto_analysis_visits()
+    const best_move_visits = P.orig_suggest()[0]?.visits, total_visits = R?.visits
+    const v = game.move_count > 4 ? best_move_visits : total_visits
+    return !auto_analyzing() ? -1 : true_or(v, 0) / auto_analysis_visits()
 }
 function auto_analysis_visits() {return Math.abs(auto_analysis_signed_visits)}
 function backward_auto_analysis_p() {return auto_analysis_signed_visits < 0}
