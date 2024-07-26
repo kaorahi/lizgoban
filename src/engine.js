@@ -714,6 +714,7 @@ function create_leelaz () {
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,
+        humansl_profile: () => humansl_profile,
         analyze_move,
         // for debug
         send_to_leelaz,
