@@ -156,6 +156,11 @@ function create_leelaz () {
         const on_response = (ok, res) => ok && (humansl_profile = (res || '').trim())
         return [command, on_response]
     }
+    const humansl_request_profile = profile => {
+        const setter = humansl_profile_setter(profile)
+        const [getter, on_response] = humansl_profile_updater()
+        leelaz(`${setter};${getter}`, on_response)
+    }
     const stop_analysis = () => {leelaz('name')}
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
@@ -714,7 +719,7 @@ function create_leelaz () {
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,
-        humansl_profile: () => humansl_profile,
+        humansl_profile: () => humansl_profile, humansl_request_profile,
         analyze_move,
         // for debug
         send_to_leelaz,

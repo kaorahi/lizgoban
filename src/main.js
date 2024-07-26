@@ -601,6 +601,7 @@ function menu_template(win) {
              swap_leelaz_for_black_and_white, false, !!lz_white),
         // item('Switch to previous engine', 'Shift+T', () => AI.restore(1)),
         sep,
+        ...humansl_profile_menu_items(menu, item, sep),
         item('Reset', 'CmdOrCtrl+R', restart),
     ])
     const debug_menu = menu('Debug', [
@@ -648,6 +649,33 @@ function menu_template(win) {
             ...preset_menu_maybe({menu, item, sep, white_unloader_item, win}),
             ...(app.isPackaged ? [] : [debug_menu]),
             help_menu]
+}
+
+function humansl_profile_menu_items(menu, item, sep) {
+    function submenu_with(humansl_profile) {
+        const cur = humansl_profile()
+        if (!stringp(cur)) {return [cur, []]}
+        const prof_item = p => {
+            const label = p || '(none)'
+            return item(label, undefined, () => {humansl_profile(p); toast(label)})
+        }
+        const items_for = ps => ps.map(prof_item)
+        const none = prof_item('')
+        const ranks = items_for(humansl_rank_profiles)
+        const preaz = menu('pre AZ', items_for(humansl_preaz_profiles))
+        const proyear = menu('pro year', items_for(humansl_proyear_profiles))
+        return [cur, [none, ...ranks, preaz, proyear]]
+    }
+    function menu_for(text, cur, submenu) {
+        const label = `HumProfile${text}` + (stringp(cur) ? ` (${cur})` : '')
+        return {label, submenu, enabled: !empty(submenu)}
+    }
+    const [b_cur, b_submenu] = submenu_with(AI.humansl_profile)
+    const [w_cur, w_submenu] = submenu_with(AI.humansl_profile_for_white)
+    const b_text = empty(w_submenu) ? '' : ' for black'
+    const b_menu = menu_for(b_text, b_cur, b_submenu)
+    const w_menu = menu_for(' for white', w_cur, w_submenu)
+    return [sep, b_menu, w_menu]
 }
 
 function pair_match_menu(random_pair_match_percentage, item) {

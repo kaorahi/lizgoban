@@ -196,6 +196,19 @@ function different_komi_for_black_and_white() {
         (leelaz_for_black.get_komi() !== leelaz_for_white.get_komi())
 }
 
+function humansl_profile_gen(lz, profile) {
+    return !!lz &&
+        (profile === undefined ?
+         !!lz.is_supported('humanSLProfile') && lz.humansl_profile() :
+         lz.humansl_request_profile(profile))
+}
+function humansl_profile(profile) {
+    return humansl_profile_gen(leelaz_for_black, profile)
+}
+function humansl_profile_for_white(profile) {
+    return humansl_profile_gen(leelaz_for_white, profile)
+}
+
 /////////////////////////////////////////////////
 // engine cache
 
@@ -300,6 +313,7 @@ module.exports = {
     different_komi_for_black_and_white, startup_log,
     update_analysis_region, set_instant_analysis,
     is_moves_ownership_supported,
+    humansl_profile, humansl_profile_for_white,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only

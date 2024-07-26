@@ -251,6 +251,16 @@ E.exec_command = (com, f) => {
 E.initial_sanity = 10
 E.sanity_range = [0, 20]
 
+// humanSL profiles
+const hsl_dks = [...E.seq_from_to(1, 9).map(z => `${z}d`).reverse(),
+             ...E.seq_from_to(1, 20).map(z => `${z}k`)]
+const hsl_years = [1800, 1850, 1900, 1950, 1960, 1970, 1980, 1990, 2000,
+               2005, 2010, 2015, 2017, 2019, 2021, 2023]
+function hsl_prepend(header, ary) {return ary.map(z => header + z)}
+E.humansl_rank_profiles = hsl_prepend('rank_', hsl_dks)
+E.humansl_preaz_profiles = hsl_prepend('preaz_', hsl_dks)
+E.humansl_proyear_profiles = hsl_prepend('proyear_', hsl_years)
+
 // avoid letters for keyboard operation in renderer.js
 const normal_tag_letters = 'defghijklmnorstuy'
 const last_loaded_element_tag_letter = '.'
