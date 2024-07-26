@@ -50,7 +50,6 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
     draw_winrate_graph_ko_fight(sr2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_order(sr2coord, g)
-    draw_winrate_graph_aggressiveness(sr2coord, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
     draw_score('score') || draw_no_score(w, sq2coord, fontsize, g)
@@ -460,13 +459,6 @@ function draw_winrate_graph_order(sr2coord, g) {
     const table = [['order_b', '0,192,0', true], ['order_w', '255,0,255', false]]
     table.forEach(([key, rgb, upside_down]) =>
                   draw_winrate_graph_barchart(key, 1, rgb, upside_down, sr2coord, g))
-}
-
-function draw_winrate_graph_aggressiveness(sr2coord, g) {
-    const table = [['aggressiveness_b', '0,192,0', true],
-                   ['aggressiveness_w', '255,0,255', false]]
-    table.forEach(([key, rgb, upside_down]) =>
-                  draw_winrate_graph_barchart(key, 10, rgb, upside_down, sr2coord, g))
 }
 
 function draw_winrate_graph_scale(at_r, r2val, color, x_maybe, sr2coord, g) {
