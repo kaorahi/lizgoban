@@ -446,10 +446,7 @@ function create_leelaz () {
         const sign = !aggressive ? 0 : xor(aggressive === 'b', bturn) ? -1 : 1
         return sign * abs_pda
     }
-    const kata_pda_supported = () => {
-        const is_pda_set_explicitly = arg.leelaz_args.join('').match(kata_pda_param)
-        return is_supported('kata-get-param') && !is_pda_set_explicitly
-    }
+    const kata_pda_supported = () => false
 
     // allow
     const update_analysis_region = region => {

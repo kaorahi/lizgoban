@@ -123,7 +123,7 @@ Start LizGoban as
 
 (Windows: Put the above config.json into the same folder as lizgoban_windows.vbs and double-click lizgoban_windows.vbs.)
 
-Never set `reportAnalysisWinratesAs` and `playoutDoublingAdvantagePla` in your *.cfg.
+Never set `reportAnalysisWinratesAs` in your *.cfg.
 
 #### To configure LizGoban:
 
@@ -148,16 +148,6 @@ Here is a longer example of config.json for Leela Zero 0.17 and KataGo 1.4.4 or 
             "accelerator": "F2",
             "engine": ["/FOO/BAR/katago", "gtp",
                        "-override-config", "analysisPVLen=50, defaultBoardSize=19",
-                       "-model", "/FOO/KATA_NET/g104-b20c256.gz",
-                       "-config", "/FOO/BAR/gtp.cfg"]
-        },
-        {
-            "label": "KataGo (always aggressive)",
-            "match": true, "rules": "tromp-taylor", "komi": 0, "handicap": 5,
-            "stone_style": "2D",
-            "engine": ["/FOO/BAR/katago", "gtp",
-                       "-override-config",
-                       "analysisPVLen=50, defaultBoardSize=19, dynamicPlayoutDoublingAdvantageCapPerOppLead=0.00, playoutDoublingAdvantage=2.00",
                        "-model", "/FOO/KATA_NET/g104-b20c256.gz",
                        "-config", "/FOO/BAR/gtp.cfg"]
         },
@@ -204,7 +194,7 @@ It is recommended to put all Leela Zero weights into one directory and all KataG
 Delete obsolete "weight_dir" in your config.json if you wrote it.
 
 Notes on KataGo:
-KataGo plays aggressively for handicap games in "match vs. AI" or "AI vs. AI" after LizGoban 0.5.0-pre4. To disable this automatic setting, you need to specify `playoutDoublingAdvantage` explicitly in the above "engine" entry (not in KataGo's configuration file like `gtp_example.cfg`). After KataGo 1.3.4, you can add `defaultBoardSize=19` as the above example to shorten the initialization of 9x9 and 13x13. ("=19" is ok. It is replaced with 9 or 13 inside LizGoban automatically.)
+After KataGo 1.3.4, you can add `defaultBoardSize=19` as the above example to shorten the initialization of 9x9 and 13x13. ("=19" is ok. It is replaced with 9 or 13 inside LizGoban automatically.)
 
 For quick experiments, you can also use
 
@@ -337,6 +327,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 * Detect encoding of SGF files etc.
 * [Support TamaGo](#TamaGo).
 * Deprecate the display of preferred moves by "AIs for handicap games".
+* Deprecate homemade "aggressiveness" features and rely on the native KataGo features.
 
 Incompatibilities:
 
