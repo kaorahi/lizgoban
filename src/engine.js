@@ -131,7 +131,7 @@ function create_leelaz () {
               `${humansl_profile_restorer()};`
         const maybe = key => is_supported(key) && `${key} true`
         const o_maybe = key => ownership_p && maybe(key)
-        pondering && leelaz([
+        leelaz([
             // preparations
             profile,
             workaround_for_katago_bug,
@@ -402,7 +402,7 @@ function create_leelaz () {
     const leelaz = (command, on_response, protect_p) => {
         log(queue_log_header, command, true); send_to_queue({command, on_response, protect_p})
     }
-    const update_now = () => arg && (endstate(), start_analysis())
+    const update_now = () => arg && (endstate(), pondering && start_analysis())
     const [update_later] = deferred_procs([update_now, endstate_delay_millisec])
     // avoid flicker of endstate
     const update = () => is_supported('endstate') ? update_later() : update_now()
