@@ -61,7 +61,7 @@ function best_move(state) {return state.orig_suggest[0].move}
 
 function random_opening_move(state) {
     // const
-    const {orig_suggest, movenum, random_opening} = state
+    const {orig_suggest, movenum, random_opening, normal_move_in_random_opening} = state
     const suggest = orig_suggest, param = random_opening
     const p_until = param.prior_until_movenum, r_until = param.random_until_movenum
     const discount = clip(1 - movenum / r_until, 0)
@@ -78,6 +78,7 @@ function random_opening_move(state) {
         return make_commented_move(move, com)
     }
     if (Math.random() >= discount) {
+        if (normal_move_in_random_opening) {return normal_move_in_random_opening}
         const com = (discount <= 0) ? `Play normally after ${r_until} moves.` :
               `Play normally with probability ${(1 - discount).toFixed(2)}.`
         return make_commented_move(best.move, com)

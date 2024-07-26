@@ -1077,7 +1077,7 @@ function get_auto_play_weaken() {
 }
 function auto_genmove_p() {return auto_genmove_func() === genmove}
 function auto_genmove_func() {
-    const strategy_ok = (auto_playing_strategy === 'play')
+    const strategy_ok = ['play', 'random_opening'].includes(auto_playing_strategy)
     const maybe = auto_playing() && strategy_ok; if (!maybe) {return null}
     const weaken_method = get_auto_play_weaken()?.[0] || 'plain'
     const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
@@ -1089,8 +1089,14 @@ function auto_genmove_func() {
 }
 function start_auto_genmove_maybe() {
     const genmove_func = auto_genmove_func(); if (!genmove_func) {return}
-    const play_func = (move, comment) =>
-          play_selected_weak_move({move, comment}, get_auto_play_weaken())
+    const play_func = (move, comment) => {
+        const selected = {move, comment}
+        const rand_p = (auto_playing_strategy === 'random_opening')
+        rand_p ?
+            try_play_best(['random_opening'],
+                          {normal_move_in_random_opening: selected}) :
+            play_selected_weak_move(selected, get_auto_play_weaken())
+    }
     resume(); update_all()  // just for bright board effect
     genmove_func(auto_play_sec, play_func)
 }
@@ -1216,7 +1222,7 @@ function play_best(n, weaken) {
     try_play_best(weaken)
 }
 function play_pass_maybe() {play_best(null, ['pass_maybe'])}
-function try_play_best(weaken) {
+function try_play_best(weaken, given_state) {
     // (ex)
     // try_play_best()
     // try_play_best(['pass_maybe'])
@@ -1249,6 +1255,7 @@ function try_play_best(weaken) {
         is_moves_ownership_supported: AI.is_moves_ownership_supported(),
         preset_label_text: AI.current_preset_label(),
         cont: selected => play_selected_weak_move(selected, weaken),
+        ...(given_state || {}),
     }
     select_weak_move(state, weaken_method, weaken_args)
 }
