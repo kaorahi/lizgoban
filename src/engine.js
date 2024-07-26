@@ -120,11 +120,17 @@ function create_leelaz () {
         const is_katago_until_1_10_0 = is_katago() && !is_supported('pvEdgeVisits')
         const workaround_for_katago_bug = allow && is_katago_until_1_10_0 &&
               `kata-analyze ${bw_for(js_bturn)} interval 999999;`
+        const profile = is_supported('humanSLProfile') &&
+              `${humansl_profile_restorer()};`
         const maybe = key => is_supported(key) && `${key} true`
         const o_maybe = key => ownership_p && maybe(key)
         pondering && leelaz([
+            // preparations
+            profile,
             workaround_for_katago_bug,
+            // command
             is_katago() ? 'kata-analyze' : 'lz-analyze',
+            // args
             bw_for(js_bturn),
             `interval ${arg.analyze_interval_centisec}`,
             is_katago() && ownership_p && 'ownership true',
@@ -352,6 +358,7 @@ function create_leelaz () {
         if (!is_supported('kata-raw-nn')) {return false}
         const receiver = h => {leelaz('undo'); h && cont(h)}
         const on_response = (ok, _) => ok && kata_raw_nn(receiver)
+        leelaz(humansl_profile_restorer())
         leelaz(`play ${bw_for(js_bturn)} ${move}`, on_response)
         return true
     }
