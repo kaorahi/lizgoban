@@ -2262,7 +2262,7 @@ function leelaz_start_args(leelaz_command, given_leelaz_args, label, wait_for_st
 function leelaz_start_args_for_board_size(default_board_size) {
     return {default_board_size}
 }
-let tuning_message
+let tuning_message, tuning_start_time
 function on_ready(update_only_p) {
     if (update_only_p) {update_all(true); return}
     // fixme: on_ready is called by *every* leelaz
@@ -2277,13 +2277,14 @@ function make_tuning_handler() {
     const warning = 'Initial tuning may take a long time. (See the title bar.)'
     return line => {
         const m = line.match(/Tuning (.*)/); if (!m) {return}
-        n === 0 && (pause(), toast(warning, toast_sec * 1000))
+        n === 0 && (pause(), toast(warning, toast_sec * 1000), (tuning_start_time = Date.now()))
         tuning_message = `Tuning KataGo (step ${++n}) [${m[1].slice(0, 20)}]`
         update_all()
     }
 }
 function tuning_is_done() {
-    const message = 'Finished initial tuning.'
+    const seconds = to_i((Date.now() - tuning_start_time) / 1000)
+    const message = `Finished initial tuning. (${seconds} sec)`
     const action = () => {resume(); update_all()}
     dialog.showMessageBox({type: "info",  buttons: ["OK"], message}).then(action)
     tuning_message = null; update_all()
