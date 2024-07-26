@@ -173,9 +173,9 @@ function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color,
 }
 
 function aggressiveness(suggest) {
-    const {aggressive_policy, defensive_policy, prior} = suggest
-    const ret = remarkable_aggressiveness(aggressive_policy, defensive_policy, prior)
-    return true_or(ret, 1.0)
+    const {aggressive_policy, defensive_policy} = suggest
+    const available = truep(aggressive_policy) && truep(defensive_policy)
+    return available ? (aggressive_policy / defensive_policy) : 1.0
 }
 
 function draw_with_aura(proc,
