@@ -1060,7 +1060,7 @@ function try_auto_redo(force) {
     the_auto_redo_progress += auto_redo_progress_by
     force && (the_auto_redo_progress = 1)
     const redo_p = the_auto_redo_progress > 1 - epsilon
-    redo_p ? (redo(), (the_auto_redo_progress = 0), update_all()) :
+    redo_p ? (let_me_think_play(redo), (the_auto_redo_progress = 0), update_all()) :
         (update_let_me_think(true), update_all(true))
     try_auto_redo_later()
 }
