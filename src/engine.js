@@ -95,9 +95,9 @@ function create_leelaz () {
             ['humansl_weaker_policy', kata_raw_human_nn, humansl_weaker_profile],
         ]
         const pda_args = [
-            ['aggressive_policy', nn_with_pda_sign, +1],
-            // ['default_policy', nn_with_pda_sign, 0],
-            ['defensive_policy', nn_with_pda_sign, -1],
+            // ['aggressive_policy', nn_with_pda_sign, +1],
+            ['default_policy', nn_with_pda_sign, 0],
+            // ['defensive_policy', nn_with_pda_sign, -1],
         ]
         const args = is_supported('kata-raw-human-nn') ? humansl_args : pda_args
         const call_nn = ([key, f, ...as], cont) => {
@@ -625,9 +625,10 @@ function create_leelaz () {
 
     const suggest_reader = (s) => {
         const f = arg.suggest_handler; if (!f) {return}
-        const h = parse_analyze(s, bturn, komi, is_katago(), obtained_pda_policy)
+        const h = parse_analyze(s, bturn, komi, is_katago())
         const engine_id = get_engine_id()
         const policy_keys = [
+            'default_policy',
             'humansl_stronger_policy', 'humansl_weaker_policy',
         ]
         const policies = pick_keys(obtained_pda_policy || {}, ...policy_keys)
@@ -748,7 +749,7 @@ function trim_split(str, reg) {return str.trim().split(reg)}
 
 const top_suggestions = 5
 
-function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
+function parse_analyze(s, bturn, komi, katago_p) {
     const split_pattern = /\b(?=^dummy_header|ownership|ownershipStdev|rootInfo)\b/
     const splitted = `dummy_header ${s}`.split(split_pattern)
     const part = aa2hash(splitted.map(str => trim_split(str, /(?<=^\S+)\s+/)))
@@ -783,23 +784,12 @@ function parse_analyze(s, bturn, komi, katago_p, pda_policy) {
     // winrate is NaN if suggest = []
     add_order('visits', 'visits_order')
     add_order('winrate', 'winrate_order')
-    const pda_order_keys = [
-        ['aggressive_policy', 'aggressive_policy_order'],
-        ['defensive_policy', 'defensive_policy_order'],
-    ]
-    pda_policy && (suggest.forEach(h => (append_pda_policy(h, pda_policy))),
-                   pda_order_keys.forEach(a => add_order(...a)))
     const engine_bturn = bturn
     return {
         ...prefixed_root_info,
         suggest, engine_bturn, visits, b_winrate, score_without_komi,
         ownership, ownership_stdev, komi,
     }
-}
-
-function append_pda_policy(h, pda_policy) {
-    const bsize = board_size(), [i, j] = move2idx(h.move), k = i * bsize + j
-    each_key_value(pda_policy, (key, val) => h[key] = val[k])
 }
 
 // (sample of leelaz output for "lz-analyze 10")

@@ -78,6 +78,7 @@ const suggest_keys2 = [
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'root_rawStScoreError', 'root_rawVarTimeLeft',
     'amb_gain',
+    'default_policy',
     'humansl_stronger_policy', 'humansl_weaker_policy',
 ]
 
@@ -113,6 +114,7 @@ function suggest_handler(h) {
     !prefer_cached_p && copy_vals(suggest_keys2, cur_by_engine)
     game.engines[engine_id] = true; game.current_engine = engine_id
     // decrease useless data traffic to renderer
+    delete R.default_policy
     delete R.humansl_stronger_policy
     delete R.humansl_weaker_policy
     // if current engine is Leela Zero, recall ownerships by KataGo
@@ -195,6 +197,7 @@ function set_renderer_state(...args) {
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
     const move_history = [get_move_history(game.ref(0)), ...game.map(get_move_history)]
     const different_engine_for_white_p = AI.leelaz_for_white_p()
+    add_default_policy_to_stones(R.stones, cur.default_policy)
     const {humansl_stronger_policy, humansl_weaker_policy} = cur
     add_humansl_policy_to_stones(R.stones, humansl_stronger_policy, humansl_weaker_policy)
     merge(R, {move_count, init_len, busy, long_busy,
@@ -634,6 +637,11 @@ function stone_for_history_elem(h, stones) {
 }
 function pick_properties(orig, keys) {
     const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
+}
+
+function add_default_policy_to_stones(stones, default_policy) {
+    if (!default_policy) {return}
+    stones.flat().forEach((s, k) => {s.default_policy = default_policy[k]})
 }
 
 function add_humansl_policy_to_stones(stones, stronger_policy, weaker_policy) {
