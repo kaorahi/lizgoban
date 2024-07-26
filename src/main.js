@@ -999,7 +999,7 @@ function try_auto_play(force_next) {
     update_let_me_think(true)
 }
 function auto_play_ready() {
-    return !doing_auto_play_p && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
+    return !doing_auto_play_p && !auto_genmove_p(true) && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
 function do_as_auto_play(playable, proc, silent) {
     doing_auto_play_p = false
@@ -1056,14 +1056,16 @@ function default_weaken() {
 function get_auto_play_weaken() {
     return auto_play_weaken_for_current_bw() || auto_play_weaken
 }
-function auto_genmove_p() {
+function auto_genmove_p(analyze_p) {
+    const name = analyze_p ? 'genmove_analyze' : 'genmove'
     return auto_playing() && (auto_playing_strategy === 'best') &&
-        (get_auto_play_weaken()?.[0] === 'genmove')
+        (get_auto_play_weaken()?.[0] === name)
 }
 function start_auto_genmove_maybe(sec) {
-    auto_genmove_p() && start_auto_genmove(sec)
+    auto_genmove_p() ? start_auto_genmove(sec) :
+        auto_genmove_p(true) ? start_auto_genmove(sec, true) : null
 }
-function start_auto_genmove(sec) {
+function start_auto_genmove(sec, analyze_p) {
     const play_func = (move, comment) => {
         play_selected_weak_move({move, comment}, get_auto_play_weaken())
     }
@@ -1072,7 +1074,8 @@ function start_auto_genmove(sec) {
         start_auto_genmove_maybe(sec)
     }
     resume(); update_all()  // just for bright board effect
-    genmove(sec, play_func, cont)
+    const f = analyze_p ? genmove_analyze : genmove
+    f(sec, play_func, cont)
 }
 
 // match
@@ -1096,6 +1099,7 @@ function set_match_param(weaken) {
         (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity'), adjust_sanity_p] :
         (weaken === 'pass') ? ['pass_maybe'] :
         (weaken === 'genmove') ? ['genmove'] :
+        (weaken === 'genmove_analyze') ? ['genmove_analyze'] :
         (m = weaken.match(/^policy([0-9.]+)$/)) ? ['policy', to_f(m[1])] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
