@@ -1000,21 +1000,22 @@ function start_auto_play(strategy, sec, count) {
 let doing_auto_play_p = false
 function try_auto_play(force_next) {
     if (auto_genmove_p()) {return}
-    // In pair matches, the specified weaken method is applied only to
-    // the opponent AI. The partner AI ignores it and plays normally.
-    const is_partner =
-          (pair_match_info() === 'pair_match') && (auto_play_count === 2)
-    const partner_weaken = is_partner && default_weaken()
-    const weaken =
-          auto_play_weaken_for_current_bw() || partner_weaken || auto_play_weaken
     const proc = {
         replay: () => do_as_auto_play(redoable(), () => {redo(); play_move_sound()}),
-        play: () => try_play_best(weaken),
+        play: () => try_play_best(current_auto_play_weaken()),
         random_opening: () => try_play_best(['random_opening']),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() && ((doing_auto_play_p = true), let_me_think_play(proc))
     update_let_me_think(true)
+}
+function current_auto_play_weaken() {
+    // In pair matches, the specified weaken method is applied only to
+    // the opponent AI. The partner AI ignores it and plays normally.
+    const is_partner =
+          (pair_match_info() === 'pair_match') && (auto_play_count === 2)
+    const partner_weaken = is_partner && default_weaken()
+    return auto_play_weaken_for_current_bw() || partner_weaken || auto_play_weaken
 }
 function auto_play_ready() {
     return !doing_auto_play_p && !R.is_suggest_by_genmove && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
