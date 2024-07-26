@@ -562,8 +562,8 @@ function create_leelaz () {
         const remove = f => {
             command_queue = command_queue.filter(x => !f(x) || x.protect_p)
         }
-        // useless lz-analyze that will be canceled immediately
-        remove(pondering_command_p)
+        // useless lz-analyze etc. that will be canceled immediately
+        remove(cancellable_command_p)
         // duplicated endstate
         endstate_command_p(task) && remove(endstate_command_p)
         // obsolete endstate / peek
@@ -617,6 +617,7 @@ function create_leelaz () {
 
     const command_matcher = re => (task => task.command.match(re))
     const pondering_command_p = command_matcher(/(lz|kata)-analyze/)
+    const cancellable_command_p = command_matcher(/(lz|kata)-analyze/)
     const raw_nn_command_p = command_matcher(/kata-raw(-human)?-nn/)
     const endstate_command_p = command_matcher(/^endstate_map/)
     const changer_command_p = command_matcher(/play|undo|clear_board|set_position|set_free_handicap/)
