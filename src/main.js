@@ -148,7 +148,10 @@ globalize({  // for powered_goban.js
 const P = require('./powered_goban.js')
 
 function render(given_R, is_board_changed) {
-    renderer('render', given_R, is_board_changed)
+    // to avoid flicker in let-me-think-first mode,
+    // send window_prop to update board_type surely
+    // by set_and_render() in suggest_handler() [2024-07-08]
+    renderer_with_window_prop('render', given_R, is_board_changed)
 }
 function is_busy() {return busy}
 function is_pausing() {return pausing}
