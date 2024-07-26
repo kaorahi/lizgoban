@@ -400,6 +400,9 @@ function goto_previous_or_next_something(backwardp) {
 }
 
 function genmove(...args) {genmove_gen('genmove', AI.genmove, ...args)}
+function genmove_analyze(...args) {
+    genmove_gen('genmove_analyze', AI.genmove_analyze, ...args)
+}
 function genmove_gen(name, f, sec, play_func, cont) {
     const cur = game.ref_current()
     const note = `${name} by ${AI.current_preset_label()}`

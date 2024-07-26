@@ -239,6 +239,21 @@ function create_leelaz () {
         }
     }
 
+    const genmove_analyze = (sec, callback) => {
+        const com = is_katago() ? 'kata-genmove_analyze' : 'lz-genmove_analyze'
+        const interval = analyze_command_interval_arg()
+        const command_for_color = color => `${com} ${color} ${interval}`
+        const on_response = on_genmove_analyze_responsor(callback)
+        return genmove_gen(sec, command_for_color, on_response)
+    }
+    const on_genmove_analyze_responsor = callback => {
+        const on_move = on_genmove_responsor(callback)
+        return (ok, res) => {
+            const move = ok && res.match(/^play\s+(.*)/)?.[1]
+            return move ? on_move(ok, move) : on_analysis_response(ok, res)
+        }
+    }
+
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
         leelaz('name', on_name_response)
@@ -752,7 +767,7 @@ function create_leelaz () {
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,
         humansl_profile: () => humansl_profile, humansl_request_profile,
-        analyze_move, genmove,
+        analyze_move, genmove, genmove_analyze,
         // for debug
         send_to_leelaz,
     }
