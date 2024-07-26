@@ -1,8 +1,5 @@
 DOC = extra/doc
 SAMPLE = extra/sample
-SAMPLE_BUILTIN = $(SAMPLE)/built_in
-SAMPLE_MODEL = $(SAMPLE)/custom_model
-SAMPLE_KATAGO = $(SAMPLE)/custom_katago
 PD_HEADER = pandoc_header
 
 README = $(DOC)/README.html
@@ -10,9 +7,6 @@ REL_NOTE = $(DOC)/release.html
 SCR_IMG = $(DOC)/screen.gif
 MTCH_IMG = $(DOC)/match.png
 FACE_IMG = $(DOC)/faces.png
-LG_CONF_BUILTIN = $(SAMPLE_BUILTIN)/config.json
-LG_CONF_MODEL = $(SAMPLE_MODEL)/config.json
-LG_CONF_KATAGO = $(SAMPLE_KATAGO)/config.json
 KATA_DOC_DIR = $(DOC)/KataGo
 
 BIN_DIR = bin
@@ -21,7 +15,7 @@ KATA_MODEL_DIR = $(BIN_DIR)/common
 KATA_MODEL_FILE = $(KATA_MODEL_DIR)/katanetwork.gz
 KATA_MODEL_D_FILE = $(KATA_DOC_DIR)/katanetwork_license.txt
 
-TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF_BUILTIN) $(LG_CONF_MODEL) $(LG_CONF_KATAGO)
+TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG)
 
 PANDOC = pandoc -H $(PD_HEADER)
 
@@ -35,32 +29,11 @@ clean:
 $(DOC):
 	mkdir -p $@
 
-$(SAMPLE_BUILTIN):
-	mkdir -p $@
-
-$(SAMPLE_MODEL):
-	mkdir -p $@
-
-$(SAMPLE_KATAGO):
-	mkdir -p $@
-
 $(REL_NOTE): release.md $(PD_HEADER) $(DOC)
 	$(PANDOC) $< -M pagetitle='Release Note' -o $@
 
 $(README): ../README.md $(PD_HEADER) $(DOC)
 	 $(PANDOC) $< -M pagetitle='README' -o $@
-
-$(LG_CONF_BUILTIN): config.json $(SAMPLE_BUILTIN)
-	cp -f $< $@
-
-$(LG_CONF_MODEL): config.json $(SAMPLE_MODEL)
-	ruby -pe '$$_ =~ /-model/ and $$_.gsub!(/\["built-in",\s*(.*?)\]/, %q|\1|)' $< > $@
-
-$(LG_CONF_KATAGO): config.json $(SAMPLE_KATAGO)
-	cat $< \
-	| ruby -pe '$$_.gsub!(/\["built-in",\s*(.*?)\]/, %q|\1|)' \
-	| ruby -rjson -e 'conf = JSON.parse(ARGF.readlines.join()); p = conf["preset"]; p.replace([z = p[0]]); z["label"] = "KataGo"; z["engine"][0] = "katago"; puts JSON.pretty_generate(conf)' \
-	> $@
 
 $(SCR_IMG): ../screen.gif $(DOC)
 	convert $<'[0]' $@
