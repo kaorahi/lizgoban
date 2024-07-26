@@ -243,7 +243,7 @@ function api_handler(channel, handler, busy) {
     }
 }
 function apply_api(channel, handler, args) {
-    const silently = ['ladder_is_seen', 'play_pass_maybe', 'hold_suggestion_for_a_while']
+    const silently = ['ladder_is_seen', 'play_pass_maybe', 'hold_suggestion_for_a_while', 'submit_auto_play', 'enable_menu']
     const keep_board = ['toggle_pause', !is_busy() && 'unset_busy', 'set_showing_until']
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
@@ -404,14 +404,16 @@ function genmove(...args) {genmove_gen('genmove', AI.genmove, ...args)}
 function genmove_analyze(...args) {
     genmove_gen('genmove_analyze', AI.genmove_analyze, ...args)
 }
-function genmove_gen(name, f, sec, play_func, cont) {
+function genmove_gen(name, f, sec, play_func) {
     const cur = game.ref_current()
     const note = `${name} by ${AI.current_preset_label()}`
-    const default_play_func = (move, note) => play(move, false, undefined, note)
+    const default_play_func = (move, note) => {
+        play(move, false, undefined, note); update_ponder_surely()
+    }
     const play_it = play_func || default_play_func
     const if_ok = move => {
         if (cur !== game.ref_current()) {if_ng_gen(`ignore obsolete ${name}`); return}
-        play_it(move, note); update_ponder_surely(); cont && cont(move)
+        play_it(move, note)
     }
     const if_ng_gen = message => {
         toast(message); stop_auto(); AI.cancel_past_requests()
@@ -977,7 +979,7 @@ function start_auto_play(strategy, sec, count) {
     // proc
     replaying && rewind_maybe()
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
-    start_auto_genmove_maybe(sec)
+    start_auto_genmove_maybe(auto_play_sec)
 }
 
 let doing_auto_play_p = false
@@ -1005,7 +1007,8 @@ function auto_play_ready() {
 function do_as_auto_play(playable, proc, silent) {
     doing_auto_play_p = false
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause(), update_all())
-    !silent && update_all()
+    !silent && update_ponder_surely()
+    start_auto_genmove_maybe(auto_play_sec)
 }
 function update_auto_play_time() {last_auto_play_time = Date.now()}
 function auto_play_progress() {
@@ -1067,16 +1070,11 @@ function start_auto_genmove_maybe(sec) {
         auto_genmove_p(true) ? start_auto_genmove(sec, true) : null
 }
 function start_auto_genmove(sec, analyze_p) {
-    const play_func = (move, comment) => {
-        play_selected_weak_move({move, comment}, get_auto_play_weaken())
-    }
-    const cont = () => {
-        decrement_auto_play_count()
-        start_auto_genmove_maybe(sec)
-    }
+    const play_func = (move, comment) =>
+          play_selected_weak_move({move, comment}, get_auto_play_weaken())
     resume(); update_all()  // just for bright board effect
     const f = analyze_p ? genmove_analyze : genmove
-    f(sec, play_func, cont)
+    f(sec, play_func)
 }
 
 // match
