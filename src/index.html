@@ -199,12 +199,11 @@ handicap
 <div class="controller_row show_in_match">
 <span class="match_panel">
 vs.
-<select id="weaken" value="best" onchange="set_match_param()">
- <!-- first item must be "best" for set_match_param in renderer.js -->
+<select id="weaken" value="plain" onchange="set_match_param()">
+ <!-- first item must be "plain" for set_match_param in renderer.js -->
  <optgroup label="Strong">
-  <option value="best">best</option>
-  <option value="plain">plain</option>
-  <option value="diverse" selected>diverse</option>
+  <option value="plain" selected>plain</option>
+  <option value="diverse">diverse</option>
  </optgroup>
  <optgroup label="Weak">
   <option class="moves_ownership_only" value="persona">persona</option>
@@ -215,6 +214,7 @@ vs.
   <option class="katago_only" value="policy0.7">policy-3</option>
  </optgroup>
  <optgroup label="Obsolete">
+  <option value="best">best</option>
   <option value="genmove">genmov</option>
   <option value="genmove_analyze">_analyz</option>
   <option value="pass">pass</option>

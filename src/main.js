@@ -1076,7 +1076,7 @@ function get_auto_play_weaken() {
 }
 function auto_genmove_p() {return auto_genmove_func() === genmove}
 function auto_genmove_func() {
-    const weaken_method = get_auto_play_weaken()?.[0]
+    const weaken_method = get_auto_play_weaken()?.[0] || 'plain'
     const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
     const func_for_method = {
         genmove, genmove_analyze,
@@ -1110,12 +1110,12 @@ function stop_match(window_id) {
 function set_match_param(weaken) {
     let m
     auto_play_weaken =
-        (weaken === 'plain') ? ['plain'] :
         (weaken === 'diverse') ? ['random_opening'] :
         (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity'), adjust_sanity_p] :
         (weaken === 'pass') ? ['pass_maybe'] :
         (weaken === 'genmove') ? ['genmove'] :
         (weaken === 'genmove_analyze') ? ['genmove_analyze'] :
+        (weaken === 'best') ? ['best'] :
         (m = weaken.match(/^policy([0-9.]+)$/)) ? ['policy', to_f(m[1])] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
