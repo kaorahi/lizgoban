@@ -86,7 +86,7 @@ function create_leelaz () {
     }
     const pda_for_checking_policy_aggressiveness = 2.0
     const start_analysis_after_raw_nn = () => {
-        const too_slow = (speedometer.latest() < 40)
+        const too_slow = (speedometer.latest() < 20)
         if (too_slow || !kata_pda_supported()) {return false}
         const nn_with_pda_sign = (receiver, sign) =>
               kata_raw_nn(receiver, pda_for_checking_policy_aggressiveness * sign)
