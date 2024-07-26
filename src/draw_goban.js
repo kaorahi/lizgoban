@@ -101,6 +101,7 @@ function draw_goban_with_suggest(canvas, opts) {
                 draw_loss_p: !R.different_engine_for_white_p && R.show_endstate,
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
                 draw_endstate_cluster_p: true,
+                draw_humansl_comparison_p: !R.hide_suggest,
                 mapping_tics_p: !opts.main_canvas_p, ...opts})
 }
 
@@ -284,6 +285,7 @@ function draw_goban(given_canvas, given_stones, opts) {
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
         draw_endstate_stdev_p, draw_endstate_cluster_p,
         draw_endstate_level_p,
+        draw_humansl_comparison_p,
         read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
         hovered_move, show_until, analysis_region,
         main_canvas_p, handle_mouse_on_goban,
@@ -323,7 +325,7 @@ function draw_goban(given_canvas, given_stones, opts) {
     pv_visits && draw_pv_visits(pv_visits, font_unit, idx2coord, g)
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
-        draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, large_font_p,
+        draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, draw_humansl_comparison_p, large_font_p,
         hovered_move, show_until,
     }
     draw_on_board(stones, drawp, unit, idx2coord, g)
@@ -487,6 +489,7 @@ function draw_endstate_on_board_gen(key, proc, stones, unit, idx2coord, g) {
 function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
+           draw_humansl_comparison_p,
            large_font_p, hovered_move, show_until}
           = drawp
     const stone_radius = unit * 0.5
@@ -509,7 +512,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
             draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g)
         if (R.busy) {return}
         h.suggest && draw_suggest(h, xy, stone_radius, large_font_p, g)
-        h.humansl_policy_info && draw_humansl_comparison(h, xy, unit, idx2coord, g)
+        draw_humansl_comparison_p && h.humansl_policy_info && draw_humansl_comparison(h, xy, unit, idx2coord, g)
         draw_pv_changes(h, xy, stone_radius, g)
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_next_p && h.branches && draw_branches(h, xy, stone_radius, g)
