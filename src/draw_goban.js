@@ -805,8 +805,8 @@ function draw_cheap_shadow([x, y], radius, g) {
 
 function draw_suggest(h, xy, radius, large_font_p, g) {
     if (R.debug_show_policy) {
-        !R.lizzie_style && draw_suggest_policy_with_text(h, xy, radius, 6, 0.5, g)
-        draw_suggest_policy(h, xy, radius, 6, 0.5, g)
+        R.lizzie_style ? draw_suggest_policy(h, xy, radius, 6, 0.5, g) :
+            draw_suggest_policy_with_text(h, xy, radius, 6, 0.5, g)
         return
     }
     if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
