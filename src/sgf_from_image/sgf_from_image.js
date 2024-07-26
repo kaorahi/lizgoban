@@ -979,10 +979,16 @@ function archived_data(h) {
     const c2u = c => c.toDataURL('image/png')
     const [image_url, digitized_url, overlay_url] = canvases.map(c2u)
     const images = {image_url, digitized_url, overlay_url}
-    !Q('#revert_image').disabled &&
+    !Q('#revert_image').disabled && with_image_rollback(() =>
         // side effects!
-        (draw_image(), images.original_url = c2u(image_canvas))
+        (draw_image_sub(), images.original_url = c2u(image_canvas)))
     return {...h, misc, guessed_board, unedited, images}
+}
+
+function with_image_rollback(proc) {
+    const orig_image_data = get_image_data()
+    proc()
+    image_ctx.putImageData(orig_image_data, 0, 0)
 }
 
 ///////////////////////////////////////////
