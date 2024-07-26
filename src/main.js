@@ -1277,9 +1277,9 @@ function play_selected_weak_move(selected, weaken) {
     new_sanity && adjust_sanity_p && !auto_play_weaken_for_current_bw()
         && set_stored('sanity', new_sanity)
     const play_com = (m, c) => {
+        R.in_match && !pondering_in_match && !auto_playing() && pause()
         play(m, 'never_redo', null, c)
         is_pass(m) && toast('Pass')
-        R.in_match && !pondering_in_match && !auto_playing() && (pause(), update_all())
     }
     const pass_maybe_p = (weaken_method === 'pass_maybe')
     const pass_maybe =
