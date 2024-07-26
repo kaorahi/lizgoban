@@ -327,6 +327,9 @@ function play(move, force_create, default_tag, comment, auto_play_in_match_sec) 
     const new_sequence_p = (game.len() > 0) && create_sequence_maybe(force_create_p)
     const tag = game.move_count > 0 && game.new_tag_maybe(new_sequence_p, game.move_count)
     do_play(move, black_to_play_now_p(), tag || default_tag || undefined, comment)
+    // need to send 'play' to engine before auto_play_in_match,
+    // that can send 'genmove' immediately.
+    update_all()
     pass && wink()
     play_move_sound(pass)
     truep(auto_play_in_match_sec) &&
@@ -390,12 +393,14 @@ function goto_previous_or_next_something(backwardp) {
         backwardp ? undo_to_start() : redo_to_end()
 }
 
-function genmove(sec) {
+function genmove(sec, play_func, cont) {
     const cur = game.ref_current()
     const note = `genmove by ${AI.current_preset_label()}`
+    const default_play_func = (move, note) => play(move, false, undefined, note)
+    const play_it = play_func || default_play_func
     const if_ok = move => {
         if (cur !== game.ref_current()) {if_ng_gen('ignore obsolete genmove'); return}
-        play(move, false, undefined, note); update_ponder_surely()
+        play_it(move, note); update_ponder_surely(); cont && cont(move)
     }
     const if_ng_gen = message => {
         toast(message); stop_auto(); AI.cancel_past_requests()
@@ -898,6 +903,7 @@ function try_auto(force_next) {
 }
 function skip_auto() {try_auto(true)}
 function auto_progress(time_only_p) {
+    if (auto_genmove_p()) {return 0.5}
     return Math.max(time_only_p ? -1 : auto_analysis_progress(),
                     auto_play_progress(), auto_redo_progress())
 }
@@ -960,10 +966,12 @@ function start_auto_play(strategy, sec, count) {
     // proc
     replaying && rewind_maybe()
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
+    start_auto_genmove_maybe(sec)
 }
 
 let doing_auto_play_p = false
 function try_auto_play(force_next) {
+    if (auto_genmove_p()) {return}
     // In pair matches, the specified weaken method is applied only to
     // the opponent AI. The partner AI ignores it and plays normally.
     const is_partner =
@@ -1034,6 +1042,29 @@ function default_weaken() {
     return weaken[default_strategy()]
 }
 
+// genmove as an exceptional auto-play
+function get_auto_play_weaken() {
+    return auto_play_weaken_for_current_bw() || auto_play_weaken
+}
+function auto_genmove_p() {
+    return auto_playing() && (auto_playing_strategy === 'best') &&
+        (get_auto_play_weaken()?.[0] === 'genmove')
+}
+function start_auto_genmove_maybe(sec) {
+    auto_genmove_p() && start_auto_genmove(sec)
+}
+function start_auto_genmove(sec) {
+    const play_func = (move, comment) => {
+        play_selected_weak_move({move, comment}, get_auto_play_weaken())
+    }
+    const cont = () => {
+        decrement_auto_play_count()
+        start_auto_genmove_maybe(sec)
+    }
+    resume(); update_all()  // just for bright board effect
+    genmove(sec, play_func, cont)
+}
+
 // match
 let auto_play_weaken = [], pondering_in_match = false
 function start_match(win, auto_moves_in_match, random_pair_match_rate) {
@@ -1054,6 +1085,7 @@ function set_match_param(weaken) {
         (weaken === 'diverse') ? ['random_opening'] :
         (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity'), adjust_sanity_p] :
         (weaken === 'pass') ? ['pass_maybe'] :
+        (weaken === 'genmove') ? ['genmove'] :
         (m = weaken.match(/^policy([0-9.]+)$/)) ? ['policy', to_f(m[1])] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
