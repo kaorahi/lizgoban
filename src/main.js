@@ -559,7 +559,7 @@ function menu_template(win) {
         item('Next something', '>', goto_next_something),
         item('Previous something', '<', goto_previous_something),
         sep,
-        ...insert_if(option.exercise_dir,
+        ...insert_if(option.exercise_dir, menu('Exercise', [
                      item('Store as exercise', '!', store_as_exercise),
                      item('Exercise', '?', () => load_random_exercise(win), true),
                      item('Recent exercise', 'CmdOrCtrl+?',
@@ -569,6 +569,7 @@ function menu_template(win) {
                                       item('Delete this', 'CmdOrCtrl+!', delete_exercise)),
                      ]),
                      item('Open exercise', 'Alt+?', () => open_exercise_dir(win), true),
+                     ]),
                      sep),
         item("Tsumego frame", 'Shift+f',
              () => add_tsumego_frame(), true, game.move_count > 0),
