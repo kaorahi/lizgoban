@@ -579,7 +579,9 @@ function create_leelaz () {
         const f = arg.suggest_handler; if (!f) {return}
         const h = parse_analyze(s, bturn, komi, is_katago(), obtained_pda_policy)
         const engine_id = get_engine_id()
-        merge(h, {engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits)})
+        merge(h, {
+            engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits),
+        })
         f(h)
     }
 
