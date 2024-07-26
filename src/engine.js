@@ -214,6 +214,7 @@ function create_leelaz () {
             send_to_leelaz(humansl_profile_setter(profile))
             send_to_leelaz('kata-raw-human-nn 0', on_response)
         }
+        // use command name '*_kata-raw-human-nn' for remove(raw_nn_command_p)
         leelaz(`lizgoban_kata-raw-human-nn PROFILE=${profile}`, proc)
     }
 
