@@ -192,7 +192,8 @@ function engine_info() {
 }
 
 function current_preset_label() {
-    return engine_info().really_current.preset_label_text
+    const info = engine_info().really_current, {humansl_profile} = info
+    return info.preset_label_text + (humansl_profile ? `[${humansl_profile}]` : '')
 }
 
 function startup_log() {return leelaz_for_this_turn().startup_log()}
