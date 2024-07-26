@@ -138,7 +138,7 @@ function create_leelaz () {
             is_katago() ? 'kata-analyze' : 'lz-analyze',
             // args
             bw_for(js_bturn),
-            `interval ${arg.analyze_interval_centisec}`,
+            analyze_command_interval_arg(),
             is_katago() && ownership_p && 'ownership true',
             o_maybe('ownershipStdev'),
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
@@ -149,6 +149,8 @@ function create_leelaz () {
             allow,
         ].filter(truep).join(' '), on_response || on_analysis_response)
     }
+    const analyze_command_interval_arg = () =>
+          `interval ${arg.analyze_interval_centisec}`
     const humansl_profile_setter = profile => `kata-set-param humanSLProfile ${profile}`
     const humansl_profile_restorer = () => is_supported('humanSLProfile') ?
           humansl_profile_setter(humansl_profile) : 'name'
