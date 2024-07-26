@@ -511,7 +511,8 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         h.stone &&
             draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g)
         if (R.busy) {return}
-        h.suggest && draw_suggest(h, xy, stone_radius, large_font_p, g)
+        R.debug_show_policy ? draw_policy(h, xy, stone_radius, 6, 0.5, g) :
+            h.suggest ? draw_suggest(h, xy, stone_radius, large_font_p, g) : null
         draw_humansl_comparison_p && h.humansl_policy_info && draw_humansl_comparison(h, xy, unit, idx2coord, g)
         draw_pv_changes(h, xy, stone_radius, g)
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
@@ -804,11 +805,6 @@ function draw_cheap_shadow([x, y], radius, g) {
 // See "suggestion reader" section in engine.js for suggestion_data.
 
 function draw_suggest(h, xy, radius, large_font_p, g) {
-    if (R.debug_show_policy) {
-        R.lizzie_style ? draw_suggest_policy(h, xy, radius, 6, 0.5, g) :
-            draw_suggest_policy_with_text(h, xy, radius, 6, 0.5, g)
-        return
-    }
     if (h.data.visits === 0) {draw_suggest_0visits(h, xy, radius, g); return}
     if (minor_suggest_p(h)) {draw_minor_suggest(h, xy, radius, g); return}
     const suggest = h.data, {stroke, fill} = suggest_color(suggest)
@@ -856,15 +852,22 @@ function draw_suggest_0visits(h, xy, radius, g) {
     draw_suggest_policy(h, xy, radius, 1, 0.2, g)
 }
 
+function draw_policy(h, xy, radius, line_width, alpha, g) {
+    if (!valid_numberp(h.default_policy)) {return}
+    const f = R.lizzie_style ? draw_suggest_policy : draw_suggest_policy_with_text
+    f(h, xy, radius, line_width, alpha, g)
+}
+
 function draw_suggest_policy_with_text(h, xy, radius, line_width, alpha, g) {
-    const prior1000 = Math.round(h.data.prior * 1000)
-    const prior_text = prior1000 > 0 ? prior1000 : Math.round(log10(h.data.prior))
+    const prior1000 = Math.round(h.default_policy * 1000)
+    const prior_text = prior1000 > 0 ? prior1000 : Math.round(log10(h.default_policy))
+    const gray = 'rgba(0,0,0,0.5)'
     draw_suggest_policy(h, xy, radius, line_width, alpha, g)
-    draw_text_on_stone(prior_text, prior1000 > 0 ? BLACK : RED, xy, radius, g)
+    draw_text_on_stone(prior_text, prior1000 > 0 ? BLACK : gray, xy, radius, g)
 }
 
 function draw_suggest_policy(h, xy, radius, line_width, alpha, g) {
-    const limit_order = 4, size = (1 + log10(h.data.prior) / limit_order)
+    const limit_order = 4, size = (1 + log10(h.default_policy) / limit_order)
     if (size <= 0) {return}
     g.lineWidth = line_width; g.strokeStyle = `rgba(255,0,0,${alpha})`
     circle(xy, radius * size, g)
