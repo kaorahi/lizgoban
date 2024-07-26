@@ -1018,7 +1018,8 @@ function auto_play_ready() {
 }
 function do_as_auto_play(playable, proc, silent) {
     doing_auto_play_p = false
-    const do_it = () => {proc(); update_auto_play_time()}
+    // to avoid color flicker of progress bar, clear it before proc()
+    const u = update_auto_play_time, do_it = () => {u(); proc(); u()}
     const stop_it = () => {stop_auto_play(), pause(), update_all()}
     playable ? do_it() : stop_it()
     !silent && update_ponder_surely()
