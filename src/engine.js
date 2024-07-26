@@ -146,7 +146,7 @@ function create_leelaz () {
         const o_maybe = key => ownership_p && maybe(key)
         return [
             bw_for(js_bturn),
-            analyze_command_interval_arg(),
+            `interval ${arg.analyze_interval_centisec}`,
             is_katago() && ownership_p && 'ownership true',
             o_maybe('ownershipStdev'),
             is_supported('minmoves') && `minmoves ${arg.minimum_suggested_moves}`,
@@ -157,8 +157,6 @@ function create_leelaz () {
             allow,
         ].filter(truep).join(' ')
     }
-    const analyze_command_interval_arg = () =>
-          `interval ${arg.analyze_interval_centisec}`
     const humansl_profile_setter = profile => `kata-set-param humanSLProfile ${profile}`
     const humansl_profile_restorer = (forcep) => {
         // if -human-model is given, profile should be applied
@@ -258,8 +256,7 @@ function create_leelaz () {
         const cancellable = is_supported('kata-search_cancellable')
         const com = cancellable ? 'kata-search_analyze_cancellable' :
               is_katago() ? 'kata-genmove_analyze' : 'lz-genmove_analyze'
-        const interval = analyze_command_interval_arg()
-        const command = `${com} ${bw_for(js_bturn)} ${interval}`
+        const command = `${com} ${analyze_command_arg()}`
         const on_response = on_genmove_analyze_responsor(callback, cancellable)
         return genmove_gen(sec, command, on_response)
     }
