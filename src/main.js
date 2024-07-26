@@ -1097,6 +1097,7 @@ function start_auto_genmove_maybe() {
 let auto_play_weaken = [], pondering_in_match = false
 function start_match(win, auto_moves_in_match, random_pair_match_rate) {
     const resetp = (auto_moves_in_match === 'reset_param')
+    resetp && set_stored('humansl_profile_in_match', '')
     set_auto_moves_in_match(resetp ? 1 : to_i(auto_moves_in_match))
     merge(R, {random_pair_match_rate})
     renderer(resetp ? 'reset_match_param' : 'set_match_param')
