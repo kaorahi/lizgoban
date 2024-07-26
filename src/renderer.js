@@ -645,7 +645,9 @@ function auto_play_in_match(handicap) {
 }
 function set_match_param(reset_p) {
     const it = Q('#weaken')
-    reset_p && (it.selectedIndex = 0)
+    const find_idx = (opts, val) => [...opts].findIndex(o => o.value === val)
+    // use 'best' for exercise
+    reset_p && (it.selectedIndex = find_idx(it.options, 'best'))
     main('set_match_param', it.options[it.selectedIndex].value)
 }
 function reset_match_param() {set_match_param(true)}
