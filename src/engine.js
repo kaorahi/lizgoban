@@ -281,10 +281,10 @@ function create_leelaz () {
             ['allow', 'lz-analyze 1 allow B D4 1'],
             // use kata-search_analyze_cancellable for immediate cancel
             ['kata-search_cancellable', 'kata-search_analyze_cancellable B'],
-            ['humanSLProfile', ...humansl_profile_updater()],
-            ['kata-raw-human-nn',
-             `${humansl_profile_setter('rank_1d')};kata-raw-human-nn 0`,
-             (ok, res) => set_supported('kata-raw-human-nn', !!(ok && res))],
+            // query and record some parameters as side effects here
+            // so that they are surely recorded before "after_all_checks"
+            [null, ...humansl_profile_updater()],
+            [null, ...humansl_feature_checker()],
         ]
         const do_check = table => table.forEach(a => check_supported(...a))
         do_check(checks)
@@ -293,7 +293,6 @@ function create_leelaz () {
         // clear_leelaz_board for restart
         // komi may be changed tentatively in set_board before check of engine type
         const after_all_checks = () => {
-            leelaz(humansl_profile_restorer())
             clear_leelaz_board(); is_katago() || (komi = leelaz_komi)
             // KataGo's default komi can be 6.5 etc. depending on "rules" in gtp.cfg.
             leelaz(`komi ${komi}`)  // force KataGo to use our komi
@@ -758,9 +757,21 @@ function create_leelaz () {
     let supported = {}
     const check_supported =
           (feature, cmd, on_response) => leelaz(cmd, (ok, res) => {set_supported(feature, ok); return on_response && on_response(ok, res)}, true)
-    const set_supported = (feature, val) => {supported[feature] = val}
+    const set_supported = (feature, val) => feature && (supported[feature] = val)
     const is_supported = feature => supported[feature]
     const is_katago = maybe => is_supported('kata-analyze') || (is_in_startup && maybe)
+
+    const humansl_feature_checker = () => {
+        const command = 'kata-get-models'
+        const check = ms => {
+            const feature_name = ['main_model_humanSL', 'kata-raw-human-nn']
+            const rs = ms?.map(m => m?.usesHumanSLProfile) || []
+            rs.forEach((r, k) => set_supported(feature_name[k], r))
+            set_supported('humanSLProfile', rs.some(truep))
+        }
+        const on_response = (ok, res) => ok && check(safely(JSON.parse, res))
+        return [command, on_response]
+    }
 
     /////////////////////////////////////////////////
     // exported methods
