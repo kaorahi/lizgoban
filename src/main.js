@@ -1085,6 +1085,7 @@ function auto_genmove_func() {
     const func_for_method = {
         genmove, genmove_analyze,
         plain: search_analyze,
+        plain_diverse: search_analyze,
     }
     return func_for_method[weaken_method]
 }
@@ -1092,7 +1093,8 @@ function start_auto_genmove_maybe() {
     const genmove_func = auto_genmove_func(); if (!genmove_func) {return}
     const play_func = (move, comment) => {
         const selected = {move, comment}
-        const rand_p = (auto_playing_strategy === 'random_opening')
+        const rand_p = (auto_playing_strategy === 'random_opening') ||
+              (current_auto_play_weaken()?.[0] === 'plain_diverse')
         rand_p ?
             try_play_best(['random_opening'],
                           {normal_move_in_random_opening: selected}) :
@@ -1119,7 +1121,7 @@ function stop_match(window_id) {
 
 function set_match_param(weaken) {
     let m
-    const literal = ['genmove', 'genmove_analyze', 'best']
+    const literal = ['plain_diverse', 'genmove', 'genmove_analyze', 'best']
     const alias = {
         diverse: 'random_opening',
         pass: 'pass_maybe',
