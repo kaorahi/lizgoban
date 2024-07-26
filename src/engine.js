@@ -99,7 +99,7 @@ function create_leelaz () {
             ['default_policy', nn_with_pda_sign, 0],
             // ['defensive_policy', nn_with_pda_sign, -1],
         ]
-        const args = is_supported('kata-raw-human-nn') ? humansl_args : pda_args
+        const args = is_supported('sub_model_humanSL') ? humansl_args : pda_args
         const call_nn = ([key, f, ...as], cont) => {
             const receiver = h => {
                 const policy = h?.policy; if (!policy) {return}
@@ -208,7 +208,7 @@ function create_leelaz () {
         return true
     }
     const kata_raw_human_nn = (receiver, profile) => {
-        if (!is_supported('kata-raw-human-nn')) {return}
+        if (!is_supported('sub_model_humanSL')) {return}
         const proc = () => {
             const on_response =
                   on_multiline_response_at_once(on_kata_raw_nn_response(receiver))
@@ -764,7 +764,7 @@ function create_leelaz () {
     const humansl_feature_checker = () => {
         const command = 'kata-get-models'
         const check = ms => {
-            const feature_name = ['main_model_humanSL', 'kata-raw-human-nn']
+            const feature_name = ['main_model_humanSL', 'sub_model_humanSL']
             const rs = ms?.map(m => m?.usesHumanSLProfile) || []
             rs.forEach((r, k) => set_supported(feature_name[k], r))
             set_supported('humanSLProfile', rs.some(truep))

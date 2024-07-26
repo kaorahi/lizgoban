@@ -299,7 +299,7 @@ const humansl_comparison_keys = [
         'humansl_color_enhance',
 ]
 ipc.on('get_humansl_comparison', e => {
-    e.returnValue = AI.is_supported('kata-raw-human-nn') &&
+    e.returnValue = AI.is_supported('sub_model_humanSL') &&
         aa2hash(humansl_comparison_keys.map(key => [key, get_stored(key)]))
 })
 ipc.on('set_humansl_comparison', (e, p) => {
