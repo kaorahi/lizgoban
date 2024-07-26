@@ -145,22 +145,22 @@ function create_leelaz () {
     }
 
     const kata_raw_nn_default_receiver = h => {
-            if (!h) {return}
-            const {
-                whiteWin, whiteLead, whiteOwnership, policy, policyPass,
-            } = h
-            const conv_gen = base =>
-                  a => a.map(z => to_s(bturn ? base - z : z)).join(' ')
-            const [conv0, conv1] = [0, 1].map(conv_gen)
-            const [winrate, scoreLead] = [whiteWin, whiteLead].map(conv1)
-            const ownership = conv0(whiteOwnership)
-            const bsize = board_size(), extended_policy = [...policy, policyPass]
-            const k = argmin_by(extended_policy, p => isNaN(p) ? Infinity : - p)
-            const move = idx2move(Math.floor(k / bsize), k % bsize) || pass_command
-            const prior = to_s(extended_policy[k]), pv = move
-            const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
-            suggest_reader_maybe(fake_suggest)
-        }
+        if (!h) {return}
+        const {
+            whiteWin, whiteLead, whiteOwnership, policy, policyPass,
+        } = h
+        const conv_gen = base =>
+              a => a.map(z => to_s(bturn ? base - z : z)).join(' ')
+        const [conv0, conv1] = [0, 1].map(conv_gen)
+        const [winrate, scoreLead] = [whiteWin, whiteLead].map(conv1)
+        const ownership = conv0(whiteOwnership)
+        const bsize = board_size(), extended_policy = [...policy, policyPass]
+        const k = argmin_by(extended_policy, p => isNaN(p) ? Infinity : - p)
+        const move = idx2move(Math.floor(k / bsize), k % bsize) || pass_command
+        const prior = to_s(extended_policy[k]), pv = move
+        const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
+        suggest_reader_maybe(fake_suggest)
+    }
     const kata_raw_nn = (given_receiver, pda) => {
         if (!is_supported('kata-raw-nn')) {return false}
         const receiver = given_receiver || kata_raw_nn_default_receiver
