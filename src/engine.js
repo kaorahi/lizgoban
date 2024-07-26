@@ -594,7 +594,8 @@ function create_leelaz () {
         const {command, on_response} = task
         const cmd = dummy_command_p(task) ? 'name' : command
         const cmd_with_id = `${++last_command_id} ${cmd}`
-        with_response_p(task) && (on_response_for_id[last_command_id] = on_response)
+        const on_res = (ok, res) => on_response(ok, res, command)
+        with_response_p(task) && (on_response_for_id[last_command_id] = on_res)
         pondering_command_p(task) && speedometer.reset()
         log('engine>', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
     }
