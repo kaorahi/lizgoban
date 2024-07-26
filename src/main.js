@@ -316,6 +316,7 @@ function update_all(keep_board) {
 // main flow (2) change game state and send it to powered_goban
 
 function play(move, force_create, default_tag, comment, auto_play_in_match_sec) {
+    if (move === 'resign') {resign(); return}
     const force_create_p = force_create && (force_create !== 'never_redo')
     const [i, j] = move2idx(move), pass = (i < 0)
     if (!pass && (aa_ref(R.stones, i, j) || {}).stone) {wink(); return}
@@ -344,6 +345,11 @@ function do_play(move, is_black, tag, note) {
     // B:D16, W:Q4, B:pass, W:pass ==> B:D16, W:Q4
     is_last_move_pass() && is_pass(move) ? game.pop() :
         game.push({move, is_black, tag, move_count: game.len() + 1, note})
+}
+function resign() {
+    toast(`${is_bturn() ? 'B' : 'W'}: resign`)
+    play_move_sound(true)
+    pause(); stop_auto(); update_all()
 }
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
