@@ -1018,7 +1018,9 @@ function auto_play_ready() {
 }
 function do_as_auto_play(playable, proc, silent) {
     doing_auto_play_p = false
-    playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause(), update_all())
+    const do_it = () => {proc(); update_auto_play_time()}
+    const stop_it = () => {stop_auto_play(), pause(), update_all()}
+    playable ? do_it() : stop_it()
     !silent && update_ponder_surely()
     start_auto_genmove_maybe()
 }
