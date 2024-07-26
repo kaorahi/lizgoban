@@ -144,9 +144,7 @@ function create_leelaz () {
         arg.endstate_handler && is_supported('endstate') && leelaz('endstate_map')
     }
 
-    const kata_raw_nn = (given_receiver, pda) => {
-        if (!is_supported('kata-raw-nn')) {return false}
-        const receiver = given_receiver || (h => {
+    const kata_raw_nn_default_receiver = h => {
             if (!h) {return}
             const {
                 whiteWin, whiteLead, whiteOwnership, policy, policyPass,
@@ -162,7 +160,10 @@ function create_leelaz () {
             const prior = to_s(extended_policy[k]), pv = move
             const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
             suggest_reader_maybe(fake_suggest)
-        })
+        }
+    const kata_raw_nn = (given_receiver, pda) => {
+        if (!is_supported('kata-raw-nn')) {return false}
+        const receiver = given_receiver || kata_raw_nn_default_receiver
         // CAUTION:
         // - use not 'kata-set-param' but update_kata_pda for change detection
         // - use dummy command 'lizgoban_*' to avoid automatic update_kata_pda
