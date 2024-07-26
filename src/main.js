@@ -2249,11 +2249,7 @@ function revive_seen_exercises(metadata) {
 function load_exercise(selector, win, random_flip_p) {
     const metadata = get_all_exercise_metadata()
     revive_seen_exercises(metadata)
-    const dir = exercise_dir()
-    const valid = name =>
-          is_exercise_filename(name) && seen_exercises.indexOf(name) < 0 &&
-          exercise_board_size(name) === board_size()
-    const files = (fs.readdirSync(dir) || []).filter(valid)
+    const files = exercise_files()
     const retry = () => {seen_exercises = []; load_exercise(selector, win, random_flip_p)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files, metadata); seen_exercises.push(fn)
@@ -2275,6 +2271,13 @@ function delete_exercise() {
         game.sgf_file = new_file; toast('deleted from exercise')
     }
     fs.rename(file, new_file, done)
+}
+function exercise_files() {
+    const valid = name =>
+          is_exercise_filename(name) && seen_exercises.indexOf(name) < 0 &&
+          exercise_board_size(name) === board_size()
+    const files = fs.readdirSync(exercise_dir()) || []
+    return files.filter(valid)
 }
 function exercise_dir() {return option_path('exercise_dir')}
 
