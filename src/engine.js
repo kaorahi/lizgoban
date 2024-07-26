@@ -21,7 +21,7 @@ function create_leelaz () {
     let startup_log = [], is_in_startup = true
     let analysis_region = null, instant_analysis_p = false
     let analysis_after_raw_nn_p = true
-    let obtained_pda_policy = null
+    let obtained_policy = null
     let known_name_p = false
     let humansl_profile = ''
     let humansl_stronger_profile = '', humansl_weaker_profile = ''
@@ -81,7 +81,7 @@ function create_leelaz () {
           // need to start kata-analyze again if instant_p is turned off
           (instant_analysis_p = instant_p) || (is_ready && pondering && start_analysis())
     const start_analysis = () => {
-        obtained_pda_policy = null;
+        obtained_policy = null;
         (instant_analysis_p && kata_raw_nn()) ||
             (analysis_after_raw_nn_p && start_analysis_after_raw_nn()) ||
             start_analysis_actually()
@@ -106,8 +106,8 @@ function create_leelaz () {
         const call_nn = ([key, f, ...as], cont) => {
             const receiver = h => {
                 const policy = h?.policy; if (!policy) {return}
-                obtained_pda_policy || (obtained_pda_policy = {})
-                obtained_pda_policy[key] = policy
+                obtained_policy || (obtained_policy = {})
+                obtained_policy[key] = policy
                 cont()
             }
             f(receiver, ...as)
@@ -688,7 +688,7 @@ function create_leelaz () {
             'default_policy',
             'humansl_stronger_policy', 'humansl_weaker_policy',
         ]
-        const policies = pick_keys(obtained_pda_policy || {}, ...policy_keys)
+        const policies = pick_keys(obtained_policy || {}, ...policy_keys)
         const is_suggest_by_genmove =
               !!command?.match(/^(lz|kata)-genmove|^kata-search/)
         merge(h, {
