@@ -1557,10 +1557,13 @@ function set_board() {
     const {handicaps, init_len} = game
     const ownership_p = R.show_endstate ||
           weak_move_prop('force_ownership_p', auto_play_weaken)
+    const stored_keys = ['humansl_stronger_profile', 'humansl_weaker_profile']
+    const stored = aa2hash(stored_keys.map(key => [key, get_stored(key)]))
     const aux = {
         bturn: is_bturn(), komi: game.get_komi(), gorule: get_gorule(),
         handicaps, init_len,
         ownership_p, aggressive: aggressive(),
+        ...stored,
     }
     AI.set_board(hist, aux)
     AI.switch_leelaz(); update_let_me_think(true)

@@ -161,6 +161,8 @@ const stored_keys_spec = [
     ['komi_for_new_handicap_game', handicap_komi],
     ['sanity', initial_sanity],
     ['persona_code', 'abc'],
+    ['humansl_stronger_profile', 'rank_1d'],
+    ['humansl_weaker_profile', 'rank_5k'],
 ]
 const preference_spec =
       stored_keys_spec.map(([k, , label, shortcut]) => label && [k, label, shortcut]).filter(truep)

@@ -23,6 +23,7 @@ function create_leelaz () {
     let obtained_pda_policy = null
     let known_name_p = false
     let humansl_profile = ''
+    let humansl_stronger_profile = '', humansl_weaker_profile = ''
 
     // game state
     // bturn: for parsing engine output (updated when engine sync is finished)
@@ -90,8 +91,8 @@ function create_leelaz () {
         const nn_with_pda_sign = (receiver, sign) =>
               kata_raw_nn(receiver, pda_for_checking_policy_aggressiveness * sign)
         const humansl_args = [
-            ['humansl_stronger_policy', kata_raw_human_nn, 'rank_1d'],
-            ['humansl_weaker_policy', kata_raw_human_nn, 'rank_5k'],
+            ['humansl_stronger_policy', kata_raw_human_nn, humansl_stronger_profile],
+            ['humansl_weaker_policy', kata_raw_human_nn, humansl_weaker_profile],
         ]
         const pda_args = [
             ['aggressive_policy', nn_with_pda_sign, +1],
@@ -264,9 +265,10 @@ function create_leelaz () {
     const get_aux = () => ({
         bturn: js_bturn,
         komi, gorule, handicaps, init_len, ownership_p, aggressive,
+        humansl_stronger_profile, humansl_weaker_profile,
     })
     const set_board = (history, aux) => {
-        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, aggressive}
+        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, aggressive, humansl_stronger_profile, humansl_weaker_profile}
         if (is_in_startup) {return}
         js_bturn = aux.bturn
         change_board_size(board_size())
@@ -284,6 +286,8 @@ function create_leelaz () {
         update_kata(gorule, aux.gorule, 'kata-set-rules', z => {gorule = z})
         ownership_p = update_kata(ownership_p, aux.ownership_p)
         aggressive = update_kata(aggressive, kata_pda_supported() ? aux.aggressive : '')
+        humansl_stronger_profile = aux.humansl_stronger_profile
+        humansl_weaker_profile = aux.humansl_weaker_profile
         if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const beg_valid_p = aux.handicaps === handicaps && aux.init_len === init_len &&
