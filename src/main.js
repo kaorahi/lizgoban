@@ -435,7 +435,7 @@ let force_normal_menu_p = false
 
 // to ignore accelerators (e.g. Shift+N) on input forms in custom dialogs
 let the_menu_enabled_p = true
-function enable_menu(bool) {the_menu_enabled_p = bool}
+function enable_menu(bool) {the_menu_enabled_p = bool; update_menu()}
 function menu_enabled_p() {return the_menu_enabled_p}
 
 function update_menu() {mac_p() ? update_app_menu() : update_window_menu()}
