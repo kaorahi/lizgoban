@@ -346,7 +346,8 @@ function create_leelaz () {
               && beg >= init_len
         const update_kata_p = update_kata_by_aux(aux)
         if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
-        const updated_p = beg_valid_p ? update_board_by_undo(history, beg) :
+        const updated_p = beg_valid_p ?
+              update_board_by_undo(history, beg) :
               update_board_by_clear(history, handicaps, init_len)
         const update_mc_p = updated_p || update_kata_p
         update_mc_p && update_move_count(history, aux.bturn)
