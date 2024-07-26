@@ -1149,14 +1149,15 @@ function try_play_best(weaken) {
         return (mc >= game.init_len) &&
             (game.ref(mc).score_without_komi - game.get_komi()) * sign
     }
+    const cur = game.ref_current()
     const state = {
         orig_suggest: suggest,
         is_bturn: is_bturn(),
         movenum: game.move_count - game.init_len,
-        last_move: game.ref_current().move,
+        last_move: cur.move,
         stones: R.stones,
         orig_winrate: winrate_after(game.move_count),
-        orig_score_without_komi: game.ref_current().score_without_komi,
+        orig_score_without_komi: cur.score_without_komi,
         my_current_score: get_my_score(0),
         my_previous_score: get_my_score(-2),
         random_opening: option.random_opening,
