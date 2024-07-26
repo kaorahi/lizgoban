@@ -14,7 +14,6 @@ LG_CONF_BUILTIN = $(SAMPLE_BUILTIN)/config.json
 LG_CONF_MODEL = $(SAMPLE_MODEL)/config.json
 LG_CONF_KATAGO = $(SAMPLE_KATAGO)/config.json
 KATA_DOC_DIR = $(DOC)/KataGo
-KATA_DOC = $(KATA_DOC_DIR)/README.txt
 
 BIN_DIR = bin
 KATA_DIR = $(BIN_DIR)/win/katago
@@ -22,7 +21,7 @@ KATA_MODEL_DIR = $(BIN_DIR)/common
 KATA_MODEL_FILE = $(KATA_MODEL_DIR)/katanetwork.gz
 KATA_MODEL_D_FILE = $(KATA_DOC_DIR)/katanetwork_license.txt
 
-TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF_BUILTIN) $(LG_CONF_MODEL) $(LG_CONF_KATAGO) $(KATA_DOC)
+TARGETS = $(README) $(REL_NOTE) $(SCR_IMG) $(MTCH_IMG) $(FACE_IMG) $(LG_CONF_BUILTIN) $(LG_CONF_MODEL) $(LG_CONF_KATAGO)
 
 PANDOC = pandoc -H $(PD_HEADER)
 
@@ -72,10 +71,6 @@ $(MTCH_IMG): ../match.png $(DOC)
 $(FACE_IMG): ../faces.png $(DOC)
 	cp -f $< $@
 
-$(KATA_DOC): $(KATA_DIR)/README.txt $(DOC)
-	mkdir -p $(KATA_DOC_DIR)
-	cp -f $< $@
-
 #######################################
 # katago
 
@@ -97,8 +92,9 @@ $(KATA_DIR):
 	unzip -o tmp_kata2.zip -d $@ && cd $@ && mv katago.exe katago-eigenavx2.exe
 	unzip -o tmp_kata3.zip -d $@ && cd $@ && mv katago.exe katago-opencl.exe
 
-$(KATA_MODEL_FILE): $(KATA_DOC)
+$(KATA_MODEL_FILE):
 	mkdir -p $(KATA_MODEL_DIR)
+	mkdir -p $(KATA_DOC_DIR)
 	\wget -O $(KATA_MODEL_FILE) $(KATA_MODEL_URL)
 	\wget -O $(KATA_MODEL_D_FILE) $(KATA_MODEL_D_URL)
 
