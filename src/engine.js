@@ -198,20 +198,12 @@ function create_leelaz () {
         const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
         suggest_reader_maybe(fake_suggest)
     }
-    const kata_raw_nn = (given_receiver, pda) => {
+    const kata_raw_nn = (given_receiver) => {
         if (!is_supported('kata-raw-nn')) {return false}
         const receiver = given_receiver || kata_raw_nn_default_receiver
-        // CAUTION:
-        // - use not 'kata-set-param' but update_kata_pda for change detection
-        // - use dummy command 'lizgoban_*' to avoid automatic update_kata_pda
-        // - use command name '*_kata-raw-nn' for remove(pondering_command_p)
-        const proc = () => {
-            const on_response =
-                  on_multiline_response_at_once(on_kata_raw_nn_response(receiver))
-            update_kata_pda(pda)
-            send_task_to_leelaz_sub({command: 'kata-raw-nn 0', on_response})
-        }
-        leelaz(`lizgoban_kata-raw-nn PDA=${pda}`, proc)
+        const on_response =
+              on_multiline_response_at_once(on_kata_raw_nn_response(receiver))
+        leelaz('kata-raw-nn 0', on_response)
         return true
     }
     const kata_raw_human_nn = (receiver, profile) => {
