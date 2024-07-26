@@ -656,7 +656,13 @@ function load_image_file(file) {
 }
 
 function draw_image() {
-    if (!img) {return}
+    const ok = draw_image_sub(); if (!ok) {return}
+    img.style.display = 'none'
+    update_image_data()
+    Q('#revert_image').disabled = true
+}
+function draw_image_sub() {
+    if (!img) {return false}
     cancel_digitize()
     const {width, height} = img
     const mag = Math.min(cw / width, ch / height) * canvas_scale()
@@ -667,14 +673,12 @@ function draw_image() {
                         centering(to_w, image_canvas.width),
                         centering(to_h, image_canvas.height),
                         to_w, to_h)
-    img.style.display = 'none'
-    update_image_data()
-    Q('#revert_image').disabled = true
+    return true
 }
 
-function update_image_data() {
-    image_data =
-        image_ctx.getImageData(0, 0, image_canvas.width, image_canvas.height).data
+function update_image_data() {image_data = get_image_data().data}
+function get_image_data() {
+    return image_ctx.getImageData(0, 0, image_canvas.width, image_canvas.height)
 }
 
 function rgba256_at(x, y) {
