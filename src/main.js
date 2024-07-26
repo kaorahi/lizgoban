@@ -205,6 +205,7 @@ const simple_api = {
     hold_suggestion_for_a_while,
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
     set_sanity_from_renderer,
+    set_humansl_profile_in_match,
     open_image_url,
     memorize_settings_for_sgf_from_image, archive_sgf_from_image,
     enable_menu,
@@ -703,7 +704,7 @@ function menu_template(win) {
 function humansl_profile_menu_items(menu, item, sep) {
     function submenu_with(humansl_profile) {
         const cur = humansl_profile()
-        if (!stringp(cur)) {return [cur, []]}
+        if (R.in_match || !stringp(cur)) {return [cur, []]}
         const prof_item = p => {
             const label = p || '(none)'
             return item(label, undefined, () => {humansl_profile(p); toast(label)})
@@ -1105,6 +1106,7 @@ function start_match(win, auto_moves_in_match, random_pair_match_rate) {
     resetp && set_stored('humansl_profile_in_match', '')
     set_auto_moves_in_match(resetp ? 1 : to_i(auto_moves_in_match))
     merge(R, {random_pair_match_rate})
+    renderer('set_humansl_profile_in_match_from_main', R.humansl_profile_in_match)
     renderer(resetp ? 'reset_match_param' : 'set_match_param')
     set_board_type('raw', win); R.in_match = true
 }
@@ -1490,6 +1492,21 @@ function open_preference() {
 function set_persona_code(code) {set_stored('persona_code', code)}
 function set_adjust_sanity_p(bool) {adjust_sanity_p = bool}
 function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
+function set_humansl_profile_in_match(profile) {
+    set_stored('humansl_profile_in_match', profile)
+}
+function get_humansl_profile_in_match() {
+    if (!R.in_match) {return false}
+    const features = ['main_model_humanSL', 'sub_model_humanSL']
+    const [main_p, sub_p] = features.map(key => AI.is_supported(key))
+    const weaken_method = auto_play_weaken?.[0]
+    const valid_weaken_sub = [
+        'plain', 'plain_diverse', 'genmove', 'genmove_analyze',
+    ]
+    const sub_ok = !weaken_method || valid_weaken_sub.includes(weaken_method)
+    const ok = main_p || (sub_p && sub_ok)
+    return ok ? get_stored('humansl_profile_in_match') : false
+}
 function info_text() {
     const f = (label, s) => s ?
           `<${label}>\n` + JSON.stringify(s) + '\n\n' : ''
@@ -1671,6 +1688,7 @@ function set_board() {
         handicaps, init_len,
         ownership_p,
         analysis_after_raw_nn_p: !auto_analyzing(),
+        tmp_humansl_profile: get_humansl_profile_in_match(),
         ...stored,
     }
     AI.set_board(hist, aux)
@@ -2150,6 +2168,7 @@ function availability() {
         trial: game.trial,
         moves_ownership: AI.is_moves_ownership_supported(),
         match_ai_conf: weak_move_prop('has_option_p', auto_play_weaken),
+        humansl_profile_in_match: get_humansl_profile_in_match(),
     }
 }
 

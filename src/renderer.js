@@ -67,6 +67,7 @@ const R = {
     debug_show_policy: false,
     endstate_blur: 0.0,
     gray_brightness_by_endstate: 150,
+    humansl_profile_in_match: '',
 }
 globalize(R)
 let temporary_board_type = null, the_first_board_canvas = null
@@ -291,6 +292,7 @@ ipc.on('save_dataURL', (e, url, filename) => save_dataURL(url, filename, do_noth
 const direct_ipc = {
     set_match_param,
     reset_match_param, take_thumbnail, slide_in, wink, toast, update_analysis_region,
+    set_humansl_profile_in_match_from_main,
 }
 each_key_value(direct_ipc, (key, func) => ipc.on(key, (e, ...a) => func(...a)))
 
@@ -809,6 +811,38 @@ function shrink_analysis_region(axis, positive) {
 }
 
 // match AI config
+
+const humansl_profile_in_match_list = [...humansl_rank_profiles.toReversed(), '']
+const humansl_profile_in_match_markers = ['rank_10k', 'rank_1d']
+// const humansl_profile_in_match_markers = ['rank_20k', 'rank_10k', 'rank_1d', 'rank_9d']
+const humansl_profile_in_match_slider = Q('#humansl_profile_in_match_slider')
+function update_humansl_profile_in_match(manually) {
+    const {value} = humansl_profile_in_match_slider
+    const profile = humansl_profile_in_match_list[to_i(value)]
+    const label = profile ? profile.replace(/rank_|preaz_|proyear_/, '') : '(full)'
+    setq("#humansl_profile_in_match_value", label)
+    manually && (main('set_humansl_profile_in_match', profile), set_match_param())
+}
+function set_humansl_profile_in_match_from_main(humansl_profile_in_match) {
+    merge(R, {humansl_profile_in_match})
+    const value = humansl_profile_in_match_list.indexOf(R.humansl_profile_in_match)
+    humansl_profile_in_match_slider.value = value
+    update_humansl_profile_in_match()
+}
+function initialize_humansl_profile_in_match_slider() {
+    const [min, max] = [0, humansl_profile_in_match_list.length - 1], h = {min, max}
+    if (humansl_profile_in_match_slider.hasAttribute('min')) {return}
+    each_key_value(h, (k, v) => humansl_profile_in_match_slider.setAttribute(k, v))
+    const markers = Q('#humansl_profile_in_match_markers')
+    humansl_profile_in_match_markers.forEach(m => {
+        const option = document.createElement('option')
+        option.value = humansl_profile_in_match_list.indexOf(m)
+        markers.appendChild(option)
+    })
+    humansl_profile_in_match_slider.addEventListener('input', () => update_humansl_profile_in_match(true))
+    update_humansl_profile_in_match()
+}
+initialize_humansl_profile_in_match_slider()
 
 const sanity_slider = Q("#sanity_slider"), sanity_auto_checkbox = Q("#sanity_auto")
 function update_sanity(manually) {
@@ -1522,6 +1556,7 @@ function update_button_etc(availability) {
                       R.different_engine_for_white_p)
     update_ui_element('.moves_ownership_only', availability.moves_ownership)
     update_ui_element('#sanity_div', availability.match_ai_conf)
+    update_ui_element('#humansl_div', truep(availability.humansl_profile_in_match))
 }
 
 function in_match_p(serious) {return R.in_match && (!serious || R.board_type === 'raw')}

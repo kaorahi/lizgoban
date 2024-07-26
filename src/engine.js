@@ -22,7 +22,7 @@ function create_leelaz () {
     let analysis_after_raw_nn_p = true
     let obtained_policy = null
     let known_name_p = false
-    let humansl_profile = ''
+    let humansl_profile = '', tmp_humansl_profile = null
     let humansl_stronger_profile = '', humansl_weaker_profile = ''
 
     // game state
@@ -157,6 +157,7 @@ function create_leelaz () {
         // only for kata-raw-human-nn and genmove etc.
         const profile_for_sub_model = forcep ? humansl_profile : ''
         const p =
+              truep(tmp_humansl_profile) ? tmp_humansl_profile :
               is_supported('main_model_humanSL') ? humansl_profile :
               is_supported('sub_model_humanSL') ? profile_for_sub_model : null
         return truep(p) ? humansl_profile_setter(p) : 'name'
@@ -308,10 +309,11 @@ function create_leelaz () {
         bturn: js_bturn,
         komi, gorule, handicaps, init_len, ownership_p,
         humansl_stronger_profile, humansl_weaker_profile,
+        tmp_humansl_profile,
         analysis_after_raw_nn_p,
     })
     const set_board = (history, aux) => {
-        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, humansl_stronger_profile, humansl_weaker_profile, analysis_after_raw_nn_p}
+        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, humansl_stronger_profile, humansl_weaker_profile, tmp_humansl_profile, analysis_after_raw_nn_p}
         if (is_in_startup) {return}
         js_bturn = aux.bturn
         analysis_after_raw_nn_p = aux.analysis_after_raw_nn_p
@@ -331,6 +333,7 @@ function create_leelaz () {
         ownership_p = update_kata(ownership_p, aux.ownership_p)
         humansl_stronger_profile = aux.humansl_stronger_profile
         humansl_weaker_profile = aux.humansl_weaker_profile
+        tmp_humansl_profile = aux.tmp_humansl_profile
         if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
         const beg = common_header_length(history, leelaz_previous_history)
         const beg_valid_p = aux.handicaps === handicaps && aux.init_len === init_len &&
@@ -758,7 +761,7 @@ function create_leelaz () {
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log,
-        humansl_profile: () => humansl_profile,
+        humansl_profile: () => true_or(tmp_humansl_profile, humansl_profile),
         humansl_request_profile,
         analyze_move, genmove, genmove_analyze,
         // for debug
