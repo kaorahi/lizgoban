@@ -399,22 +399,23 @@ function goto_previous_or_next_something(backwardp) {
         backwardp ? undo_to_start() : redo_to_end()
 }
 
-function genmove(sec, play_func, cont) {
+function genmove(...args) {genmove_gen('genmove', AI.genmove, ...args)}
+function genmove_gen(name, f, sec, play_func, cont) {
     const cur = game.ref_current()
-    const note = `genmove by ${AI.current_preset_label()}`
+    const note = `${name} by ${AI.current_preset_label()}`
     const default_play_func = (move, note) => play(move, false, undefined, note)
     const play_it = play_func || default_play_func
     const if_ok = move => {
-        if (cur !== game.ref_current()) {if_ng_gen('ignore obsolete genmove'); return}
+        if (cur !== game.ref_current()) {if_ng_gen(`ignore obsolete ${name}`); return}
         play_it(move, note); update_ponder_surely(); cont && cont(move)
     }
     const if_ng_gen = message => {
         toast(message); stop_auto(); AI.cancel_past_requests()
         update_ponder_surely()
     }
-    const if_ng = res => if_ng_gen(`genmove failded: ${res}`)
+    const if_ng = res => if_ng_gen(`${name} failded: ${res}`)
     const callback = (ok, res) => (ok ? if_ok : if_ng)(res)
-    AI.genmove(sec, callback)
+    f(sec, callback)
 }
 
 /////////////////////////////////////////////////

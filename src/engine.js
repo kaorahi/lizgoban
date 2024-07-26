@@ -219,17 +219,24 @@ function create_leelaz () {
     }
 
     const genmove = (sec, callback) => {
+        const command_for_color = color => `genmove ${color}`
+        const on_response = on_genmove_responsor(callback)
+        return genmove_gen(sec, command_for_color, on_response)
+    }
+    const genmove_gen = (sec, command_for_color, on_response) => {
+        const color = bw_for(js_bturn)
+        const command = `time_settings 0 ${sec} 1;${command_for_color(color)}`
+        leelaz(command, on_response)
+    }
+    const on_genmove_responsor = callback => {
         const bturn0 = js_bturn
-        const command = `time_settings 0 ${sec} 1;genmove ${bw_for(bturn0)}`
-        const on_response = (ok, res) => {
+        return (ok, res) => {
             if (ok) {
-                const move = res
-                push_to_history(move, bturn0)
+                const move = res; push_to_history(move, bturn0)
                 bturn = js_bturn = !bturn0
             }
             callback(ok, res)
         }
-        leelaz(command, on_response)
     }
 
     let on_ready = () => {
