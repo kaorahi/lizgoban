@@ -32,6 +32,7 @@ $(PACKAGE): extra $(EXE)
 	cp $(EXE) build_with/config.json $(PACKAGE)
 	cp -r build_with/bin/win/katago $(PACKAGE)
 	cp build_with/bin/common/katanetwork.gz $(PACKAGE)/katago/default_model.bin.gz
+	cp build_with/bin/common/kata_humanmodel.gz $(PACKAGE)/katago/human_model.bin.gz
 	cp -r build_with/extra/* $(PACKAGE)
 
 $(ZIP): $(PACKAGE)
