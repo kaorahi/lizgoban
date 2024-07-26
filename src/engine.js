@@ -283,9 +283,14 @@ function create_leelaz () {
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['rootInfo', 'kata-analyze 1 rootInfo true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
-            // allowResignation can be get/set from KataGo 1.15.0
-            ['allowResignation', 'kata-get-param allowResignation',
-             (ok, res) => ok && (orig_allow_resignation = (res === 'true'))],
+            // ----
+            // "kata-set-param allowResignation" makes humanSL player stronger??
+            // commented out for safety though I don't know if it's true. [2024-07-24]
+            // https://github.com/lightvector/KataGo/issues/959
+            // // allowResignation can be get/set from KataGo 1.15.0
+            // ['allowResignation', 'kata-get-param allowResignation',
+            //  (ok, res) => ok && (orig_allow_resignation = (res === 'true'))],
+            // ----
             // use kata-search_analyze_cancellable for immediate cancel
             ['kata-search_cancellable', 'kata-search_analyze_cancellable B'],
             // query and record some parameters as side effects here
