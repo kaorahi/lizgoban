@@ -96,7 +96,7 @@ let auto_analysis_steps = 1
 // auto_playing_strategy = 'play', 'replay', 'random_opening'
 let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
-let exercise_metadata = null
+let exercise_metadata = null, exercise_match_p = false
 let adjust_sanity_p = false
 let auto_play_weaken_for_bw = {}; clear_auto_play_weaken_for_bw()
 let debug_menu_p = !app.isPackaged
@@ -1119,7 +1119,7 @@ function start_match(win, auto_moves_in_match, random_pair_match_rate) {
     set_board_type('raw', win); R.in_match = true
 }
 function stop_match(window_id) {
-    R.in_match = false; auto_play_weaken = []
+    R.in_match = exercise_match_p = false; auto_play_weaken = []
     truep(window_id) && toggle_board_type(window_id, null, "raw")
 }
 
@@ -1697,6 +1697,7 @@ function set_board() {
         ownership_p,
         analysis_after_raw_nn_p: !auto_analyzing(),
         tmp_humansl_profile: get_humansl_profile_in_match(),
+        avoid_resign_p: exercise_match_p,
         ...stored,
     }
     AI.set_board(hist, aux)
@@ -2436,6 +2437,7 @@ function load_exercise(selector, win, random_flip_p) {
 }
 function load_as_exercise(file, win) {
     start_match(win, 'reset_param')
+    exercise_match_p = true
     load_sgf_internally(file); goto_move_count(exercise_move_count(file)); game.trial = true
 }
 function open_exercise_dir(win) {open_sgf_etc_in(exercise_dir(), file => load_as_exercise(file, win))}

@@ -311,6 +311,7 @@ function create_leelaz () {
         humansl_stronger_profile, humansl_weaker_profile,
         tmp_humansl_profile,
         analysis_after_raw_nn_p,
+        // aux.avoid_resign_p is not recorded
     })
     const record_simple_aux = aux => {
         js_bturn = aux.bturn
@@ -347,16 +348,21 @@ function create_leelaz () {
         const update_kata_p = update_kata_by_aux(aux)
         if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
         const updated_p = beg_valid_p ?
-              update_board_by_undo(history, beg) :
+              update_board_by_undo(history, beg, aux.avoid_resign_p) :
               update_board_by_clear(history, handicaps, init_len)
         const update_mc_p = updated_p || update_kata_p
         update_mc_p && update_move_count(history, aux.bturn)
         leelaz_previous_history = history.slice()
     }
-    const update_board_by_undo = (history, beg) => {
+    const update_board_by_undo = (history, beg, avoid_resign_p) => {
         const back = leelaz_previous_history.length - beg
         const rest = history.slice(beg)
         do_ntimes(back, undo1); rest.forEach(play1)
+        // workaround to avoid resignation
+        const cheat_p = avoid_resign_p && is_katago() &&
+              rest.length === 1 && last(rest).move !== pass_command
+        const cheat_to_avoid_resign = () => {play1({move: pass_command}); undo1()}
+        cheat_p && cheat_to_avoid_resign()
         return back > 0 || !empty(rest)
     }
     const update_board_by_clear = (history, handicaps, init_len) => {
