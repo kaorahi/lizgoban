@@ -1077,7 +1077,10 @@ function get_auto_play_weaken() {
 function auto_genmove_p() {return auto_genmove_func() === genmove}
 function auto_genmove_func() {
     const weaken_method = get_auto_play_weaken()?.[0]
-    const genmove_func = {genmove, genmove_analyze}[weaken_method]
+    const func_for_method = {
+        genmove, genmove_analyze,
+    }
+    const genmove_func = func_for_method[weaken_method]
     return auto_playing() && (auto_playing_strategy === 'best') && genmove_func
 }
 function start_auto_genmove_maybe() {
