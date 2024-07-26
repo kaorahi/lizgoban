@@ -1077,14 +1077,15 @@ function get_auto_play_weaken() {
 }
 function auto_genmove_p() {return auto_genmove_func() === genmove}
 function auto_genmove_func() {
+    const strategy_ok = (auto_playing_strategy === 'play')
+    const maybe = auto_playing() && strategy_ok; if (!maybe) {return null}
     const weaken_method = get_auto_play_weaken()?.[0] || 'plain'
     const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
     const func_for_method = {
         genmove, genmove_analyze,
         plain: search_analyze,
     }
-    const genmove_func = func_for_method[weaken_method]
-    return auto_playing() && (auto_playing_strategy === 'play') && genmove_func
+    return func_for_method[weaken_method]
 }
 function start_auto_genmove_maybe() {
     const genmove_func = auto_genmove_func(); if (!genmove_func) {return}
