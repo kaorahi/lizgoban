@@ -189,6 +189,10 @@ function engine_info() {
             black: f(leelaz_for_black), white: f(leelaz_for_white)}
 }
 
+function current_preset_label() {
+    return engine_info().really_current.preset_label_text
+}
+
 function startup_log() {return leelaz_for_this_turn().startup_log()}
 
 function different_komi_for_black_and_white() {
@@ -320,4 +324,6 @@ module.exports = {
     set_handlers, another_leelaz_for_endstate_p, engine_ids,
     // both
     katago_p, support_endstate_p, engine_info, is_gorule_supported,
+    // others
+    current_preset_label,
 }

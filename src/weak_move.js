@@ -40,7 +40,7 @@ function get_move_etc(state, weaken_method, weaken_args, then) {
 
 function prepend_common_comment(move, comment, state, weaken_method, weaken_args) {
     const {orig_suggest, preset_label_text} = state
-    const ai = `by ${AI.engine_info().really_current.preset_label_text}`
+    const ai = `by ${state.preset_label_text}`
     const {order} = orig_suggest.find(s => s.move === move) || {}
     const ord = !truep(order) ? '(outside the candidates)':
           (order > 0) ? `(order = ${order + 1})` : null

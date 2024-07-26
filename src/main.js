@@ -1166,7 +1166,7 @@ function try_play_best(weaken) {
         generate_persona_param,
         katago_p: AI.katago_p(),
         is_moves_ownership_supported: AI.is_moves_ownership_supported(),
-        preset_label_text: AI.engine_info().really_current.preset_label_text,
+        preset_label_text: AI.current_preset_label(),
         cont: selected => play_selected_weak_move(selected, weaken, weaken_method),
     }
     select_weak_move(state, weaken_method, weaken_args)
