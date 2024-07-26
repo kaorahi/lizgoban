@@ -644,7 +644,8 @@ function auto_play_in_match(handicap) {
     in_match_p() && main('auto_play_in_match', auto_play_in_match_sec())
 }
 function set_match_param(reset_p) {
-    const it = Q('#weaken'); reset_p && (it.selectedIndex = 0)
+    const it = Q('#weaken')
+    reset_p && (it.selectedIndex = 0)
     main('set_match_param', it.options[it.selectedIndex].value)
 }
 function reset_match_param() {set_match_param(true)}
