@@ -531,7 +531,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
 function draw_humansl_comparison(h, xy, unit, idx2coord, g) {
     const {log_diff, max_prior} = h.humansl_policy_info
     if (max_prior < 0.01) {return}
-    const alpha_mag = 0.5
+    const alpha_mag = true_or(R.humansl_color_enhance, 0.5)
     const radius_pow = 0.5, max_rel_radius = 1.0
     const hue = log_diff > 0 ? 240 : 0
     const saturation = 100

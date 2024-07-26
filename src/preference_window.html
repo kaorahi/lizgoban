@@ -8,6 +8,9 @@
  <script src="preference_window.js"></script>
  <style type="text/css">
  body {user-select: none;}
+ #humansl_comparison_box {margin-top: 3em;}
+ #humansl_comparison_box div {margin: 0.5em;}
+ #humansl_comparison_box input[type="range"] {width: 80%;}
  </style>
 </head>
 
@@ -16,6 +19,22 @@
 <h1>Preferences</h1>
 
 <div id="preferences"></div>
+
+<div id="humansl_comparison_box">
+ <div>"Human SL net" policy comparison</div>
+ <div>
+  <input type="range" id="humansl_stronger_profile" min="0" step="1" oninput="update_humansl_comparison()"></input>
+  <label id="humansl_stronger_profile_label" for="humansl_stronger_profile" style='color: white; background-color: blue; padding: 0.2em;'>profile</label>
+ </div>
+ <div>
+  <input type="range" id="humansl_weaker_profile" min="0" step="1" oninput="update_humansl_comparison()"></input>
+  <label id="humansl_weaker_profile_label" for="humansl_weaker_profile" style='color: white; background-color: red; padding: 0.2em;'>profile</label>
+ </div>
+ <div>
+  <input type="range" id="humansl_color_enhance" value="1.0" min="0" max="4" step="0.1" oninput="update_humansl_comparison()"></input>
+  <label id="humansl_color_enhance_label" for="humansl_color_enhance">color enhance</label>
+ </div>
+</div>
 
 <div id="debug"></div>
 

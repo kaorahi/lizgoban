@@ -290,6 +290,19 @@ ipc.on('get_preferences',
              preference_spec.map(([key, label, shortcut]) => [key, get_stored(key), label, shortcut])))
 ipc.on('set_preference', (e, key, val) => {set_stored(key, val); update_all()})
 
+const humansl_comparison_keys = [
+        'humansl_stronger_profile', 'humansl_weaker_profile',
+        'humansl_color_enhance',
+]
+ipc.on('get_humansl_comparison', e => {
+    e.returnValue = AI.is_supported('kata-raw-human-nn') &&
+        aa2hash(humansl_comparison_keys.map(key => [key, get_stored(key)]))
+})
+ipc.on('set_humansl_comparison', (e, p) => {
+    humansl_comparison_keys.forEach(key => set_stored(key, p[key]))
+    update_ponder_surely()
+})
+
 // update after every command
 
 function update_all(keep_board) {
@@ -1538,6 +1551,10 @@ function set_or_unset_busy(bool) {
 function set_busy() {set_or_unset_busy(true)}
 function unset_busy() {set_or_unset_busy(false)}
 function update_ponder() {AI.set_pondering(pausing, busy)}
+function update_ponder_surely() {
+    // force updating via double toggle
+    toggle_pause(); update_ponder(); toggle_pause(); update_ponder(); update_all()
+}
 function init_from_renderer() {
     const proc = () => {warn_disabled_cache(), restore_session()}
     setTimeout(proc, 100)
