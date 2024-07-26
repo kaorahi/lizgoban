@@ -40,6 +40,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Subboard that always shows the principal variation
 * Blunder marks on stones and quick review of them by mouse click like [KaTrain](https://github.com/sanderland/katrain/)
 * Auto-replay / Auto-analysis
+* Play against human-style KataGo with adjustable rank (20kyu-9dan)
 * Quick switching of multiple engines
 * Open URL (by drag & drop or clipboard)
 * Save/load analyses to/from SGF in Lizzie-compatible format
@@ -71,6 +72,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 
 * Visualization of search progress via plots of visits, winrate, score, prior, ... for each suggested move
 * Real-time display of area counts by KataGo
+* Comparison of 1-dan and 5-kyu styles by KataGo (a variation of [dfannius](https://github.com/dfannius)'s "policy heatmap")
 * Analysis of gains and losses in recent moves on the board that reveals overlooked side effects
 * Larger fonts for inevitable moves in the suggested variation
 * Highlighting of unexpected good moves that are overlooked by engines
@@ -315,17 +317,22 @@ For information about the displayed marks, shortcut keys, and other features, re
 
 ### 0.8.*
 
+* Add "human-style" features for KataGo [1.15.0](https://github.com/lightvector/KataGo/releases/tag/v1.15.0).
+  * Compare the policies between 5kyu and 1dan, for example. (a variation of [dfannius](https://github.com/dfannius)'s "policy heatmap")
+  * Play human-like moves for the specified rank.
 * Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
 * Replace zone indicator with playing styles indicator.
 * Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
 * Add thin red background for "hot" periods in winrate graph.
 * Add "ambiguity of areas" (faint gray line) and "settled territories" (faint green/pink dots) to score graph.
+* Warn overlooked high-policy best moves by squares on stones.
 * Highlight settled areas by "v" key.
 * Make long press of cursor keys smoother.
 * Add sound feature. (You need to [prepare and set sound files](#sound) by yourself.)
 * Change playing style of persona strategy. This is still being tested and might change in the future.
 * Avoid unnatural tenuki in match vs. weakened AI.
 * Add "Open recent" to File menu.
+* Add random pair match.
 * Detect encoding of SGF files etc.
 * [Support TamaGo](#TamaGo).
 * Deprecate the display of preferred moves by "AIs for handicap games".
@@ -333,7 +340,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 
 Incompatibilities:
 
-* Upgrade libraries (Electron 28, etc.). So you may need to do "npm install" again.
+* Upgrade libraries (Electron, etc.). So you may need to do "npm install" again.
 
 ### 0.7.*
 

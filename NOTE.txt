@@ -29,11 +29,6 @@ Handicap stones are treated as usual moves internally and the move
 number is shifted only on the display.  We dare to do this from the
 experience of repeated bugs on handicap games in Lizzie.
 
-Endstate estimation (by ihavnoid's version) tends to oscillate between
-black and white turns.  So we use the average of recent two moves for
-score estimation and an even number for the width of endstate diff.
-These are not applied to Katago as its estimation seems more stable.
-
 src/package.json exists only for backward compatibility to enable "npx
 electron src".
 
