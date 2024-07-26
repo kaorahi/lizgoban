@@ -2079,9 +2079,25 @@ function update_title() {
         const v = get_auto_play_weaken_for_bw(k)
         return v && `weak_${k}=${JSON.stringify(v)}`
     }).filter(truep).join(' ')
-    const title = `LizGoban ${names} ${tag_text} ${R.weight_info || ''} ${weaken_bw}`
+    const title0 = `LizGoban ${names} ${tag_text} ${R.weight_info || ''} ${weaken_bw}`
+    const title = hack_title(title0)
     title_change_detector.is_changed(title) &&
         get_windows().forEach(win => win.setTitle(title))
+}
+let hack_title_count = 0, hack_title_timer = null
+function hack_title(title) {
+    const start_hacking = () => {
+        const inc = () => {hack_title_count++; update_title()}
+        hack_title_count = 0; hack_title_timer = setInterval(inc, 1000)
+    }
+    const stop_hacking = () => {
+        clearTimeout(hack_title_timer); hack_title_timer = null
+    }
+    const hacked_title = () => hack_title_count > 0 ?
+          `${title} (${hack_title_count})` : title
+    return title.includes(P.weight_info_waiting_text) ?
+        (!hack_title_timer && start_hacking(), hacked_title()) :
+        (hack_title_timer && stop_hacking(), title)
 }
 function current_tag_letters() {
     return exclude_implicit_tags(R.history_tags.map(x => x.tag).join(''))

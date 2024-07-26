@@ -557,6 +557,7 @@ function get_previous_suggest() {
     ret && (ret.bturn = prev.engine_bturn)
     return ret
 }
+const weight_info_waiting_text = '(waiting...)'
 function weight_info_text() {
     const h = AI.engine_info(), ek = h.engine_komi, gk = game.get_komi()
     const game_komi = truep(gk) && gk != ek && ` (game komi=${gk})`
@@ -566,7 +567,7 @@ function weight_info_text() {
     const game_gorule = AI.is_gorule_supported() && game.gorule
     const gorule = game_gorule ? `(${game_gorule}) ` : ''
     const f = z => z ?
-          `${z.preset_label_text}${s(z.aggressive_p && '!')}${sp(z?.humansl_profile)} ${s(z.network_size)}${s(!z.is_ready && '(waiting...)')}` : ''
+          `${z.preset_label_text}${s(z.aggressive_p && '!')}${sp(z?.humansl_profile)} ${s(z.network_size)}${s(!z.is_ready && weight_info_waiting_text)}` : ''
     const weight_info = h.leelaz_for_white_p ?
           `${f(h.black)} / ${f(h.white)}` : f(h.black)
     const tuning = M.tuning_message()
@@ -687,4 +688,5 @@ module.exports = {
     overlooked_high_policy_p,
     delete_cache, undelete_cache,
     hold_suggestion_for_a_while,
+    weight_info_waiting_text,
 }
