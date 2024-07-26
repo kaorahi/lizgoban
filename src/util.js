@@ -127,7 +127,8 @@ let debug_log_snipped_lines = 0, debug_log_last_snipped_line = null
 E.debug_log = (arg, limit_len, category) => is_a(arg, 'boolean') ?
     (debug_log_p = arg) : (debug_log_p && do_debug_log(arg, limit_len, category))
 function do_debug_log(arg, limit_len, category) {
-    const sec = `(${(new Date()).toJSON().replace(/(.*:)|(.Z)/g, '')}) `
+    const sec = `(${(new Date()).toJSON().replace(/(.*T)|(.Z)/g, '')}) `
+    // const sec = `(${(new Date()).toJSON().replace(/(.*:)|(.Z)/g, '')}) `
     const line = sec + snip(E.to_s(arg), limit_len)
     const same_category_p = (category && (category === debug_log_prev_category))
     debug_log_prev_category = category
