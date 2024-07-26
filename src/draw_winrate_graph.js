@@ -365,7 +365,7 @@ function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
 function draw_winrate_graph_ambiguity_sub(items, sr2coord, g) {
     const plot = (key, stroke, fill, scale, plotter) => {
         const to_xy = (z, s) => {
-            const val = z[key]; return truep(val) && sr2coord(s, val * scale)
+            const val = z[key]; return truep(val) && val >= 0 && sr2coord(s, val * scale)
         }
         let xys = R.move_history.map(to_xy).filter(identity)
         const fill_p = [fill_line, edged_fill_line].includes(plotter)
