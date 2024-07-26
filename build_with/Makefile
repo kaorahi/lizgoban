@@ -51,8 +51,8 @@ KATA_URL_BASE = https://github.com/lightvector/KataGo/releases/download
 KATA_URL1 = $(KATA_URL_BASE)/v1.14.0/katago-v1.14.0-eigen-windows-x64.zip
 KATA_URL2 = $(KATA_URL_BASE)/v1.14.0/katago-v1.14.0-eigenavx2-windows-x64.zip
 KATA_URL3 = $(KATA_URL_BASE)/v1.14.0/katago-v1.14.0-opencl-windows-x64.zip
-KATA_MODEL_URL = https://katagoarchive.org/g170/neuralnets/g170e-b15c192-s1672170752-d466197061.bin.gz
-KATA_MODEL_D_URL = https://katagoarchive.org/g170/LICENSE.txt
+KATA_MODEL_URL = https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b18c384nbt-s9996604416-d4316597426.bin.gz
+KATA_MODEL_D_URL = https://katagotraining.org/network_license/
 
 katago: $(KATA_DIR) $(KATA_MODEL_FILE)
 
@@ -69,7 +69,7 @@ $(KATA_MODEL_FILE):
 	mkdir -p $(KATA_MODEL_DIR)
 	mkdir -p $(KATA_DOC_DIR)
 	\wget -O $(KATA_MODEL_FILE) $(KATA_MODEL_URL)
-	\wget -O $(KATA_MODEL_D_FILE) $(KATA_MODEL_D_URL)
+	\wget -O - $(KATA_MODEL_D_URL) | pandoc -f html -t plain -o $(KATA_MODEL_D_FILE)
 
 #######################################
 # facial stone images
