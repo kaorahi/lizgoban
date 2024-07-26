@@ -983,7 +983,7 @@ function start_auto_play(strategy, sec, count) {
     // proc
     replaying && rewind_maybe()
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
-    start_auto_genmove_maybe(auto_play_sec)
+    start_auto_genmove_maybe()
 }
 
 let doing_auto_play_p = false
@@ -1012,7 +1012,7 @@ function do_as_auto_play(playable, proc, silent) {
     doing_auto_play_p = false
     playable ? (proc(), update_auto_play_time()) : (stop_auto_play(), pause(), update_all())
     !silent && update_ponder_surely()
-    start_auto_genmove_maybe(auto_play_sec)
+    start_auto_genmove_maybe()
 }
 function update_auto_play_time() {last_auto_play_time = Date.now()}
 function auto_play_progress() {
@@ -1069,16 +1069,16 @@ function auto_genmove_p(analyze_p) {
     return auto_playing() && (auto_playing_strategy === 'best') &&
         (get_auto_play_weaken()?.[0] === name)
 }
-function start_auto_genmove_maybe(sec) {
-    auto_genmove_p() ? start_auto_genmove(sec) :
-        auto_genmove_p(true) ? start_auto_genmove(sec, true) : null
+function start_auto_genmove_maybe() {
+    auto_genmove_p() ? start_auto_genmove() :
+        auto_genmove_p(true) ? start_auto_genmove(true) : null
 }
-function start_auto_genmove(sec, analyze_p) {
+function start_auto_genmove(analyze_p) {
     const play_func = (move, comment) =>
           play_selected_weak_move({move, comment}, get_auto_play_weaken())
     resume(); update_all()  // just for bright board effect
     const f = analyze_p ? genmove_analyze : genmove
-    f(sec, play_func)
+    f(auto_play_sec, play_func)
 }
 
 // match
