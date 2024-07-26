@@ -95,9 +95,9 @@ function create_leelaz () {
         ]
         const call_nn = ([key, f, ...as], cont) => {
             const receiver = h => {
-                if (!h) {return}
+                const policy = h?.policy; if (!policy) {return}
                 obtained_pda_policy || (obtained_pda_policy = {})
-                obtained_pda_policy[key] = h.policy
+                obtained_pda_policy[key] = policy
                 cont()
             }
             f(receiver, ...as)
