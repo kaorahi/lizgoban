@@ -86,19 +86,21 @@ function create_leelaz () {
     const start_analysis_after_raw_nn = () => {
         const too_slow = (speedometer.latest() < 40)
         if (too_slow || !kata_pda_supported()) {return false}
+        const nn_with_pda_sign = (receiver, sign) =>
+              kata_raw_nn(receiver, pda_for_checking_policy_aggressiveness * sign)
         const args = [
-            ['aggressive_policy', +1],
-            // ['default_policy', 0],
-            ['defensive_policy', -1],
+            ['aggressive_policy', nn_with_pda_sign, +1],
+            // ['default_policy', nn_with_pda_sign, 0],
+            ['defensive_policy', nn_with_pda_sign, -1],
         ]
-        const call_nn = ([key, sign], cont) => {
+        const call_nn = ([key, f, ...as], cont) => {
             const receiver = h => {
                 if (!h) {return}
                 obtained_pda_policy || (obtained_pda_policy = {})
                 obtained_pda_policy[key] = h.policy
                 cont()
             }
-            kata_raw_nn(receiver, pda_for_checking_policy_aggressiveness * sign)
+            f(receiver, ...as)
         }
         const call = ([first, ...rest], proc, post_proc) =>
               first ? proc(first, () => call(rest, proc, post_proc)) : post_proc()
