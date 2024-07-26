@@ -876,7 +876,7 @@ function apply_preset(rule, win) {
     set_weaken('black', auto_play_weaken_for_b)
     set_weaken('white', auto_play_weaken_for_w)
     const is_engine_updated = update_engines_by_preset(rule)
-    AI.backup(); is_engine_updated && resume()
+    AI.backup(); is_engine_updated && !R.in_match && resume()
 }
 
 function update_engines_by_preset(rule) {
