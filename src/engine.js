@@ -24,6 +24,7 @@ function create_leelaz () {
     let known_name_p = false
     let humansl_profile = '', tmp_humansl_profile = null
     let humansl_stronger_profile = '', humansl_weaker_profile = ''
+    let avoid_resign_p = false
 
     // game state
     // bturn: for parsing engine output (updated when engine sync is finished)
@@ -227,7 +228,9 @@ function create_leelaz () {
         return genmove_gen(sec, command, on_response)
     }
     const genmove_gen = (sec, command, on_response) => {
-        const com = `time_settings 0 ${sec} 1;${humansl_profile_restorer(true)};${command}`
+        const resign = is_supported('allowResignation') ?
+              `kata-set-param allowResignation ${!avoid_resign_p};` : ''
+        const com = `time_settings 0 ${sec} 1;${resign}${humansl_profile_restorer(true)};${command}`
         leelaz(com, on_response)
     }
     const on_genmove_responsor = (callback, cancellable) => {
@@ -277,6 +280,7 @@ function create_leelaz () {
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['rootInfo', 'kata-analyze 1 rootInfo true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
+            ['allowResignation', 'kata-get-param allowResignation'],
             // use kata-search_analyze_cancellable for immediate cancel
             ['kata-search_cancellable', 'kata-search_analyze_cancellable B'],
             // query and record some parameters as side effects here
@@ -311,7 +315,7 @@ function create_leelaz () {
         humansl_stronger_profile, humansl_weaker_profile,
         tmp_humansl_profile,
         analysis_after_raw_nn_p,
-        // aux.avoid_resign_p is not recorded
+        avoid_resign_p,
     })
     const record_simple_aux = aux => {
         js_bturn = aux.bturn
@@ -320,6 +324,7 @@ function create_leelaz () {
         humansl_weaker_profile = aux.humansl_weaker_profile
         tmp_humansl_profile = aux.tmp_humansl_profile
         handicaps = aux.handicaps; init_len = aux.init_len
+        avoid_resign_p = aux.avoid_resign_p
     }
     const update_kata_by_aux = aux => {
         record_simple_aux(aux)
@@ -360,6 +365,7 @@ function create_leelaz () {
         do_ntimes(back, undo1); rest.forEach(play1)
         // workaround to avoid resignation
         const cheat_p = avoid_resign_p && is_katago() &&
+              !is_supported('allowResignation') &&
               rest.length === 1 && last(rest).move !== pass_command
         const cheat_to_avoid_resign = () => {play1({move: pass_command}); undo1()}
         cheat_p && cheat_to_avoid_resign()
