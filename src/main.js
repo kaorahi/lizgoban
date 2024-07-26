@@ -243,7 +243,11 @@ function api_handler(channel, handler, busy) {
     }
 }
 function apply_api(channel, handler, args) {
-    const silently = ['ladder_is_seen', 'play_pass_maybe', 'hold_suggestion_for_a_while', 'submit_auto_play', 'enable_menu']
+    const silently = [
+        'ladder_is_seen', 'play_pass_maybe', 'hold_suggestion_for_a_while',
+        // to avoid unintentional cancel of kata-search_analyze_cancellable
+        'submit_auto_play', 'enable_menu',
+    ]
     const keep_board = ['toggle_pause', !is_busy() && 'unset_busy', 'set_showing_until']
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
