@@ -88,7 +88,6 @@ function create_leelaz () {
     }
     const start_analysis_after_raw_nn = () => {
         const too_slow = (speedometer.latest() < 20)
-        if (too_slow) {return false}
         const humansl_args = [
             ['humansl_stronger_policy', kata_raw_human_nn, humansl_stronger_profile],
             ['humansl_weaker_policy', kata_raw_human_nn, humansl_weaker_profile],
@@ -97,7 +96,7 @@ function create_leelaz () {
             ['default_policy', kata_raw_nn],
         ]
         const args = is_supported('sub_model_humanSL') ? humansl_args :
-              is_supported('kata-raw-nn') ? raw_nn_args : []
+              (is_supported('kata-raw-nn') && !too_slow) ? raw_nn_args : []
         const call_nn = ([key, f, ...as], cont) => {
             const receiver = h => {
                 const policy = h?.policy; if (!policy) {return}
