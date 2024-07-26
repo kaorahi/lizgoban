@@ -568,7 +568,6 @@ function create_leelaz () {
         endstate_command_p(task) && remove(endstate_command_p)
         // obsolete endstate / peek
         changer_command_p(task) && [raw_nn_command_p, endstate_command_p].forEach(remove)
-        clear_command_p(task) && remove(changer_command_p)
         command_queue.push(task); send_from_queue()
     }
 
@@ -621,7 +620,6 @@ function create_leelaz () {
     const raw_nn_command_p = command_matcher(/kata-raw(-human)?-nn/)
     const endstate_command_p = command_matcher(/^endstate_map/)
     const changer_command_p = command_matcher(/play|undo|clear_board|set_position|set_free_handicap/)
-    const clear_command_p = command_matcher(/clear_board|set_position/)
     const dummy_command_p = command_matcher(/lizgoban/)
 
     /////////////////////////////////////////////////
