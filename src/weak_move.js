@@ -30,6 +30,7 @@ function get_move_etc(state, weaken_method, weaken_args, then) {
         random_candidate: weak_move,
         lose_score: weak_move_by_score,
         random_opening: random_opening_move,
+        policy: random_move_by_policy,
         persona: weak_move_etc_by_persona,
     }[weaken_method] || best_move
     const ret = f(state, ...weaken_args)
@@ -101,8 +102,40 @@ function random_opening_move(state) {
     return make_commented_move(selected.move, com)
 }
 
-function select_randomly_by_prior(suggest) {
-    return weighted_random_choice(suggest, s => s.prior)
+function select_randomly_by_prior(suggest, reverse_temperature) {
+    const weight_of = s => temperature_scaling(s.prior, reverse_temperature)
+    return weighted_random_choice(suggest, weight_of)
+}
+
+function temperature_scaling(p, reverse_temperature) {
+    const rev_temp = true_or(reverse_temperature, 1)
+    return valid_numberp(p) ? clip(p, 0) ** rev_temp : 0
+}
+
+///////////////////////////////////////////////
+// strategy: policy
+
+function random_move_by_policy(state, reverse_temperature) {
+    const {default_policy, orig_suggest} = state, rev_temp = reverse_temperature
+    if (!default_policy) {
+        const {move, prior} = select_randomly_by_prior(orig_suggest, rev_temp)
+        const com = `Play randomly by the policy in ${orig_suggest.length} moves.` +
+              ` (policy = ${prior.toFixed(2)})`
+        return commented_best_move(state, com)
+    }
+    const weight_for = p => temperature_scaling(p, reverse_temperature)
+    const weights = default_policy.map(weight_for)
+    const k = weighted_random_choice(seq(weights.length), l => weights[l])
+    const move = serial2move(k)
+    const com = `Policy = ${default_policy[k].toFixed(5)}, ` +
+          `Policy order = ${order_of_kth(k, weights)}, ` +
+          `Weight = ${weights[k].toExponential(2)}, ` +
+          `Reverse temperature = ${rev_temp}`
+    return make_commented_move(move, com)
+}
+
+function order_of_kth(k, ary) {
+    return num_sort(ary).reverse().indexOf(ary[k])
 }
 
 ///////////////////////////////////////////////

@@ -1038,6 +1038,7 @@ function set_match_param(weaken) {
         (weaken === 'diverse') ? ['random_opening'] :
         (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity'), adjust_sanity_p] :
         (weaken === 'pass') ? ['pass_maybe'] :
+        (m = weaken.match(/^policy([0-9.]+)$/)) ? ['policy', to_f(m[1])] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
         (m = weaken.match(/^swap([1-9])$/)) ? ['random_leelaz', to_i(m[1]) * 10] :
@@ -1158,6 +1159,7 @@ function try_play_best(weaken) {
         stones: R.stones,
         orig_winrate: winrate_after(game.move_count),
         orig_score_without_komi: cur.score_without_komi,
+        default_policy: cur.default_policy,
         my_current_score: get_my_score(0),
         my_previous_score: get_my_score(-2),
         random_opening: option.random_opening,
