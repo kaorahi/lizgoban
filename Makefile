@@ -29,7 +29,7 @@ lin: extra
 
 $(PACKAGE): extra $(EXE)
 	mkdir $(PACKAGE)
-	cp $(EXE) $(PACKAGE)
+	cp $(EXE) build_with/config.json $(PACKAGE)
 	cp -r build_with/extra/* $(PACKAGE)
 
 $(ZIP): $(PACKAGE)

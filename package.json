@@ -29,13 +29,6 @@
     ],
     "extraFiles": [
       {
-        "from": "build_with",
-        "to": "resources/external",
-        "filter": [
-          "config.json"
-        ]
-      },
-      {
         "from": "build_with/img",
         "to": "resources/external",
         "filter": [
