@@ -1058,8 +1058,7 @@ function try_auto_redo(force) {
     const epsilon = 1e-10
     if (!redoable()) {stop_auto_redo(); update_all(); return}
     the_auto_redo_progress += auto_redo_progress_by
-    force && (the_auto_redo_progress = 1)
-    const redo_p = the_auto_redo_progress > 1 - epsilon
+    const redo_p = force || (the_auto_redo_progress > 1 - epsilon)
     redo_p ? (let_me_think_play(redo), (the_auto_redo_progress = 0), update_all()) :
         (update_let_me_think(true), update_all(true))
     try_auto_redo_later()
