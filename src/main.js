@@ -1016,7 +1016,7 @@ function try_auto_play(force_next) {
     update_let_me_think(true)
 }
 function auto_play_ready() {
-    return !doing_auto_play_p && !auto_genmove_analyze_p() && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
+    return !doing_auto_play_p && !R.is_suggest_by_genmove && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
 function do_as_auto_play(playable, proc, silent) {
     doing_auto_play_p = false
@@ -1075,7 +1075,6 @@ function get_auto_play_weaken() {
     return auto_play_weaken_for_current_bw() || auto_play_weaken
 }
 function auto_genmove_p() {return auto_genmove_func() === genmove}
-function auto_genmove_analyze_p() {return auto_genmove_func() === genmove_analyze}
 function auto_genmove_func() {
     const weaken_method = get_auto_play_weaken()?.[0]
     const genmove_func = {genmove, genmove_analyze}[weaken_method]
