@@ -235,14 +235,13 @@ function create_leelaz () {
     const genmove = (sec, callback) => {
         const cancellable = is_supported('kata-search_cancellable')
         const com = cancellable ? 'kata-search_cancellable' : 'genmove'
-        const command_for_color = color => `${com} ${color}`
+        const command = `${com} ${bw_for(js_bturn)}`
         const on_response = on_genmove_responsor(callback, cancellable)
-        return genmove_gen(sec, command_for_color, on_response)
+        return genmove_gen(sec, command, on_response)
     }
-    const genmove_gen = (sec, command_for_color, on_response) => {
-        const color = bw_for(js_bturn)
-        const command = `time_settings 0 ${sec} 1;${humansl_profile_restorer(true)};${command_for_color(color)}`
-        leelaz(command, on_response)
+    const genmove_gen = (sec, command, on_response) => {
+        const com = `time_settings 0 ${sec} 1;${humansl_profile_restorer(true)};${command}`
+        leelaz(com, on_response)
     }
     const on_genmove_responsor = (callback, cancellable) => {
         const bturn0 = js_bturn
@@ -260,9 +259,9 @@ function create_leelaz () {
         const com = cancellable ? 'kata-search_analyze_cancellable' :
               is_katago() ? 'kata-genmove_analyze' : 'lz-genmove_analyze'
         const interval = analyze_command_interval_arg()
-        const command_for_color = color => `${com} ${color} ${interval}`
+        const command = `${com} ${bw_for(js_bturn)} ${interval}`
         const on_response = on_genmove_analyze_responsor(callback, cancellable)
-        return genmove_gen(sec, command_for_color, on_response)
+        return genmove_gen(sec, command, on_response)
     }
     const on_genmove_analyze_responsor = (callback, cancellable) => {
         const on_move = on_genmove_responsor(callback, cancellable)
