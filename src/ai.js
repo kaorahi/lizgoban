@@ -200,7 +200,7 @@ function humansl_profile_gen(lz, profile) {
     return !!lz &&
         (profile === undefined ?
          !!lz.is_supported('humanSLProfile') && lz.humansl_profile() :
-         lz.humansl_request_profile(profile))
+         lz.humansl_request_profile(profile, humansl_profile_request_callback))
 }
 function humansl_profile(profile) {
     return humansl_profile_gen(leelaz_for_black, profile)

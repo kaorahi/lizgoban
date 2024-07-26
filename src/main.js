@@ -121,6 +121,7 @@ globalize({  // for ai.js
     },
     max_cached_engines: option.max_cached_engines,
     command_failure_handler,
+    humansl_profile_request_callback: update_all,
 })
 const AI = require('./ai.js')
 function command_failure_handler(command, info) {

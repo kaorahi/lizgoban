@@ -156,10 +156,12 @@ function create_leelaz () {
         const on_response = (ok, res) => ok && (humansl_profile = (res || '').trim())
         return [command, on_response]
     }
-    const humansl_request_profile = profile => {
+    const humansl_request_profile = (profile, callback) => {
         const setter = humansl_profile_setter(profile)
         const [getter, on_response] = humansl_profile_updater()
-        leelaz(`${setter};${getter}`, on_response)
+        // callback for immediate updating of title bar
+        const f = (...a) => {const ret = on_response(...a); callback(); return ret}
+        leelaz(`${setter};${getter}`, f)
     }
     const stop_analysis = () => {leelaz('name')}
     const set_pondering = bool => {
