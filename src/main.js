@@ -248,6 +248,7 @@ function apply_api(channel, handler, args) {
     const whether = a => (a.indexOf(channel) >= 0)
     debug_log(`API ${channel} ${JSON.stringify(args)}`)
     handler(...args); whether(silently) || update_all(whether(keep_board))
+    debug_log(`API (done) ${channel} ${JSON.stringify(args)}`)
 }
 
 function simple_or_normal_api_handler(channel, handler) {
