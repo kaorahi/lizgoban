@@ -1119,13 +1119,15 @@ function stop_match(window_id) {
 
 function set_match_param(weaken) {
     let m
+    const literal = ['genmove', 'genmove_analyze', 'best']
+    const alias = {
+        diverse: 'random_opening',
+        pass: 'pass_maybe',
+    }
+    const simple_method = literal.includes(weaken) ? weaken : alias[weaken]
     auto_play_weaken =
-        (weaken === 'diverse') ? ['random_opening'] :
+        simple_method ? [simple_method] :
         (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity'), adjust_sanity_p] :
-        (weaken === 'pass') ? ['pass_maybe'] :
-        (weaken === 'genmove') ? ['genmove'] :
-        (weaken === 'genmove_analyze') ? ['genmove_analyze'] :
-        (weaken === 'best') ? ['best'] :
         (m = weaken.match(/^policy([0-9.]+)$/)) ? ['policy', to_f(m[1])] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
