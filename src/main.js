@@ -1077,8 +1077,10 @@ function get_auto_play_weaken() {
 function auto_genmove_p() {return auto_genmove_func() === genmove}
 function auto_genmove_func() {
     const weaken_method = get_auto_play_weaken()?.[0]
+    const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
     const func_for_method = {
         genmove, genmove_analyze,
+        plain: search_analyze,
     }
     const genmove_func = func_for_method[weaken_method]
     return auto_playing() && (auto_playing_strategy === 'best') && genmove_func
@@ -1108,6 +1110,7 @@ function stop_match(window_id) {
 function set_match_param(weaken) {
     let m
     auto_play_weaken =
+        (weaken === 'plain') ? ['plain'] :
         (weaken === 'diverse') ? ['random_opening'] :
         (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity'), adjust_sanity_p] :
         (weaken === 'pass') ? ['pass_maybe'] :
