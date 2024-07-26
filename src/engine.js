@@ -262,9 +262,9 @@ function create_leelaz () {
     }
     const on_genmove_analyze_responsor = (callback, cancellable) => {
         const on_move = on_genmove_responsor(callback, cancellable)
-        return (ok, res) => {
+        return (ok, res, command) => {
             const move = ok && res.match(/^play\s+(.*)/)?.[1]
-            return move ? on_move(ok, move) : on_analysis_response(ok, res)
+            return move ? on_move(ok, move) : on_analysis_response(ok, res, command)
         }
     }
 
@@ -674,13 +674,13 @@ function create_leelaz () {
         }
     }
 
-    const on_analysis_response = (ok, result) =>
-          ((ok && result && suggest_reader_maybe(result)), expecting_multiline_response)
+    const on_analysis_response = (ok, result, command) =>
+          ((ok && result && suggest_reader_maybe(result, command)), expecting_multiline_response)
 
-    const suggest_reader_maybe = (s) =>
-          up_to_date_response() && s.match(/^info /) && suggest_reader(s)
+    const suggest_reader_maybe = (s, command) =>
+          up_to_date_response() && s.match(/^info /) && suggest_reader(s, command)
 
-    const suggest_reader = (s) => {
+    const suggest_reader = (s, command) => {
         const f = arg.suggest_handler; if (!f) {return}
         const h = parse_analyze(s, bturn, komi, is_katago())
         const engine_id = get_engine_id()
@@ -689,9 +689,12 @@ function create_leelaz () {
             'humansl_stronger_policy', 'humansl_weaker_policy',
         ]
         const policies = pick_keys(obtained_pda_policy || {}, ...policy_keys)
+        const is_suggest_by_genmove =
+              !!command?.match(/^(lz|kata)-genmove|^kata-search/)
         merge(h, {
             engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits),
             ...policies,
+            is_suggest_by_genmove,
         })
         f(h)
     }

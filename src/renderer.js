@@ -41,6 +41,7 @@ const R = {
     forced_color_to_play: null,
     history_length: 0, suggest: [], engine_bturn: true, visits: 1,
     visits_per_sec: 0,
+    is_suggest_by_genmove: false,
     winrate_history: [], winrate_history_set: [[[]], []], previous_suggest: null,
     future_moves: [],
     attached: false, pausing: false, auto_analyzing: false, winrate_trail: false,
