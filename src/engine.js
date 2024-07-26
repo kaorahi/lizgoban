@@ -22,6 +22,7 @@ function create_leelaz () {
     let analysis_region = null, instant_analysis_p = false
     let obtained_pda_policy = null
     let known_name_p = false
+    let humansl_profile = ''
 
     // game state
     // bturn: for parsing engine output (updated when engine sync is finished)
@@ -136,6 +137,14 @@ function create_leelaz () {
             allow,
         ].filter(truep).join(' '), on_response || on_analysis_response)
     }
+    const humansl_profile_setter = profile => `kata-set-param humanSLProfile ${profile}`
+    const humansl_profile_restorer = () => is_supported('humanSLProfile') ?
+          humansl_profile_setter(humansl_profile) : 'name'
+    const humansl_profile_updater = () => {
+        const command = 'kata-get-param humanSLProfile'
+        const on_response = (ok, res) => ok && (humansl_profile = (res || '').trim())
+        return [command, on_response]
+    }
     const stop_analysis = () => {leelaz('name')}
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
@@ -199,6 +208,10 @@ function create_leelaz () {
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['rootInfo', 'kata-analyze 1 rootInfo true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
+            ['humanSLProfile', ...humansl_profile_updater()],
+            ['kata-raw-human-nn',
+             `${humansl_profile_setter('rank_1d')};kata-raw-human-nn 0`,
+             (ok, res) => set_supported('kata-raw-human-nn', !!(ok && res))],
         ]
         const do_check = table => table.forEach(a => check_supported(...a))
         do_check(checks)
@@ -207,6 +220,7 @@ function create_leelaz () {
         // clear_leelaz_board for restart
         // komi may be changed tentatively in set_board before check of engine type
         const after_all_checks = () => {
+            leelaz(humansl_profile_restorer())
             clear_leelaz_board(); is_katago() || (komi = leelaz_komi)
             // KataGo's default komi can be 6.5 etc. depending on "rules" in gtp.cfg.
             leelaz(`komi ${komi}`)  // force KataGo to use our komi
@@ -658,7 +672,8 @@ function create_leelaz () {
 
     let supported = {}
     const check_supported =
-          (feature, cmd) => leelaz(cmd, ok => (supported[feature] = ok), true)
+          (feature, cmd, on_response) => leelaz(cmd, (ok, res) => {set_supported(feature, ok); return on_response && on_response(ok, res)}, true)
+    const set_supported = (feature, val) => {supported[feature] = val}
     const is_supported = feature => supported[feature]
     const is_katago = maybe => is_supported('kata-analyze') || (is_in_startup && maybe)
 
