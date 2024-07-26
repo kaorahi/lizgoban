@@ -216,6 +216,20 @@ function create_leelaz () {
         leelaz(`lizgoban_kata-raw-human-nn PROFILE=${profile}`, proc)
     }
 
+    const genmove = (sec, callback) => {
+        const bturn0 = js_bturn
+        const command = `time_settings 0 ${sec} 1;genmove ${bw_for(bturn0)}`
+        const on_response = (ok, res) => {
+            if (ok) {
+                const move = res
+                push_to_history(move, bturn0)
+                bturn = js_bturn = !bturn0
+            }
+            callback(ok, res)
+        }
+        leelaz(command, on_response)
+    }
+
     let on_ready = () => {
         if (is_ready) {return}; is_ready = true
         leelaz('name', on_name_response)
@@ -262,6 +276,8 @@ function create_leelaz () {
 
     // stateless wrapper of leelaz
     let leelaz_previous_history = []
+    const push_to_history = (move, is_black) =>
+          leelaz_previous_history.push({move, is_black})
     const get_aux = () => ({
         bturn: js_bturn,
         komi, gorule, handicaps, init_len, ownership_p, aggressive,
@@ -727,7 +743,7 @@ function create_leelaz () {
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log, aggressive: () => aggressive,
         humansl_profile: () => humansl_profile, humansl_request_profile,
-        analyze_move,
+        analyze_move, genmove,
         // for debug
         send_to_leelaz,
     }

@@ -44,6 +44,7 @@ function aggressive_for(lz, aggressive) {
           (aggressive === val) && (lz === (lz_for || leelaz)) && val
     return maybe('b', leelaz_for_black) || maybe('w', leelaz_for_white) || ''
 }
+function genmove(sec, callback) {leelaz.genmove(sec, callback)}
 function cancel_past_requests() {each_leelaz(z => z.clear_leelaz_board())}
 function kill_all_leelaz() {each_leelaz(z => z.kill())}
 let prev_pondering
@@ -308,7 +309,7 @@ const exported_from_leelaz = ['send_to_leelaz', 'peek_value', 'get_komi', 'is_su
 
 module.exports = {
     // main.js only
-    set_board, cancel_past_requests,
+    set_board, genmove, cancel_past_requests,
     start_leelaz, update_leelaz, kill_all_leelaz, set_pondering, all_start_args,
     leelaz_for_white_p, swap_leelaz_for_black_and_white, switch_leelaz,
     switch_to_random_leelaz, load_weight_file,

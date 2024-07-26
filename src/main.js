@@ -390,6 +390,22 @@ function goto_previous_or_next_something(backwardp) {
         backwardp ? undo_to_start() : redo_to_end()
 }
 
+function genmove(sec) {
+    const cur = game.ref_current()
+    const note = `genmove by ${AI.current_preset_label()}`
+    const if_ok = move => {
+        if (cur !== game.ref_current()) {if_ng_gen('ignore obsolete genmove'); return}
+        play(move, false, undefined, note); update_ponder_surely()
+    }
+    const if_ng_gen = message => {
+        toast(message); stop_auto(); AI.cancel_past_requests()
+        update_ponder_surely()
+    }
+    const if_ng = res => if_ng_gen(`genmove failded: ${res}`)
+    const callback = (ok, res) => (ok ? if_ok : if_ng)(res)
+    AI.genmove(sec, callback)
+}
+
 /////////////////////////////////////////////////
 // another source of change: menu
 
