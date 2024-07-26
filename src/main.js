@@ -2235,7 +2235,9 @@ function open_image_url(url) {clipboard.writeText(url); open_clipboard_image()}
 
 function store_as_exercise() {
     const path = PATH.join(exercise_dir(), exercise_filename(game))
-    save_sgf_to(path, null, true, true); toast('stored as exercise')
+    save_sgf_to(path, null, true, true)
+    const counts = exercise_files().length
+    toast(`stored as exercise (${counts})`)
 }
 function load_random_exercise(win) {load_exercise(random_exercise_chooser, win, true)}
 function load_recent_exercise(win) {load_exercise(recent_exercise_chooser, win)}
@@ -2249,7 +2251,7 @@ function revive_seen_exercises(metadata) {
 function load_exercise(selector, win, random_flip_p) {
     const metadata = get_all_exercise_metadata()
     revive_seen_exercises(metadata)
-    const files = exercise_files()
+    const files = exercise_files(true)
     const retry = () => {seen_exercises = []; load_exercise(selector, win, random_flip_p)}
     if (empty(files)) {empty(seen_exercises) ? wink() : retry(); return}
     const fn = selector(files, metadata); seen_exercises.push(fn)
@@ -2272,9 +2274,10 @@ function delete_exercise() {
     }
     fs.rename(file, new_file, done)
 }
-function exercise_files() {
+function exercise_files(unseen_only) {
     const valid = name =>
-          is_exercise_filename(name) && seen_exercises.indexOf(name) < 0 &&
+          is_exercise_filename(name) &&
+          !(unseen_only && seen_exercises.indexOf(name) >= 0) &&
           exercise_board_size(name) === board_size()
     const files = fs.readdirSync(exercise_dir()) || []
     return files.filter(valid)
