@@ -14,7 +14,6 @@ function create_leelaz () {
     const queue_log_header = 'queue>'
 
     let leelaz_process, arg, base_engine_id, is_ready = false, ownership_p = false
-    let aggressive = ''  // '', 'b', 'w'
     let command_queue = [], last_command_id, last_response_id, pondering = true
     let on_res_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
@@ -263,7 +262,6 @@ function create_leelaz () {
             ['lz-setoption', 'lz-setoption name visits value 0'],
             ['kata-analyze', 'kata-analyze interval 1'],
             ['kata-set-rules', `kata-set-rules ${gorule}`],
-            ['kata-get-param', 'kata-get-param playoutDoublingAdvantage'],
             ['set_free_handicap', 'set_free_handicap A1'],
             ['set_position', 'set_position'],  // = clear_board
         ]
@@ -307,12 +305,12 @@ function create_leelaz () {
           leelaz_previous_history.push({move, is_black})
     const get_aux = () => ({
         bturn: js_bturn,
-        komi, gorule, handicaps, init_len, ownership_p, aggressive,
+        komi, gorule, handicaps, init_len, ownership_p,
         humansl_stronger_profile, humansl_weaker_profile,
         analysis_after_raw_nn_p,
     })
     const set_board = (history, aux) => {
-        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, aggressive, humansl_stronger_profile, humansl_weaker_profile, analysis_after_raw_nn_p}
+        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, humansl_stronger_profile, humansl_weaker_profile, analysis_after_raw_nn_p}
         if (is_in_startup) {return}
         js_bturn = aux.bturn
         analysis_after_raw_nn_p = aux.analysis_after_raw_nn_p
@@ -330,7 +328,6 @@ function create_leelaz () {
         update_kata(komi, aux.komi, 'komi', z => {komi = z})
         update_kata(gorule, aux.gorule, 'kata-set-rules', z => {gorule = z})
         ownership_p = update_kata(ownership_p, aux.ownership_p)
-        aggressive = update_kata(aggressive, kata_pda_supported() ? aux.aggressive : '')
         humansl_stronger_profile = aux.humansl_stronger_profile
         humansl_weaker_profile = aux.humansl_weaker_profile
         if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
@@ -404,7 +401,7 @@ function create_leelaz () {
     const network_size = () => network_size_text
     const get_komi = () => known_name_p ? komi : NaN
     const get_engine_id = () =>
-          `${base_engine_id}-${gorule}-${komi}${aggressive}${analysis_region}${humansl_profile}`
+          `${base_engine_id}-${gorule}-${komi}${analysis_region}${humansl_profile}`
     const peek_value = (move, cont) =>
           is_supported('lz-setoption') ? (peek_value_lz(move, cont), true) :
           is_supported('kata-raw-nn') ? (peek_value_kata(move, cont), true) :
@@ -433,21 +430,6 @@ function create_leelaz () {
         leelaz(`play ${bw_for(js_bturn)} ${move}`, on_response)
         return true
     }
-
-    // aggressive
-    const kata_pda_param = 'playoutDoublingAdvantage'
-    const kata_pda_checker = change_detector(0.0)
-    const kata_pda_command_maybe = given_pda => {
-        const pda = kata_pda_supported() && true_or(given_pda, kata_pda_for_this_turn())
-        return truep(pda) && kata_pda_checker.is_changed(pda) &&
-            `kata-set-param ${kata_pda_param} ${pda}`
-    }
-    const kata_pda_for_this_turn = () => {
-        const abs_pda = 2.0
-        const sign = !aggressive ? 0 : xor(aggressive === 'b', bturn) ? -1 : 1
-        return sign * abs_pda
-    }
-    const kata_pda_supported = () => false
 
     // allow
     const update_analysis_region = region => {
@@ -774,7 +756,7 @@ function create_leelaz () {
         update_analysis_region, set_instant_analysis,
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
-        startup_log: () => startup_log, aggressive: () => aggressive,
+        startup_log: () => startup_log,
         humansl_profile: () => humansl_profile, humansl_request_profile,
         analyze_move, genmove, genmove_analyze,
         // for debug
