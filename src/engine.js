@@ -87,7 +87,7 @@ function create_leelaz () {
     const pda_for_checking_policy_aggressiveness = 2.0
     const start_analysis_after_raw_nn = () => {
         const too_slow = (speedometer.latest() < 20)
-        if (too_slow || !kata_pda_supported()) {return false}
+        if (too_slow) {return false}
         const nn_with_pda_sign = (receiver, sign) =>
               kata_raw_nn(receiver, pda_for_checking_policy_aggressiveness * sign)
         const humansl_args = [
@@ -99,7 +99,8 @@ function create_leelaz () {
             ['default_policy', nn_with_pda_sign, 0],
             // ['defensive_policy', nn_with_pda_sign, -1],
         ]
-        const args = is_supported('sub_model_humanSL') ? humansl_args : pda_args
+        const args = is_supported('sub_model_humanSL') ? humansl_args :
+              kata_pda_supported() ? pda_args : []
         const call_nn = ([key, f, ...as], cont) => {
             const receiver = h => {
                 const policy = h?.policy; if (!policy) {return}
