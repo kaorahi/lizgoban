@@ -230,7 +230,10 @@ function create_leelaz () {
         const resign_p = !avoid_resign_p && orig_allow_resignation
         const resign = is_supported('allowResignation') ?
               `kata-set-param allowResignation ${!!resign_p};` : ''
-        const com = `time_settings 0 ${sec} 1;${resign}${humansl_profile_restorer(true)};${command}`
+        // "name" is a workaround for uncertain side effect of allowResignation.
+        // I don't know if it's true, but I'll keep it as a charm. [2024-07-24]
+        // https://github.com/lightvector/KataGo/issues/959
+        const com = `time_settings 0 ${sec} 1;${resign}${humansl_profile_restorer(true)};name;${command}`
         leelaz(com, on_response)
     }
     const on_genmove_responsor = (callback, cancellable) => {
