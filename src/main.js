@@ -93,6 +93,7 @@ let game; set_game(create_game_with_gorule(store.get('gorule', default_gorule)))
 let sequence = [game], sequence_cursor = 0
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 let auto_analysis_steps = 1
+// auto_playing_strategy = 'play', 'replay', 'random_opening'
 let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null
@@ -1008,7 +1009,7 @@ function try_auto_play(force_next) {
           auto_play_weaken_for_current_bw() || partner_weaken || auto_play_weaken
     const proc = {
         replay: () => do_as_auto_play(redoable(), () => {redo(); play_move_sound()}),
-        best: () => try_play_best(weaken),
+        play: () => try_play_best(weaken),
         random_opening: () => try_play_best(['random_opening']),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
@@ -1063,7 +1064,7 @@ function auto_playing(forever) {
 
 function default_strategy() {
     const rand_p = store.get('random_opening_p') && !auto_play_weaken_for_bw_p()
-    return rand_p ? 'random_opening' : 'best'
+    return rand_p ? 'random_opening' : 'play'
 }
 function default_weaken() {
     const weaken = {best: [], random_opening: ['random_opening']}
@@ -1083,7 +1084,7 @@ function auto_genmove_func() {
         plain: search_analyze,
     }
     const genmove_func = func_for_method[weaken_method]
-    return auto_playing() && (auto_playing_strategy === 'best') && genmove_func
+    return auto_playing() && (auto_playing_strategy === 'play') && genmove_func
 }
 function start_auto_genmove_maybe() {
     const genmove_func = auto_genmove_func(); if (!genmove_func) {return}
@@ -1125,7 +1126,7 @@ function set_match_param(weaken) {
 }
 function auto_play_in_match(sec, count) {
     pondering_in_match = !pausing
-    start_auto_play('best', sec, count || 1)
+    start_auto_play('play', sec, count || 1)
 }
 let the_auto_moves_in_match = 1
 function get_auto_moves_in_match() {return clip(the_auto_moves_in_match, 1)}
@@ -1210,7 +1211,7 @@ function start_auto_redo(sec) {
 // play against leelaz
 
 function play_best(n, weaken) {
-    start_auto_play('best'); increment_auto_play_count(n)
+    start_auto_play('play'); increment_auto_play_count(n)
     try_play_best(weaken)
 }
 function play_pass_maybe() {play_best(null, ['pass_maybe'])}
