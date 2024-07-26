@@ -202,6 +202,9 @@ function humansl_profile_gen(lz, profile) {
          lz.humansl_request_profile(profile, humansl_profile_request_callback))
 }
 function humansl_profile(profile) {
+    return humansl_profile_gen(leelaz, profile)
+}
+function humansl_profile_for_black(profile) {
     return humansl_profile_gen(leelaz_for_black, profile)
 }
 function humansl_profile_for_white(profile) {
@@ -312,7 +315,7 @@ module.exports = {
     different_komi_for_black_and_white, startup_log,
     update_analysis_region, set_instant_analysis,
     is_moves_ownership_supported,
-    humansl_profile, humansl_profile_for_white,
+    humansl_profile, humansl_profile_for_black, humansl_profile_for_white,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
     // powered_goban.js only

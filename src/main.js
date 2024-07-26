@@ -719,7 +719,7 @@ function humansl_profile_menu_items(menu, item, sep) {
         const label = `HumProfile${text}` + (stringp(cur) ? ` (${cur})` : '')
         return {label, submenu, enabled: !empty(submenu)}
     }
-    const [b_cur, b_submenu] = submenu_with(AI.humansl_profile)
+    const [b_cur, b_submenu] = submenu_with(AI.humansl_profile_for_black)
     const [w_cur, w_submenu] = submenu_with(AI.humansl_profile_for_white)
     const b_text = empty(w_submenu) ? '' : ' for black'
     const b_menu = menu_for(b_text, b_cur, b_submenu)
