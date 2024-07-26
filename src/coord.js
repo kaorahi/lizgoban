@@ -4,6 +4,7 @@
 // coord (x, y) on canvas: (0, 0) = top left, (width, 0) = top right
 // move: "A19" = top left, "T19" = top right
 // sgfpos: "aa" = top left, "sa" = top right
+// serial k = 0, ..., 360: 0 = top left, 18 = top right, 360 = bottom right
 
 const pass_command = 'pass'
 
@@ -20,6 +21,15 @@ function with_board_size(bsize, proc, ...args) {
     const previous = board_size(); set_board_size(bsize)
     const ret = proc(...args); set_board_size(previous); return ret
 }
+
+/////////////////////////////////////////////////
+// serial (=> idx) => move
+
+function serial2idx(k) {
+    const bsize = board_size(); return [Math.floor(k / bsize), k % bsize]
+}
+
+function serial2move(k) {return idx2move(...serial2idx(k))}
 
 /////////////////////////////////////////////////
 // idx <=> move
@@ -115,6 +125,7 @@ module.exports = {
     pass_command,
     idx2rowcol, move2idx_maybe,
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
+    serial2idx, serial2move,
     translator_pair, clipped_translator,
     board_size, set_board_size, with_board_size, sgfpos2move, move2sgfpos, stars,
 }

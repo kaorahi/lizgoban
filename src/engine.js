@@ -184,7 +184,7 @@ function create_leelaz () {
         const ownership = conv0(whiteOwnership)
         const bsize = board_size(), extended_policy = [...policy, policyPass]
         const k = argmin_by(extended_policy, p => isNaN(p) ? Infinity : - p)
-        const move = idx2move(Math.floor(k / bsize), k % bsize) || pass_command
+        const move = serial2move(k) || pass_command
         const prior = to_s(extended_policy[k]), pv = move
         const fake_suggest = `info order 0 visits 1 move ${move} prior ${prior} winrate ${winrate} scoreMean ${scoreLead} scoreLead ${scoreLead} pv ${pv} ownership ${ownership}`
         suggest_reader_maybe(fake_suggest)
