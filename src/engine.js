@@ -312,12 +312,16 @@ function create_leelaz () {
         tmp_humansl_profile,
         analysis_after_raw_nn_p,
     })
-    const set_board = (history, aux) => {
-        // aux = {bturn, komi, gorule, handicaps, init_len, ownership_p, humansl_stronger_profile, humansl_weaker_profile, tmp_humansl_profile, analysis_after_raw_nn_p}
-        if (is_in_startup) {return}
+    const record_simple_aux = aux => {
         js_bturn = aux.bturn
         analysis_after_raw_nn_p = aux.analysis_after_raw_nn_p
-        change_board_size(board_size())
+        humansl_stronger_profile = aux.humansl_stronger_profile
+        humansl_weaker_profile = aux.humansl_weaker_profile
+        tmp_humansl_profile = aux.tmp_humansl_profile
+        handicaps = aux.handicaps; init_len = aux.init_len
+    }
+    const update_kata_by_aux = aux => {
+        record_simple_aux(aux)
         let update_kata_p = false
         const update_kata = (val, new_val, command, setter) => {
             const valid_p = truep(new_val) || !command
@@ -331,14 +335,17 @@ function create_leelaz () {
         update_kata(komi, aux.komi, 'komi', z => {komi = z})
         update_kata(gorule, aux.gorule, 'kata-set-rules', z => {gorule = z})
         ownership_p = update_kata(ownership_p, aux.ownership_p)
-        humansl_stronger_profile = aux.humansl_stronger_profile
-        humansl_weaker_profile = aux.humansl_weaker_profile
-        tmp_humansl_profile = aux.tmp_humansl_profile
-        if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
+        return update_kata_p
+    }
+    const set_board = (history, aux) => {
+        // see get_aux() for "What is aux?"
+        if (is_in_startup) {return}
+        change_board_size(board_size())
         const beg = common_header_length(history, leelaz_previous_history)
-        const beg_valid_p = aux.handicaps === handicaps && aux.init_len === init_len &&
-              beg >= init_len
-        handicaps = aux.handicaps; init_len = aux.init_len
+        const beg_valid_p = aux.handicaps === handicaps && aux.init_len === init_len
+              && beg >= init_len
+        const update_kata_p = update_kata_by_aux(aux)
+        if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
         const updated_p = beg_valid_p ? update_board_by_undo(history, beg) :
               update_board_by_clear(history, handicaps, init_len)
         const update_mc_p = updated_p || update_kata_p
