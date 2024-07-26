@@ -89,11 +89,16 @@ function create_leelaz () {
         if (too_slow || !kata_pda_supported()) {return false}
         const nn_with_pda_sign = (receiver, sign) =>
               kata_raw_nn(receiver, pda_for_checking_policy_aggressiveness * sign)
-        const args = [
+        const humansl_args = [
+            ['humansl_stronger_policy', kata_raw_human_nn, 'rank_1d'],
+            ['humansl_weaker_policy', kata_raw_human_nn, 'rank_5k'],
+        ]
+        const pda_args = [
             ['aggressive_policy', nn_with_pda_sign, +1],
             // ['default_policy', nn_with_pda_sign, 0],
             ['defensive_policy', nn_with_pda_sign, -1],
         ]
+        const args = is_supported('kata-raw-human-nn') ? humansl_args : pda_args
         const call_nn = ([key, f, ...as], cont) => {
             const receiver = h => {
                 const policy = h?.policy; if (!policy) {return}
@@ -191,6 +196,16 @@ function create_leelaz () {
         }
         leelaz(`lizgoban_kata-raw-nn PDA=${pda}`, proc)
         return true
+    }
+    const kata_raw_human_nn = (receiver, profile) => {
+        if (!is_supported('kata-raw-human-nn')) {return}
+        const proc = () => {
+            const on_response =
+                  on_multiline_response_at_once(on_kata_raw_nn_response(receiver))
+            send_to_leelaz(humansl_profile_setter(profile))
+            send_task_to_leelaz_sub({command: 'kata-raw-human-nn 0', on_response})
+        }
+        leelaz(`lizgoban_kata-raw-human-nn PROFILE=${profile}`, proc)
     }
 
     let on_ready = () => {
@@ -601,8 +616,13 @@ function create_leelaz () {
         const f = arg.suggest_handler; if (!f) {return}
         const h = parse_analyze(s, bturn, komi, is_katago(), obtained_pda_policy)
         const engine_id = get_engine_id()
+        const policy_keys = [
+            'humansl_stronger_policy', 'humansl_weaker_policy',
+        ]
+        const policies = pick_keys(obtained_pda_policy || {}, ...policy_keys)
         merge(h, {
             engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits),
+            ...policies,
         })
         f(h)
     }
