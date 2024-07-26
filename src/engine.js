@@ -131,8 +131,6 @@ function create_leelaz () {
               `kata-analyze ${bw_for(js_bturn)} interval 999999;`
         const profile = is_supported('humanSLProfile') &&
               `${humansl_profile_restorer()};`
-        const maybe = key => is_supported(key) && `${key} true`
-        const o_maybe = key => ownership_p && maybe(key)
         leelaz([
             // preparations
             profile,
@@ -140,6 +138,13 @@ function create_leelaz () {
             // command
             is_katago() ? 'kata-analyze' : 'lz-analyze',
             // args
+            analyze_command_arg(allow),
+        ].filter(truep).join(' '), on_response || on_analysis_response)
+    }
+    const analyze_command_arg = (allow) => {
+        const maybe = key => is_supported(key) && `${key} true`
+        const o_maybe = key => ownership_p && maybe(key)
+        return [
             bw_for(js_bturn),
             analyze_command_interval_arg(),
             is_katago() && ownership_p && 'ownership true',
@@ -150,7 +155,7 @@ function create_leelaz () {
             o_maybe('movesOwnership'),
             maybe('rootInfo'),
             allow,
-        ].filter(truep).join(' '), on_response || on_analysis_response)
+        ].filter(truep).join(' ')
     }
     const analyze_command_interval_arg = () =>
           `interval ${arg.analyze_interval_centisec}`
