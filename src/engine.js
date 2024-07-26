@@ -410,7 +410,7 @@ function create_leelaz () {
     const network_size = () => network_size_text
     const get_komi = () => known_name_p ? komi : NaN
     const get_engine_id = () =>
-          `${base_engine_id}-${gorule}-${komi}${aggressive}${analysis_region}`
+          `${base_engine_id}-${gorule}-${komi}${aggressive}${analysis_region}${humansl_profile}`
     const peek_value = (move, cont) =>
           is_supported('lz-setoption') ? (peek_value_lz(move, cont), true) :
           is_supported('kata-raw-nn') ? (peek_value_kata(move, cont), true) :
