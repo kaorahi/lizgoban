@@ -24,7 +24,7 @@ function create_leelaz () {
     let known_name_p = false
     let humansl_profile = '', tmp_humansl_profile = null
     let humansl_stronger_profile = '', humansl_weaker_profile = ''
-    let avoid_resign_p = false
+    let avoid_resign_p = false, orig_allow_resignation = true
 
     // game state
     // bturn: for parsing engine output (updated when engine sync is finished)
@@ -228,8 +228,9 @@ function create_leelaz () {
         return genmove_gen(sec, command, on_response)
     }
     const genmove_gen = (sec, command, on_response) => {
+        const resign_p = !avoid_resign_p && orig_allow_resignation
         const resign = is_supported('allowResignation') ?
-              `kata-set-param allowResignation ${!avoid_resign_p};` : ''
+              `kata-set-param allowResignation ${!!resign_p};` : ''
         const com = `time_settings 0 ${sec} 1;${resign}${humansl_profile_restorer(true)};${command}`
         leelaz(com, on_response)
     }
@@ -280,7 +281,9 @@ function create_leelaz () {
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['rootInfo', 'kata-analyze 1 rootInfo true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
-            ['allowResignation', 'kata-get-param allowResignation'],
+            // allowResignation can be get/set from KataGo 1.15.0
+            ['allowResignation', 'kata-get-param allowResignation',
+             (ok, res) => ok && (orig_allow_resignation = (res === 'true'))],
             // use kata-search_analyze_cancellable for immediate cancel
             ['kata-search_cancellable', 'kata-search_analyze_cancellable B'],
             // query and record some parameters as side effects here
