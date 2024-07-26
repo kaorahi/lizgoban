@@ -30,6 +30,7 @@ lin: extra
 $(PACKAGE): extra $(EXE)
 	mkdir $(PACKAGE)
 	cp $(EXE) build_with/config.json $(PACKAGE)
+	cp build_with/bin/common/katanetwork.gz $(PACKAGE)
 	cp -r build_with/extra/* $(PACKAGE)
 
 $(ZIP): $(PACKAGE)

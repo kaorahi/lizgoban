@@ -22,7 +22,7 @@
             "engine": [["built-in", "katago/katago-eigen"], "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false",
-                       "-model", ["built-in", "katanetwork.gz"]]
+                       "-model", "katanetwork.gz"]
         },
         {
             "label": "KataGo (modern CPU)",
@@ -30,7 +30,7 @@
             "engine": [["built-in", "katago/katago-eigenavx2"], "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false",
-                       "-model", ["built-in", "katanetwork.gz"]]
+                       "-model", "katanetwork.gz"]
         },
         {
             "label": "KataGo (GPU)",
@@ -38,7 +38,7 @@
             "engine": [["built-in", "katago/katago-opencl"], "gtp",
                        "-override-config",
                        "analysisPVLen=50, defaultBoardSize=19, homeDataDir=., logAllGTPCommunication=false, logSearchInfo=false",
-                       "-model", ["built-in", "katanetwork.gz"]]
+                       "-model", "katanetwork.gz"]
         }
     ]
 }
