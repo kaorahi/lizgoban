@@ -608,8 +608,9 @@ function create_leelaz () {
     }
 
     const join_commands = (...a) => a.join(';')
+    const split_command = command => command.split(';')
     const split_task = task => {
-        const ts = task.command.split(';').map(command => ({command}))
+        const ts = split_command(task.command).map(command => ({command}))
         last(ts).on_response = task.on_response
         return ts
     }
