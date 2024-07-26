@@ -1002,8 +1002,8 @@ function try_auto_play(force_next) {
     if (auto_genmove_p()) {return}
     const proc = {
         replay: () => do_as_auto_play(redoable(), () => {redo(); play_move_sound()}),
-        play: () => try_play_best(current_auto_play_weaken()),
-        random_opening: () => try_play_best(['random_opening']),
+        play: () => try_play_weak(current_auto_play_weaken()),
+        random_opening: () => try_play_weak(['random_opening']),
     }[auto_playing_strategy]
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() && ((doing_auto_play_p = true), let_me_think_play(proc))
@@ -1096,7 +1096,7 @@ function start_auto_genmove_maybe() {
         const rand_p = (auto_playing_strategy === 'random_opening') ||
               (current_auto_play_weaken()?.[0] === 'plain_diverse')
         rand_p ?
-            try_play_best(['random_opening'],
+            try_play_weak(['random_opening'],
                           {normal_move_in_random_opening: selected}) :
             play_selected_weak_move(selected, get_auto_play_weaken())
     }
@@ -1224,16 +1224,16 @@ function start_auto_redo(sec) {
 
 function play_best(n, weaken) {
     start_auto_play('play'); increment_auto_play_count(n)
-    try_play_best(weaken)
+    try_play_weak(weaken)
 }
 function play_pass_maybe() {play_best(null, ['pass_maybe'])}
-function try_play_best(weaken, given_state) {
+function try_play_weak(weaken, given_state) {
     // (ex)
-    // try_play_best()
-    // try_play_best(['pass_maybe'])
-    // try_play_best(['random_candidate', 30])
-    // try_play_best(['random_leelaz', 30])
-    // try_play_best(['lose_score', 0.1])
+    // try_play_weak()
+    // try_play_weak(['pass_maybe'])
+    // try_play_weak(['random_candidate', 30])
+    // try_play_weak(['random_leelaz', 30])
+    // try_play_weak(['lose_score', 0.1])
     const [weaken_method, ...weaken_args] = weaken || []
     weaken_method === 'random_leelaz' && AI.switch_to_random_leelaz(...weaken_args)
     const suggest = P.orig_suggest(); if (empty(suggest)) {return}
