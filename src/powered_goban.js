@@ -86,7 +86,8 @@ const too_small_prior = 1e-3
 function suggest_handler(h) {
     if (finitep(get_showing_until()) || is_holding_suggestion()) {return}
     const considerable = z => z.visits > 0 || z.prior >= too_small_prior
-    const mc = game.move_count, cur = game.ref(mc) || {}, {engine_id} = h
+    const mc = game.move_count, cur = game.ref(mc) || {}
+    const engine_id = h.engine_id + (h.is_suggest_by_genmove ? 'genmove' : '')
     h.suggest = h.suggest.filter(considerable)
     h.ownership && (h.endstate = endstate_from_ownership_destructive(h.ownership))
     h.ownership_stdev &&
@@ -104,7 +105,7 @@ function suggest_handler(h) {
     // because we need to copy falsy value too.
     preferred_h.background_visits =
         cur.background_visits = ((h !== preferred_h) && h.visits)
-    const copy_vals = (keys, to, allow_false_p) => !h.is_suggest_by_genmove &&
+    const copy_vals = (keys, to, allow_false_p) =>
           keys.forEach(k => (truep(preferred_h[k]) || allow_false_p) && (to[k] = preferred_h[k]))
     copy_vals(suggest_keys0, cur, true)
     copy_vals(suggest_keys0, cur_by_engine, true)
