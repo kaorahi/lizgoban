@@ -195,6 +195,8 @@ function set_renderer_state(...args) {
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))
     const move_history = [get_move_history(game.ref(0)), ...game.map(get_move_history)]
     const different_engine_for_white_p = AI.leelaz_for_white_p()
+    const {humansl_stronger_policy, humansl_weaker_policy} = cur
+    add_humansl_policy_to_stones(R.stones, humansl_stronger_policy, humansl_weaker_policy)
     merge(R, {move_count, init_len, busy, long_busy,
               winrate_history, winrate_history_set,
               endstate_sum, endstate_clusters, max_visits, progress,
@@ -640,6 +642,18 @@ function stone_for_history_elem(h, stones) {
 }
 function pick_properties(orig, keys) {
     const ret = {}; keys.forEach(k => ret[k] = orig[k]); return ret
+}
+
+function add_humansl_policy_to_stones(stones, stronger_policy, weaker_policy) {
+    if (!weaker_policy || !stronger_policy) {return}
+    stones.flat().forEach((s, k) => {
+        s.humansl_policy_info = compare_policies(stronger_policy[k], weaker_policy[k])
+    })
+}
+function compare_policies(stronger, weaker) {
+    const log_diff = Math.log(stronger) - Math.log(weaker)
+    const max_prior = Math.max(stronger, weaker)
+    return {log_diff, max_prior, stronger, weaker}
 }
 
 /////////////////////////////////////////////////

@@ -509,6 +509,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
             draw_stone(h, xy, stone_radius, draw_last_p, draw_loss_p, g)
         if (R.busy) {return}
         h.suggest && draw_suggest(h, xy, stone_radius, large_font_p, g)
+        h.humansl_policy_info && draw_humansl_comparison(h, xy, unit, idx2coord, g)
         draw_pv_changes(h, xy, stone_radius, g)
         draw_next_p && h.next_move && draw_next_move(h, xy, stone_radius, g)
         draw_next_p && h.branches && draw_branches(h, xy, stone_radius, g)
@@ -522,6 +523,22 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
     !R.lizzie_style && !R.busy &&
         each_coord((h, xy) => h.suggest && (h.data.visits > 0)
                    && draw_winrate_mapping_line(h, xy, unit, g))
+}
+
+function draw_humansl_comparison(h, xy, unit, idx2coord, g) {
+    const {log_diff, max_prior} = h.humansl_policy_info
+    if (max_prior < 0.01) {return}
+    const alpha_mag = 0.5
+    const radius_pow = 0.5, max_rel_radius = 1.0
+    const hue = log_diff > 0 ? 240 : 0
+    const saturation = 100
+    const luminance = 50
+    const alpha = clip(Math.abs(log_diff) * alpha_mag, 0, 1)
+    const radius = clip(max_prior ** radius_pow, 0, max_rel_radius) * unit * 0.5
+    g.strokeStyle = 'rgba(0,0,0,0.3)'; g.lineWidth = 1
+    g.fillStyle = hsla(hue, saturation, luminance, alpha)
+    square_around(xy, radius, g)
+    fill_square_around(xy, radius, g)
 }
 
 function draw_endstate_stones(each_coord, past_p, cheap_shadow_p,
