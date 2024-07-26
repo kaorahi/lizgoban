@@ -567,7 +567,7 @@ function weight_info_text() {
     const game_gorule = AI.is_gorule_supported() && game.gorule
     const gorule = game_gorule ? `(${game_gorule}) ` : ''
     const f = z => z ?
-          `${z.preset_label_text}${s(z.aggressive_p && '!')}${sp(z?.humansl_profile)} ${s(z.network_size)}${s(!z.is_ready && weight_info_waiting_text)}` : ''
+          `${z.preset_label_text}${sp(z?.humansl_profile)} ${s(z.network_size)}${s(!z.is_ready && weight_info_waiting_text)}` : ''
     const weight_info = h.leelaz_for_white_p ?
           `${f(h.black)} / ${f(h.white)}` : f(h.black)
     const tuning = M.tuning_message()

@@ -97,7 +97,6 @@ let auto_analysis_steps = 1
 let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null
-let debug_force_aggressive = null
 let adjust_sanity_p = false
 let auto_play_weaken_for_bw = {}; clear_auto_play_weaken_for_bw()
 
@@ -669,11 +668,6 @@ function menu_template(win) {
         item('Copy GTP sequence', undefined,
              () => {clipboard.writeText(game.array_until(game.move_count).map(({move, is_black}) => `play ${is_black ? 'B' : 'W'} ${move}`).join('\\n')); wink()}, true, true, true),
         simple_toggler_menu_item('Show policy', 'debug_show_policy'),
-        item(`Force aggressive (${debug_force_aggressive || "none"})`, 'Meta+a', () => {
-            const next = R.bturn ?
-                  {_: 'b', b: 'w', w: null} : {_: 'w', w: 'b', b: null}
-            debug_force_aggressive = next[debug_force_aggressive || '_']
-        }),
         sep,
         ...['black', 'white', 'common'].map(player =>
             item(`Paste to ${player} strategy`, undefined,
@@ -1675,7 +1669,7 @@ function set_board() {
     const aux = {
         bturn: is_bturn(), komi: game.get_komi(), gorule: get_gorule(),
         handicaps, init_len,
-        ownership_p, aggressive: aggressive(),
+        ownership_p,
         analysis_after_raw_nn_p: !auto_analyzing(),
         ...stored,
     }
@@ -1684,14 +1678,6 @@ function set_board() {
 }
 function set_AI_board_size_maybe(bsize) {
     bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
-}
-function aggressive() {
-    if (debug_force_aggressive) {return debug_force_aggressive}
-    const in_case = (R.in_match || AI.leelaz_for_white_p()); if (!in_case) {return ''}
-    const {handicaps} = game, komi = game.get_komi()
-    const b = (handicaps === 0 && komi >= 15) && 'b'
-    const w = (handicaps > 0 || komi <= 0) && 'w'
-    return b || w || ''
 }
 
 function synchronize_analysis_region(region) {

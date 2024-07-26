@@ -34,15 +34,8 @@ function restart(h, new_weight_p) {
 }
 function set_board(hist, aux) {
     // see set_board in engine.js for "aux".
-    const aux_for = z => ({...aux,
-                           aggressive: aggressive_for(z, aux.aggressive)})
-    const set_it = z => z.set_board(hist, aux_for(z))
+    const set_it = z => z.set_board(hist, aux)
     each_leelaz(set_it, katago_p())
-}
-function aggressive_for(lz, aggressive) {
-    const maybe = (val, lz_for) =>
-          (aggressive === val) && (lz === (lz_for || leelaz)) && val
-    return maybe('b', leelaz_for_black) || maybe('w', leelaz_for_white) || ''
 }
 function genmove(sec, callback) {leelaz.genmove(sec, callback)}
 function genmove_analyze(sec, callback) {leelaz.genmove_analyze(sec, callback)}
