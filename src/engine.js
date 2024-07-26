@@ -16,7 +16,7 @@ function create_leelaz () {
     let leelaz_process, arg, base_engine_id, is_ready = false, ownership_p = false
     let aggressive = ''  // '', 'b', 'w'
     let command_queue = [], last_command_id, last_response_id, pondering = true
-    let on_response_for_id = {}
+    let on_res_for_id = {}
     let network_size_text = '', komi = leelaz_komi, gorule = default_gorule
     let startup_log = [], is_in_startup = true
     let analysis_region = null, instant_analysis_p = false
@@ -595,7 +595,7 @@ function create_leelaz () {
         const cmd = dummy_command_p(task) ? 'name' : command
         const cmd_with_id = `${++last_command_id} ${cmd}`
         const on_res = (ok, res) => on_response(ok, res, command)
-        with_response_p(task) && (on_response_for_id[last_command_id] = on_res)
+        with_response_p(task) && (on_res_for_id[last_command_id] = on_res)
         pondering_command_p(task) && speedometer.reset()
         log('engine>', cmd_with_id, true); leelaz_process.stdin.write(cmd_with_id + "\n")
     }
@@ -650,20 +650,20 @@ function create_leelaz () {
         const m = s.match(/^([=?])(\d+)(\s+)?(.*)/)
         if (!m) {assuming_broken_GTP && !strict && suggest_reader_maybe(s); return false}
         const ok = (m[1] === '='), id = last_response_id = to_i(m[2]), result = m[4]
-        const on_response = on_response_for_id[id]; delete on_response_for_id[id]
-        const multiline_p = on_response &&
-              on_response(ok, result) === expecting_multiline_response
-        const on_continued = (ok && multiline_p) ? on_response : do_nothing
+        const on_res = on_res_for_id[id]; delete on_res_for_id[id]
+        const multiline_p = on_res &&
+              on_res(ok, result) === expecting_multiline_response
+        const on_continued = (ok && multiline_p) ? on_res : do_nothing
         current_stdout_reader = make_rest_reader(on_continued)
         return true
     }
 
     current_stdout_reader = stdout_main_reader
 
-    const make_rest_reader = on_response => s =>
+    const make_rest_reader = on_res => s =>
           assuming_broken_GTP && stdout_main_reader(s, true) ? null :
-          s ? on_response('continued', s) :  // '' is falsy
-          (on_response('finished', s), (current_stdout_reader = stdout_main_reader))
+          s ? on_res('continued', s) :  // '' is falsy
+          (on_res('finished', s), (current_stdout_reader = stdout_main_reader))
 
     const on_multiline_response_at_once = on_response => {
         const buf = []
