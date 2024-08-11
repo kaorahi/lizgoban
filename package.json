@@ -1,6 +1,6 @@
 {
   "name": "LizGoban",
-  "version": "0.8.0-pre5",
+  "version": "0.8.0-pre6",
   "description": "An analysis tool of the game Go with Leela Zero and KataGo",
   "author": "kaorahi <kakkokakko@gmail.com>",
   "license": "GPL-3.0",

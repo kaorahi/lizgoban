@@ -2,6 +2,24 @@
 
 # Release notes
 
+## LizGoban 0.8.0-pre6
+
+This is just a temporary release for a debug feature on the asymmetric rank humanSL profile. This feature will be excluded from the next release.
+
+KataGo is upgraded to [1.15.3](https://github.com/lightvector/KataGo/releases/tag/v1.15.3).
+
+### To test the asymmetric rank humanSL profile on Windows
+
+(Sorry for the long steps. This is just a debug feature.)
+
+1. Download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`.
+2. From "Preset" menu, choose "Human-like Analysis".
+3. From "Tool" menu, choose "Experimental" > "Enable debug menu".
+4. From "Debug" menu, choose "Asymmetric humanSL rank" to toggle it on.
+5. From "Edit" menu, choose "Preferences" to open the dialog and adjust the sliders as you like. Toggle "Lizzie style" off if the display is hard to see.
+
+For example, you can set the blue slider to `rank_1d` and the red slider to `rank_5k` to compare the policies between "1d" and "1d against 5k". The former indicates "I'm 1d", while the latter indicates "I'm 1d and I know you're 5k". These policies, p and q, are shown by blue or red squares on the board (size = max(p,q), color = log(p/q)). Blue squares mean p > q, and red squares mean p < q.
+
 ## LizGoban 0.8.0-pre5
 
 * Upgrade KataGo to [1.15.1](https://github.com/lightvector/KataGo/releases/tag/v1.15.1).
