@@ -70,6 +70,10 @@ const suggest_keys0 = ['engine_bturn']
 // keys1: required. individual plot for each engine.
 const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 // keys2: optional. single global plot.
+const suggest_keys2_by_policy = [
+    'default_policy',
+    'humansl_stronger_policy', 'humansl_weaker_policy',
+]
 const suggest_keys2 = [
     'endstate', 'endstate_stdev', 'score_without_komi', 'ambiguity',
     'stone_entropy',
@@ -78,8 +82,7 @@ const suggest_keys2 = [
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'root_rawStScoreError', 'root_rawVarTimeLeft',
     'amb_gain',
-    'default_policy',
-    'humansl_stronger_policy', 'humansl_weaker_policy',
+    ...suggest_keys2_by_policy,
 ]
 
 const too_small_prior = 1e-3
@@ -101,6 +104,8 @@ function suggest_handler(h) {
           (!AI.is_gorule_supported() || !cur_by_engine.gorule || cur_by_engine.gorule === h.gorule)
     const cache_p = R.use_cached_suggest_p && prefer_cached_p
     const preferred_h = cache_p ? {...h, ...cur_by_engine} : h
+    // update policies immediately even when cache is used
+    cache_p && suggest_keys2_by_policy.forEach(k => h[k] && (preferred_h[k] = h[k]))
     // do not use suggest_keys1 for background_visits etc.
     // because we need to copy falsy value too.
     preferred_h.background_visits =
