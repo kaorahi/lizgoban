@@ -25,6 +25,7 @@ function create_leelaz () {
     let humansl_profile = '', tmp_humansl_profile = null
     let humansl_stronger_profile = '', humansl_weaker_profile = ''
     let avoid_resign_p = false, orig_allow_resignation = true
+    let need_raw_nn_p = true
 
     // game state
     // bturn: for parsing engine output (updated when engine sync is finished)
@@ -87,6 +88,7 @@ function create_leelaz () {
             start_analysis_actually()
     }
     const start_analysis_after_raw_nn = () => {
+        if (!need_raw_nn_p) {return}
         const too_slow = (speedometer.latest() < 20)
         const humansl_args = [
             ['humansl_stronger_policy', kata_raw_human_nn, humansl_stronger_profile],
@@ -108,7 +110,8 @@ function create_leelaz () {
         }
         const call = ([first, ...rest], proc, post_proc) =>
               first ? proc(first, () => call(rest, proc, post_proc)) : post_proc()
-        call(args, call_nn, start_analysis_actually)
+        const then_do = () => {need_raw_nn_p = false; start_analysis_actually()}
+        call(args, call_nn, then_do)
         return true
     }
     const start_analysis_actually = on_response => {
@@ -337,8 +340,12 @@ function create_leelaz () {
         avoid_resign_p = aux.avoid_resign_p
     }
     const update_kata_by_aux = aux => {
+        const profile_changed_p =
+            humansl_stronger_profile !== aux.humansl_stronger_profile ||
+            humansl_weaker_profile !== aux.humansl_weaker_profile ||
+            tmp_humansl_profile !== aux.tmp_humansl_profile
         record_simple_aux(aux)
-        let update_kata_p = false
+        let update_kata_p = profile_changed_p
         const update_kata = (val, new_val, command, setter) => {
             const valid_p = truep(new_val) || !command
             const update_p = is_katago(true) && valid_p && new_val !== val
@@ -602,6 +609,7 @@ function create_leelaz () {
               {move_count: history.length, bturn: new_bturn}
         const dummy_command = `lizgoban_set ${JSON.stringify(new_state)}`
         const on_response = () => ({move_count, bturn} = new_state)
+        need_raw_nn_p = true
         leelaz(dummy_command, on_response); update()
     }
 
