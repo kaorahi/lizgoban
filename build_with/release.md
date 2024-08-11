@@ -31,7 +31,9 @@ Thanks to [dfannius](https://github.com/dfannius); this analysis feature is a va
 
 Just download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
 
-* [KataGo 1.15.1](https://github.com/lightvector/KataGo/releases/tag/v1.15.1) (eigenavx2, opencl) + [18 block network](https://katagotraining.org/networks/) (kata1-b18c384nbt-s9996) + [human-trained network](https://github.com/lightvector/KataGo/releases/tag/v1.15.0) (b18c384nbt-humanv0.bin.gz)
+* [KataGo 1.15.1](https://github.com/lightvector/KataGo/releases/tag/v1.15.1) (eigenavx2, opencl)
+* [18 block network](https://katagotraining.org/networks/) (kata1-b18c384nbt-s9996)
+* [human-trained network](https://github.com/lightvector/KataGo/releases/tag/v1.15.0) (b18c384nbt-humanv0)
 
 You can switch KataGo versions (CPU and GPU) by [Preset] menu in LizGoban. The first run of the GPU version may take a long time (1 hour on a low-spec machine, for example) for its initial tuning. You can also choose "Human-like Analysis" or "Human-like Play" from [Preset] menu. Refer to "KataGo" section in [Help] menu for details.
 
