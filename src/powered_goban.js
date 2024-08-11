@@ -99,12 +99,12 @@ function suggest_handler(h) {
     const prefer_cached_p = cur_by_engine.visits > h.visits &&
           (!AI.katago_p() || cur_by_engine.komi === h.komi) &&
           (!AI.is_gorule_supported() || !cur_by_engine.gorule || cur_by_engine.gorule === h.gorule)
-    const preferred_h = !R.use_cached_suggest_p ? h :
-          prefer_cached_p ? {...h, ...cur_by_engine} : h
+    const cache_p = R.use_cached_suggest_p && prefer_cached_p
+    const preferred_h = cache_p ? {...h, ...cur_by_engine} : h
     // do not use suggest_keys1 for background_visits etc.
     // because we need to copy falsy value too.
     preferred_h.background_visits =
-        cur.background_visits = ((h !== preferred_h) && h.visits)
+        cur.background_visits = (cache_p && h.visits)
     const copy_vals = (keys, to, allow_false_p) =>
           keys.forEach(k => (truep(preferred_h[k]) || allow_false_p) && (to[k] = preferred_h[k]))
     copy_vals(suggest_keys0, cur, true)
