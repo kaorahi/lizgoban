@@ -774,7 +774,8 @@ function create_leelaz () {
     const check_supported =
           (feature, cmd, on_response) => leelaz(cmd, (ok, res) => {set_supported(feature, ok); return on_response && on_response(ok, res)}, true)
     const set_supported = (feature, val) => feature && (supported[feature] = val)
-    const is_supported = feature => supported[feature]
+    // "!!" to avoid troubles like {enabled: is_supported(...)} in menu
+    const is_supported = feature => !!supported[feature]
     const is_katago = maybe => is_supported('kata-analyze') || (is_in_startup && maybe)
 
     const humansl_feature_checker = () => {
