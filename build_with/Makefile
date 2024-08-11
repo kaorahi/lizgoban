@@ -49,9 +49,9 @@ $(FACE_IMG): ../faces.png $(DOC)
 # katago
 
 KATA_URL_BASE = https://github.com/lightvector/KataGo/releases/download
-# KATA_URL1 = $(KATA_URL_BASE)/v1.15.1/katago-v1.15.1-eigen-windows-x64.zip
-KATA_URL2 = $(KATA_URL_BASE)/v1.15.1/katago-v1.15.1-eigenavx2-windows-x64.zip
-KATA_URL3 = $(KATA_URL_BASE)/v1.15.1/katago-v1.15.1-opencl-windows-x64.zip
+# KATA_URL1 = $(KATA_URL_BASE)/v1.15.3/katago-v1.15.3-eigen-windows-x64.zip
+KATA_URL2 = $(KATA_URL_BASE)/v1.15.3/katago-v1.15.3-eigenavx2-windows-x64.zip
+KATA_URL3 = $(KATA_URL_BASE)/v1.15.3/katago-v1.15.3-opencl-windows-x64.zip
 KATA_MODEL_URL = https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b18c384nbt-s9996604416-d4316597426.bin.gz
 KATA_HUMANMODEL_URL = $(KATA_URL_BASE)/v1.15.0/b18c384nbt-humanv0.bin.gz
 KATA_MODEL_D_URL = https://katagotraining.org/network_license/
