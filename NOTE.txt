@@ -2,7 +2,7 @@ Note on release:
 
 - (Update "KATA_URL*" and "KATA_MODEL_URL" in build_with/Makefile. Remove build_with/bin.)
 - Update README.md ("Major changes" etc.) and build_with/release.md.
-- Update "RELEASE" in Makefile.
+- Update "version" in package.json and "RELEASE" in Makefile.
 - Do "make win" (to force rebuilding) and "make zip".
 - Rename, test, and upload tmpLizGoban-*.zip.
 
