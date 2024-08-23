@@ -318,7 +318,7 @@ function draw_goban(given_canvas, given_stones, opts) {
           (draw_coordinates_p || R.always_show_coordinates)
     coordp && draw_coordinates(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
-    draw_visits_p && draw_visits(draw_visits_p, font_unit, g)
+    draw_visits_p && draw_visits(draw_visits_p, hovered_move, stones, font_unit, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
     mapping_to_winrate_bar && !draw_endstate_value_p &&
         draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
@@ -390,7 +390,7 @@ function draw_coordinates(unit, idx2coord, g) {
 
 const visits_formatter = new Intl.NumberFormat("en-US")
 
-function draw_visits(text_maybe, margin, g) {
+function draw_visits(text_maybe, hovered_move, stones, margin, g) {
     if (stringp(text_maybe)) {
         draw_visits_text(text_maybe, margin, g); return
     }
@@ -399,8 +399,21 @@ function draw_visits(text_maybe, margin, g) {
     const maybe = (z, g) => truep(z) ? g(z >= 1000 ? kilo_str(z) : f2s(z)) : ''
     const bg = truep(R.background_visits) ? `${fmt(R.background_visits)}/` : ''
     const vps = maybe(R.visits_per_sec, z => `  (${z} v/s)`)
-    const text = `  visits = ${bg}${fmt(R.visits)}${vps}`
+    const pol = policies_text(hovered_move, stones)
+    const text = `  visits = ${bg}${fmt(R.visits)}${vps}${pol}`
     draw_visits_text(text, margin, g)
+}
+
+function policies_text(hovered_move, stones) {
+    // can be different from prior in R.suggest because of
+    // "symmetry" selection for kata-raw-nn
+    const move = target_move() || hovered_move; if (!move) {return ''}
+    const h = aa_ref(stones, ...move2idx(move))
+    const {default_policy, humansl_policy_info} = h
+    const {stronger, weaker} = humansl_policy_info || {}
+    const policies = [default_policy, stronger, weaker]
+    const text = policies.filter(truep).map(p => f2s(p, 3)).join('/')
+    return text && `  policy = ${text}`
 }
 
 function draw_visits_text(text, margin, g) {
