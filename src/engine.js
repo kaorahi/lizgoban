@@ -203,23 +203,27 @@ function create_leelaz () {
         suggest_reader_maybe(fake_suggest)
     }
     const kata_raw_nn = (given_receiver) => {
-        if (!is_supported('kata-raw-nn')) {return false}
-        const receiver = given_receiver || kata_raw_nn_default_receiver
-        const on_response =
-              on_multiline_response_at_once(on_kata_raw_nn_response(receiver))
-        leelaz('kata-raw-nn 0', on_response)
-        return true
+        const com = kata_raw_nn_command(given_receiver)
+        return com && (leelaz(...com), true)
     }
+    const kata_raw_nn_command = (given_receiver, protect_p) =>
+          kata_raw_nn_command_gen('kata-raw-nn', 'kata-raw-nn 0',
+                                  given_receiver || kata_raw_nn_default_receiver,
+                                  protect_p)
     const kata_raw_human_nn = (receiver, profile) => {
-        if (!is_supported('sub_model_humanSL')) {return}
-        const proc = () => {
-            const on_response =
-                  on_multiline_response_at_once(on_kata_raw_nn_response(receiver))
-            send_to_leelaz(humansl_profile_setter(profile))
-            send_to_leelaz('kata-raw-human-nn 0', on_response)
-        }
-        // use command name '*_kata-raw-human-nn' for remove(raw_nn_command_p)
-        leelaz(`lizgoban_kata-raw-human-nn PROFILE=${profile}`, proc)
+        const com = kata_raw_human_nn_command(receiver, profile)
+        return com && leelaz(...com)
+    }
+    const kata_raw_human_nn_command = (receiver, profile, protect_p) => {
+        const com = join_commands(humansl_profile_setter(profile),
+                                  'kata-raw-human-nn 0')
+        return kata_raw_nn_command_gen('sub_model_humanSL', com, receiver, protect_p)
+    }
+    const kata_raw_nn_command_gen = (check, raw_nn, receiver, protect_p) => {
+        if (!is_supported(check)) {return null}
+        const on_full_response = on_kata_raw_nn_response(receiver, protect_p)
+        const on_response = on_multiline_response_at_once(on_full_response)
+        return [raw_nn, on_response, protect_p]
     }
 
     const genmove = (sec, callback) => {
@@ -700,8 +704,9 @@ function create_leelaz () {
         f(h)
     }
 
-    const on_kata_raw_nn_response = receiver => (ok, results) => {
-        if (!ok || empty(results) || !up_to_date_response()) {receiver(null); return}
+    const on_kata_raw_nn_response = (receiver, accept_old_p) => (ok, results) => {
+        const up_to_date_p = up_to_date_response() || accept_old_p
+        if (!ok || empty(results) || !up_to_date_p) {receiver(null); return}
         const tokens = results.join(' ').split(/\s+/).filter(identity)
         const h = {}, numeric = /^([-.0-9]+|NAN)$/
         let key
