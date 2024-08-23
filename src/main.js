@@ -985,6 +985,11 @@ stop_auto_analyze()
 // auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
 let last_auto_play_time = 0, default_auto_play_sec = 1
 function start_auto_play(strategy, sec, count) {
+    // (normal cases)
+    // Just set "I'm in auto play" here and let the analysis run.
+    // Then try_auto_play will play a move when the condition is satisfied.
+    // (special cases, e.g. genmove)
+    // Call genmove etc. here and let it play a move.
     const replaying = (strategy === 'replay')
     if (replaying && sec < 0) {start_auto_redo(sec); return}
     // var
@@ -994,7 +999,7 @@ function start_auto_play(strategy, sec, count) {
     // proc
     replaying && rewind_maybe()
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
-    start_auto_genmove_maybe()
+    start_auto_genmove_maybe()  // for special cases
 }
 
 let doing_auto_play_p = false
