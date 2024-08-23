@@ -40,6 +40,7 @@ const jschardet = require('jschardet'), iconv = require('iconv-lite')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 const {select_weak_move, weak_move_prop} = require('./weak_move.js')
+const {get_rankcheck_move} = require('./rankcheck_move.js')
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
@@ -1090,8 +1091,15 @@ function auto_genmove_func() {
     const maybe = auto_playing() && strategy_ok; if (!maybe) {return null}
     const weaken_method = get_auto_play_weaken()?.[0] || 'plain'
     const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
+    const rankcheck = (dummy_sec, play_func) => {
+        const args = [
+            get_humansl_profile_in_match(),
+            AI.peek_kata_raw_human_nn, update_ponder_surely,
+        ]
+        get_rankcheck_move(...args).then(a => play_func(...a))
+    }
     const func_for_method = {
-        genmove, genmove_analyze,
+        genmove, genmove_analyze, rankcheck,
         plain: search_analyze,
         plain_diverse: search_analyze,
     }
@@ -1130,7 +1138,7 @@ function stop_match(window_id) {
 
 function set_match_param(weaken) {
     let m
-    const literal = ['plain_diverse', 'genmove', 'genmove_analyze', 'best']
+    const literal = ['plain_diverse', 'genmove', 'genmove_analyze', 'best', 'rankcheck']
     const alias = {
         diverse: 'random_opening',
         pass: 'pass_maybe',
@@ -1514,7 +1522,7 @@ function get_humansl_profile_in_match() {
     const [main_p, sub_p] = features.map(key => AI.is_supported(key))
     const weaken_method = auto_play_weaken?.[0]
     const valid_weaken_sub = [
-        'plain', 'plain_diverse', 'genmove', 'genmove_analyze',
+        'plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'rankcheck',
     ]
     const sub_ok = !weaken_method || valid_weaken_sub.includes(weaken_method)
     const ok = main_p || (sub_p && sub_ok)
