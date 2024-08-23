@@ -23,13 +23,17 @@ function with_board_size(bsize, proc, ...args) {
 }
 
 /////////////////////////////////////////////////
-// serial (=> idx) => move
+// serial (<=> idx) <=> move
 
 function serial2idx(k) {
     const bsize = board_size(); return [Math.floor(k / bsize), k % bsize]
 }
 
 function serial2move(k) {return idx2move(...serial2idx(k))}
+
+function idx2serial(i, j) {return i * board_size() + j}
+
+function move2serial(move) {return idx2serial(...move2idx(move))}
 
 /////////////////////////////////////////////////
 // idx <=> move
@@ -125,7 +129,7 @@ module.exports = {
     pass_command,
     idx2rowcol, move2idx_maybe,
     idx2move, move2idx, idx2coord_translator_pair, uv2coord_translator_pair,
-    serial2idx, serial2move,
+    serial2idx, serial2move, idx2serial, move2serial,
     translator_pair, clipped_translator,
     board_size, set_board_size, with_board_size, sgfpos2move, move2sgfpos, stars,
 }
