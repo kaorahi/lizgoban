@@ -100,7 +100,6 @@ let exercise_metadata = null, exercise_match_p = false
 let adjust_sanity_p = false
 let auto_play_weaken_for_bw = {}; clear_auto_play_weaken_for_bw()
 let debug_menu_p = !app.isPackaged
-let asymmetric_humansl_rank_profile_p = false
 
 function set_game(new_game) {
     game = new_game
@@ -668,11 +667,6 @@ function menu_template(win) {
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
         store_toggler_menu_item('...Snip similar lines', 'engine_log_snip_similar_lines'),
         {label: 'REPL', type: 'checkbox', checked: repl_p(), click: toggle_repl},
-        {label: 'Asymmetric humanSL rank', type: 'checkbox',
-         checked: asymmetric_humansl_rank_profile_p,
-         enabled: AI.is_supported('sub_model_humanSL'),
-         click: () => {
-             asymmetric_humansl_rank_profile_p = !asymmetric_humansl_rank_profile_p}},
         store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
         simple_toggler_menu_item('Keep bright board', 'keep_bright_board'),
@@ -1706,19 +1700,11 @@ function set_board() {
         avoid_resign_p: exercise_match_p,
         ...stored,
     }
-    apply_asymmetric_rank_humansl_profile(aux, ...profile_keys)
     AI.set_board(hist, aux)
     AI.switch_leelaz(); update_let_me_think(true)
 }
 function set_AI_board_size_maybe(bsize) {
     bsize !== board_size() && AI.restart(leelaz_start_args_for_board_size(bsize))
-}
-function apply_asymmetric_rank_humansl_profile(aux, key1, key2) {
-    if (!asymmetric_humansl_rank_profile_p) {return}
-    const new_profile = (t, r, s) => (is_bturn() ? [t, r, s] : [t, s, r]).join('_')
-    const [[t1, r1], [t2, r2]] = [key1, key2].map(k => aux[k]?.split(/_/))
-    const matched = (t1 === t2) && ['rank', 'preaz'].includes(t1)
-    matched && (aux[key2] = new_profile(t1, r1, r2))
 }
 
 function synchronize_analysis_region(region) {
