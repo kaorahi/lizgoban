@@ -1555,6 +1555,7 @@ function update_button_etc(availability) {
     update_ui_element('.different_engine_for_white_only',
                       R.different_engine_for_white_p)
     update_ui_element('.moves_ownership_only', availability.moves_ownership)
+    update_ui_element('.sub_model_humanSL_only', availability.sub_model_humanSL)
     update_ui_element('#sanity_div', availability.match_ai_conf)
     update_ui_element('#humansl_div', truep(availability.humansl_profile_in_match))
 }

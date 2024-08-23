@@ -2181,6 +2181,7 @@ function availability() {
         stop_auto: auto_p,
         trial: game.trial,
         moves_ownership: AI.is_moves_ownership_supported(),
+        sub_model_humanSL: AI.is_sub_model_humanSL_supported(),
         match_ai_conf: weak_move_prop('has_option_p', auto_play_weaken),
         humansl_profile_in_match: get_humansl_profile_in_match(),
     }

@@ -80,6 +80,9 @@ function is_gorule_supported() {
 function is_moves_ownership_supported() {
     return leelaz_for_this_turn().is_supported('movesOwnership')
 }
+function is_sub_model_humanSL_supported() {
+    return leelaz_for_this_turn().is_supported('sub_model_humanSL')
+}
 
 let analysis_region = null
 function update_analysis_region(region) {
@@ -315,6 +318,7 @@ module.exports = {
     different_komi_for_black_and_white, startup_log,
     update_analysis_region, set_instant_analysis,
     is_moves_ownership_supported,
+    is_sub_model_humanSL_supported,
     humansl_profile, humansl_profile_for_black, humansl_profile_for_white,
     ...aa2hash(exported_from_leelaz.map(key =>
                                         [key, (...args) => leelaz[key](...args)])),
