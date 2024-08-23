@@ -323,7 +323,7 @@ function create_leelaz () {
           (arg.error_handler || arg.restart_handler)(startup_log)
 
     // stateless wrapper of leelaz
-    let leelaz_previous_history = []
+    let leelaz_previous_history = [], broken_previous_history_p = false
     const push_to_history = (move, is_black) =>
           leelaz_previous_history.push({move, is_black})
     const get_aux = () => ({
@@ -369,7 +369,7 @@ function create_leelaz () {
         if (is_in_startup) {return}
         change_board_size(board_size())
         const beg = common_header_length(history, leelaz_previous_history)
-        const beg_valid_p = aux.handicaps === handicaps && aux.init_len === init_len
+        const beg_valid_p = !broken_previous_history_p && aux.handicaps === handicaps && aux.init_len === init_len
               && beg >= init_len
         const update_kata_p = update_kata_by_aux(aux)
         if (empty(history)) {!empty(leelaz_previous_history) && clear_leelaz_board(); update_move_count([], true); return}
@@ -411,6 +411,7 @@ function create_leelaz () {
             init_len === handicaps ? set_handicap() :
             is_supported('set_position') ? set_position() : (rest = history)
         rest.forEach(play1)
+        broken_previous_history_p = false
         return true
     }
     const play1_gen = (h, cont) => {
@@ -472,8 +473,15 @@ function create_leelaz () {
           peek_gen(moves, [kata_raw_nn_command(cont, true)])
     const peek_gen = (moves, body) => {
         stringp(moves) && (moves = [moves])  // backward compatibility
-        const play_com = (m, k) =>
-              `play ${bw_for(xor(js_bturn, k % 2))} ${m}`
+        // fixme: If move is illegal, "undo" causes inconsistency
+        // until next set_board().
+        const play_com = (m, k) => {
+            const command = `play ${bw_for(xor(js_bturn, k % 2))} ${m}`
+            const checker = (ok, result) => ok ||
+                  (debug_log(`Inconsistency by failed command! (${command})`),
+                   broken_previous_history_p = true)
+            return [command, checker]
+        }
         const coms = [
             ...moves.map(play_com),
             ...body,
