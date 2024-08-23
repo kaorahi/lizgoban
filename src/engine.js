@@ -451,29 +451,35 @@ function create_leelaz () {
           is_supported('lz-setoption') ? (peek_value_lz(move, cont), true) :
           is_supported('kata-raw-nn') ? (peek_value_kata(move, cont), true) :
           false
-    const peek_value_lz = (move, cont) => {
-        const do1 = () =>
-              leelaz(join_commands('lz-setoption name visits value 1',
-                                   `play ${bw_for(js_bturn)} ${move}`,
-                                   'lz-analyze interval 0'), do2)
-        const do2 = () => {
+    const peek_value_lz = (moves, cont) => {
+        const visits_setter = k => `lz-setoption name visits value {k}`
+        const set_reader = () => {
             the_nn_eval_reader =
                 value => {the_nn_eval_reader = do_nothing; cont(value); update()}
-            leelaz(join_commands('lz-setoption name visits value 0', 'undo'))
         }
-        do1()
+        const body = [
+            visits_setter(1),
+            ['lz-analyze interval 0', set_reader, true],
+            visits_setter(0),
+        ]
+        peek_gen(moves, body)
     }
-    const peek_value_kata = (move, cont) => {
+    const peek_value_kata = (moves, cont) => {
         const flip = w => js_bturn ? w : 1 - w // js_bturn is not updated!
-        peek_kata_raw_nn(move, h => cont(flip(to_f(h.whiteWin[0]))))
+        peek_kata_raw_nn(moves, h => cont(flip(to_f(h.whiteWin[0]))))
     }
-    const peek_kata_raw_nn = (move, cont) => {
-        if (!is_supported('kata-raw-nn')) {return false}
-        const receiver = h => {leelaz('undo'); h && cont(h)}
-        const on_response = (ok, _) => ok && kata_raw_nn(receiver)
-        leelaz(humansl_profile_restorer())
-        leelaz(`play ${bw_for(js_bturn)} ${move}`, on_response)
-        return true
+    const peek_kata_raw_nn = (moves, cont) =>
+          peek_gen(moves, [kata_raw_nn_command(cont, true)])
+    const peek_gen = (moves, body) => {
+        stringp(moves) && (moves = [moves])  // backward compatibility
+        const play_com = (m, k) =>
+              `play ${bw_for(xor(js_bturn, k % 2))} ${m}`
+        const coms = [
+            ...moves.map(play_com),
+            ...body,
+            ...seq(moves.length).map(_ => 'undo'),
+        ]
+        coms.forEach(com => stringp(com) ? leelaz(com) : leelaz(...com))
     }
 
     // allow
