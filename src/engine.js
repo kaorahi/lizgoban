@@ -471,6 +471,8 @@ function create_leelaz () {
     }
     const peek_kata_raw_nn = (moves, cont) =>
           peek_gen(moves, [kata_raw_nn_command(cont, true)])
+    const peek_kata_raw_human_nn = (moves, profile, cont) =>
+          peek_gen(moves, [kata_raw_human_nn_command(cont, profile, true)])
     const peek_gen = (moves, body) => {
         stringp(moves) && (moves = [moves])  // backward compatibility
         // fixme: If move is illegal, "undo" causes inconsistency
@@ -815,6 +817,7 @@ function create_leelaz () {
     const exported = {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
+        peek_kata_raw_human_nn,
         update_analysis_region, set_instant_analysis,
         is_supported, clear_leelaz_board,
         endstate, is_ready: () => is_ready, engine_id: get_engine_id,
