@@ -42,3 +42,11 @@ ownership - 1D array (positive = black)
 
 move_count - handicap stones are also counted.
 (First move = 1 in a normal game, 5 in a 4-handicap game.)
+
+Note on strategies:
+
+To add a new strategy for "match vs. AI", modify the following parts.
+
+- `<select id="weaken" ...>` in `index.html`
+- `set_match_param(...)` in `main.js`
+- `get_move_etc(...)` in `weak_move.js`
