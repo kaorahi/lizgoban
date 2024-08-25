@@ -22,7 +22,7 @@ async function get_rankcheck_move(rank_profile,
     if (Math.random() < policy_move_prob) {
         const selected = serial2move(p0.indexOf(randomly_picked_policy))
         const order = sort_policy(p0).indexOf(randomly_picked_policy)
-        const comment = `by ${policy_profile} policy: ` +
+        const comment = `(rankcheck) by ${policy_profile} policy: ` +
               `${round(randomly_picked_policy)} (order ${order})`
         return ret(selected, comment)
     }
@@ -34,7 +34,8 @@ async function get_rankcheck_move(rank_profile,
     const top_moves = top_indices.map(serial2move)
     const evals = await ordered_async_map(top_moves, evaluate)
     const selected = min_by(top_moves, (_, k) => evals[k][0])
-    const comment = `Select ${selected} from [${top_moves.join(',')}].\n` +
+    const comment = `(rankcheck ${profile_pair.join('/')}) ` +
+          `Select ${selected} from [${top_moves.join(',')}].\n` +
           `policy = [${round(top_policies).join(', ')}]\n` +
           `eval = ${JSON.stringify(round(evals))}`
     return ret(selected, comment)
