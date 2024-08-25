@@ -182,8 +182,7 @@ function set_renderer_state(...args) {
     const amb_gain = get_amb_gain(game, M.amb_gain_recent())
     amb_gain && merge(cur, {amb_gain})
     if (empty(R.suggest)) {R.score_without_komi = null}
-    const endstate_sum = truep(R.score_without_komi) ? R.score_without_komi :
-          AI.another_leelaz_for_endstate_p() ? average_endstate_sum() : null
+    const endstate_sum = true_or(R.score_without_komi, null)
     const endstate = aa_map(R.stones, h => h.endstate || 0)
     const endstate_clusters = get_endstate_clusters(endstate)
     const endstate_d_i = truep(endstate_sum) ? {endstate_diff_interval} : {}
@@ -352,15 +351,6 @@ function update_endstate_diff(endstate, tentatively, immediately) {
 function endstate_diff_move_count() {
     return finite_or(get_showing_until(), game.move_count - endstate_diff_interval)
 }
-function average_endstate_sum(move_count) {
-    return for_current_and_previous_endstate(move_count, 'endstate_sum', 1,
-                                             (cur, prev) => (cur + prev) / 2)
-}
-function for_current_and_previous_endstate(move_count, key, delta, f) {
-    const mc = truep(move_count) || game.move_count
-    const [cur, prev] = [0, delta].map(k => game.ref(mc - k)[key])
-    return truep(cur) && truep(prev) && f(cur, prev)
-}
 function add_tag(h, tag) {h.tag = str_sort_uniq((h.tag || '') + (tag || ''))}
 
 function clear_endstate() {lagged_endstate.reset(); lagged_endstate_diff.reset()}
@@ -523,8 +513,7 @@ function cook_lizzie_cache_maybe(new_game) {
 }
 
 function score_without_komi_at(move_count) {
-    return true_or(game.ref(move_count).score_without_komi,
-                   average_endstate_sum(move_count))
+    return true_or(game.ref(move_count).score_without_komi, false)
 }
 
 function get_initial_b_winrate(engine_id) {return get_b_winrate(0, engine_id)}

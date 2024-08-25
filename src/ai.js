@@ -105,7 +105,7 @@ function start_endstate(given_start_args, endstate_option) {
     leelaz_for_endstate.start(start_args)
     leelaz_for_endstate.set_pondering(false)
 }
-function support_endstate_p() {return katago_p() || !!leelaz_for_endstate}
+function support_endstate_p() {return katago_p()}
 
 /////////////////////////////////////////////////
 // another leelaz for white
