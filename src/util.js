@@ -88,6 +88,7 @@ E.weighted_random_choice = (ary, weight_of) => {
     return E.min_by(ary, magic)
 }
 E.random_choice = ary => weighted_random_choice(ary, () => 1)
+E.random_int = k => Math.floor(Math.random() * k)
 
 // array of array
 E.aa_new = (m, n, f) => E.seq(m).map(i => E.seq(n).map(j => f(i, j)))

@@ -207,7 +207,7 @@ function create_leelaz () {
         return com && (leelaz(...com), true)
     }
     const kata_raw_nn_command = (given_receiver, protect_p) =>
-          kata_raw_nn_command_gen('kata-raw-nn', 'kata-raw-nn 0',
+          kata_raw_nn_command_gen('kata-raw-nn', `kata-raw-nn ${random_symmetry()}`,
                                   given_receiver || kata_raw_nn_default_receiver,
                                   protect_p)
     const kata_raw_human_nn = (receiver, profile) => {
@@ -217,7 +217,7 @@ function create_leelaz () {
     const kata_raw_human_nn_command = (receiver, profile, protect_p) => {
         if (!profile) {return kata_raw_nn_command(receiver, protect_p)}
         const com = join_commands(humansl_profile_setter(profile),
-                                  'kata-raw-human-nn 0')
+                                  `kata-raw-human-nn ${random_symmetry()}`)
         return kata_raw_nn_command_gen('sub_model_humanSL', com, receiver, protect_p)
     }
     const kata_raw_nn_command_gen = (check, raw_nn, receiver, protect_p) => {
@@ -226,6 +226,7 @@ function create_leelaz () {
         const on_response = on_multiline_response_at_once(on_full_response)
         return [raw_nn, on_response, protect_p]
     }
+    const random_symmetry = () => random_int(8)
 
     const genmove = (sec, callback) => {
         const cancellable = is_supported('kata-search_cancellable')
