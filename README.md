@@ -62,7 +62,8 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Let-me-think-first mode in autoplay: plain board for n seconds and then suggestions for n seconds in each move
 * Preview of branches before switching for nested SGFs
 * Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
-* Random generation of various playing styles for matches vs. weak bots.
+* Random generation of various playing styles for matches vs. weak bots
+* AI sparring partner that creates skill-testing situations
 * Play pair match, "you & KataGo" vs. Leela Zero, etc.
 * [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 * [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically. Enjoy watching [Ladder fight!](https://www.reddit.com/r/baduk/comments/llk8cj/ladder_fight/)
@@ -329,6 +330,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 * Highlight settled areas by "v" key.
 * Make long press of cursor keys smoother.
 * Add sound feature. (You need to [prepare and set sound files](#sound) by yourself.)
+* Add a new strategy "spar" to "match vs. AI". It's focused on creating skill-testing situations.
 * Change playing style of persona strategy. This is still being tested and might change in the future.
 * Avoid unnatural tenuki in match vs. weakened AI.
 * Add "Open recent" to File menu.
