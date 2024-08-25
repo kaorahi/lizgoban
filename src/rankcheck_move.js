@@ -16,6 +16,8 @@ async function get_rankcheck_move(rank_profile,
     // proc
     const p0 = (await peek([], policy_profile)).policy
     const randomly_picked_policy = weighted_random_choice(p0, z => z || 0)
+    // To avoid becoming too repetitive,
+    // occasionally play randomly_picked_policy move.
     if (Math.random() < policy_move_prob) {
         const selected = serial2move(p0.indexOf(randomly_picked_policy))
         const order = sort_policy(p0).indexOf(randomly_picked_policy)
