@@ -215,6 +215,7 @@ function create_leelaz () {
         return com && leelaz(...com)
     }
     const kata_raw_human_nn_command = (receiver, profile, protect_p) => {
+        if (!profile) {return kata_raw_nn_command(receiver, protect_p)}
         const com = join_commands(humansl_profile_setter(profile),
                                   'kata-raw-human-nn 0')
         return kata_raw_nn_command_gen('sub_model_humanSL', com, receiver, protect_p)

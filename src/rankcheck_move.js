@@ -43,7 +43,7 @@ async function eval_move(move, policy_profile, peek) {
     // param
     const winrate_samples = 5, rank_delta = [-2, +2], evenness_coef = 0.1
     const profile_pair = rank_delta.map(d => prof_add(policy_profile, d))
-    const winrate_profile = 'rank_9d'
+    const winrate_profile = null  // null = normal katago
     // util
     const peek_policies = async profiles => {
         const f = async prof => (await peek([move], prof)).policy
