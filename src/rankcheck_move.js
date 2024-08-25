@@ -7,11 +7,12 @@ async function get_rankcheck_move(rank_profile,
                                   peek_kata_raw_human_nn, update_ponder_surely) {
     // param
     const policy_profile = rank_profile || 'rank_9d'
+    const rank_delta = 2, profile_pair = profiles_around(policy_profile, rank_delta)
     const max_candidates = 8, policy_move_prob = 0.1
     // util
     const peek = (moves, profile) =>
           new Promise((res, rej) => peek_kata_raw_human_nn(moves, profile, res))
-    const evaluate = async move => eval_move(move, policy_profile, peek)
+    const evaluate = async move => eval_move(move, profile_pair, peek)
     const ret = (move, comment) => (update_ponder_surely(), [move, comment])
     // proc
     const p0 = (await peek([], policy_profile)).policy
@@ -39,10 +40,9 @@ async function get_rankcheck_move(rank_profile,
     return ret(selected, comment)
 }
 
-async function eval_move(move, policy_profile, peek) {
+async function eval_move(move, profile_pair, peek) {
     // param
-    const winrate_samples = 5, rank_delta = [-2, +2], evenness_coef = 0.1
-    const profile_pair = rank_delta.map(d => prof_add(policy_profile, d))
+    const winrate_samples = 5, evenness_coef = 0.1
     const winrate_profile = null  // null = normal katago
     // util
     const peek_policies = async profiles => {
@@ -83,6 +83,10 @@ async function eval_move(move, policy_profile, peek) {
 
 ///////////////////////////////////////////////
 // util
+
+function profiles_around(rank_profile, delta) {
+    return [-1, +1].map(sign => prof_add(rank_profile, sign * delta))
+}
 
 function prof_add(rank_profile, delta) {
     const a = humansl_rank_profiles, k = a.indexOf(rank_profile) + delta
