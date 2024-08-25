@@ -8,7 +8,6 @@ function create_leelaz () {
     /////////////////////////////////////////////////
     // setup
 
-    const endstate_delay_millisec = 20
     const speedo_interval_sec = 3, speedo_premature_sec = 0.5
     const speedometer = make_speedometer(speedo_interval_sec, speedo_premature_sec)
     const queue_log_header = 'queue>'
@@ -55,7 +54,7 @@ function create_leelaz () {
         const {leelaz_command, leelaz_args, analyze_interval_centisec, wait_for_startup,
                weight_file, working_dir, default_board_size,
                minimum_suggested_moves, ready_handler,
-               endstate_handler, suggest_handler, restart_handler, error_handler,
+               suggest_handler, restart_handler, error_handler,
                illegal_handler, tuning_handler, command_failure_handler}
               = arg || {}
         const opt = {cwd: working_dir}
@@ -181,9 +180,6 @@ function create_leelaz () {
     const set_pondering = bool => {
         bool !== pondering && ((pondering = bool) ? start_analysis() : stop_analysis())
     }
-    const endstate = () => {
-        arg.endstate_handler && is_supported('endstate') && leelaz('endstate_map')
-    }
 
     const kata_raw_nn_default_receiver = h => {
         if (!h) {return}
@@ -284,7 +280,6 @@ function create_leelaz () {
         ]
         const checks_without_startup_log = [  // avoid too long log
             ['minmoves', 'lz-analyze interval 1 minmoves 30'],
-            ['endstate', 'endstate_map'],
             ['kata-raw-nn', 'kata-raw-nn 0'],
             ['pvVisits', 'kata-analyze 1 pvVisits true'],
             ['pvEdgeVisits', 'kata-analyze 1 pvEdgeVisits true'],
@@ -440,10 +435,7 @@ function create_leelaz () {
     const leelaz = (command, on_response, protect_p) => {
         log(queue_log_header, command, true); send_to_queue({command, on_response, protect_p})
     }
-    const update_now = () => arg && (endstate(), pondering && start_analysis())
-    const [update_later] = deferred_procs([update_now, endstate_delay_millisec])
-    // avoid flicker of endstate
-    const update = () => is_supported('endstate') ? update_later() : update_now()
+    const update = () => arg && pondering && start_analysis()
     const clear_leelaz_board = silent => {leelaz("clear_board"); leelaz_previous_history = []; silent || update()}
     const start_args = () => arg
     const network_size = () => network_size_text
@@ -599,10 +591,8 @@ function create_leelaz () {
         }
         // useless lz-analyze etc. that will be canceled immediately
         remove(cancellable_command_p)
-        // duplicated endstate
-        endstate_command_p(task) && remove(endstate_command_p)
-        // obsolete endstate / peek
-        changer_command_p(task) && [raw_nn_command_p, endstate_command_p].forEach(remove)
+        // obsolete raw_nn
+        changer_command_p(task) && remove(raw_nn_command_p)
         command_queue.push(task); send_from_queue()
     }
 
@@ -648,7 +638,6 @@ function create_leelaz () {
     const pondering_command_p = command_matcher(/(lz|kata)-(genmove_)?analyze|kata-search_analyze/)
     const cancellable_command_p = command_matcher(/(lz|kata)-analyze/)
     const raw_nn_command_p = command_matcher(/kata-raw(-human)?-nn/)
-    const endstate_command_p = command_matcher(/^endstate_map/)
     const changer_command_p = command_matcher(/play|undo|clear_board|set_position|set_free_handicap/)
     const dummy_command_p = command_matcher(/lizgoban/)
 
@@ -759,7 +748,6 @@ function create_leelaz () {
             on_ready();
         s.match(/Weights file is the wrong version/) && on_error();
         (m = s.match(/NN eval=([0-9.]+)/)) && the_nn_eval_reader(to_f(m[1]));
-        s.match(/endstate:/) && (current_reader = endstate_reader)
     }
 
     current_reader = main_reader
@@ -774,21 +762,6 @@ function create_leelaz () {
             p ? buf.push(p) : (finisher(buf), buf = [], current_reader = main_reader)
         }
     }
-
-    /////////////////////////////////////////////////
-    // endstate reader
-
-    const finish_endstate_reader = (endstate) => {
-        const f = arg.endstate_handler
-        f && f({endstate, endstate_move_count: move_count})
-    }
-
-    const parse_endstate_line = (line) => {
-        const b_endstate = s => to_i(s) / 1000
-        return !line.match(/endstate sum/) && trim_split(line, /\s+/).map(b_endstate)
-    }
-
-    const endstate_reader = multiline_reader(parse_endstate_line, finish_endstate_reader)
 
     /////////////////////////////////////////////////
     // feature checker
@@ -822,7 +795,7 @@ function create_leelaz () {
         peek_kata_raw_human_nn,
         update_analysis_region, set_instant_analysis,
         is_supported, clear_leelaz_board,
-        endstate, is_ready: () => is_ready, engine_id: get_engine_id,
+        is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log,
         humansl_profile: () => true_or(tmp_humansl_profile, humansl_profile),
         humansl_request_profile,

@@ -20,7 +20,6 @@ const default_option = {
     autosave_sec: 300,
     wait_for_startup: true,
     use_bogoterritory: true,
-    endstate_leelaz: null,
     working_dir: process.env.PORTABLE_EXECUTABLE_DIR || default_path_for('.'),
     weight_dir: undefined,
     sgf_dir: undefined,

@@ -36,31 +36,6 @@ function renew_game() {set_endstate_obsolete(); clear_endstate()}
 /////////////////////////////////////////////////
 // receive analysis from leelaz
 
-// (obsolete comment & variable. but keep conventional code as far as possible here.)
-// This is not equal to R.move_count and game.move_count
-// for repeated (fast) undo/redo since showboard is deferred
-// in this case for efficiency.
-let leelaz_move_count = 0
-
-// (obsolete. but keep conventional code as far as possible here.)
-function endstate_handler(h) {
-    if (M.is_pausing()) {return}
-    const endstate_setter = update_p => {
-        const leelaz_move_count = R.endstate_move_count
-        const add_endstate_to_history = z => {
-            z.endstate = R.endstate; if (!update_p) {return}
-            z.endstate_sum = sum(R.endstate.flat())
-        }
-        // need add_endstate_to_history before add_endstate_to_stones
-        // because update_endstate_diff depends on game.ref_current().endstate
-        leelaz_move_count > 0 && add_endstate_to_history(game.ref(leelaz_move_count))
-        add_endstate_to_stones(R.stones, R.endstate, null, leelaz_move_count, update_p)
-        set_endstate_uptodate(R.endstate, leelaz_move_count)
-    }
-    set_renderer_state(h)
-    AI.another_leelaz_for_endstate_p() && endstate_setter(!!h.endstate)
-}
-
 const hold_suggestion_millisec = 1000
 const is_holding_suggestion = vapor_var(hold_suggestion_millisec, false)
 function hold_suggestion_for_a_while() {is_holding_suggestion(true)}
@@ -661,7 +636,7 @@ function branch_or_ladder_at(game, move_count, stones) {
 /////////////////////////////////////////////////
 // exports
 
-AI.set_handlers({suggest_handler, endstate_handler})
+AI.set_handlers({suggest_handler})
 
 module.exports = {
     // basic
