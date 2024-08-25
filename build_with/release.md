@@ -2,6 +2,19 @@
 
 # Release notes
 
+## LizGoban 0.8.0-pre7
+
+An experimental strategy called "spar" has been added to the "match vs. AI" mode. Intended for practice, it's not focused on winning but on creating skill-testing situations for players of specific DAN or KYU ranks. Let's knock it out!
+
+To test it:
+
+1. Download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`.
+2. From "Preset" menu, choose "Human-like Play". ("Human-like Analysis" is also ok.)
+3. From "File" menu, choose "Match vs. AI".
+4. Select "spar" in "vs." pulldown menu.
+5. Adjust the profile slider. (20k-9d)
+6. Click the board to place the first black stone, or click "start AI's turn" button to let the AI play black.
+
 ## LizGoban 0.8.0-pre6
 
 This is just a temporary release for a debug feature on the asymmetric rank humanSL profile. This feature will be excluded from the next release.

@@ -1,4 +1,4 @@
-RELEASE = 240811a
+RELEASE = 240825a
 
 VERSION = $(shell grep '"version"' package.json | cut -d '"' -f 4)
 EXE = dist/LizGoban\ $(VERSION).exe
