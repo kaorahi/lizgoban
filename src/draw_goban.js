@@ -98,6 +98,7 @@ function draw_goban_with_suggest(canvas, opts) {
         set_expected_stone(expected_move, s0.move, displayed_stones)
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_next_p: true, draw_expected_p: true,
+                draw_policy_beside_visits_p: true,
                 draw_loss_p: !R.different_engine_for_white_p && R.show_endstate,
                 draw_endstate_p: R.show_endstate, draw_endstate_diff_p: R.show_endstate,
                 draw_endstate_cluster_p: true,
@@ -182,6 +183,7 @@ function draw_goban_with_variation(canvas, suggest, opts) {
     }
     draw_goban(canvas, displayed_stones,
                {draw_last_p: true, draw_expected_p: true,
+                draw_policy_beside_visits_p: true,
                 draw_endstate_p: draw_moves_ownership_p,
                 draw_endstate_diff_p: draw_moves_ownership_p,
                 mapping_to_winrate_bar, pv_visits, ...opts})
@@ -280,6 +282,7 @@ function draw_thumbnail_goban(canvas, stones, trial_p) {
 function draw_goban(given_canvas, given_stones, opts) {
     const {
         draw_last_p, draw_next_p, draw_visits_p, draw_expected_p, first_board_p,
+        draw_policy_beside_visits_p,
         pausing_p, trial_p,
         draw_loss_p, draw_coordinates_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
@@ -318,7 +321,7 @@ function draw_goban(given_canvas, given_stones, opts) {
           (draw_coordinates_p || R.always_show_coordinates)
     coordp && draw_coordinates(unit, idx2coord, g)
     mapping_tics_p && draw_mapping_tics(unit, canvas, g)
-    draw_visits_p && draw_visits(draw_visits_p, hovered_move, stones, font_unit, g)
+    draw_visits_p && draw_visits(draw_visits_p, draw_policy_beside_visits_p, hovered_move, stones, font_unit, g)
     first_board_p && draw_progress(!main_canvas_p, margin, canvas, g)
     mapping_to_winrate_bar && !draw_endstate_value_p &&
         draw_mapping_text(mapping_to_winrate_bar, font_unit, canvas, g)
@@ -390,7 +393,7 @@ function draw_coordinates(unit, idx2coord, g) {
 
 const visits_formatter = new Intl.NumberFormat("en-US")
 
-function draw_visits(text_maybe, hovered_move, stones, margin, g) {
+function draw_visits(text_maybe, policy_p, hovered_move, stones, margin, g) {
     if (stringp(text_maybe)) {
         draw_visits_text(text_maybe, margin, g); return
     }
@@ -399,7 +402,7 @@ function draw_visits(text_maybe, hovered_move, stones, margin, g) {
     const maybe = (z, g) => truep(z) ? g(z >= 1000 ? kilo_str(z) : f2s(z)) : ''
     const bg = truep(R.background_visits) ? `${fmt(R.background_visits)}/` : ''
     const vps = maybe(R.visits_per_sec, z => `  (${z} v/s)`)
-    const pol = policies_text(hovered_move, stones)
+    const pol = policy_p ? policies_text(hovered_move, stones) : ''
     const text = `  visits = ${bg}${fmt(R.visits)}${vps}${pol}`
     draw_visits_text(text, margin, g)
 }
