@@ -243,9 +243,8 @@ function weak_move_etc_by_persona(state, persona_code, current_sanity, adjust_sa
     const com_sanity = `(visits threshold = ${(threshold * 100).toFixed(1)}%` +
           ` for sanity ${sanity.toFixed(2)})`
     // (persona comment)
-    const f = (k, name) => `${name}:[${param[k].map(z => z.toFixed(1)).join(",")}]`
     const com_persona =
-          `Persona "${persona_code}" = {${f(0, "my")}, ${f(1, "your")}, ${f(2, "space")}}`
+          `Persona "${persona_code}" = ${persona_param_str(param)}`
     // (total comment)
     const comment = [com_move, com_sanity, com_persona].join("\n")
     // final check
@@ -257,6 +256,11 @@ function weak_move_etc_by_persona(state, persona_code, current_sanity, adjust_sa
     }
     const selected = {move, comment, new_sanity, new_weaken_args}
     return then => final_check(selected, state, sec, loss_threshold, then)
+}
+
+function persona_param_str(param) {
+    const f = (k, name) => `${name}:[${param[k].map(z => z.toFixed(1)).join(",")}]`
+    return `{${f(0, "my")}, ${f(1, "your")}, ${f(2, "space")}}`
 }
 
 function final_check(selected, state, sec, loss_threshold, then) {
