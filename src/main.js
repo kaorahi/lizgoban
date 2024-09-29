@@ -1119,6 +1119,12 @@ function start_auto_genmove_maybe() {
     genmove_func(auto_play_sec, play_func)
 }
 function rankcheck_family_table(weaken_args) {
+    const get_state = () => [
+        auto_playing_strategy, !!auto_playing(), get_auto_play_weaken(),
+        game.ref_current(),
+    ]
+    const state = get_state()
+    const same_state_p = () => get_state().every((z, k) => z === state[k])
     const rankcheck_etc = aa2hash([
         // [weaken_method, func]
         ['rankcheck', 'get_rankcheck_move'],
@@ -1130,7 +1136,7 @@ function rankcheck_family_table(weaken_args) {
             get_humansl_profile_in_match(true),
             AI.peek_kata_raw_human_nn, update_ponder_surely, ...weaken_args,
         ]
-        const play_it = a => play_func(...a)
+        const play_it = a => same_state_p() && play_func(...a)
         return rankcheck_move[proc](...args).then(play_it)
     }]))
     return rankcheck_etc
