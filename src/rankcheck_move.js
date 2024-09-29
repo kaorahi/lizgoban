@@ -98,6 +98,35 @@ async function eval_rankcheck_move(move, profile_pair, peek) {
 }
 
 ///////////////////////////////////////////////
+// variations
+
+async function get_center_move(policy_profile,
+                               peek_kata_raw_human_nn, update_ponder_surely) {
+    return get_move_by_height(-1, policy_profile, 'center',
+                              peek_kata_raw_human_nn, update_ponder_surely)
+}
+
+async function get_edge_move(policy_profile,
+                             peek_kata_raw_human_nn, update_ponder_surely) {
+    return get_move_by_height(+1, policy_profile, 'edge',
+                              peek_kata_raw_human_nn, update_ponder_surely)
+}
+
+async function get_move_by_height(sign, policy_profile, comment_title,
+                                  peek_kata_raw_human_nn, update_ponder_surely) {
+    const reverse_temperature = 0.9
+    const eval_move = (move, _peek) => [sign * move_height(move)]
+    return get_move_gen({policy_profile, reverse_temperature, eval_move, comment_title,
+                         peek_kata_raw_human_nn, update_ponder_surely})
+}
+
+function move_height(move) {
+    const bsize = board_size()
+    const hs = move2idx(move).map(k => Math.min(k + 1, bsize - k))
+    return Math.min(...hs) + 0.01 * sum(hs)
+}
+
+///////////////////////////////////////////////
 // util
 
 function profiles_around(rank_profile, delta) {
@@ -129,4 +158,6 @@ async function ordered_async_map(a, f) {
 
 module.exports = {
     get_rankcheck_move,
+    get_center_move,
+    get_edge_move,
 }

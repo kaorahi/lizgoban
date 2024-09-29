@@ -1098,6 +1098,8 @@ function auto_genmove_func() {
     const rankcheck_etc = aa2hash([
         // [weaken_method, func]
         ['rankcheck', 'get_rankcheck_move'],
+        ['center', 'get_center_move'],
+        ['edge', 'get_edge_move'],
     ].map(([key, proc]) => [key, (dummy_sec, play_func) => {
         const args = [
             get_humansl_profile_in_match(true),
@@ -1147,7 +1149,7 @@ function stop_match(window_id) {
 
 function set_match_param(weaken) {
     let m
-    const literal = ['plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'best', 'rankcheck']
+    const literal = ['plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'best', 'rankcheck', 'center', 'edge']
     const alias = {
         diverse: 'random_opening',
         pass: 'pass_maybe',
@@ -1539,6 +1541,7 @@ function get_humansl_profile_in_match(pasted_p) {
     const [weaken_method, ...weaken_args] = get_auto_play_weaken()
     const valid_weaken_sub = [
         'plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'rankcheck',
+        'center', 'edge',
     ]
     const sub_ok = !weaken_method || valid_weaken_sub.includes(weaken_method)
     const ok = main_p || (sub_p && sub_ok); if (!ok) {return false}
