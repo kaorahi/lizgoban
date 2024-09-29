@@ -1008,11 +1008,20 @@ function start_normal_auto_play(strategy, sec, count) {
     replaying && rewind_maybe()
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
 }
+let the_scheduled_auto_play_proc = null
+function start_scheduled_auto_play(proc) {
+    the_scheduled_auto_play_proc = proc
+    start_normal_auto_play(auto_playing_strategy, auto_play_sec, auto_play_count)
+}
+function scheduled_auto_play_proc() {
+    const f = the_scheduled_auto_play_proc
+    return f && (() => {f(); the_scheduled_auto_play_proc = null})
+}
 
 let doing_auto_play_p = false
 function try_auto_play(force_next) {
     if (auto_genmove_p()) {return}
-    const proc = {
+    const proc = scheduled_auto_play_proc() || {
         replay: () => do_as_auto_play(redoable(), () => {redo(); play_move_sound()}),
         play: () => try_play_weak(current_auto_play_weaken()),
         random_opening: () => try_play_weak(['random_opening']),
@@ -1071,6 +1080,7 @@ function decrement_auto_play_count() {
         (auto_play_count = (Math.random() < R.random_pair_match_rate) ? 2 : 0)
 }
 function stop_auto_play() {
+    scheduled_auto_play_proc()  // call this to clear the value
     if (!auto_playing()) {return}
     auto_play_count = 0; let_me_think_exit_autoplay()
 }
@@ -1139,7 +1149,8 @@ function rankcheck_family_table(weaken_args) {
             get_humansl_profile_in_match(true),
             AI.peek_kata_raw_human_nn, update_ponder_surely, ...weaken_args,
         ]
-        const play_it = a => same_state_p() && play_func(...a)
+        const play_it = a => same_state_p() &&
+              start_scheduled_auto_play(() => play_func(...a))
         return rankcheck_move[proc](...args).then(play_it)
     }]))
     return rankcheck_etc
