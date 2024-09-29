@@ -994,6 +994,10 @@ function start_auto_play(strategy, sec, count) {
     // Then try_auto_play will play a move when the condition is satisfied.
     // (special cases, e.g. genmove)
     // Call genmove etc. here and let it play a move.
+    start_normal_auto_play(strategy, sec, count)
+    start_auto_genmove_maybe()  // for special cases
+}
+function start_normal_auto_play(strategy, sec, count) {
     const replaying = (strategy === 'replay')
     if (replaying && sec < 0) {start_auto_redo(sec); return}
     // var
@@ -1003,7 +1007,6 @@ function start_auto_play(strategy, sec, count) {
     // proc
     replaying && rewind_maybe()
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
-    start_auto_genmove_maybe()  // for special cases
 }
 
 let doing_auto_play_p = false
