@@ -17,7 +17,7 @@ function select_weak_move(...args) {
 
 function weak_move_prop(prop, weaken) {
     const prop_table = {
-        has_option_p: ['persona'],
+        has_option_p: ['persona', 'hum_persona'],
         force_ownership_p: ['persona'],
         sanity_p: ['persona'],
     }
@@ -389,4 +389,6 @@ function commented_best_move(state, comment) {
 module.exports = {
     select_weak_move,
     weak_move_prop,
+    eval_with_persona,
+    persona_param_str,
 }

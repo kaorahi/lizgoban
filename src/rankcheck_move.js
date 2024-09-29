@@ -1,5 +1,8 @@
 'use strict'
 
+const {eval_with_persona, persona_param_str} = require('./weak_move.js')
+const {generate_persona_param} = require('./persona_param.js')
+
 ///////////////////////////////////////////////
 // main
 
@@ -127,6 +130,29 @@ function move_height(move) {
 }
 
 ///////////////////////////////////////////////
+// persona
+
+async function get_hum_persona_move(policy_profile,
+                                    peek_kata_raw_human_nn, update_ponder_surely,
+                                    dummy_profile, code) {
+    const reverse_temperature = 0.9
+    const param = generate_persona_param(code).get()
+    const desc = persona_param_str(param)
+    const eval_move = persona_evaluator(param)
+    const comment_title = `persona: ${policy_profile}, ${code} = ${desc}`
+    return get_move_gen({policy_profile, reverse_temperature, eval_move, comment_title,
+                         peek_kata_raw_human_nn, update_ponder_surely})
+}
+
+function persona_evaluator(param) {
+    return async (move, peek) => {
+        const profile = null  // null = normal katago
+        const ownership = (await peek([move], profile)).whiteOwnership.map(o => - o)
+        return [- eval_with_persona(ownership, R.stones, param, is_bturn())]
+    }
+}
+
+///////////////////////////////////////////////
 // util
 
 function profiles_around(rank_profile, delta) {
@@ -160,4 +186,5 @@ module.exports = {
     get_rankcheck_move,
     get_center_move,
     get_edge_move,
+    get_hum_persona_move,
 }

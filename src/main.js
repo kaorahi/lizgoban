@@ -1093,17 +1093,18 @@ function auto_genmove_p() {return auto_genmove_func() === genmove}
 function auto_genmove_func() {
     const strategy_ok = ['play', 'random_opening'].includes(auto_playing_strategy)
     const maybe = auto_playing() && strategy_ok; if (!maybe) {return null}
-    const weaken_method = get_auto_play_weaken()?.[0] || 'plain'
+    const [weaken_method, ...weaken_args] = get_auto_play_weaken() || ['plain']
     const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
     const rankcheck_etc = aa2hash([
         // [weaken_method, func]
         ['rankcheck', 'get_rankcheck_move'],
         ['center', 'get_center_move'],
         ['edge', 'get_edge_move'],
+        ['hum_persona', 'get_hum_persona_move'],
     ].map(([key, proc]) => [key, (dummy_sec, play_func) => {
         const args = [
             get_humansl_profile_in_match(true),
-            AI.peek_kata_raw_human_nn, update_ponder_surely,
+            AI.peek_kata_raw_human_nn, update_ponder_surely, ...weaken_args,
         ]
         const play_it = a => play_func(...a)
         return rankcheck_move[proc](...args).then(play_it)
@@ -1161,6 +1162,7 @@ function set_match_param(weaken) {
     auto_play_weaken =
         simple_method ? [simple_method] :
         (weaken === 'persona') ? ['persona', get_stored('persona_code'), get_stored('sanity'), adjust_sanity_p] :
+        (weaken === 'hum_persona') ? ['hum_persona', null, get_stored('persona_code')] :
         (m = weaken.match(/^policy([0-9.]+)$/)) ? ['policy', to_f(m[1])] :
         (m = weaken.match(/^([1-9])$/)) ? ['random_candidate', to_i(m[1]) * 10] :
         (m = weaken.match(/^-([0-9.]+)pt$/)) ? ['lose_score', to_f(m[1])] :
@@ -1544,7 +1546,7 @@ function get_humansl_profile_in_match(pasted_p) {
     const [weaken_method, ...weaken_args] = get_auto_play_weaken()
     const valid_weaken_sub = [
         'plain', 'plain_diverse', 'genmove', 'genmove_analyze',
-        'rankcheck', 'center', 'edge',
+        'rankcheck', 'center', 'edge', 'hum_persona',
     ]
     const sub_ok = !weaken_method || valid_weaken_sub.includes(weaken_method)
     const ok = main_p || (sub_p && sub_ok); if (!ok) {return false}
