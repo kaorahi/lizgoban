@@ -2,6 +2,15 @@
 
 # Release notes
 
+## LizGoban 0.8.0-pre8
+
+* Added stone sounds. You can disable them from the menu `View > Sound` or `Edit > Preferences`.
+* Minor fixes, etc.
+
+Incompatibilities:
+
+* Upgraded libraries (Electron 32, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+
 ## LizGoban 0.8.0-pre7
 
 An experimental strategy called "spar" has been added to the "match vs. AI" mode. Intended for practice, it's not focused on winning but on creating skill-testing situations for players of specific DAN or KYU ranks. Let's knock it out!
