@@ -344,12 +344,13 @@ function play(move, force_create, default_tag, comment, auto_play_in_match_sec) 
     // need to send 'play' to engine before auto_play_in_match,
     // that can send 'genmove' immediately.
     update_all()
-    pass && wink()
-    play_move_sound(pass)
+    apply_move_effect(pass)
     truep(auto_play_in_match_sec) &&
         auto_play_in_match(auto_play_in_match_sec, get_auto_moves_in_match())
     autosave_later()
 }
+function apply_move_effect(pass) {pass && wink(); play_move_sound(pass)}
+
 function black_to_play_now_p() {return black_to_play_p(R.forced_color_to_play, is_bturn())}
 function do_play(move, is_black, tag, note) {
     // We drop "double pass" to avoid halt of analysis by Leelaz.
@@ -1324,7 +1325,8 @@ function play_selected_weak_move(selected, weaken) {
     // need to avoid update_all in do_as_auto_play for pass_maybe
     // because set_board in update_all may call clear_board,
     // that cancels peek_value
-    do_as_auto_play(!is_pass(move), play_it, pass_maybe_p)
+    const pass = is_pass(move); pass && apply_move_effect(pass)
+    do_as_auto_play(!pass, play_it, pass_maybe_p)
 }
 function winrate_after(move_count) {
     return move_count < 0 ? NaN :
