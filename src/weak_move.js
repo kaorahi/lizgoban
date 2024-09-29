@@ -316,6 +316,7 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
 }
 
 function eval_with_persona(ownership, stones, param, is_bturn) {
+    const entropy_amplifier = 2.0
     const [my, your, space] = param
     const sign_for_me = is_bturn ? 1 : -1
     const my_color_p = z => !xor(z.black, is_bturn)
@@ -327,7 +328,7 @@ function eval_with_persona(ownership, stones, param, is_bturn) {
     const evaluate = (z, es) => {
         const [a, b, w] = weight(z, es), es_for_me = sign_for_me * es
         const entropy_term = (z.stone ? 1 : es_for_me) * endstate_entropy(es)
-        return [a * es_for_me + b * entropy_term, w]
+        return [a * es_for_me + b * entropy_amplifier * entropy_term, w]
     }
     const endstate = endstate_from_ownership(ownership)
     const collect_on_stones = f => aa_map(stones, f).flat().filter(truep)
