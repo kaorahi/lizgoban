@@ -25,11 +25,14 @@ function with_board_size(bsize, proc, ...args) {
 /////////////////////////////////////////////////
 // serial (<=> idx) <=> move
 
+function valid_serial_p(k) {return 0 <= k && k < board_size()**2}
+
 function serial2idx(k) {
+    if (!valid_serial_p(k)) {return idx_pass}
     const bsize = board_size(); return [Math.floor(k / bsize), k % bsize]
 }
 
-function serial2move(k) {return idx2move(...serial2idx(k))}
+function serial2move(k) {return idx2move(...serial2idx(k)) || pass_command}
 
 function idx2serial(i, j) {return i * board_size() + j}
 

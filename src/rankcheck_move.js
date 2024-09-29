@@ -33,12 +33,12 @@ async function get_move_gen(arg) {
     const ret = (move, comment) => (update_ponder_surely(), [move, comment])
     const scaling = p => (p || 0) ** reverse_temperature
     // proc
-    const p0 = (await peek([], policy_profile)).policy
+    const p0 = get_extended_policy(await peek([], policy_profile))
     const randomly_picked_policy = weighted_random_choice(p0, scaling)
     const randomly_picked_move = serial2move(p0.indexOf(randomly_picked_policy))
     // To avoid becoming too repetitive,
     // occasionally play randomly_picked_policy move.
-    if (Math.random() < policy_move_prob) {
+    if (Math.random() < policy_move_prob || randomly_picked_move === pass_command) {
         const order = sort_policy(p0).indexOf(randomly_picked_policy)
         const comment = `(${comment_title}) by ${policy_profile} policy: ` +
               `${round(randomly_picked_policy)} (order ${order})`
@@ -65,7 +65,7 @@ async function eval_rankcheck_move(move, profile_pair, peek) {
     const winrate_profile = null  // null = normal katago
     // util
     const peek_policies = async profiles => {
-        const f = async prof => (await peek([move], prof)).policy
+        const f = async prof => get_extended_policy(await peek([move], prof))
         return ordered_async_map(profiles, f)
     }
     const peek_winrates = async ms => {
@@ -162,6 +162,10 @@ function profiles_around(rank_profile, delta) {
 function prof_add(rank_profile, delta) {
     const a = humansl_rank_profiles, k = a.indexOf(rank_profile) + delta
     return a[clip(k, 0, a.length - 1)]
+}
+
+function get_extended_policy(raw_nn_output) {
+    return [...raw_nn_output.policy, ...raw_nn_output.policyPass]
 }
 
 function sort_policy(a) {return num_sort(a.filter(truep)).reverse()}
