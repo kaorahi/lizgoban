@@ -319,7 +319,6 @@ function eval_with_persona(ownership, stones, param, is_bturn) {
     const [my, your, space] = param
     const sign_for_me = is_bturn ? 1 : -1
     const my_color_p = z => !xor(z.black, is_bturn)
-    const my_ownership_p = es => sign_for_me * es > 0
     const weight = (z, es) => {
         const w = !z.stone ? space : my_color_p(z) ? my : your
         const [u, v] = is_a(w, 'number') ? [w, 0] : w
