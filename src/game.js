@@ -44,6 +44,7 @@ function create_game(init_history, init_prop) {
     const methods = {
         // mc = move_count (0: empty board, 1: first move, ...)
         len: () => history.length,
+        movenum: () => self.move_count - self.init_len,
         is_empty: () => empty(history),
         is_fresh: () => self.len() === self.init_len,
         is_bturn: (mc = self.move_count) => !self.ref(mc).is_black,

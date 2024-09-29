@@ -1306,7 +1306,7 @@ function try_play_weak(weaken, given_state) {
     const state = {
         orig_suggest: suggest,
         is_bturn: is_bturn(),
-        movenum: game.move_count - game.init_len,
+        movenum: game.movenum(),
         last_move: cur.move,
         stones: R.stones,
         orig_winrate: winrate_after(game.move_count),
@@ -1662,7 +1662,7 @@ function edit_middle(move) {
     new_game.brothers = [game]; replace(new_game); clear_sgf(true); update_branch()
 }
 function edit_middle_sub(move, stone_p) {
-    const last_move_p = move === game.ref_current().move && game.move_count > game.init_len
+    const last_move_p = move === game.ref_current().move && game.movenum() > 0
     const ed = game.edit_middle
     last_move_p ? ed(explicit_undo) : stone_p ? delete_move(move) : ed(play, move)
 }
@@ -1729,7 +1729,7 @@ const [set_long_busy_later, cancel_long_busy] =
 function is_long_busy() {return long_busy}
 function unset_long_busy() {long_busy = false; cancel_long_busy()}
 
-function undoable() {return game.move_count > game.init_len}
+function undoable() {return game.movenum() > 0}
 function redoable() {return game.len() > game.move_count}
 function pause() {pausing = true}
 function resume() {pausing = false}
