@@ -148,7 +148,7 @@ function persona_evaluator(param) {
     return async (move, peek) => {
         const profile = null  // null = normal katago
         const ownership = (await peek([move], profile)).whiteOwnership.map(o => - o)
-        return [eval_with_persona(ownership, R.stones, param, is_bturn())]
+        return eval_with_persona(ownership, R.stones, param, is_bturn())
     }
 }
 

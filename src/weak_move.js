@@ -310,7 +310,7 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
     if (!orig_suggest?.[0]?.movesOwnership) {return {persona_failed: 'analysis cache'}}
     const [my, your, space] = param
     const goodness = suggest =>
-          eval_with_persona(suggest.movesOwnership, stones, param, is_bturn)
+          eval_with_persona(suggest.movesOwnership, stones, param, is_bturn)[0]
     debug_log(`select_weak_move_by_moves_ownership: ${JSON.stringify({my, your, space, typical_order, threshold})}`)
     return select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, last_move, threshold)
 }
@@ -322,16 +322,20 @@ function eval_with_persona(ownership, stones, param, is_bturn) {
     const weight = (z, es) => {
         const w = !z.stone ? space : my_color_p(z) ? my : your
         const [u, v] = is_a(w, 'number') ? [w, 0] : w
-        return [u + v, u - v]
+        return [u + v, u - v, w]
     }
     const evaluate = (z, es) => {
-        const [a, b] = weight(z, es), es_for_me = sign_for_me * es
+        const [a, b, w] = weight(z, es), es_for_me = sign_for_me * es
         const entropy_term = (z.stone ? 1 : es_for_me) * endstate_entropy(es)
-        return a * es_for_me + b * entropy_term
+        return [a * es_for_me + b * entropy_term, w]
     }
-    const sum_on_stones = f => sum(aa_map(stones, f).flat().filter(truep))
     const endstate = endstate_from_ownership(ownership)
-    return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
+    const collect_on_stones = f => aa_map(stones, f).flat().filter(truep)
+    const ev = collect_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
+    const sum_by_klass = klass =>
+          sum(ev.map(([e, w]) => (w === klass) && e).filter(truep))
+    const sums = param.map(sum_by_klass)
+    return [sum(sums), ...sums]
 }
 
 function select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, last_move, threshold) {
