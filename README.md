@@ -211,9 +211,9 @@ on Mac or Linux. The latter option overwrites the former one in the second examp
 
 In addition, LizGoban reads external/config.json (and config.json in the "working directory" in the above (*1)) beforehand if they exist.
 
-#### <a name="sound"></a>To play stone sounds:
+#### <a name="sound"></a>To change stone sounds:
 
-Prepare the sound files by yourself and place them in the `external/` directory. Then add the entry "sound_file" to config.json as shown below. In this setup, one of the three sound files will be played randomly for each move.
+Place your sound files in the `external/` directory. Then add the entry "sound_file" to config.json as shown below. In this setup, one of the three sound files will be played randomly for each move.
 
 ~~~~
 {
@@ -329,7 +329,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 * Warn overlooked high-policy best moves by squares on stones.
 * Highlight settled areas by "v" key.
 * Make long press of cursor keys smoother.
-* Add sound feature. (You need to [prepare and set sound files](#sound) by yourself.)
+* Add sound feature.
 * Add a new strategy "spar" to "match vs. AI". It's focused on creating skill-testing situations.
 * Change playing style of persona strategy. This is still being tested and might change in the future.
 * Avoid unnatural tenuki in match vs. weakened AI.

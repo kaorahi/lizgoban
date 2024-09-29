@@ -45,6 +45,20 @@ const default_option = {
     screenshot_region_command: null,  // "slop"
     screenshot_capture_command: null,  // "maim -f png -g %s | xclip -t image/png -se c"
     sgf_from_image_archive_dir: null,
+    sound_file: {
+        stone: [
+            "../sound/put02.mp3",
+            "../sound/put03.mp3",
+            "../sound/put04.mp3",
+            "../sound/put05.mp3",
+        ],
+        capture: [
+            "../sound/capture18.mp3",
+            "../sound/capture20.mp3",
+            "../sound/capture58.mp3",
+        ],
+        pass: ["../sound/jara62.mp3"],
+    },
 }
 const option = {}
 let white_preset = []

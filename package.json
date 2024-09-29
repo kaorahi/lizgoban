@@ -25,9 +25,17 @@
   "build": {
     "files": [
       "src/{*.js,*.html,*.css,*.png}",
-      "src/sgf_from_image/{*.js,*.html,*.css,*.png}"
+      "src/sgf_from_image/{*.js,*.html,*.css,*.png}",
+      "sound/*.mp3"
     ],
     "extraFiles": [
+      {
+        "from": "sound",
+        "to": "resources/external",
+        "filter": [
+          "*.mp3"
+        ]
+      },
       {
         "from": "build_with/img",
         "to": "resources/external",

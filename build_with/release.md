@@ -85,3 +85,4 @@ Note that some external resources are also packaged into *.zip together with Liz
 
 * engines and neural networks: [KataGo](https://github.com/lightvector/KataGo/)
 * facial stone images: [Goisisan](https://www.asahi-net.or.jp/~hk6t-itu/igo/goisisan.html)
+* stone sounds: extracted from [OmnipotentEntity's Discord post](https://discord.com/channels/417022162348802048/417038123822743552/1251545825226526792)

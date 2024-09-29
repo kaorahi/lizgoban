@@ -1,5 +1,10 @@
 {
     "max_cached_engines": 2,
+    "sound_file": {
+        "stone": ["put02.mp3", "put03.mp3", "put04.mp3", "put05.mp3"],
+        "capture": ["capture18.mp3", "capture20.mp3", "capture58.mp3"],
+        "pass": ["jara62.mp3"]
+    },
     "face_image_rule": [
         [-0.8, "goisi_k4.png", "goisi_s4.png"],
         [-0.4, "goisi_k8.png", "goisi_s8.png"],
