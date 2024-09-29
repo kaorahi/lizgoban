@@ -680,7 +680,7 @@ function menu_template(win) {
         ...['black', 'white', 'common'].map(player =>
             item(`Paste to ${player} strategy`, undefined,
                  () => paste_to_auto_play_weaken_for_bw(player),
-                 true, get_current_match_param())),
+                 true, current_match_param_p())),
         ...[
             ['Swap b/w strategies', swap_auto_play_weaken_for_bw],
             ['Clear b/w strategies', clear_auto_play_weaken_for_bw],
@@ -1085,7 +1085,9 @@ function default_weaken() {
 
 // genmove as an exceptional auto-play
 function get_auto_play_weaken() {
-    return auto_play_weaken_for_current_bw() || auto_play_weaken
+    // !R.in_match is necessary for paste_to_auto_play_weaken_for_bw
+    const cur = !R.in_match && auto_play_weaken_for_current_bw()
+    return cur || auto_play_weaken
 }
 function auto_genmove_p() {return auto_genmove_func() === genmove}
 function auto_genmove_func() {
@@ -1095,7 +1097,7 @@ function auto_genmove_func() {
     const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
     const rankcheck = (dummy_sec, play_func) => {
         const args = [
-            get_humansl_profile_in_match(),
+            get_humansl_profile_in_match(true),
             AI.peek_kata_raw_human_nn, update_ponder_surely,
         ]
         get_rankcheck_move(...args).then(a => play_func(...a))
@@ -1180,9 +1182,7 @@ function auto_play_weaken_for_bw_p() {
     // !! to avoid undefined
     return !!['black', 'white'].find(get_auto_play_weaken_for_bw)
 }
-function get_current_match_param() {
-    return !empty(auto_play_weaken) && auto_play_weaken
-}
+function current_match_param_p() {return !empty(auto_play_weaken)}
 function paste_to_auto_play_weaken_for_bw(player) {
     const mp = get_current_match_param()
     if (!mp) {toast('Nothing to paste.'); return}
@@ -1518,18 +1518,35 @@ function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
 function set_humansl_profile_in_match(profile) {
     set_stored('humansl_profile_in_match', profile)
 }
-function get_humansl_profile_in_match() {
-    if (!R.in_match) {return false}
+function get_humansl_profile_in_match(pasted_p) {
+    // Note [2024-08-26]
+    // There are two possible approaches:
+    // 1. Read the current humansl_profile_in_match every time.
+    // 2. Record humansl_profile_in_match in advance into auto_play_weaken.
+    // When "match" is set to true in the preset,
+    // the humansl_profile_in_match_slider only appears after the engine loads.
+    // Therefore, we usually use approach 1.
+    // However, approach 2 is necessary for paste_to_auto_play_weaken_for_bw.
+    const valid = R.in_match || (pasted_p && auto_play_weaken_for_current_bw())
+    if (!valid) {return false}
     const features = ['main_model_humanSL', 'sub_model_humanSL']
     const [main_p, sub_p] = features.map(key => AI.is_supported(key))
-    const weaken_method = auto_play_weaken?.[0]
+    const [weaken_method, ...weaken_args] = get_auto_play_weaken()
     const valid_weaken_sub = [
         'plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'rankcheck',
     ]
     const sub_ok = !weaken_method || valid_weaken_sub.includes(weaken_method)
-    const ok = main_p || (sub_p && sub_ok)
-    return ok ? get_stored('humansl_profile_in_match') : false
+    const ok = main_p || (sub_p && sub_ok); if (!ok) {return false}
+    const recorded_prof = weaken_args[0]  // fragile assumption! (see below)
+    return true_or(recorded_prof, get_stored('humansl_profile_in_match'))
 }
+function get_current_match_param() {
+    const weaken = auto_play_weaken.slice()
+    const profile = get_humansl_profile_in_match()
+    truep(profile) && (weaken[1] = profile)  // fragile assumption! (see above)
+    return weaken
+}
+
 function info_text() {
     const f = (label, s) => s ?
           `<${label}>\n` + JSON.stringify(s) + '\n\n' : ''
@@ -1711,7 +1728,7 @@ function set_board() {
         handicaps, init_len,
         ownership_p,
         analysis_after_raw_nn_p: !auto_analyzing(),
-        tmp_humansl_profile: get_humansl_profile_in_match(),
+        tmp_humansl_profile: get_humansl_profile_in_match(true),
         avoid_resign_p: exercise_match_p,
         ...stored,
     }
