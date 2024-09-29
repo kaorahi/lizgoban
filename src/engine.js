@@ -222,7 +222,9 @@ function create_leelaz () {
         const on_response = on_multiline_response_at_once(on_full_response)
         return [raw_nn, on_response, protect_p]
     }
-    const random_symmetry = () => random_int(8)
+    let current_symmetry = 0
+    const randomize_symmetry = () => {current_symmetry = random_int(8)}
+    const random_symmetry = () => current_symmetry
 
     const genmove = (sec, callback) => {
         const cancellable = is_supported('kata-search_cancellable')
@@ -621,6 +623,7 @@ function create_leelaz () {
               {move_count: history.length, bturn: new_bturn}
         const dummy_command = `lizgoban_set ${JSON.stringify(new_state)}`
         const on_response = () => ({move_count, bturn} = new_state)
+        randomize_symmetry()
         need_raw_nn_p = true
         leelaz(dummy_command, on_response); update()
     }
