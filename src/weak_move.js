@@ -310,6 +310,14 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
     if (!is_moves_ownership_supported) {return {persona_failed: 'engine'}}
     if (!orig_suggest?.[0]?.movesOwnership) {return {persona_failed: 'analysis cache'}}
     const [my, your, space] = param
+    const goodness = suggest =>
+          eval_with_persona(suggest.movesOwnership, stones, param, is_bturn)
+    debug_log(`select_weak_move_by_moves_ownership: ${JSON.stringify({my, your, space, typical_order, threshold})}`)
+    return select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, last_move, threshold)
+}
+
+function eval_with_persona(ownership, stones, param, is_bturn) {
+    const [my, your, space] = param
     const sign_for_me = is_bturn ? 1 : -1
     const my_color_p = z => !xor(z.black, is_bturn)
     const my_ownership_p = es => sign_for_me * es > 0
@@ -324,13 +332,8 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
         return sign_for_me * (a * es + b * entropy_term)
     }
     const sum_on_stones = f => sum(aa_map(stones, f).flat().filter(truep))
-    const goodness = suggest => {
-        const copied_ownership = [...suggest.movesOwnership]
-        const endstate = endstate_from_ownership_destructive(copied_ownership)
-        return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
-    }
-    debug_log(`select_weak_move_by_moves_ownership: ${JSON.stringify({my, your, space, typical_order, threshold})}`)
-    return select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, last_move, threshold)
+    const endstate = endstate_from_ownership_destructive(ownership.slice())
+    return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
 }
 
 function select_weak_move_by_goodness_order(orig_suggest, goodness, typical_order, last_move, threshold) {
