@@ -10,7 +10,7 @@ async function get_rankcheck_move(rank_profile,
     const eval_move = async (move, peek) =>
           eval_rankcheck_move(move, profile_pair, peek)
     const comment_title = `rankcheck ${profile_pair.join('/')}`
-    const reverse_temperature = 1.0
+    const reverse_temperature = 0.9
     return get_move_gen({policy_profile, reverse_temperature, eval_move, comment_title,
                          peek_kata_raw_human_nn, update_ponder_surely})
 }
