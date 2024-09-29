@@ -25,7 +25,7 @@ async function get_move_gen(arg) {
     const {policy_profile, reverse_temperature, eval_move, comment_title,
            peek_kata_raw_human_nn, update_ponder_surely} = arg
     // param
-    const max_candidates = 8, policy_move_prob = 0.1
+    const max_candidates = 8, policy_move_prob = 0.1, policy_move_max_candidates = 50
     // util
     const peek = (moves, profile) =>
           new Promise((res, rej) => peek_kata_raw_human_nn(moves, profile || '', res))
@@ -34,12 +34,13 @@ async function get_move_gen(arg) {
     const scaling = p => (p || 0) ** reverse_temperature
     // proc
     const p0 = get_extended_policy(await peek([], policy_profile))
-    const randomly_picked_policy = weighted_random_choice(p0, scaling)
+    const sorted_p0 = sort_policy(p0).slice(0, policy_move_max_candidates)
+    const randomly_picked_policy = weighted_random_choice(sorted_p0, scaling)
     const randomly_picked_move = serial2move(p0.indexOf(randomly_picked_policy))
     // To avoid becoming too repetitive,
     // occasionally play randomly_picked_policy move.
     if (Math.random() < policy_move_prob || randomly_picked_move === pass_command) {
-        const order = sort_policy(p0).indexOf(randomly_picked_policy)
+        const order = sorted_p0.indexOf(randomly_picked_policy)
         const comment = `(${comment_title}) by ${policy_profile} policy: ` +
               `${round(randomly_picked_policy)} (order ${order})`
         return ret(randomly_picked_move, comment)
