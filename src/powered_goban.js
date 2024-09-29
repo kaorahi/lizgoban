@@ -64,9 +64,9 @@ function suggest_handler(h) {
     const mc = game.move_count, cur = game.ref(mc) || {}
     const engine_id = h.engine_id + (h.is_suggest_by_genmove ? 'genmove' : '')
     h.suggest = h.suggest.filter(considerable)
-    h.ownership && (h.endstate = endstate_from_ownership_destructive(h.ownership))
+    h.ownership && (h.endstate = endstate_from_ownership(h.ownership))
     h.ownership_stdev &&
-        (h.endstate_stdev = endstate_from_ownership_destructive(h.ownership_stdev))
+        (h.endstate_stdev = endstate_from_ownership(h.ownership_stdev))
     h.endstate && (h.endstate_surprise = endstate_surprise(h.endstate))
     !empty(h.suggest) && (h.score_stdev = h.suggest[0].scoreStdev)
     !cur.by && (cur.by = {}); !cur.by[engine_id] && (cur.by[engine_id] = {})

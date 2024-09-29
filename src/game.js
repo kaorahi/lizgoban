@@ -377,7 +377,7 @@ function parse_lizzie072_cache(lizzie_cache, bturn, komi) {
     const s = 'info ' + m[1]
     const ret = safely(parse_analyze, s, bturn, komi); if (!ret) {return fail}
     ret.ownership &&
-        (ret.endstate = endstate_from_ownership_destructive(ret.ownership))
+        (ret.endstate = endstate_from_ownership(ret.ownership))
     return ret
 }
 

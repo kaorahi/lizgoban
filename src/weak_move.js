@@ -332,7 +332,7 @@ function eval_with_persona(ownership, stones, param, is_bturn) {
         return sign_for_me * (a * es + b * entropy_term)
     }
     const sum_on_stones = f => sum(aa_map(stones, f).flat().filter(truep))
-    const endstate = endstate_from_ownership_destructive(ownership.slice())
+    const endstate = endstate_from_ownership(ownership)
     return sum_on_stones((z, i, j) => evaluate(z, endstate[i][j]))
 }
 
