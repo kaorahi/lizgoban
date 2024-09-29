@@ -5,26 +5,41 @@
 
 async function get_rankcheck_move(rank_profile,
                                   peek_kata_raw_human_nn, update_ponder_surely) {
-    // param
     const policy_profile = rank_profile || 'rank_9d'
     const rank_delta = 2, profile_pair = profiles_around(policy_profile, rank_delta)
+    const eval_move = async (move, peek) =>
+          eval_rankcheck_move(move, profile_pair, peek)
+    const comment_title = `rankcheck ${profile_pair.join('/')}`
+    const reverse_temperature = 1.0
+    return get_move_gen({policy_profile, reverse_temperature, eval_move, comment_title,
+                         peek_kata_raw_human_nn, update_ponder_surely})
+}
+
+async function get_move_gen(arg) {
+    // "eval_move" is an async function that returns [badness, ...rest],
+    // where "badness" is the target value which should be minimized
+    // and "rest" is only used in the move comment.
+    const {policy_profile, reverse_temperature, eval_move, comment_title,
+           peek_kata_raw_human_nn, update_ponder_surely} = arg
+    // param
     const max_candidates = 8, policy_move_prob = 0.1
     // util
     const peek = (moves, profile) =>
-          new Promise((res, rej) => peek_kata_raw_human_nn(moves, profile, res))
-    const evaluate = async move => eval_move(move, profile_pair, peek)
+          new Promise((res, rej) => peek_kata_raw_human_nn(moves, profile || '', res))
+    const evaluate = async move => eval_move(move, peek)
     const ret = (move, comment) => (update_ponder_surely(), [move, comment])
+    const scaling = p => (p || 0) ** reverse_temperature
     // proc
     const p0 = (await peek([], policy_profile)).policy
-    const randomly_picked_policy = weighted_random_choice(p0, z => z || 0)
+    const randomly_picked_policy = weighted_random_choice(p0, scaling)
+    const randomly_picked_move = serial2move(p0.indexOf(randomly_picked_policy))
     // To avoid becoming too repetitive,
     // occasionally play randomly_picked_policy move.
     if (Math.random() < policy_move_prob) {
-        const selected = serial2move(p0.indexOf(randomly_picked_policy))
         const order = sort_policy(p0).indexOf(randomly_picked_policy)
-        const comment = `(rankcheck) by ${policy_profile} policy: ` +
+        const comment = `(${comment_title}) by ${policy_profile} policy: ` +
               `${round(randomly_picked_policy)} (order ${order})`
-        return ret(selected, comment)
+        return ret(randomly_picked_move, comment)
     }
     // To exclude minor moves naturally,
     // use randomly_picked_policy as the lower bound.
@@ -34,14 +49,14 @@ async function get_rankcheck_move(rank_profile,
     const top_moves = top_indices.map(serial2move)
     const evals = await ordered_async_map(top_moves, evaluate)
     const selected = min_by(top_moves, (_, k) => evals[k][0])
-    const comment = `(rankcheck ${profile_pair.join('/')}) ` +
+    const comment = `(${comment_title}) ` +
           `Select ${selected} from [${top_moves.join(',')}].\n` +
           `policy = [${round(top_policies).join(', ')}]\n` +
           `eval = ${JSON.stringify(round(evals))}`
     return ret(selected, comment)
 }
 
-async function eval_move(move, profile_pair, peek) {
+async function eval_rankcheck_move(move, profile_pair, peek) {
     // param
     const winrate_samples = 5, evenness_coef = 0.1
     const winrate_profile = null  // null = normal katago
