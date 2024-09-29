@@ -209,12 +209,16 @@ Try Ctrl+z to recover lost boards after unintentional quit.
 <h3>Play against (weakened) engine</h3>
 
 <p>
-Click "Match vs. AI" in "File" menu and select the AI strategy from the pull down menu beside "vs.".
+In "File" menu, click "Match vs. AI", then select the AI strategy from the pull-down menu next to "vs.".
 <ul>
  <li>normal: full strength</li>
  <li>diverse: full strength except for random variations in opening</li>
- <li>persona: weak bots with various playing styles (only for KataGo v1.11.0 or later)</li>
- <li>spar: create skill-testing situations (only for KataGo v1.15.0 or later with `-human-model` option.)</li>
+</ul>
+For KataGo v1.15.0 or later, if you are using `-human-model` option, you can adjust the AI's strength with the rank slider. The following strategies are also enabled in this case.
+<ul>
+ <li>persona: bots with various playing styles</li>
+ <li>spar: create skill-testing situations</li>
+ <li>center/edge: prefer center/edge moves</li>
 </ul>
 When you select "persona", you can pick any of these bots from "..." button.
 <ul>
@@ -222,7 +226,6 @@ When you select "persona", you can pick any of these bots from "..." button.
  <li>Virtual opponents: Input any name. LizGoban generates a bot with the parameters based on its name. Try various names to find your favorite opponents.</li>
  <li>Predefined characters: Click the named buttons. ("envy" etc.)</li>
 </ul>
-You can also adjust "sanity" slider anytime, or check "auto" for auto-adjusting. Note that unreasonable strategies can be still tough if you set high "sanity" because the moves are selected only in major suggestions by AI.
 </p>
 
 <p>
