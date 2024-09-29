@@ -2628,7 +2628,7 @@ function start_repl() {
     const repl_context = {
         // unoffical: may be changed in future
         game, sequence, sequence_cursor, option, R, api, update_all,
-        electron,
+        electron, P, AI,
         // official
         mimic, app,
     }
