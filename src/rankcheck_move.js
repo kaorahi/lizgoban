@@ -51,7 +51,7 @@ async function get_move_gen(arg) {
     const top_policies = top_indices.map(k => p0[k])
     const top_moves = top_indices.map(serial2move)
     const evals = await ordered_async_map(top_moves, evaluate)
-    const selected = min_by(top_moves, (_, k) => evals[k][0])
+    const selected = min_by(top_moves, (_, k) => - evals[k][0])  // find max
     const comment = `(${comment_title}) ` +
           `Select ${selected} from [${top_moves.join(',')}].\n` +
           `policy = [${round(top_policies).join(', ')}]\n` +
@@ -97,7 +97,7 @@ async function eval_rankcheck_move(move, profile_pair, peek) {
     const mean = (wr_s + wr_w) / 2, diff = wr_s - wr_w
     // maximize "diff" and keep "mean" near 0.5
     const badness = (diff - 1)**2 + evenness_coef * (mean - 1/2)**2
-    return [badness, wr_s, wr_w]
+    return [- badness, wr_s, wr_w]
 }
 
 ///////////////////////////////////////////////
@@ -105,13 +105,13 @@ async function eval_rankcheck_move(move, profile_pair, peek) {
 
 async function get_center_move(policy_profile,
                                peek_kata_raw_human_nn, update_ponder_surely) {
-    return get_move_by_height(-1, policy_profile, 'center',
+    return get_move_by_height(+1, policy_profile, 'center',
                               peek_kata_raw_human_nn, update_ponder_surely)
 }
 
 async function get_edge_move(policy_profile,
                              peek_kata_raw_human_nn, update_ponder_surely) {
-    return get_move_by_height(+1, policy_profile, 'edge',
+    return get_move_by_height(-1, policy_profile, 'edge',
                               peek_kata_raw_human_nn, update_ponder_surely)
 }
 
@@ -148,7 +148,7 @@ function persona_evaluator(param) {
     return async (move, peek) => {
         const profile = null  // null = normal katago
         const ownership = (await peek([move], profile)).whiteOwnership.map(o => - o)
-        return [- eval_with_persona(ownership, R.stones, param, is_bturn())]
+        return [eval_with_persona(ownership, R.stones, param, is_bturn())]
     }
 }
 
