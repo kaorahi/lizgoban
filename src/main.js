@@ -1026,8 +1026,12 @@ function try_auto_play(force_next) {
         play: () => try_play_weak(current_auto_play_weaken()),
         random_opening: () => try_play_weak(['random_opening']),
     }[auto_playing_strategy]
+    const do_proc = () => {
+        doing_auto_play_p = true
+        let_me_think_play(proc)
+    }
     force_next && (last_auto_play_time = - Infinity)
-    auto_play_ready() && ((doing_auto_play_p = true), let_me_think_play(proc))
+    auto_play_ready() && do_proc()
     update_let_me_think(true)
 }
 function current_auto_play_weaken() {
