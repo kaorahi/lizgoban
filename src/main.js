@@ -40,7 +40,7 @@ const jschardet = require('jschardet'), iconv = require('iconv-lite')
 const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 const {select_weak_move, weak_move_prop} = require('./weak_move.js')
-const {get_rankcheck_move} = require('./rankcheck_move.js')
+const rankcheck_move = require('./rankcheck_move.js')
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
@@ -1095,15 +1095,20 @@ function auto_genmove_func() {
     const maybe = auto_playing() && strategy_ok; if (!maybe) {return null}
     const weaken_method = get_auto_play_weaken()?.[0] || 'plain'
     const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
-    const rankcheck = (dummy_sec, play_func) => {
+    const rankcheck_etc = aa2hash([
+        // [weaken_method, func]
+        ['rankcheck', 'get_rankcheck_move'],
+    ].map(([key, proc]) => [key, (dummy_sec, play_func) => {
         const args = [
             get_humansl_profile_in_match(true),
             AI.peek_kata_raw_human_nn, update_ponder_surely,
         ]
-        get_rankcheck_move(...args).then(a => play_func(...a))
-    }
+        const play_it = a => play_func(...a)
+        return rankcheck_move[proc](...args).then(play_it)
+    }]))
     const func_for_method = {
-        genmove, genmove_analyze, rankcheck,
+        genmove, genmove_analyze,
+        ...rankcheck_etc,
         plain: search_analyze,
         plain_diverse: search_analyze,
     }
