@@ -302,10 +302,9 @@ function adjust_sanity(state, sanity) {
 
 function select_weak_move_by_moves_ownership(state, param, typical_order, threshold) {
     // goodness = sum of evaluation over the board
-    // evaluation = weight * ownership_from_my_side (= AI side)
-    // weight = MY (on my stone), YOUR (on your stone), or SPACE
-    // (ex.) your = [1.0, 0.1] means "Try to kill your stones
-    // eagerly if they seems alive and slightly if they seems rather dead".
+    // evaluation = w[0] * ownership_from_my_side(=AI_side) + w[1] * entropy_term
+    // w = [u + v, u - v]
+    // [u, v] = MY (on my stone), YOUR (on your stone), or SPACE
     const {orig_suggest, is_bturn, last_move, stones, is_moves_ownership_supported} = state
     if (!is_moves_ownership_supported) {return {persona_failed: 'engine'}}
     if (!orig_suggest?.[0]?.movesOwnership) {return {persona_failed: 'analysis cache'}}
