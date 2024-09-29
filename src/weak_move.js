@@ -19,6 +19,7 @@ function weak_move_prop(prop, weaken) {
     const prop_table = {
         has_option_p: ['persona'],
         force_ownership_p: ['persona'],
+        sanity_p: ['persona'],
     }
     return prop_table[prop].includes(weaken[0])
 }
