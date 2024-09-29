@@ -1096,23 +1096,9 @@ function auto_genmove_func() {
     const maybe = auto_playing() && strategy_ok; if (!maybe) {return null}
     const [weaken_method, ...weaken_args] = get_auto_play_weaken() || ['plain']
     const search_analyze = AI.is_supported('kata-search_cancellable') && genmove_analyze
-    const rankcheck_etc = aa2hash([
-        // [weaken_method, func]
-        ['rankcheck', 'get_rankcheck_move'],
-        ['center', 'get_center_move'],
-        ['edge', 'get_edge_move'],
-        ['hum_persona', 'get_hum_persona_move'],
-    ].map(([key, proc]) => [key, (dummy_sec, play_func) => {
-        const args = [
-            get_humansl_profile_in_match(true),
-            AI.peek_kata_raw_human_nn, update_ponder_surely, ...weaken_args,
-        ]
-        const play_it = a => play_func(...a)
-        return rankcheck_move[proc](...args).then(play_it)
-    }]))
     const func_for_method = {
         genmove, genmove_analyze,
-        ...rankcheck_etc,
+        ...rankcheck_family_table(weaken_args),
         plain: search_analyze,
         plain_diverse: search_analyze,
     }
@@ -1131,6 +1117,23 @@ function start_auto_genmove_maybe() {
     }
     resume(); update_all()  // just for bright board effect
     genmove_func(auto_play_sec, play_func)
+}
+function rankcheck_family_table(weaken_args) {
+    const rankcheck_etc = aa2hash([
+        // [weaken_method, func]
+        ['rankcheck', 'get_rankcheck_move'],
+        ['center', 'get_center_move'],
+        ['edge', 'get_edge_move'],
+        ['hum_persona', 'get_hum_persona_move'],
+    ].map(([key, proc]) => [key, (dummy_sec, play_func) => {
+        const args = [
+            get_humansl_profile_in_match(true),
+            AI.peek_kata_raw_human_nn, update_ponder_surely, ...weaken_args,
+        ]
+        const play_it = a => play_func(...a)
+        return rankcheck_move[proc](...args).then(play_it)
+    }]))
+    return rankcheck_etc
 }
 
 // match
