@@ -1149,7 +1149,10 @@ function stop_match(window_id) {
 
 function set_match_param(weaken) {
     let m
-    const literal = ['plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'best', 'rankcheck', 'center', 'edge']
+    const literal = [
+        'plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'best',
+        'rankcheck', 'center', 'edge',
+    ]
     const alias = {
         diverse: 'random_opening',
         pass: 'pass_maybe',
@@ -1540,8 +1543,8 @@ function get_humansl_profile_in_match(pasted_p) {
     const [main_p, sub_p] = features.map(key => AI.is_supported(key))
     const [weaken_method, ...weaken_args] = get_auto_play_weaken()
     const valid_weaken_sub = [
-        'plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'rankcheck',
-        'center', 'edge',
+        'plain', 'plain_diverse', 'genmove', 'genmove_analyze',
+        'rankcheck', 'center', 'edge',
     ]
     const sub_ok = !weaken_method || valid_weaken_sub.includes(weaken_method)
     const ok = main_p || (sub_p && sub_ok); if (!ok) {return false}
