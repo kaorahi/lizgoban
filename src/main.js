@@ -1030,13 +1030,14 @@ function try_auto_play(force_next) {
     }[auto_playing_strategy]
     const do_proc = () => {
         doing_auto_play_p = true
-        // clean me: need to call do_as_auto_play explicitly for "resign"
-        // to clear doing_auto_play_p
-        const do_resign = () => {resign(); do_as_auto_play(false, do_nothing)}
-        let_me_think_play(() => should_resign_p(game, R) ? do_resign() : proc())
+        const f = () => {
+            should_resign_p(game, R) ? resign() : proc()
+            doing_auto_play_p = false
+        }
+        let_me_think_play(f)
     }
     force_next && (last_auto_play_time = - Infinity)
-    auto_play_ready() && do_proc()
+    auto_play_ready() && !doing_auto_play_p && do_proc()
     update_let_me_think(true)
 }
 function current_auto_play_weaken() {
@@ -1048,10 +1049,9 @@ function current_auto_play_weaken() {
     return auto_play_weaken_for_current_bw() || partner_weaken || auto_play_weaken
 }
 function auto_play_ready() {
-    return !doing_auto_play_p && !R.is_suggest_by_genmove && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
+    return !R.is_suggest_by_genmove && !empty(P.orig_suggest()) && Date.now() - last_auto_play_time >= auto_play_sec * 1000
 }
 function do_as_auto_play(playable, proc, silent) {
-    doing_auto_play_p = false
     // to avoid color flicker of progress bar, clear it before proc()
     const u = update_auto_play_time, do_it = () => {u(); proc(); u()}
     const stop_it = () => {stop_auto_play(), pause(), update_all()}
@@ -1090,6 +1090,7 @@ function decrement_auto_play_count() {
 }
 function stop_auto_play() {
     scheduled_auto_play_proc()  // call this to clear the value
+    doing_auto_play_p = false  // safety for recovery from irregular cases
     if (!auto_playing()) {return}
     auto_play_count = 0; let_me_think_exit_autoplay()
 }
