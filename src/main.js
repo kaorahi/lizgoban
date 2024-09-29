@@ -41,6 +41,7 @@ const {gzipSync, gunzipSync} = require('zlib')
 const {katago_supported_rules, katago_rule_from_sgf_rule} = require('./katago_rules.js')
 const {select_weak_move, weak_move_prop} = require('./weak_move.js')
 const rankcheck_move = require('./rankcheck_move.js')
+const {should_resign_p} = require('./resign.js')
 const {
     exercise_filename, is_exercise_filename, exercise_move_count, exercise_board_size,
     update_exercise_metadata_for, get_all_exercise_metadata,
@@ -1029,7 +1030,10 @@ function try_auto_play(force_next) {
     }[auto_playing_strategy]
     const do_proc = () => {
         doing_auto_play_p = true
-        let_me_think_play(proc)
+        // clean me: need to call do_as_auto_play explicitly for "resign"
+        // to clear doing_auto_play_p
+        const do_resign = () => {resign(); do_as_auto_play(false, do_nothing)}
+        let_me_think_play(() => should_resign_p(game, R) ? do_resign() : proc())
     }
     force_next && (last_auto_play_time = - Infinity)
     auto_play_ready() && do_proc()
