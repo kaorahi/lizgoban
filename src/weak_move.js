@@ -222,10 +222,10 @@ function weak_move_etc_by_persona(state, persona_code, current_sanity, adjust_sa
     const log_threshold_range = threshold_range.map(Math.log)
     const [trans, ] = translator_pair(sanity_range, log_threshold_range)
     const threshold = Math.exp(trans(sanity))
-    const {suggest, order, ordered} =
+    const {suggest, order, ordered, persona_failed} =
           select_weak_move_by_moves_ownership(state, param, typical_order, threshold)
-    if (!suggest) {
-        const com = 'Play normally because persona is not supported for this engine.'
+    if (persona_failed) {
+        const com = `Play normally because persona is not supported for this ${persona_failed}.`
         return commented_best_move(state, com)
     }
     const {move} = suggest
@@ -302,7 +302,8 @@ function select_weak_move_by_moves_ownership(state, param, typical_order, thresh
     // (ex.) your = [1.0, 0.1] means "Try to kill your stones
     // eagerly if they seems alive and slightly if they seems rather dead".
     const {orig_suggest, is_bturn, last_move, stones, is_moves_ownership_supported} = state
-    if (!is_moves_ownership_supported) {return {}}
+    if (!is_moves_ownership_supported) {return {persona_failed: 'engine'}}
+    if (!orig_suggest?.[0]?.movesOwnership) {return {persona_failed: 'analysis cache'}}
     const [my, your, space] = param
     const sign_for_me = is_bturn ? 1 : -1
     const my_color_p = z => !xor(z.black, is_bturn)
