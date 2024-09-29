@@ -1140,7 +1140,7 @@ function stop_match(window_id) {
 
 function set_match_param(weaken) {
     let m
-    const literal = ['plain_diverse', 'genmove', 'genmove_analyze', 'best', 'rankcheck']
+    const literal = ['plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'best', 'rankcheck']
     const alias = {
         diverse: 'random_opening',
         pass: 'pass_maybe',
