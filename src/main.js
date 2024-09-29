@@ -368,8 +368,9 @@ function resign() {
 function undo() {undo_ntimes(1)}
 function redo() {redo_ntimes(1)}
 function explicit_undo() {
-    game.move_count <= game.init_len ? wink() :
-        game.move_count < game.len() ? undo() : wink_if_pass(delete_last_move)
+    !undoable() ? wink() :
+        // delete if the last move, just undo otherwise
+        redoable() ? undo() : wink_if_pass(delete_last_move)
 }
 function delete_last_move() {game.pop(); update_branch(); autosave_later()}
 function pass() {play(pass_command)}
