@@ -518,6 +518,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         return
     }
     // (1) halo, (2) shadow, (3) stone etc. in this order
+    each_coord((h, xy, idx) => draw_halo_around_hot_stone(h, xy, stone_radius, g))
     R.lizzie_style && !R.busy &&
         each_coord((h, xy, idx) => draw_halo_lizzie(h, xy, stone_radius, g))
     each_coord((h, xy, idx) => draw_shadow_maybe(h, xy, stone_radius, cheap_shadow_p, g))
@@ -860,6 +861,21 @@ function draw_halo_lizzie(h, xy, stone_radius, g) {
     const width = next_move_line_width * 1.5
     const radius = stone_radius + width / 2
     g.strokeStyle = '#0f0'; g.lineWidth = width; circle(xy, radius, g)
+}
+
+function draw_halo_around_hot_stone(h, xy, stone_radius, g) {
+    const abs_es_thresh = 0.5, alpha_max = 0.3, relative_radius = 1.5
+    if (!gray_stone_by_endstate_p(h)) {return}
+    const abs_es = truep(h.endstate) && Math.abs(h.endstate)
+    if (abs_es > abs_es_thresh) {return}
+    const r0 = stone_radius, r1 = stone_radius * relative_radius
+    const radius = (r0 + r1) * 0.5, width = r1 - r0
+    const alpha = (1 - abs_es) * alpha_max
+    const [c0, c1] = [alpha, 0].map(a => `rgba(255,0,0,${a})`)
+    g.save()
+    g.strokeStyle = radial_gradation(...xy, r0, r1, c0, c1, g)
+    g.lineWidth = width; circle(xy, radius, g)
+    g.restore()
 }
 
 function draw_minor_suggest(h, xy, radius, g) {
