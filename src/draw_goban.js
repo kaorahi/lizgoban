@@ -641,13 +641,13 @@ function draw_analysis_region(region, unit, idx2coord, g) {
 // stone
 
 function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
-    const {b_color, w_color, stone_image, style} = stone_style_for(h)
+    const stone_style = stone_style_for(h)
+    const {b_color, w_color, stone_image, style} = stone_style
     const hide_loss_p = h.suggest || h.future_stone
     const draw_stone_by_image = () => draw_square_image(stone_image, xy, radius, g)
     const with_gray_stone = (draw, ...args) => {
         draw(...args)
-        const gray_p = normal_stone_color_p(b_color, w_color) && h.gray_by_endstate
-        if (!gray_p) {return}
+        if (!gray_stone_by_endstate_p(h, stone_style)) {return}
         const c = R.gray_brightness_by_endstate, alpha = h.gray_by_endstate
         g.strokeStyle = g.fillStyle = `rgba(${c},${c},${c},${alpha})`
         draw(...args)
@@ -670,6 +670,12 @@ function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
     draw_last_p && h.last && h.move_count > R.init_len &&
         draw_last_move(h, xy, radius, g)
     h.movenums && draw_movenums(h, xy, radius, g)
+}
+
+function gray_stone_by_endstate_p(h, stone_style) {
+    if (!(h.stone && h.gray_by_endstate)) {return false}
+    const {b_color, w_color} = stone_style || stone_style_for(h)
+    return normal_stone_color_p(b_color, w_color)
 }
 
 function stone_style_for(h) {
