@@ -689,11 +689,11 @@ function menu_template(win) {
             ['Clear b/w strategies', clear_auto_play_weaken_for_bw],
         ].map(([l, a]) => item(l, undefined, a, true, auto_play_weaken_for_bw_p())),
         sep,
-        item('Import diagram image', 'Meta+i', open_demo_image),
+        item('Import diagram image', 'Alt+CmdOrCtrl+Shift+i', open_demo_image),
         option.screenshot_region_command &&
             item('Set screenshot region', undefined, set_screenshot_region),
         option.screenshot_capture_command &&
-            item('Capture screenshot', 'Meta+c', capture_screenshot),
+            item('Capture screenshot', 'Alt+CmdOrCtrl+Shift+c', capture_screenshot),
         sep,
         {role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'},
         sep,
