@@ -1437,7 +1437,7 @@ function play_move_sound(pass_p) {
     c.ko_state || game.current_stones()
     pass_p === undefined && (pass_p = is_pass(c.move))
     const move_type = pass_p ? 'pass' :
-          c.ko_state.captured ? 'capture' : 'stone'
+          c.ko_state?.captured ? 'capture' : 'stone'
     const path = option_expand_path(random_choice(sound_file[move_type]))
     path && renderer('play_sound', path)
 }
