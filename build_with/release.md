@@ -34,7 +34,7 @@ Further updates:
 * Deprecate the display of preferred moves by "AIs for handicap games".
 * Deprecate homemade "aggressiveness" features and rely on the native KataGo features.
 
-Incompatibilities from 0.7.*:
+Incompatibilities with 0.7.*:
 
 * Change the autosave format.
 * Upgrade libraries (Electron 32, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
