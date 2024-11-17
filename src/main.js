@@ -964,7 +964,7 @@ function start_auto_analyze(visits, steps, on_finish) {
     if (!AI.engine_info().current.is_ready) {return}
     set_auto_analysis_signed_visits(visits); auto_analysis_steps = steps || 1
     on_auto_analyze_finished = on_finish || pause
-    rewind_maybe(); resume()
+    rewind_maybe(backward_auto_analysis_p()); resume()
 }
 function start_quick_overview() {
     start_auto_analyze(1, 15, is_pausing() ? pause : do_nothing)
@@ -982,9 +982,8 @@ function auto_analysis_progress() {
 }
 function auto_analysis_visits() {return Math.abs(auto_analysis_signed_visits)}
 function backward_auto_analysis_p() {return auto_analysis_signed_visits < 0}
-function rewind_maybe() {
-    backward_auto_analysis_p() ?
-        (undoable() || redo_to_end()) : (redoable() || undo_to_start())
+function rewind_maybe(backward_p) {
+    backward_p ? (undoable() || redo_to_end()) : (redoable() || undo_to_start())
 }
 stop_auto_analyze()
 
