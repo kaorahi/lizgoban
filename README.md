@@ -324,6 +324,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 * Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
 * Replace zone indicator with playing styles indicator.
 * Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
+* Add faint red rings around "hot" stones.
 * Add thin red background for "hot" periods in winrate graph.
 * Add "ambiguity of areas" (faint gray line) and "settled territories" (faint green/pink dots) to score graph.
 * Warn overlooked high-policy best moves by squares on stones.
