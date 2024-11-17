@@ -1000,7 +1000,6 @@ function start_auto_play(strategy, sec, count) {
 }
 function start_normal_auto_play(strategy, sec, count) {
     const replaying = (strategy === 'replay')
-    if (replaying && sec < 0) {start_auto_redo(sec); return}
     // var
     auto_playing_strategy = strategy
     auto_play_sec = true_or(sec, -1)
