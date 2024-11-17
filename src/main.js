@@ -95,7 +95,7 @@ let game; set_game(create_game_with_gorule(store.get('gorule', default_gorule)))
 let sequence = [game], sequence_cursor = 0
 let auto_analysis_signed_visits = Infinity, auto_play_count = 0
 let auto_analysis_steps = 1
-// auto_playing_strategy = 'play', 'replay', 'random_opening'
+// auto_playing_strategy = 'play', 'replay', 'undo', 'random_opening'
 let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null, exercise_match_p = false
@@ -999,13 +999,13 @@ function start_auto_play(strategy, sec, count) {
     start_auto_genmove_maybe()  // for special cases
 }
 function start_normal_auto_play(strategy, sec, count) {
-    const replaying = (strategy === 'replay')
     // var
     auto_playing_strategy = strategy
     auto_play_sec = true_or(sec, -1)
     truep(count) && (auto_play_count = count)
     // proc
-    replaying && rewind_maybe()
+    strategy === 'replay' && rewind_maybe()
+    strategy === 'undo' && rewind_maybe(true)
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
 }
 let the_scheduled_auto_play_proc = null
@@ -1023,6 +1023,7 @@ function try_auto_play(force_next) {
     if (auto_genmove_p()) {return}
     const proc = scheduled_auto_play_proc() || {
         replay: () => do_as_auto_play(redoable(), () => {redo(); play_move_sound()}),
+        undo: () => do_as_auto_play(undoable(), () => {undo(); play_move_sound()}),
         play: () => try_play_weak(current_auto_play_weaken()),
         random_opening: () => try_play_weak(['random_opening']),
     }[auto_playing_strategy]
@@ -1070,8 +1071,8 @@ function ask_auto_play_sec(win, replaying) {
     generic_input_dialog(win, label, default_auto_play_sec, channel, warning)
 }
 function submit_auto_play_or_replay(sec, replaying) {
-    const strategy = replaying ? 'replay' : default_strategy()
-    default_auto_play_sec = sec; start_auto_play(strategy, sec, Infinity)
+    const strategy = !replaying ? default_strategy() : sec < 0 ? 'undo' : 'replay'
+    default_auto_play_sec = sec; start_auto_play(strategy, Math.abs(sec), Infinity)
 }
 function submit_auto_play(sec) {submit_auto_play_or_replay(sec, false)}
 function submit_auto_replay(sec) {submit_auto_play_or_replay(sec, true)}
