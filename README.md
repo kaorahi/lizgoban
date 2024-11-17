@@ -318,9 +318,17 @@ For information about the displayed marks, shortcut keys, and other features, re
 
 ### 0.8.*
 
+Highlights:
+
 * Add "human-style" features for KataGo [1.15.0](https://github.com/lightvector/KataGo/releases/tag/v1.15.0).
   * Compare the policies between 5kyu and 1dan, for example. (a variation of [dfannius](https://github.com/dfannius)'s "policy heatmap")
   * Play human-like moves for the specified rank.
+* Add a new strategy "spar" to "match vs. AI". It's focused on creating skill-testing situations.
+* Add a sound feature.
+* Add "Open recent" to File menu.
+
+Further updates:
+
 * Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
 * Replace zone indicator with playing styles indicator.
 * Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
@@ -330,11 +338,8 @@ For information about the displayed marks, shortcut keys, and other features, re
 * Warn overlooked high-policy best moves by squares on stones.
 * Highlight settled areas by "v" key.
 * Make long press of cursor keys smoother.
-* Add sound feature.
-* Add a new strategy "spar" to "match vs. AI". It's focused on creating skill-testing situations.
 * Change playing style of persona strategy. This is still being tested and might change in the future.
 * Avoid unnatural tenuki in match vs. weakened AI.
-* Add "Open recent" to File menu.
 * Add random pair match.
 * Detect encoding of SGF files etc.
 * [Support TamaGo](#TamaGo).
@@ -343,6 +348,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 
 Incompatibilities:
 
+* Change the autosave format.
 * Upgrade libraries (Electron, etc.). So you may need to do "npm install" again.
 
 ### 0.7.*

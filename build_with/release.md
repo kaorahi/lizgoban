@@ -2,64 +2,42 @@
 
 # Release notes
 
-## LizGoban 0.8.0-pre8
+## LizGoban 0.8.0
 
-* Added stone sounds. You can disable them from the menu `View > Sound` or `Edit > Preferences`.
-* Minor fixes, etc.
+Highlights:
 
-Incompatibilities:
-
-* Upgraded libraries (Electron 32, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
-
-## LizGoban 0.8.0-pre7
-
-An experimental strategy called "spar" has been added to the "match vs. AI" mode. Intended for practice, it's not focused on winning but on creating skill-testing situations for players of specific DAN or KYU ranks. Let's knock it out!
-
-To test it:
-
-1. Download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`.
-2. From "Preset" menu, choose "Human-like Play". ("Human-like Analysis" is also ok.)
-3. From "File" menu, choose "Match vs. AI".
-4. Select "spar" in "vs." pulldown menu.
-5. Adjust the profile slider. (20k-9d)
-6. Click the board to place the first black stone, or click "start AI's turn" button to let the AI play black.
-
-## LizGoban 0.8.0-pre6
-
-This is just a temporary release for a debug feature on the asymmetric rank humanSL profile. This feature will be excluded from the next release.
-
-KataGo is upgraded to [1.15.3](https://github.com/lightvector/KataGo/releases/tag/v1.15.3).
-
-### To test the asymmetric rank humanSL profile on Windows
-
-(Sorry for the long steps. This is just a debug feature.)
-
-1. Download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`.
-2. From "Preset" menu, choose "Human-like Analysis".
-3. From "Tool" menu, choose "Experimental" > "Enable debug menu".
-4. From "Debug" menu, choose "Asymmetric humanSL rank" to toggle it on.
-5. From "Edit" menu, choose "Preferences" to open the dialog and adjust the sliders as you like. Toggle "Lizzie style" off if the display is hard to see.
-
-For example, you can set the blue slider to `rank_1d` and the red slider to `rank_5k` to compare the policies between "1d" and "1d against 5k". The former indicates "I'm 1d", while the latter indicates "I'm 1d and I know you're 5k". These policies, p and q, are shown by blue or red squares on the board (size = max(p,q), color = log(p/q)). Blue squares mean p > q, and red squares mean p < q.
-
-## LizGoban 0.8.0-pre5
-
-* Upgrade KataGo to [1.15.1](https://github.com/lightvector/KataGo/releases/tag/v1.15.1).
+* Upgrade KataGo to [1.15.3](https://github.com/lightvector/KataGo/releases/tag/v1.15.3).
 * Separate the model files from *.exe for larger models including a model for human-like style.
 * Add "human-style" features.
   * Compare the policies between 5kyu and 1dan, for example.
   * Play human-like moves for the specified rank.
+* Add a new strategy "spar" to "match vs. AI". It's focused on creating skill-testing situations.
+* Add a sound feature.
+* Add "Open recent" to File menu.
+
+Further updates:
+
+* Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
+* Replace zone indicator with playing styles indicator.
+* Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
+* Add faint red rings around "hot" stones.
+* Add thin red background for "hot" periods in winrate graph.
+* Add "ambiguity of areas" (faint gray line) and "settled territories" (faint green/pink dots) to score graph.
 * Warn overlooked high-policy best moves by squares on stones.
-* Avoid too stupid moves in persona strategy.
+* Highlight settled areas by "v" key.
+* Make long press of cursor keys smoother.
+* Change playing style of persona strategy. This is still being tested and might change in the future.
+* Avoid unnatural tenuki in match vs. weakened AI.
 * Add random pair match.
-* Deleted boards are also listed in "Open recent" menu.
+* Detect encoding of SGF files etc.
+* [Support TamaGo](#TamaGo).
 * Deprecate the display of preferred moves by "AIs for handicap games".
 * Deprecate homemade "aggressiveness" features and rely on the native KataGo features.
 
-Incompatibilities:
+Incompatibilities from 0.7.*:
 
 * Change the autosave format.
-* Upgrade libraries (Electron 31, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+* Upgrade libraries (Electron 32, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
 
 ### Human-style features
 
@@ -67,11 +45,19 @@ Choose "Human-like Analysis" or "Human-like Play" from "Preset" menu and refer t
 
 Thanks to [dfannius](https://github.com/dfannius); this analysis feature is a variation of his "policy heatmap".
 
+You can also play against the "spar" AI. Designed for practice, it focuses not on winning but on creating skill-testing situations for players of specific DAN or KYU ranks. Let's knock it out!
+
+1. From "Preset" menu, choose "Human-like Play". ("Human-like Analysis" is also ok.)
+2. From "File" menu, choose "Match vs. AI".
+3. Select "spar" in "vs." pulldown menu.
+4. Adjust the profile slider. (20k-9d)
+5. Click the board to place the first black stone, or click "start AI's turn" button to let the AI play black.
+
 ### To use it on 64bit Windows immediately
 
 Just download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
 
-* [KataGo 1.15.1](https://github.com/lightvector/KataGo/releases/tag/v1.15.1) (eigenavx2, opencl)
+* [KataGo 1.15.3](https://github.com/lightvector/KataGo/releases/tag/v1.15.3) (eigenavx2, opencl)
 * [18 block network](https://katagotraining.org/networks/) (kata1-b18c384nbt-s9996)
 * [human-trained network](https://github.com/lightvector/KataGo/releases/tag/v1.15.0) (b18c384nbt-humanv0)
 
