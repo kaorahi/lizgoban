@@ -30,7 +30,7 @@ Further updates:
 * Avoid unnatural tenuki in match vs. weakened AI.
 * Add random pair match.
 * Detect encoding of SGF files etc.
-* [Support TamaGo](#TamaGo).
+* [Support TamaGo](https://github.com/kobanium/TamaGo).
 * Deprecate the display of preferred moves by "AIs for handicap games".
 * Deprecate homemade "aggressiveness" features and rely on the native KataGo features.
 
