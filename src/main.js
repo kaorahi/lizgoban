@@ -2237,6 +2237,7 @@ function renderer_preferences() {
     return aa2hash(stored_keys_for_renderer.map(key_and_val))
 }
 
+// (auto_analysis_visits() is Infinity by default)
 function show_suggest_p() {return auto_playing() || auto_analysis_visits() >= 10}
 
 function availability() {
