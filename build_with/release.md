@@ -2,6 +2,13 @@
 
 # Release notes
 
+## LizGoban 0.8.1-pre1
+
+Just a test of an experimental feature ["next move quiz"](https://github.com/kaorahi/lizgoban/issues/120).
+
+* Add "Next move quiz" to View menu.
+* Upgrade libraries (Electron 33, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+
 ## LizGoban 0.8.0
 
 Highlights:
