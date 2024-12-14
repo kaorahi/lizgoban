@@ -288,6 +288,7 @@ function draw_goban(given_canvas, given_stones, opts) {
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
         draw_endstate_stdev_p, draw_endstate_cluster_p,
         draw_endstate_level_p,
+        draw_next_move_quiz_p,
         draw_humansl_comparison_p,
         read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
         hovered_move, show_until, analysis_region,
@@ -337,6 +338,8 @@ function draw_goban(given_canvas, given_stones, opts) {
         draw_endstate_cluster_p &&
         draw_endstate_clusters(draw_endstate_value_p, unit, idx2coord, g)
     analysis_region && draw_analysis_region(analysis_region, unit, idx2coord, g)
+    draw_next_move_quiz_p && main_canvas_p && !R.busy &&
+        draw_next_move_quiz(stones, unit, idx2coord, g)
     // mouse events
     const mouse_handler = handle_mouse_on_goban || do_nothing
     mouse_handler(bg_canvas, coord2idx, read_only)
@@ -634,6 +637,34 @@ function draw_analysis_region(region, unit, idx2coord, g) {
     const xy0 = idx2coord(imin - margin, jmin - margin)
     const xy1 = idx2coord(imax + margin, jmax + margin)
     g.strokeStyle = color; g.lineWidth = line_width; rect(xy0, xy1, g)
+}
+
+let last_draw_next_move_quiz = {}
+function draw_next_move_quiz(stones, unit, idx2coord, g) {
+    const f = (h, idx) =>
+          h.next_move && draw_next_move_quiz_sub(h, idx, unit, idx2coord, g)
+    each_stone(stones, f)
+}
+function draw_next_move_quiz_sub(h, idx, unit, idx2coord, g) {
+    const default_quiz_size = 8, bsize = board_size()
+    const quiz_size = clip(default_quiz_size, 1, Math.ceil(bsize / 2))
+    const quiz_margin = quiz_size < 4 ? 0 : 1
+    const line_width = 0.1 * unit, margin = 0.6 * unit
+    const rand_range = k => {
+        const k0_max = clip(k - quiz_margin, 0, bsize - quiz_size)
+        const k0_min = clip(k - quiz_size + quiz_margin + 1, 0, k0_max)
+        const k0 = random_choice(seq_from_to(k0_min, k0_max))
+        return [k0, k0 + quiz_size - 1]
+    }
+    const move = idx2move(...idx)
+    const update_p = (last_draw_next_move_quiz.move !== move)
+    update_p &&
+        (last_draw_next_move_quiz = {move, ijs: aa_transpose(idx.map(rand_range))})
+    const [[x0, y0], [x1, y1]] =
+          last_draw_next_move_quiz.ijs.map(ij => idx2coord(...ij))
+    g.strokeStyle = h.next_is_black ? BLACK : WHITE
+    g.lineWidth = line_width
+    rect([x0 - margin, y0 - margin], [x1 + margin, y1 + margin], g)
 }
 
 /////////////////////////////////////////////////

@@ -587,6 +587,7 @@ function menu_template(win) {
         board_type_menu_item('Suggestions', 'suggest', win),
         board_type_menu_item('Principal variation', 'variation', win),
         board_type_menu_item('Raw board', 'raw', win),
+        board_type_menu_item('Next move quiz', 'next_move_quiz', win),
         board_type_menu_item('Winrate graph', 'winrate_only', win),
         sep,
         store_toggler_menu_item('Let me think first', 'let_me_think', 'Shift+M',

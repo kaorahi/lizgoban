@@ -428,6 +428,7 @@ const draw_another = (...args) => {
 const draw_raw_gen = options => with_opts(D.draw_raw_goban, options)
 const draw_raw_unclickable = draw_raw_gen({draw_last_p: true, read_only: true})
 const draw_raw_clickable = draw_raw_gen({draw_last_p: true})
+const draw_raw_quiz = draw_raw_gen({draw_next_move_quiz_p: true, draw_last_p: true})
 const draw_raw_pure = draw_raw_gen({})
 const draw_raw_swap =
       draw_raw_gen(() => ({draw_last_p: true,
@@ -522,6 +523,7 @@ function update_goban() {
     } else {
         switch (btype) {
         case "winrate_only": f(draw_wr_graph, draw_raw_unclickable); break;
+        case "next_move_quiz": f(draw_raw_quiz); break;
         case "raw": f(draw_raw_clickable); break;
         case "variation": f(draw_pv); break;
         case "suggest": default: f(draw_main); break;
