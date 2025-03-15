@@ -115,6 +115,7 @@ function delete_cache() {
             h.deleted_cache[key] = h[key]; delete h[key]
         })
     })
+    AI.clear_cache()
 }
 
 function undelete_cache() {

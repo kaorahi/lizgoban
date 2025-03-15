@@ -297,6 +297,7 @@ function create_leelaz () {
             ['movesOwnership', 'kata-analyze 1 movesOwnership true'],
             ['rootInfo', 'kata-analyze 1 rootInfo true'],
             ['allow', 'lz-analyze 1 allow B D4 1'],
+            ['clear_cache', 'clear_cache'],
             // ----
             // "kata-set-param allowResignation" makes humanSL player stronger??
             // commented out for safety though I don't know if it's true. [2024-07-24]
@@ -447,6 +448,8 @@ function create_leelaz () {
     }
     const update = () => arg && pondering && start_analysis()
     const clear_leelaz_board = silent => {leelaz("clear_board"); leelaz_previous_history = []; silent || update()}
+    const clear_cache = () =>
+          is_supported('clear_cache') && (leelaz('clear_cache'), update())
     const start_args = () => arg
     const network_size = () => network_size_text
     const get_komi = () => known_name_p ? komi : NaN
@@ -805,7 +808,7 @@ function create_leelaz () {
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
         peek_kata_raw_human_nn,
         update_analysis_region, set_instant_analysis,
-        is_supported, clear_leelaz_board,
+        is_supported, clear_leelaz_board, clear_cache,
         is_ready: () => is_ready, engine_id: get_engine_id,
         startup_log: () => startup_log,
         humansl_profile: () => true_or(tmp_humansl_profile, humansl_profile),
