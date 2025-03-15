@@ -716,12 +716,13 @@ function humansl_profile_menu_items(menu, item, sep) {
     function submenu_with(humansl_profile) {
         const cur = humansl_profile()
         if (R.in_match || !stringp(cur)) {return [cur, []]}
-        const prof_item = p => {
+        const prof_item = (p, enabled) => {
             const label = p || '(none)'
-            return item(label, undefined, () => {humansl_profile(p); toast(label)})
+            return item(label, undefined, () => {humansl_profile(p); toast(label)},
+                        false, enabled)
         }
-        const items_for = ps => ps.map(prof_item)
-        const none = prof_item('')
+        const items_for = ps => ps.map(p => prof_item(p))
+        const none = prof_item('', !AI.is_supported('main_model_humanSL'))
         const ranks = items_for(humansl_rank_profiles)
         const preaz = menu('pre AZ', items_for(humansl_preaz_profiles))
         const proyear = menu('pro year', items_for(humansl_proyear_profiles))
