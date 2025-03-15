@@ -1566,6 +1566,7 @@ function set_humansl_profile_in_match(profile) {
     set_stored('humansl_profile_in_match', profile)
 }
 function get_humansl_profile_in_match(pasted_p) {
+    const require_valid_weaken_method_p = (pasted_p === '')  // dirty!
     // Note [2024-08-26]
     // There are two possible approaches:
     // 1. Read the current humansl_profile_in_match every time.
@@ -1585,12 +1586,15 @@ function get_humansl_profile_in_match(pasted_p) {
     ]
     const sub_ok = !weaken_method || valid_weaken_sub.includes(weaken_method)
     const ok = main_p || (sub_p && sub_ok); if (!ok) {return false}
-    const recorded_prof = weaken_args[0]  // fragile assumption! (see below)
-    return true_or(recorded_prof, get_stored('humansl_profile_in_match'))
+    if (require_valid_weaken_method_p && !sub_ok) {return false}
+    const recorded_prof = sub_ok && weaken_args[0]  // fragile assumption! (see below)
+    const ret = true_or(recorded_prof, get_stored('humansl_profile_in_match'))
+    if (main_p && !ret) {return false}  // '' is not allowed for main_model_humanSL
+    return ret
 }
 function get_current_match_param() {
     const weaken = auto_play_weaken.slice()
-    const profile = get_humansl_profile_in_match()
+    const profile = get_humansl_profile_in_match('')  // dirty!
     truep(profile) && (weaken[1] = profile)  // fragile assumption! (see above)
     return weaken
 }
