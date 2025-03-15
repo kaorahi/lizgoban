@@ -153,7 +153,15 @@ function create_leelaz () {
             allow,
         ].filter(truep).join(' ')
     }
-    const humansl_profile_setter = profile => `kata-set-param humanSLProfile ${profile}`
+    const humansl_profile_setter = profile => {
+        const ret = `kata-set-param humanSLProfile ${profile}`
+        const empty_profile_p = !profile || (profile === '_')
+        if (is_supported('main_model_humanSL') && empty_profile_p) {
+            console.log(`Empty profile is not allowed for this main model: "${ret}"`)
+            return 'name'
+        }
+        return ret
+    }
     const humansl_profile_restorer = (forcep) => {
         // if -human-model is given, profile should be applied
         // only for kata-raw-human-nn and genmove etc.
