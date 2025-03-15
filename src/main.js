@@ -570,7 +570,7 @@ function menu_template(win) {
                 .map(key => key ? item(key.replace(/_/g, ' '), undefined,
                                        () => transform_board(key)) : sep)),
             sep,
-            item('Swap stone colors', undefined, swap_stone_colors),
+            item('swap stone colors', undefined, swap_stone_colors),
             item('resize to 19x19 (bottom left)', undefined, resize_to_19x19),
         ]),
         item(`Komi (${game.get_komi()})`, undefined, () => ask_komi(win)),
