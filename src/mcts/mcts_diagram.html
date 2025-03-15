@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8" />
+ <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'">
+ <title>Search Tree</title>
+
+<!-- -------- CSS ---------------------------- -->
+
+ <style>
+  body {font-size: 12pt; overflow: auto; user-select: none;}
+  #header {position: fixed; top: 10px; left: 10px; text-align: left; z-index: 9;}
+  #modalButton {font-size: 20pt; vertical-align: center;}
+  #winrate {
+   position: absolute; right: 0; padding: 5px; font-size: 16pt; background: #fff;
+  }
+  #winrate[data-node-winrate="no"] {color: #888;}
+  #info {
+   position: fixed; bottom: 10px; text-align: left; z-index: 9;
+   max-width: 20%; overflow-wrap: break-word;
+   padding: 5px; background: #fff; white-space: pre-line;
+  }
+  #info[data-position="left"] {left: 10px; right: auto;}
+  #info[data-position="right"] {right: 10px; left: auto;}
+  .hidden {display: none;}
+  #svgContainer {transform-origin: 0 0; overflow: visible; z-index: -9;}
+  #svgContainer svg {background: transparent;}
+  #boardImage {display: block; vertical-align: top; width: 40vmin; height:40vmin;}
+  #boardImageContainer {position: fixed; top: 10px; right: 10px; display: inline-block; z-index: 9;}
+  #overlay {
+   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+   background: transparent; pointer-events: none;
+  }
+  #note {margin-left: 1em; vertical-align: top; border-radius: 5px;}
+  #running {
+   display: inline-flex; width: 1.9em; height: 1.9em; border-radius: 50%;
+   margin-left: 1em; align-items: center; justify-content: center;
+   font-size: 16pt; color: white; background-color: red; opacity: 0;
+  }
+  #running[data-running="yes"] {animation: fade 1s infinite;}
+  #running:not[data-running="yes"] {animation: none !important;}
+  @keyframes fade {from {opacity: 1;} to {opacity: 0;}}
+  #boardSizeHolder, #noteHolder {display: none;}
+  dialog {
+   border: none; border-radius: 8px; padding: 20px;
+   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  #toast {
+   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+   display: flex; justify-content: center; align-items: center;
+   opacity: 0; pointer-events: none;
+  }
+  #toast p {
+   font-size: 200%; color: white; background-color: black;
+   padding: 0.5em; border-radius: 1em; z-index: 9; position: relative;
+  }
+ </style>
+</head>
+
+<body>
+
+<!-- -------- HTML ---------------------------- -->
+
+<div id="boardImageContainer">
+ <img id="boardImage">
+ <canvas id="overlay"></canvas>
+ <div id="winrate" class="hidden"></div>
+</div>
+
+<div id="header">
+ <button id="modalButton" onclick="open_modal()">≡</button>
+ <span id="running">↺</span>
+</div>
+
+<div id="svgContainer"></div>
+
+<div id="info" class="hidden"></div>
+
+<span id="boardSizeHolder"></span>
+<div id="noteHolder"></div>
+
+<dialog id="modal">
+ <div id="modalContent">
+  <h2>Note</h2>
+   <textarea id="note" rows="5" cols="80" placeholder="" oninput="save_note()"></textarea>
+  <h2>Settings</h2>
+  <ul>
+   <li>Max displayed nodes: <span id="maxNodesReadonly"></span></li>
+  </ul>
+  <h2>Download</h2>
+   <a id="downloadLink">Diagram Image (SVG)</a>,
+   &nbsp;
+   <a id="sgfLink">Game Record (SGF)</a>
+   <button onclick="sgf_to_clipboard(); wink(this)">Copy</button>
+  </span>
+  <h2>Controls</h2>
+  <ul>
+   <li>Hover over a node: show details</li>
+   <li>Click a node: toggle PV <span class="htmlOnly">(Reload the page if that does not work.)</span>
+    <ul>
+     <li>Shift-click: copy information to clipboard</li>
+     <li class="electronOnly">Right-click: open</li>
+    </ul>
+   </li>
+   <li>Keys: zoom = "iop", scroll = "hjklyubn"</li>
+  </ul>
+  <h2>Legend</h2>
+  Node
+  <ul>
+    <li>Color: winrate (blue = favors Black, red = favors White)</li>
+    <li>Border color: raw winrate from neural network</li>
+    <li>Size: visits</li>
+    <li>Highlight: actual moves</li>
+    <li>Highlight color: ratio of forced visits (darker = lower, lighter = higher)</li>
+    <li>Black triangle at the bottom: principal variation</li>
+  </ul>
+  Edge
+  <ul>
+    <li>Width: policy</li>
+    <li>Brightness: search order (darker = earlier, lighter = later)</li>
+    <li>Red: principal variation</li>
+  </ul>
+  <div class="htmlOnly">
+   <h2>Link</h2>
+   <a target="_blank" href="https://github.com/kaorahi/lizgoban">Home</a>
+  </div>
+  <div style="display: flex; justify-content: center;">
+   <button style="font-size: 18pt; text-" onclick="close_modal()">ok</button>
+  </div>
+ </div>
+</dialog>
+
+<div id='toast'><p id='toast_message'></p></div>
+
+<!-- -------- JS ---------------------------- -->
+
+<script>
+'use strict'
+
+/////////////////////////////////////////
+// params
+
+const min_zoom = 1.0, max_zoom = 100.0, mag = 1.5
+const scroll_step = 100
+
+let zoom = 1.0
+
+const xlinkNS = 'http://www.w3.org/1999/xlink'
+
+/////////////////////////////////////////
+// init
+
+let electron; try {electron = require('electron')} catch {}
+let mcts_id = null
+
+function show_if(flag, selector) {
+  document.querySelectorAll(selector).forEach(elem => {
+    elem.classList[flag ? 'remove' : 'add']('hidden')
+  })
+}
+show_if(electron, '.electronOnly')
+show_if(!electron, '.htmlOnly')
+
+/////////////////////////////////////////
+// insert
+
+function element(id) {return document.getElementById(id)}
+
+let block_insert_p = false
+let last_insert_params = null
+function block_insert() {block_insert_p = true}
+function unblock_insert(discard_p) {
+  const params = !discard_p && last_insert_params; last_insert_params = null
+  block_insert_p = false; params && insert_params(params)
+}
+
+function insert_params(params) {
+    update_running(params.running)
+    is_max_displayed_nodes_changed(params.max_displayed_nodes) &&
+      clear_temporary_display()
+    if (block_insert_p && params.id === mcts_id) {last_insert_params = params; return}
+    save_window_conf()
+    const {id, running, title, svg_string, download_filename, download_uri, sgf_uri, board_image_dataURL, default_note, bsize, bturn, board_info, window_conf, max_displayed_nodes}
+          = params
+    const new_id_p = (mcts_id !== id) && (mcts_id !== null)
+    document.title = title
+    element('svgContainer').innerHTML = svg_string
+    const download_link = element('downloadLink')
+    download_link.href = download_uri
+    download_link.download = `searchTree_${download_filename}.svg`
+    const sgf_link = element('sgfLink')
+    sgf_link.href = sgf_uri
+    sgf_link.download = `game_${download_filename}.sgf`
+    const note = element('note'); note.value || (note.value = default_note, save_note())
+    element('boardImage').src = board_image_dataURL
+    element('boardSizeHolder').innerText = to_s(bsize)
+    element('maxNodesReadonly').innerText = max_displayed_nodes
+    update_bsize_etc()
+    mcts_id = id
+    resize_svg()
+    new_id_p && restore_window_conf(window_conf)
+    reset_info()
+    const seq_args = board_info?.pv_p ? [null, null, board_info?.moves] :
+      [board_info?.moves, board_info?.children]
+    setTimeout(() => draw_seq(bturn, ...seq_args))
+}
+
+function is_max_displayed_nodes_changed(max_displayed_nodes) {
+  return to_i(element('maxNodesReadonly').innerText) !== max_displayed_nodes
+}
+
+function on_electron(channel, handler) {electron?.ipcRenderer.on(channel, handler)}
+on_electron('diagram_params', (e, params) => insert_params(params))
+on_electron('running', (e, running) => update_running(running))
+on_electron('toast', (e, ...a) => toast(...a))
+
+let bsize
+update_bsize_etc()
+
+function update_bsize_etc() {
+  bsize = to_i(element('boardSizeHolder').innerText)
+}
+
+function update_running(running) {
+    element('running').setAttribute('data-running', running ? 'yes' : 'no')
+}
+
+function svg_element() {return document.querySelector('#svgContainer svg')}
+
+/////////////////////////////////////////
+// resize SVG
+
+function resize_svg() {
+    const svg = svg_element(); if (!svg) {return}
+    // target size
+    const c = 0.98
+    const x = element('boardImageContainer').getBoundingClientRect().left
+    const r = x / window.innerWidth
+    const relative_target_width = c * (1 - (1 - r * 0.95) / mag)
+    const relative_target_height = c
+    // set size
+    const {style} = svg, {width, height} = svg.viewBox.baseVal
+    const dh = element('boardImage').getBoundingClientRect().height + 10
+    const sw = window.innerWidth / width
+    const sh = (window.innerHeight - dh) / height
+    const scale = Math.min(sw * relative_target_width, sh * relative_target_height, 1)
+    style.width = width * scale + 'px'; style.height = height * scale + 'px'
+    element('svgContainer').style.paddingTop = `${dh}px`
+    add_mouse_effect()
+}
+
+resize_svg()
+window.addEventListener('resize', resize_svg)
+
+/////////////////////////////////////////
+// keyboard control
+
+function scroll(dx, dy) {window.scrollBy(dx, dy)}
+
+document.addEventListener("keydown", e => {
+    if (e.target.tagName === "TEXTAREA") {return}
+    const d = scroll_step
+    switch (e.key) {
+    case 'o': zoom_by(1 / mag); break
+    case 'i': zoom_by(mag); break
+    case 'p': reset_zoom(); break
+    case 'h': scroll(-d, 0); break
+    case 'j': scroll(0, d); break
+    case 'k': scroll(0, -d); break
+    case 'l': scroll(d, 0); break
+    case 'y': scroll(-d, -d); break
+    case 'u': scroll(d, -d); break
+    case 'b': scroll(-d, d); break
+    case 'n': scroll(d, d); break
+    }
+    if (!electron) {return}
+    const send = (...a) => {e.preventDefault(); electron.ipcRenderer.send(...a)}
+    switch (e.key) {
+    case '.': case 'Enter' : send('resume_mcts', 1, mcts_id); break
+    case '>': send('resume_mcts', 10, mcts_id); break
+    case ')': send('resume_mcts', 100, mcts_id); break
+    case 'r': e.metaKey && send('resume_mcts', 5000, mcts_id); break
+    case '$': case 'Tab': send('resume_mcts', null, mcts_id); break
+    case ',': send('rewind_mcts', 1, mcts_id); break
+    case '<': send('rewind_mcts', 10, mcts_id); break
+    case '(': send('rewind_mcts', 100, mcts_id); break
+    case '^': send('rewind_mcts', null, mcts_id); break
+    case ' ': send('toggle_mcts_run', 5000, mcts_id); break
+    }
+})
+
+/////////////////////////////////////////
+// zoom
+
+function zoom_by(scale) {set_zoom(zoom * scale)}
+function reset_zoom() {set_zoom(1.0)}
+
+function set_zoom(new_zoom) {
+    clear_temporary_display()
+    // keep window center
+    const [hw, hh] = [window.innerWidth, window.innerHeight].map(z => z / 2)
+    const old_cx = window.scrollX + hw, old_cy = window.scrollY + hh
+    const old_zoom = zoom
+    zoom = Math.min(Math.max(new_zoom, min_zoom), max_zoom)
+    const scale = zoom / old_zoom
+    const [cx, cy] = [old_cx, old_cy].map(z => z * scale)
+    const dx = cx - hw, dy = cy - hh
+    element('svgContainer').style.transform = `scale(${zoom})`
+    window.scrollTo(dx, dy)
+    svg_element()?.scrollIntoView({block: 'nearest', inline: 'nearest'})
+}
+
+/////////////////////////////////////////
+// window configuration
+
+function save_window_conf() {
+  const conf = get_window_conf()
+  electron.ipcRenderer.send('set_mcts_window_conf', mcts_id, conf)
+}
+function get_window_conf() {
+  const note = element('note').value
+  return {zoom, sx: window.scrollX, sy: window.scrollY, note}
+}
+
+function restore_window_conf(conf) {
+  const c = conf || {zoom: 1.0, sx: 0, sy: 0, note: ''}
+  set_zoom(c.zoom); window.scrollTo(c.sx, c.sy)
+  element('note').value = c.note
+}
+
+window.addEventListener('beforeunload', save_window_conf)
+
+let window_conf_before_save_page = null
+function setup_before_save_page() {
+  window_conf_before_save_page = get_window_conf(); set_zoom(1.0)
+}
+function restore_after_save_page() {
+  restore_window_conf(window_conf_before_save_page)
+}
+
+/////////////////////////////////////////
+// clipboard
+
+function sgf_to_clipboard() {
+    const uri = element('sgfLink').href
+    // URI sample: 'data:text/plain;charset=utf-8,...'
+    const sgf = decodeURIComponent(uri.replace(/^[^,]*,/, ''))
+    navigator.clipboard.writeText(sgf)
+}
+
+function info_to_clipboard() {
+  const info = element('info')
+  navigator.clipboard.writeText(info.textContent)
+  wink(info)
+}
+
+function wink(elem) {
+    const keyframes = [0, 50, 0].map(z => ({transform: `translateY(-${z}%)`}))
+    elem.animate(keyframes, 200)
+}
+
+/////////////////////////////////////////
+// board image
+
+function setup_overlay() {
+  const img = element('boardImage')
+  const canvas = element('overlay')
+  let old_w, old_h
+  const copy_size = () => {
+    const dpr = window.devicePixelRatio
+    const w = img.clientWidth * dpr, h = img.clientHeight * dpr
+    w !== old_w && (old_w = canvas.width = w)
+    h !== old_h && (old_h = canvas.height = h)
+  }
+  img.onload = copy_size
+  img.complete && copy_size()
+}
+
+setup_overlay()
+
+/////////////////////////////////////////
+// mouse effect
+
+function get_tooltip(a) {return a.getAttributeNS(xlinkNS, 'title')}
+function get_value_in_tootip(tooltip, key) {
+  const r = new RegExp(`^${key}:\\s*(.+)$`, 'm')
+  return tooltip?.match(r)?.[1]
+}
+function get_prop(a) {
+  const tooltip = get_tooltip(a); if (!a) {return null}
+  const get_a = key => get_value_in_tootip(tooltip, key)?.replace(/\s.*/, '').split(/,/)
+  const keys = ['sequence', 'PV', 'children']
+  let r = {}
+  keys.forEach(key => {const a = get_a(key); a && (r[key] = a)})
+  const is_this_black_move = !(tooltip?.match(/^White/))
+  const bturn = !!is_this_black_move === (r.sequence?.length % 2 === 1)
+  return Object.keys(r).length > 0 && {...r, bturn, tooltip}
+}
+
+function node_prop_pair(g) {
+  const prop = [...g.getElementsByTagName('a')].map(get_prop).find(truthy)
+  return prop ? [g, prop] : null
+}
+
+function truthy(z) {return !!z}
+
+function Q_all(selector) {
+  return [...document.querySelectorAll(selector)]
+}
+
+function set_text(elem, text) {
+  elem.textContent = text; elem.classList.remove('hidden')
+}
+function reset_text(elem) {
+  elem.textContent = ''; elem.classList.add('hidden')
+}
+function reset_info() {
+  reset_text(element('info'))
+  const winrate = element('winrate')
+  set_text(winrate, root_winrate_text())
+  winrate.setAttribute('data-node-winrate', 'no')
+}
+reset_info()
+
+function root_winrate_text() {
+  const g = document.querySelector('#svgContainer g.node')
+  const {tooltip} = JSON.parse(g?.getAttribute('data-tooltip') || '{}')
+  return tooltip && winrate_text(tooltip)
+}
+
+function winrate_text(tooltip) {
+  const winrate = tooltip.match(/^winrate:\s*(.*?)\s/m)[1]
+  const [_, sign, score] = tooltip.match(/^score:\s*([+-])(.*?)\s/m)
+  const pla = (sign === '+') ? 'B' : 'W'
+  const visits = tooltip.match(/^visits:\s*(.*)/m)[1]
+  return `win ${winrate} (${pla}+${score}) [${visits} visits]`
+}
+
+function add_mouse_effect() {
+  const info = element('info'), winrate = element('winrate')
+  const nodes = Q_all('#svgContainer g.node'), attr = 'data-tooltip'
+  nodes.forEach(g => {
+    // save prop as attributes for saved HTML
+    const prop = get_prop(g.querySelector('a'))
+    prop && g.setAttribute(attr, JSON.stringify(prop))
+    const saved_json = g.getAttribute(attr); if (!saved_json) {return}
+    const {bturn, sequence, children, PV, tooltip} = JSON.parse(saved_json)
+    // events
+    const on = (event, listener) => g.addEventListener(event, listener)
+    on('pointerleave', e => {
+      g.style.filter = 'none'; clear_seq(); reset_info()
+      unblock_insert()
+    })
+    const handle_pointer_enter = e => {
+      g.style.filter = 'drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.5))'
+      draw_seq(bturn, sequence, children, PV)
+      set_text(info, tooltip)
+      info.setAttribute('data-position', 'right')
+      const {left, top} = info.getBoundingClientRect(), margin = 100
+      e.clientX > left - margin && e.clientY > top - margin &&
+        info.setAttribute('data-position', 'left')
+      set_text(winrate, winrate_text(tooltip))
+      winrate.setAttribute('data-node-winrate', 'yes')
+    }
+    on('pointerenter', e => {
+      is_mouse_idle() || (block_insert(), setTimeout(() => handle_pointer_enter(e)))
+    })
+    on('click', e => e.shiftKey ? info_to_clipboard() : redraw_seq_toggle())
+    sequence && electron && on('mousedown', e => e.button === 2 && play_seq(sequence))
+  })
+  // remove tooltips
+  Q_all('#svgContainer g:is(.node, .edge, .cluster) title').forEach(t => t.remove())
+  Q_all('#svgContainer g:is(.node, .edge, .cluster) a').forEach(a => a.removeAttributeNS(xlinkNS, 'title'))
+}
+
+function play_seq(moves) {
+  unblock_insert(true); update_running(true)
+  electron.ipcRenderer.send('play_from_mcts', moves, mcts_id)
+}
+
+const idle_mouse_millisec = 500
+let last_mouse_move_time = 0
+document.addEventListener('mousemove', () => (last_mouse_move_time = Date.now()))
+function is_mouse_idle() {return Date.now() - last_mouse_move_time > idle_mouse_millisec}
+
+/////////////////////////////////////////
+// draw stones
+
+let draw_pv_p = false
+let last_draw_seq_args = null
+
+// avoid causing confusion
+function clear_temporary_display() {clear_seq(); unblock_insert()}
+window.addEventListener('focus', clear_temporary_display)
+window.addEventListener('blur', clear_temporary_display)
+document.addEventListener('visibilitychange', clear_temporary_display)
+
+function get_overlay_ctx() {
+  const canvas = element('overlay')
+  const ctx = canvas.getContext('2d')
+  return [canvas, ctx]
+}
+
+function redraw_seq_toggle() {
+  if (!last_draw_seq_args) {return}
+  draw_pv_p = !draw_pv_p
+  clear_seq_internal(); draw_seq_internal(...last_draw_seq_args)
+}
+
+function clear_seq() {clear_seq_internal(); last_draw_seq_args = null}
+function clear_seq_internal() {
+  const [canvas, ctx] = get_overlay_ctx()
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+}
+
+function draw_seq(bturn, seq, children, pv) {
+  last_draw_seq_args = [bturn, seq, children, pv]
+  draw_pv_p = false
+  draw_seq_internal(bturn, seq, children, pv)
+}
+function draw_seq_internal(bturn, seq, children, pv) {
+  const [canvas, ctx] = get_overlay_ctx()
+  // cf. goban_params in draw_goban.js
+  const w = canvas.width, h = canvas.height
+  const size = Math.min(w, h)
+  const margin = size * (1 / (bsize + 1))
+  const ux = (w - 2 * margin) / (bsize - 1)
+  const uy = (h - 2 * margin) / (bsize - 1)
+  const u = Math.min(ux, uy), r = u / 2
+  const coords_for = move => {
+    const [i, j] = move2idx(move); if (!numberp(i)) {return null}
+    return [margin + j * ux, margin + i * uy]
+  }
+  const draw_stone_gen = (movenum_p, move, count, ary) => {
+    const xy = coords_for(move); if (!xy) {return}
+    const pv_p = (movenum_p === 'PV'), reliable_moves = 7
+    const [thin, thick] = pv_p && count >= reliable_moves ? [0.3, 0.5] : [1.0, 1.0]
+    const black_p = !xor(bturn, count % 2 === 0)
+    const last_move_p = (count === ary.length - 1)
+    const black = a => `rgba(0,0,0,${a})`, white = a => `rgba(255,255,255,${a})`
+    const red = a => `rgba(255,0,0,${a})`
+    ctx.fillStyle = black_p ? black(thin) : white(thin)
+    ctx.strokeStyle = black(thin); ctx.lineWidth = 1
+    last_move_p && (ctx.strokeStyle = red(thick), ctx.lineWidth = 2)
+    const args = [ctx, ...xy, r]
+    fill_circle(...args); circle(...args)
+    if (!movenum_p) {return}
+    ctx.fillStyle = black_p ? white(thick) : black(thick)
+    draw_movenum(ctx, count + 1, ...xy, r)
+  }
+  const draw_stone = (...a) => draw_stone_gen(false, ...a)
+  const draw_stone_with_movenum = (...a) => draw_stone_gen(true, ...a)
+  const draw_stone_for_pv = (...a) => draw_stone_gen('PV', ...a)
+  const draw_letter = (move, count) => {
+    const xy = coords_for(move); if (!xy) {return}
+    const letter = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'[count] || ''
+    ctx.fillStyle = '#f9ca91'; fill_circle(ctx, ...xy, r * 0.7)
+    ctx.fillStyle = '#f00'; draw_movenum(ctx, letter, ...xy, r)
+  }
+  const pv_p = draw_pv_p || (pv && pv.length > 1 && !seq && !children)
+  clear_seq_internal()
+  if (pv_p) {
+    const seq_len = seq?.length || 0, flip_p = (seq_len % 2 !== 0)
+    seq?.forEach(draw_stone)
+    // fixme: dirty
+    bturn = xor(bturn, flip_p)
+    pv?.forEach(draw_stone_for_pv)
+    bturn = xor(bturn, flip_p)
+  } else {
+    seq?.forEach(draw_stone_with_movenum)
+    children?.forEach(draw_letter)
+  }
+}
+
+function circle_gen(ctx, x, y, r, method) {
+  ctx.beginPath()
+  ctx.arc(x, y, r, 0, 2 * Math.PI)
+  ctx[method]()
+}
+function circle(...a) {circle_gen(...a, 'stroke')}
+function fill_circle(...a) {circle_gen(...a, 'fill')}
+
+function draw_movenum(ctx, movenum, x, y, radius) {
+    const text = to_s(movenum)
+    const l = text.length, max_width = radius * 1.5
+    const fontsize = to_i(radius * (l < 3 ? 1.8 : l < 6 ? 1.2 : 0.9))
+    const sink = 0.07
+    const g = ctx
+    g.save()
+    g.font = `${fontsize}px Arial`
+    g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillText(text, x, y + fontsize * sink, max_width)
+    g.restore()
+}
+
+/////////////////////////////////////////
+// note
+
+function save_note() {element('noteHolder').textContent = element('note').value}
+function restore_note() {element('note').value = element('noteHolder').textContent}
+
+restore_note()
+
+/////////////////////////////////////////////////
+// modal
+
+const modal = element('modal')
+
+function open_modal() {modal.showModal()}
+function close_modal() {modal.close()}
+
+modal.addEventListener('keydown', e => {
+  const input_tags = ['TEXTAREA', 'INPUT']
+  if (!modal.open || input_tags.includes(e.target.tagName)) {return;}
+  switch (e.key) {
+  case 'Escape': case 'Enter': close_modal(); break
+  default: e.preventDefault(); e.stopPropagation();
+  }
+})
+
+// close the modal when clicking outside
+modal.addEventListener('click', e => {event.target === modal && modal.close()})
+
+// for the case if this page is saved with opened modal
+modal.close()
+
+/////////////////////////////////////////////////
+// toast
+
+function Q(x) {return document.querySelector(x)}
+function setq(x, val) {Q(x).textContent = val}
+
+let last_toast_animation = null
+function toast(message, millisec) {
+    last_toast_animation && last_toast_animation.finish()
+    setq('#toast_message', message)
+    const keyframes = [{opacity: 1}, {opacity: 0.8}, {opacity: 0}]
+    last_toast_animation = Q('#toast').animate(keyframes, millisec || 3000)
+}
+
+/////////////////////////////////////////////////
+// move ==> idx
+
+const col_name = 'ABCDEFGHJKLMNOPQRST'
+
+function move2idx(move) {
+    const m = move.match(/([A-HJ-T])((1[0-9])|[1-9])/), [_, col, row] = m || []
+    return m ? [bsize - to_i(row), col_name.indexOf(col)] : []
+}
+
+function to_s(x) {return x + ''}
+function to_i(x) {return x | 0}  // to_i(true) is 1!
+function numberp(obj) {return typeof obj === 'number'}
+function xor(a, b) {return !a === !!b}
+
+</script>
+
+</body>
+</html>

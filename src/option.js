@@ -176,6 +176,7 @@ const stored_keys_spec = [
     ['humansl_weaker_profile', 'rank_5k'],
     ['humansl_color_enhance', 0.5],
     ['humansl_profile_in_match', ''],
+    ['mcts_max_displayed_nodes', 200],
 ]
 const preference_spec =
       stored_keys_spec.map(([k, , label, shortcut]) => label && [k, label, shortcut]).filter(truep)

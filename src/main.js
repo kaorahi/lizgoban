@@ -199,6 +199,19 @@ const {
     renderer, renderer_with_window_prop,
 } = require('./window.js')(electron, store, set_stored)
 
+const {
+    set_mcts_window_conf,
+    resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
+    plot_mcts_force_actual,
+} = require('./mcts/mcts_main.js')({
+    get_game: () => game, get_stored, set_stored, switch_to_game_id, goto_move_count,
+    mimic, get_new_window, electron, update_all, pause, dialog,
+    generate_board_image_dataURL, get_windows,
+    get_webPreferences: () => webPreferences,
+    get_debug_menu_p: () => debug_menu_p,
+    resume, auto_playing,
+})
+
 /////////////////////////////////////////////////
 // main flow (1) receive commands from renderer
 
@@ -212,6 +225,7 @@ const simple_api = {
     set_match_param, ladder_is_seen, force_color_to_play, cancel_forced_color,
     set_sanity_from_renderer,
     set_humansl_profile_in_match,
+    set_mcts_window_conf,
     open_image_url,
     memorize_settings_for_sgf_from_image, archive_sgf_from_image,
     enable_menu,
@@ -246,6 +260,7 @@ const api = {
     detach_from_sabaki,
     update_analysis_region,
     set_persona_code, set_adjust_sanity_p,
+    resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
 }
@@ -254,6 +269,8 @@ function api_handler(channel, handler, busy) {
     return (e, ...args) => {
         channel === 'toggle_auto_analyze' || stop_auto_analyze()
         channel === 'play_best' || stop_auto_play()
+        const keep_mcts = ['resume_mcts', 'toggle_mcts_run']
+        keep_mcts.includes(channel) || stop_mcts()
         stop_auto_redo()
         set_or_unset_busy(busy)
         apply_api(channel, handler, args)
@@ -672,8 +689,12 @@ function menu_template(win) {
         item('...Restore analysis', undefined, P.undelete_cache),
         sep,
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
+        menu('Plot MCTS tree', [
+            item('Normal', undefined, () => plot_mcts_force_actual(0.0)),
+            item('Prefer played moves', 'CmdOrCtrl+T', () => plot_mcts_force_actual(0.3)),
+        ]),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
-                       accelerator: 'CmdOrCtrl+T', click: toggle_sabaki},
+                       click: toggle_sabaki},
         menu('Experimental...', [
             obsolete_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
             sep,
@@ -972,7 +993,7 @@ function auto_progress(time_only_p) {
     return Math.max(time_only_p ? -1 : auto_analysis_progress(),
                     auto_play_progress(), auto_redo_progress())
 }
-function stop_auto() {stop_auto_analyze(); stop_auto_play(); stop_auto_redo()}
+function stop_auto() {stop_auto_analyze(); stop_auto_play(); stop_auto_redo(); stop_mcts()}
 function auto_analyzing_or_playing() {return auto_analyzing() || auto_playing() || auto_redoing()}
 
 // auto-analyze (redo after given visits)

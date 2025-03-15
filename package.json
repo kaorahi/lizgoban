@@ -10,6 +10,7 @@
     "url": "https://github.com/kaorahi/lizgoban"
   },
   "dependencies": {
+    "@viz-js/viz": "^3.11.0",
     "@sabaki/sgf": "^3.4.7",
     "electron-store": "^8.0.2",
     "iconv-lite": "^0.6.3",
