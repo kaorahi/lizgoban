@@ -216,6 +216,40 @@ E.make_speedometer = (interval_sec, premature_sec) => {
     reset(); per_sec(0); return {reset, per_sec, latest}
 }
 
+// make unique and JSON-safe ID for the pushed value, that can be popped only once.
+// (ex.)
+// id_a = onetime_storer.push('a'); id_b = onetime_storer.push('b')
+// onetime_storer.pop(id_b) ==> 'b'
+// onetime_storer.pop(id_b) ==> undefined
+function make_onetime_storer() {
+    let next_id = 0, value_for = {}
+    const object = {
+        push: val => {const id = next_id++; value_for[id] = val; return id},
+        pop: id => {const val = value_for[id]; delete value_for[id]; return val},
+    }
+    return object
+}
+const onetime_storer = make_onetime_storer()
+
+// make a promise that can be resolved with ID
+// (ex.)
+// p = make_promise_with_id(); p.promise.then(console.log)
+// resolve_promise_with_id(p.id, 99)  // ==> 99 is printed on console
+E.make_promise_with_id = () => {
+    const {promise, resolve, reject} = Promise_withResolvers()
+    const id = onetime_storer.push(resolve)
+    return {promise, id}
+}
+E.resolve_promise_with_id = (id, val) => {
+    const resolve = onetime_storer.pop(id); resolve && resolve(val)
+}
+function Promise_withResolvers() {
+    // https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers
+    let resolve, reject;
+    const promise = new Promise((res, rej) => {resolve = res; reject = rej})
+    return {promise, resolve, reject}
+}
+
 // for engine (chiefly)
 E.common_header_length = (a, b, strictly) => {
     const same_move = (x, y) => (!!x.is_black === !!y.is_black && x.move === y.move)
