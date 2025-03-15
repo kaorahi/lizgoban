@@ -806,7 +806,7 @@ function create_leelaz () {
     const exported = {
         start, restart, kill, set_board, update, set_pondering, get_weight_file,
         start_args, start_args_equal, get_komi, network_size, peek_value, is_katago,
-        peek_kata_raw_human_nn,
+        peek_kata_raw_nn, peek_kata_raw_human_nn,
         update_analysis_region, set_instant_analysis,
         is_supported, clear_leelaz_board, clear_cache,
         is_ready: () => is_ready, engine_id: get_engine_id,

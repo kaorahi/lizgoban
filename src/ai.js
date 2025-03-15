@@ -286,7 +286,7 @@ function engine_ids() {
 
 const exported_from_leelaz = [
     'send_to_leelaz',
-    'peek_value', 'peek_kata_raw_human_nn',
+    'peek_value', 'peek_kata_raw_nn', 'peek_kata_raw_human_nn',
     'get_komi', 'is_supported', 'clear_cache', 'analyze_move',
 ]
 
