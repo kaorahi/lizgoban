@@ -566,24 +566,26 @@ function menu_template(win) {
          accelerator: 'Shift+I', click: exec(toggle_trial, update)},
         sep,
         menu('Flip / rotate / etc.', [
-            ...(['half_turn', false, 'horizontal_flip', 'vertical_flip', false,
-                 'clockwise_rotation', 'counterclockwise_rotation']
+            ...(['⤾ half_turn', false, '↔ horizontal_flip', '↕ vertical_flip', false,
+                 '↻ clockwise_rotation', '↺ counterclockwise_rotation']
                 .map(key => key ? item(key.replace(/_/g, ' '), undefined,
                                        () => transform_board(key)) : sep)),
             sep,
-            item('swap stone colors', undefined, swap_stone_colors),
-            item('resize to 19x19 (bottom left)', undefined, resize_to_19x19),
+            item('◑ swap stone colors', undefined, swap_stone_colors),
+            item('⤢ resize to 19x19 (bottom left)', undefined, resize_to_19x19),
             sep,
-            item('copy stones', null, () => {
+            item('⧉ copy stones', null, () => {
                 const reg = game.analysis_region, text = copy_stones(R.stones, reg)
                 clipboard.writeText(text)
                 reg ? toast('Copied') : toast('Tips: "Alt + Drag" to set region', 5000)
             }),
             ...[
-                ['⇖', [+1, +1]], ['⇗', [+1, -1]],
-                ['⇙', [-1, +1]], ['⇘', [-1, -1]],
+                ['⇖ paste (top left)', [+1, +1]],
+                ['⇗ paste (top right)', [+1, -1]],
+                ['⇙ paste (bottom left)', [-1, +1]],
+                ['⇘ paste (bottom right)', [-1, -1]],
             ].map(([label, signs]) =>
-                item(`paste ${label}`, null, () => {
+                item(label, null, () => {
                     const region = game.analysis_region, text = clipboard.readText()
                     const args = [R.stones, region, text, is_bturn(), signs]
                     const sgf = safely_or(paste_stones, args, () => `text:\n${text}`)
