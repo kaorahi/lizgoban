@@ -215,6 +215,13 @@ const simple_api = {
     open_image_url,
     memorize_settings_for_sgf_from_image, archive_sgf_from_image,
     enable_menu,
+    resolve_promise_with_id,
+    // Example of resolve_promise_with_id:
+    // (main)
+    // const p = make_promise_with_id(); renderer('foo', p.id, 31, 41)
+    // const val = await p.promise
+    // (renderer)
+    // ipc.on('foo', (e, id, a, b) => main('resolve_promise_with_id', id, a + b))
 }
 const api = {
     ...simple_api,
@@ -1683,6 +1690,16 @@ function save_q_and_a_images() {
     const msg_path = `${PATH.join(dir, pre)}...`
     renderer('save_q_and_a_images', ...filenames, msg_path)
 }
+async function generate_board_image_dataURL(relative_size) {
+    update_all()
+    const scr = electron.screen.getPrimaryDisplay().workAreaSize
+    const screen_size = Math.min(scr.width, scr.height)
+    const size = screen_size * relative_size
+    const p = make_promise_with_id()
+    renderer('generate_board_image_dataURL', p.id, size)
+    return await p.promise
+}
+
 function edit_middle(move) {
     const stone_p = (aa_ref(R.stones, ...move2idx(move)) || {}).stone
     if (!stone_p && !redoable()) {do_play(move, black_to_play_now_p()); return}

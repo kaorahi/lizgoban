@@ -286,6 +286,11 @@ ipc.on('save_q_and_a_images', (e, q_filename, a_filename, msg_path) => {
     generate_board_image_blob(q_draw, saver(q_filename, do_nothing))
     generate_board_image_blob(a_draw, saver(a_filename, callback))
 })
+ipc.on('generate_board_image_dataURL', (e, id, ...a) => {
+    stop_fast_redo(); render_now()
+    const url = generate_board_image_dataURL(...a)
+    main('resolve_promise_with_id', id, url)
+})
 
 ipc.on('save_dataURL', (e, url, filename) => save_dataURL(url, filename, do_nothing))
 
@@ -927,14 +932,35 @@ function take_thumbnail_of_stones(stones, proc, trail_p) {
 
 let reusable_canvas = null
 function generate_board_image_blob(drawing_func, callback, mime_type, quality) {
-    // note: main_canvas can be rectangular by "x" key
-    const [size, ] = get_canvas_size(main_canvas)
-    const canvas = reusable_canvas || document.createElement("canvas")
-    const my_callback = blob => {callback(blob); reusable_canvas = canvas}
-    reusable_canvas = null
-    set_canvas_square_size(canvas, size)
+    const my_callback = blob => {callback(blob); put_reusable_canvas(canvas)}
+    const canvas = get_reusable_canvas()
     drawing_func(canvas)
     generate_canvas_image_blob(canvas, my_callback, mime_type, quality)
+}
+
+function get_reusable_canvas(given_size) {
+    // note: main_canvas can be rectangular by "x" key
+    const [main_canvas_size, ] = get_canvas_size(main_canvas)
+    const size = true_or(given_size, main_canvas_size)
+    const canvas = reusable_canvas || document.createElement("canvas")
+    reusable_canvas = null
+    set_canvas_square_size(canvas, size)
+    return canvas
+}
+function put_reusable_canvas(canvas) {reusable_canvas = canvas}
+
+function generate_board_image_dataURL(phys_size) {
+    const canvas = get_reusable_canvas(phys2css(phys_size))
+    const orig_R = {...R}, tmp_R = {
+        stone_style: '2D', board_image_p: false, stone_image_p: false,
+        always_show_coordinates: false,
+    }
+    merge(R, tmp_R)
+    D.draw_raw_goban(canvas, {draw_last_p: true, draw_coordinates_p: true})
+    merge(R, orig_R)
+    const dataURL = canvas.toDataURL()
+    put_reusable_canvas(canvas)
+    return dataURL
 }
 
 function generate_canvas_image_blob(canvas, callback, mime_type, quality) {
