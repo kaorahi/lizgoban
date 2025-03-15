@@ -1185,7 +1185,8 @@ function start_auto_genmove_maybe() {
         const selected = {move, comment}
         const rand_p = (auto_playing_strategy === 'random_opening') ||
               (current_auto_play_weaken()?.[0] === 'plain_diverse')
-        rand_p ?
+        const suggest_p = !empty(P.orig_suggest() || [])
+        rand_p && suggest_p ?
             try_play_weak(['random_opening'],
                           {normal_move_in_random_opening: selected}) :
             play_selected_weak_move(selected, get_auto_play_weaken())
