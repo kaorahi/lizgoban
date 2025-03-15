@@ -203,6 +203,7 @@ const {
     set_mcts_window_conf,
     resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
     plot_mcts_force_actual,
+    play_by_mcts,
 } = require('./mcts/mcts_main.js')({
     get_game: () => game, get_stored, set_stored, switch_to_game_id, goto_move_count,
     mimic, get_new_window, electron, update_all, pause, dialog,
@@ -1176,6 +1177,7 @@ function auto_genmove_func() {
         ...rankcheck_family_table(weaken_args),
         plain: search_analyze,
         plain_diverse: search_analyze,
+        play_by_mcts,
     }
     return func_for_method[weaken_method]
 }
@@ -1240,6 +1242,7 @@ function set_match_param(weaken) {
     const literal = [
         'plain', 'plain_diverse', 'genmove', 'genmove_analyze', 'best',
         'rankcheck', 'center', 'edge',
+        'play_by_mcts',
     ]
     const alias = {
         diverse: 'random_opening',

@@ -13,6 +13,7 @@ module.exports = functions_in_main => {
         set_mcts_window_conf,
         resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
         set_mcts_max_nodes, plot_mcts_force_actual,
+        play_by_mcts,
     }
 }
 
@@ -80,6 +81,24 @@ function plot_mcts_force_actual(val, max_visits) {
     switch_to_mcts(id)
     plot_mcts(max_visits, id)
     return id
+}
+
+function play_by_mcts(auto_play_sec, play_func) {
+    const id = without_auto_focus(() => plot_mcts_force_actual(0.0, 99999))
+    const play_found = async () => {
+        if (!M.auto_playing()) {return}
+        const state = switch_to_mcts(id) || {}, {mcts} = state; if (!mcts) {return}
+        stop_mcts()
+        await state.mcts.wait_for_all_nn_calls()
+        const cs = Object.values(mcts.root.children), {lcb} = mcts
+        const best_child = min_by(Object.values(mcts.root.children), c => - lcb(c))
+        const {move, winrate, score, visits} = best_child
+        const comment = `by MCTS (winrate=${winrate.toFixed(2)}, score=${score.toFixed(2)}, visits=${visits})`
+        close_other_mcts_plots(id)
+        play_func(move, comment)
+        M.auto_playing() && M.resume(); M.update_all()
+    }
+    setTimeout(play_found, auto_play_sec * 1000)
 }
 
 /////////////////////////////////////////////////
