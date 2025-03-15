@@ -491,7 +491,7 @@ function create_leelaz () {
         const coms = [
             ...moves.map(play_com),
             ...body,
-            ...seq(moves.length).map(_ => 'undo'),
+            ...moves.map(_ => 'undo'),
         ]
         coms.forEach(com => stringp(com) ? leelaz(com) : leelaz(...com))
     }
