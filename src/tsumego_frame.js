@@ -134,6 +134,7 @@ OO
 
 function put_ko_threat(stones, size, frame_range,
                        black_to_attack_p, black_to_play_p, ko_p) {
+    if (ko_p === 'no_ko_threat') {return}
     const for_offense_p = xor(ko_p, xor(black_to_attack_p, black_to_play_p))
     const [pattern, top_p, left_p] = for_offense_p ?
           offense_ko_threat : defense_ko_threat
