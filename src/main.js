@@ -48,6 +48,7 @@ const {
     random_exercise_chooser, recent_exercise_chooser, recently_seen_exercises_in,
 } = require('./exercise.js')(exercise_mtime)
 const {tsumego_frame} = require('./tsumego_frame.js')
+const {copy_stones, paste_stones} = require('./copy_stones.js')
 const {ladder_branches, ladder_is_seen, last_ladder_branches, cancel_ladder_hack}
       = require('./ladder.js')
 const {branch_at, update_branch_for} = require('./branch.js')
@@ -572,6 +573,22 @@ function menu_template(win) {
             sep,
             item('swap stone colors', undefined, swap_stone_colors),
             item('resize to 19x19 (bottom left)', undefined, resize_to_19x19),
+            sep,
+            item('copy stones', null, () => {
+                const reg = game.analysis_region, text = copy_stones(R.stones, reg)
+                clipboard.writeText(text)
+                reg ? toast('Copied') : toast('Tips: "Alt + Drag" to set region', 5000)
+            }),
+            ...[
+                ['⇖', [+1, +1]], ['⇗', [+1, -1]],
+                ['⇙', [-1, +1]], ['⇘', [-1, -1]],
+            ].map(([label, signs]) =>
+                item(`paste ${label}`, null, () => {
+                    const region = game.analysis_region, text = clipboard.readText()
+                    const args = [R.stones, region, text, is_bturn(), signs]
+                    const sgf = safely_or(paste_stones, args, () => `text:\n${text}`)
+                    read_sgf(sgf)
+                })),
         ]),
         item(`Komi (${game.get_komi()})`, undefined, () => ask_komi(win)),
         menu(`Rule (${get_gorule()})`, AI.is_gorule_supported() ? gorule_submenu() : []),
