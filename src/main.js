@@ -239,6 +239,7 @@ const api = {
     detach_from_sabaki,
     update_analysis_region,
     set_persona_code, set_adjust_sanity_p,
+    submit_tamago_plot_tree_visits,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
 }
@@ -718,6 +719,9 @@ function menu_template(win) {
             item('Set screenshot region', undefined, set_screenshot_region),
         option.screenshot_capture_command &&
             item('Capture screenshot', 'Alt+CmdOrCtrl+Shift+c', capture_screenshot),
+        option.tamago_plot_tree_command &&
+            item('Plot MCTS tree', 'Meta+t' ,
+                 (this_item, win) => ask_tamago_plot_tree(win)),
         sep,
         {role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'},
         sep,
@@ -2646,6 +2650,29 @@ function detach_from_sabaki() {
 
 function toggle_sabaki() {
     stop_auto(); stop_match(); attached ? detach_from_sabaki() : attach_to_sabaki()
+}
+
+/////////////////////////////////////////////////
+// plot MCTS tree by TamaGo
+
+let default_tamago_plot_tree_visits = 10
+function ask_tamago_plot_tree(win) {
+    const channel = 'submit_tamago_plot_tree_visits'
+    const init_val = default_tamago_plot_tree_visits
+    generic_input_dialog(win, 'Plot tree visits:', init_val, channel)
+}
+function submit_tamago_plot_tree_visits(visits) {
+    default_tamago_plot_tree_visits = visits
+    const g = game.shallow_copy(); g.delete_future()
+    g.player_black = g.player_white = null  // for safety
+    const raw_com = option.tamago_plot_tree_command
+    if (empty(raw_com)) {toast('need option.tamago_plot_tree_command'); return}
+    const [command, ...args] = raw_com.map(arg =>
+        arg === '%visits%' ? to_s(visits) :
+            arg === '%sgf%' ? g.to_sgf() : arg)
+    toast(`Running ${command}...`)
+    debug_log(`plot tree: ${command} ${args}`)
+    require('child_process').spawn(command, args, {detached: true})
 }
 
 /////////////////////////////////////////////////
