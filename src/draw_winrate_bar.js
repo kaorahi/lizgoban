@@ -140,7 +140,10 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, move_count, large_bar, 
         const {edge_color, fan_color, vline_color, aura_color,
                target_p, draw_order_p, winrate} = winrate_bar_suggest_prop(s, move_count)
         if (vline_color) {
-            g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(winrate))
+            const ns = R.next_as_suggest
+            let wr = (ns && ns.visits > s.visits) ?
+                winrate_bar_suggest_prop(ns, move_count).winrate : winrate
+            g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(wr))
         }
         if (!orig_suggest_p(s)) {return}
         draw_winrate_bar_fan(s, w, h, edge_color, fan_color, aura_color,
@@ -151,6 +154,13 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, move_count, large_bar, 
         draw_winrate_bar_fan(R.previous_suggest, w, h,
                              prev_color, TRANSPARENT, null,
                              false, large_bar, g)
+    if (R.next_as_suggest) {
+        const plot_params = winrate_bar_xy(R.next_as_suggest, w, h, true, R.engine_bturn)
+        const [x, y, r, max_radius, x_puct, y_puct] = plot_params
+        g.strokeStyle = '#888', g.lineWidth = 1
+        g.fillStyle = 'rgba(96,160,255,0.6)'
+        edged_fill_diamond_around([x, y], max_radius * 0.1, g)
+    }
 }
 
 function draw_winrate_bar_fan(s, w, h, stroke, fill, aura_color,

@@ -144,6 +144,7 @@ function set_renderer_state(...args) {
     const winrate_history = winrate_from_game()
     const winrate_history_set = winrate_history_set_from_game()
     const su_p = finitep(move_count_for_suggestion())
+    const next_as_suggest = !su_p && get_next_as_suggest()
     const previous_suggest = !su_p && get_previous_suggest()
     const future_moves = game.array_until(Infinity).slice(move_count).map(h => h.move)
     const winrate_trail = !su_p
@@ -182,6 +183,7 @@ function set_renderer_state(...args) {
               endstate_sum, endstate_clusters, max_visits, progress,
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               different_engine_for_white_p,
+              next_as_suggest,
               previous_suggest, future_moves, winrate_trail}, endstate_d_i)
     add_next_played_move_as_fake_suggest()
 }
@@ -516,6 +518,14 @@ function overlooked_high_policy_p(cur, prev) {
 
 /////////////////////////////////////////////////
 // misc. utils for updating renderer state
+
+function get_next_as_suggest() {
+    const next_mc = game.move_count + 1; if (next_mc > game.len()) {return {}}
+    const {move, visits, b_winrate, score_without_komi} = game.ref(next_mc)
+    return {
+        move, visits, score_without_komi, winrate: b_winrate, prior: 0.0,
+    }
+}
 
 function get_previous_suggest() {
     const [cur, prev] = [0, 1].map(k => game.ref(game.move_count - k))
