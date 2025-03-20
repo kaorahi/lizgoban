@@ -27,6 +27,7 @@
     "files": [
       "src/{*.js,*.html,*.css,*.png}",
       "src/sgf_from_image/{*.js,*.html,*.css,*.png}",
+      "src/mcts/{*.js,*.html}",
       "sound/*.mp3"
     ],
     "extraFiles": [
