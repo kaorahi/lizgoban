@@ -691,7 +691,7 @@ function menu_template(win) {
         sep,
         item('Tag / Untag', 'Ctrl+Space', tag_or_untag),
         menu('Plot MCTS tree', [
-            item('Normal', undefined, () => plot_mcts_force_actual(0.0)),
+            item('Normal', 'CmdOrCtrl+Shift+T', () => plot_mcts_force_actual(0.0)),
             item('Prefer played moves', 'CmdOrCtrl+T', () => plot_mcts_force_actual(0.3)),
         ]),
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
