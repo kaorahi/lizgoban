@@ -9,29 +9,29 @@
 
  <style>
   body {font-size: 2vmin; overflow: auto; user-select: none;}
-  #header {position: fixed; top: 10px; left: 10px; text-align: left; z-index: 9;}
+  #header {position: fixed; top: 1vmin; left: 1vmin; text-align: left; z-index: 9;}
   #modalButton {font-size: 3vmin; vertical-align: center;}
   #winrate {
-   position: absolute; right: 0; padding: 5px; font-size: 2.5vmin; background: #fff;
+   position: absolute; right: 0; padding: 0.5vmin; font-size: 2.5vmin; background: #fff;
   }
   #winrate[data-node-winrate="no"] {color: #888;}
   #info {
-   position: fixed; bottom: 10px; text-align: left; z-index: 9;
+   position: fixed; bottom: 1vmin; text-align: left; z-index: 9;
    max-width: 20%; overflow-wrap: break-word;
-   padding: 5px; background: #fff; white-space: pre-line;
+   padding: 0.5vmin; background: #fff; white-space: pre-line;
   }
-  #info[data-position="left"] {left: 10px; right: auto;}
-  #info[data-position="right"] {right: 10px; left: auto;}
+  #info[data-position="left"] {left: 1vmin; right: auto;}
+  #info[data-position="right"] {right: 1vmin; left: auto;}
   .hidden {display: none;}
   #svgContainer {transform-origin: 0 0; overflow: visible; z-index: -9;}
   #svgContainer svg {background: transparent;}
   #boardImage {display: block; vertical-align: top; width: 40vmin; height:40vmin;}
-  #boardImageContainer {position: fixed; top: 10px; right: 10px; display: inline-block; z-index: 9;}
+  #boardImageContainer {position: fixed; top: 1vmin; right: 1vmin; display: inline-block; z-index: 9;}
   #overlay {
    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
    background: transparent; pointer-events: none;
   }
-  #note {margin-left: 1em; vertical-align: top; border-radius: 5px;}
+  #note {margin-left: 1em; vertical-align: top; border-radius: 0.5vmin;}
   #running {
    display: inline-flex; width: 1.9em; height: 1.9em; border-radius: 50%;
    margin-left: 1em; align-items: center; justify-content: center;
@@ -42,8 +42,8 @@
   @keyframes fade {from {opacity: 1;} to {opacity: 0;}}
   #boardSizeHolder, #noteHolder {display: none;}
   dialog {
-   border: none; border-radius: 8px; padding: 20px;
-   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+   border: none; border-radius: 0.8vmin; padding: 2vmin;
+   box-shadow: 0 0.4vmin 1vmin rgba(0, 0, 0, 0.3);
   }
   #toast {
    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -449,7 +449,7 @@ function add_mouse_effect(default_bturn) {
       unblock_insert()
     })
     const handle_pointer_enter = e => {
-      g.style.filter = 'drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.5))'
+      g.style.filter = 'drop-shadow(0.3vmin 0.3vmin 0.5vmin rgba(0, 0, 0, 0.5))'
       draw_seq(bturn, sequence, children, PV)
       set_text(info, tooltip)
       info.setAttribute('data-position', 'right')
