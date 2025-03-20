@@ -198,6 +198,7 @@ function insert_params(params) {
     update_bsize_etc()
     mcts_id = id
     resize_svg()
+    add_mouse_effect()
     new_id_p && restore_window_conf(window_conf)
     reset_info()
     const seq_args = board_info?.pv_p ? [null, null, board_info?.moves] :
@@ -246,7 +247,6 @@ function resize_svg() {
     const scale = Math.min(sw * relative_target_width, sh * relative_target_height, 1)
     style.width = width * scale + 'px'; style.height = height * scale + 'px'
     element('svgContainer').style.paddingTop = `${dh}px`
-    add_mouse_effect()
 }
 
 resize_svg()
