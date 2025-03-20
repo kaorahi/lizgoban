@@ -45,7 +45,8 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Open URL (by drag & drop or clipboard)
 * Save/load analyses to/from SGF in Lizzie-compatible format
 * Restriction of analysis region like KaTrain
-* Free editing of stones in the middle of a game
+* Free editing of stones in the middle of a game, including board position copy-paste
+* Next move quiz
 * [Import stone positions from diagram images](http://kaorahi.github.io/lizgoban/src/sgf_from_image/sgf_from_image.html) like [img2sgf](https://github.com/hanysz/img2sgf)
 * [Experimental] Use your favorite images for the board and the stones
 
@@ -71,6 +72,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 
 ### Original visualizations
 
+* Visualization of [AI's search tree](https://github.com/kaorahi/visual_MCTS)
 * Visualization of search progress via plots of visits, winrate, score, prior, ... for each suggested move
 * Real-time display of area counts by KataGo
 * Comparison of 1-dan and 5-kyu styles by KataGo (a variation of [dfannius](https://github.com/dfannius)'s "policy heatmap")
@@ -316,7 +318,19 @@ For information about the displayed marks, shortcut keys, and other features, re
 
 ## <a name="Changes"></a>Major changes
 
-### 0.8.*
+### 0.8.1
+
+* Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://github.com/kaorahi/visual_MCTS)
+* Add "Next move quiz" to View menu.
+* Add board position copy-paste.
+  1. Alt+drag to select the source region.
+  2. `Edit > Flip / rotate / etc. > copy stones`
+  3. Alt+drag to select the destination region.
+  4. `Edit > Flip / rotate / etc. > paste`
+* Add tsumego frame without ko threats. (`Tool > Tsumego frame`)
+* Upgrade libraries (Electron 35, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+
+### 0.8.0
 
 Highlights:
 
