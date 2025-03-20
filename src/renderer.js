@@ -949,8 +949,9 @@ function get_reusable_canvas(given_size) {
 }
 function put_reusable_canvas(canvas) {reusable_canvas = canvas}
 
-function generate_board_image_dataURL(phys_size) {
-    const canvas = get_reusable_canvas(phys2css(phys_size))
+function generate_board_image_dataURL(size) {
+    // assume same DPR across windows
+    const canvas = get_reusable_canvas(size)
     const orig_R = {...R}, tmp_R = {
         stone_style: '2D', board_image_p: false, stone_image_p: false,
         always_show_coordinates: false,
