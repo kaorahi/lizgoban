@@ -397,11 +397,6 @@ function get_prop(a) {
   return Object.keys(r).length > 0 && {...r, bturn, tooltip}
 }
 
-function node_prop_pair(g) {
-  const prop = [...g.getElementsByTagName('a')].map(get_prop).find(truthy)
-  return prop ? [g, prop] : null
-}
-
 function truthy(z) {return !!z}
 
 function Q_all(selector) {
