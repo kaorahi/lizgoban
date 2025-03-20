@@ -8,11 +8,11 @@
 <!-- -------- CSS ---------------------------- -->
 
  <style>
-  body {font-size: 12pt; overflow: auto; user-select: none;}
+  body {font-size: 2vmin; overflow: auto; user-select: none;}
   #header {position: fixed; top: 10px; left: 10px; text-align: left; z-index: 9;}
-  #modalButton {font-size: 20pt; vertical-align: center;}
+  #modalButton {font-size: 3vmin; vertical-align: center;}
   #winrate {
-   position: absolute; right: 0; padding: 5px; font-size: 16pt; background: #fff;
+   position: absolute; right: 0; padding: 5px; font-size: 2.5vmin; background: #fff;
   }
   #winrate[data-node-winrate="no"] {color: #888;}
   #info {
@@ -35,7 +35,7 @@
   #running {
    display: inline-flex; width: 1.9em; height: 1.9em; border-radius: 50%;
    margin-left: 1em; align-items: center; justify-content: center;
-   font-size: 16pt; color: white; background-color: red; opacity: 0;
+   font-size: 2.5vmin; color: white; background-color: red; opacity: 0;
   }
   #running[data-running="yes"] {animation: fade 1s infinite;}
   #running:not[data-running="yes"] {animation: none !important;}
@@ -125,7 +125,7 @@
    <a target="_blank" href="https://github.com/kaorahi/lizgoban">Home</a>
   </div>
   <div style="display: flex; justify-content: center;">
-   <button style="font-size: 18pt; text-" onclick="close_modal()">ok</button>
+   <button style="font-size: 3vmin; text-" onclick="close_modal()">ok</button>
   </div>
  </div>
 </dialog>
