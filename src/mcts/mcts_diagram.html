@@ -198,7 +198,7 @@ function insert_params(params) {
     update_bsize_etc()
     mcts_id = id
     resize_svg()
-    add_mouse_effect()
+    add_mouse_effect(bturn)
     new_id_p && restore_window_conf(window_conf)
     reset_info()
     const seq_args = board_info?.pv_p ? [null, null, board_info?.moves] :
@@ -386,14 +386,16 @@ function get_value_in_tootip(tooltip, key) {
   const r = new RegExp(`^${key}:\\s*(.+)$`, 'm')
   return tooltip?.match(r)?.[1]
 }
-function get_prop(a) {
+function get_prop(a, default_bturn) {
   const tooltip = get_tooltip(a); if (!a) {return null}
   const get_a = key => get_value_in_tootip(tooltip, key)?.replace(/\s.*/, '').split(/,/)
   const keys = ['sequence', 'PV', 'children']
   let r = {}
   keys.forEach(key => {const a = get_a(key); a && (r[key] = a)})
-  const is_this_black_move = !(tooltip?.match(/^White/))
-  const bturn = !!is_this_black_move === (r.sequence?.length % 2 === 1)
+  const is_this_black_move =
+    tooltip?.match(/^Black/) ? true : tooltip?.match(/^White/) ? false : undefined
+  const bturn = (is_this_black_move === undefined) ? default_bturn :
+    !!is_this_black_move === (r.sequence?.length % 2 === 1)
   return Object.keys(r).length > 0 && {...r, bturn, tooltip}
 }
 
@@ -431,12 +433,12 @@ function winrate_text(tooltip) {
   return `win ${winrate} (${pla}+${score}) [${visits} visits]`
 }
 
-function add_mouse_effect() {
+function add_mouse_effect(default_bturn) {
   const info = element('info'), winrate = element('winrate')
   const nodes = Q_all('#svgContainer g.node'), attr = 'data-tooltip'
   nodes.forEach(g => {
     // save prop as attributes for saved HTML
-    const prop = get_prop(g.querySelector('a'))
+    const prop = get_prop(g.querySelector('a'), default_bturn)
     prop && g.setAttribute(attr, JSON.stringify(prop))
     const saved_json = g.getAttribute(attr); if (!saved_json) {return}
     const {bturn, sequence, children, PV, tooltip} = JSON.parse(saved_json)
