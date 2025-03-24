@@ -176,8 +176,12 @@ function game_to_sgf_sub(game, cache_suggestions_p, force_note_p) {
         return empty(hits) ? '' :
             `${is_black ? 'AB' : 'AW'}${hits.map(h => m2s(h.move)).join('')}`
     }
+    // fixme: this is a quick hack to support PL[W] only pretendedly.
+    // see also history_from_sabaki_nodes().
+    const white_to_play_first_p = init_len > 0 && game.ref(init_len - 1).is_black
+    const pl = white_to_play_first_p ? 'PL[W]' : ''
     const header =
-          `;${sz}${ha}${km}${ru}${f('PW', game.player_white)}${f('PB', game.player_black)}${com0}`
+          `;${sz}${pl}${ha}${km}${ru}${f('PW', game.player_white)}${f('PB', game.player_black)}${com0}`
           + init_stones(true) + init_stones(false)
     // body
     const lizzie072_cache_for = h => {
@@ -364,6 +368,7 @@ function history_from_sabaki_nodes(nodes, komi, black_to_play_first, cache_sugge
         // fixme: this is a quick hack to support PL[W] only pretendedly.
         // OK: (;SZ[19]PL[W]AB[bc][bd]AW[be][bg])
         // NG: (;SZ[19]PL[W])
+        // see also game_to_sgf_sub()
         const args = black_to_play_first ?
               [['AB', true], ['AW', false], ['B', true], ['W', false]] :
               [['AW', false], ['AB', true], ['W', false], ['B', true]]
