@@ -429,7 +429,8 @@ function root_winrate_text() {
 }
 
 function winrate_text(tooltip) {
-  const winrate = tooltip.match(/^winrate:\s*(.*?)\s/m)[1]
+  const winrate = tooltip.match(/^winrate:\s*(.*?)\s/m)?.[1]
+  if (!winrate) {return ''}
   const [_, sign, score] = tooltip.match(/^score:\s*([+-])(.*?)\s/m)
   const pla = (sign === '+') ? 'B' : 'W'
   const visits = tooltip.match(/^visits:\s*(.*)/m)[1]
@@ -459,8 +460,9 @@ function add_mouse_effect(default_bturn) {
       const {left, top} = info.getBoundingClientRect(), margin = 100
       e.clientX > left - margin && e.clientY > top - margin &&
         info.setAttribute('data-position', 'left')
-      set_text(winrate, winrate_text(tooltip))
-      winrate.setAttribute('data-node-winrate', 'yes')
+      const wr_text = winrate_text(tooltip)
+      wr_text &&
+        (set_text(winrate, wr_text), winrate.setAttribute('data-node-winrate', 'yes'))
     }
     on('pointerenter', e => {
       is_mouse_idle() || (block_insert(), setTimeout(() => handle_pointer_enter(e)))
