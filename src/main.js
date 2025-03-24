@@ -1081,10 +1081,11 @@ function try_auto_play(force_next) {
         play: () => try_play_weak(current_auto_play_weaken()),
         random_opening: () => try_play_weak(['random_opening']),
     }[auto_playing_strategy]
+    const resignable = ['play', 'random_opening'].includes(auto_playing_strategy)
     const do_proc = () => {
         doing_auto_play_p = true
         const f = () => {
-            should_resign_p(game, R) ? resign() : proc()
+            resignable && should_resign_p(game, R) ? resign() : proc()
             doing_auto_play_p = false
         }
         let_me_think_play(f)
