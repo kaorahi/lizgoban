@@ -383,7 +383,8 @@ setup_overlay()
 /////////////////////////////////////////
 // mouse effect
 
-!electron && add_mouse_effect(bturn_for_saved_html)
+!electron &&
+  window.addEventListener('load', () => add_mouse_effect(bturn_for_saved_html))
 
 function get_tooltip(a) {return a.getAttributeNS(xlinkNS, 'title')}
 function get_value_in_tootip(tooltip, key) {
