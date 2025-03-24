@@ -329,7 +329,7 @@ function restore_window_conf(conf) {
   element('note').value = c.note
 }
 
-window.addEventListener('beforeunload', save_window_conf)
+electron && window.addEventListener('beforeunload', save_window_conf)
 
 let window_conf_before_save_page = null
 function setup_before_save_page() {
