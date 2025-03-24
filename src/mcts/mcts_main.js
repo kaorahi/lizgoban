@@ -443,7 +443,7 @@ function update_mcts_menu(id) {
             {label: `Close others (${mcts_total_trees() - 1})`,
              submenu: [{label: 'Close!', click: () => close_other_mcts_plots(id)}]},
             {type: 'separator'},
-            ...Object.keys(mcts_state).sort().map(new_id => {
+            ...sort_by_tail_number(Object.keys(mcts_state)).map(new_id => {
                 const s = mcts_state[new_id]
                 return {
                     label: `Tree${new_id}: move ${s.move_count} (${s.last_move || 'init'}) ${s.mcts.root.visits} visits`,
@@ -470,6 +470,10 @@ function update_mcts_menu(id) {
         ]},
     ].filter(truep)
     win.setMenu(M.electron.Menu.buildFromTemplate(menu))
+}
+
+function sort_by_tail_number(ary) {
+    return sort_by(ary, s => to_i(s.match(/[0-9]+$/)[0]))
 }
 
 /////////////////////////////////////////////////
