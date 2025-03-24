@@ -193,7 +193,7 @@ function insert_params(params) {
     sgf_link.download = `game_${download_filename}.sgf`
     const note = element('note'); note.value || (note.value = default_note, save_note())
     element('boardImage').src = board_image_dataURL
-    element('boardSizeHolder').innerText = to_s(bsize)
+    element('boardSizeHolder').innerText = JSON.stringify({bsize, bturn})
     element('maxNodesReadonly').innerText = max_displayed_nodes
     update_bsize_etc()
     mcts_id = id
@@ -215,11 +215,12 @@ on_electron('diagram_params', (e, params) => insert_params(params))
 on_electron('running', (e, running) => update_running(running))
 on_electron('toast', (e, ...a) => toast(...a))
 
-let bsize
+let bsize, bturn_for_saved_html
 update_bsize_etc()
 
 function update_bsize_etc() {
-  bsize = to_i(element('boardSizeHolder').innerText)
+  const h = JSON.parse(element('boardSizeHolder').innerText || '{}')
+  bsize = h.bsize; bturn_for_saved_html = h.bturn
 }
 
 function update_running(running) {
@@ -380,6 +381,8 @@ setup_overlay()
 
 /////////////////////////////////////////
 // mouse effect
+
+!electron && add_mouse_effect(bturn_for_saved_html)
 
 function get_tooltip(a) {return a.getAttributeNS(xlinkNS, 'title')}
 function get_value_in_tootip(tooltip, key) {
