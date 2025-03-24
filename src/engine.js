@@ -23,6 +23,7 @@ function create_leelaz () {
     let known_name_p = false
     let humansl_profile = '', tmp_humansl_profile = null
     let humansl_stronger_profile = '', humansl_weaker_profile = ''
+    let humansl_scan_profiles = []
     let avoid_resign_p = false, orig_allow_resignation = true
     let need_raw_nn_p = true
 
@@ -89,9 +90,12 @@ function create_leelaz () {
     const start_analysis_after_raw_nn = () => {
         if (!need_raw_nn_p) {return}
         const too_slow = (speedometer.latest() < 20)
+        const humansl_scan_args = humansl_scan_keys().map(key =>
+            [key, kata_raw_human_nn, humansl_scan_policy_for(key)])
         const humansl_args = [
             ['humansl_stronger_policy', kata_raw_human_nn, humansl_stronger_profile],
             ['humansl_weaker_policy', kata_raw_human_nn, humansl_weaker_profile],
+            ...(too_slow ? [] : humansl_scan_args),
         ]
         const raw_nn_args = [
             ['default_policy', kata_raw_nn],
@@ -113,6 +117,10 @@ function create_leelaz () {
         call(args, call_nn, then_do)
         return true
     }
+    const humansl_scan_keys = () =>
+      humansl_scan_profiles.map((p, k) => `humansl_scan_policy_${k}_${p}`)
+    const humansl_scan_key_reg = /humansl_scan_policy_[0-9]+_(.+)/
+    const humansl_scan_policy_for = key => key.match(humansl_scan_key_reg)?.[1]
     const start_analysis_actually = on_response => {
         const allow = is_supported('allow') && analysis_region_string()
         // for a bug in KataGo v1.10.0:
@@ -338,6 +346,7 @@ function create_leelaz () {
         bturn: js_bturn,
         komi, gorule, handicaps, init_len, ownership_p,
         humansl_stronger_profile, humansl_weaker_profile,
+        humansl_scan_profiles,
         tmp_humansl_profile,
         analysis_after_raw_nn_p,
         avoid_resign_p,
@@ -348,6 +357,7 @@ function create_leelaz () {
         humansl_stronger_profile = aux.humansl_stronger_profile
         humansl_weaker_profile = aux.humansl_weaker_profile
         tmp_humansl_profile = aux.tmp_humansl_profile
+        humansl_scan_profiles = aux.humansl_scan_profiles
         handicaps = aux.handicaps; init_len = aux.init_len
         avoid_resign_p = aux.avoid_resign_p
     }
@@ -355,7 +365,8 @@ function create_leelaz () {
         const profile_changed_p =
             humansl_stronger_profile !== aux.humansl_stronger_profile ||
             humansl_weaker_profile !== aux.humansl_weaker_profile ||
-            tmp_humansl_profile !== aux.tmp_humansl_profile
+            tmp_humansl_profile !== aux.tmp_humansl_profile ||
+            JSON.stringify(humansl_scan_profiles) !== JSON.stringify(aux.tmp_humansl_profile)
         record_simple_aux(aux)
         let update_kata_p = profile_changed_p
         const update_kata = (val, new_val, command, setter) => {
@@ -715,11 +726,13 @@ function create_leelaz () {
             'humansl_stronger_policy', 'humansl_weaker_policy',
         ]
         const policies = pick_keys(obtained_policy || {}, ...policy_keys)
+        const humansl_scan = humansl_scan_keys().map(key =>
+            [humansl_scan_policy_for(key), obtained_policy?.[key]])
         const is_suggest_by_genmove =
               !!command?.match(/^(lz|kata)-genmove|^kata-search/)
         merge(h, {
             engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits),
-            ...policies,
+            ...policies, humansl_scan,
             is_suggest_by_genmove,
         })
         f(h)

@@ -47,6 +47,7 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
     draw_winrate_graph_frame(w, sq2coord, g)
     draw_winrate_graph_settled_territory(sq2coord, g)
     draw_winrate_graph_ambiguity(sr2coord, sq2coord, g)
+    draw_winrate_graph_humansl_scan(sr2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_order(sr2coord, g)
@@ -452,6 +453,31 @@ function draw_winrate_graph_amb_gain(w, sr2coord, g) {
         const xy2 = [x_for(mc + 0.5), y2]
         g.fillStyle = zone_color(i, j, 1.0)
         fill_rect(xy1, xy2, g)
+    })
+}
+
+function draw_winrate_graph_humansl_scan(sr2coord, g) {
+    const table = [
+        ['humansl_scan_b', 50, 100],
+        ['humansl_scan_w', 0, 50],
+    ]
+    table.forEach(([key, r_bot, r_top]) => {
+        winrate_history_values_of(key).forEach((ps, s) => {
+            if (!truep(ps?.[0])) {return}
+            const p_sum = sum(ps), normalized_ps = ps.map(p => p / p_sum)
+            const [k2r, ] = translator_pair([0, ps.length], [r_top, r_bot])
+            const [p2alpha, ] = translator_pair([0, 1 / ps.length], [0, 0.5])
+            normalized_ps.forEach((p, k) => {
+                const [x0, y0] = sr2coord(s, k2r(k))
+                const [x1, y1] = sr2coord(s + 1, k2r(k + 1))
+                const current_p = (s === R.move_count)
+                const width = current_p ? (x1 - x0) * 1.6 : 1
+                const rgb = current_p ? '0,128,255' : '0,0,255'
+                const alpha = clip(p2alpha(p), 0, 1)
+                g.fillStyle = `rgba(${rgb},${alpha})`
+                fill_rect([x0 - width, y0 + 1], [x0, y1 - 1], g)
+            })
+        })
     })
 }
 

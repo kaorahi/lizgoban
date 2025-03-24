@@ -54,6 +54,7 @@ const suggest_keys2 = [
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'root_rawStScoreError', 'root_rawVarTimeLeft',
     'amb_gain',
+    'humansl_scan',
     ...suggest_keys2_by_policy,
 ]
 
@@ -95,6 +96,7 @@ function suggest_handler(h) {
     delete R.default_policy
     delete R.humansl_stronger_policy
     delete R.humansl_weaker_policy
+    delete R.humansl_scan
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, endstate_stdev, score_without_komi} = {...cur, ...preferred_h}
     R.show_endstate && add_endstate_to_stones(R.stones, endstate, endstate_stdev, mc, true)
@@ -426,6 +428,15 @@ function winrate_from_game(engine_id) {
         }
         const orders = M.plot_order_p() ?
               {order_b: order_of(true), order_w: order_of(false)} : {}
+        const humansl_scan_of = is_black => {
+            if (s <= game.init_len || xor(is_black, cur.is_black)) {return null}
+            const {move} = cur, k = move2serial(move), {humansl_scan} = prev
+            return humansl_scan?.map(([profile, policy]) => policy?.[k])
+        }
+        const humansl_scans = {
+            humansl_scan_b: humansl_scan_of(true),
+            humansl_scan_w: humansl_scan_of(false),
+        }
         const implicit_pass = (!!h.is_black === !!game.ref(s - 1).is_black)
         const pass = implicit_pass || M.is_pass(h.move) || h.illegal
         const score_without_komi = score_without_komi_at(s)
@@ -470,7 +481,7 @@ function winrate_from_game(engine_id) {
         return {
             r, move_b_eval, move_eval, tag, score_without_komi, cumulative_score_loss,
             turn_letter,
-            ...(pass ? {pass} : {predict}), ...orders
+            ...(pass ? {pass} : {predict}), ...orders, ...humansl_scans,
         }
     })
 }
