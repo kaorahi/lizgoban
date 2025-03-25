@@ -212,6 +212,10 @@ const {
     resume, auto_playing,
 })
 
+function this_stone_should_run_away(move) {
+    plot_mcts_force_actual(0, undefined, move)
+}
+
 /////////////////////////////////////////////////
 // main flow (1) receive commands from renderer
 
@@ -261,6 +265,7 @@ const api = {
     update_analysis_region,
     set_persona_code, set_adjust_sanity_p,
     resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
+    this_stone_should_run_away,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
 }

@@ -631,6 +631,10 @@ function play_here(e, coord2idx, canvas) {
     const stone_p = aa_ref(R.stones, ...idx).stone
     const match_sec = in_match_p() && (set_match_param(), auto_play_in_match_sec())
     const force_create = in_match_p() ? 'never_redo' : !!another_board
+    if (stone_p && dblclick && e.shiftKey) {
+        main('this_stone_should_run_away', move)
+        return false
+    }
     if (is_event_to_edit_middle(e)) {
         pass && main('edit_middle', pass_command); main('edit_middle', move); return true
     }

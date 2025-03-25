@@ -1,18 +1,26 @@
 'use strict'
 
+// just a very quick experiment for "this stone should run away"
+// https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449
+R.c_owner = 1e+8
+R.lambda = 1.0
+R.c_puct = 1.0
+R.hum = 0.5
+R.hum_profile = 'rank_9k'
+
 /////////////////////////////////////////////////
 // tree
 
-function make_mcts(peek_kata_raw_nn, future_moves) {
+function make_mcts(peek_kata_raw_nn, peek_kata_raw_human_nn, future_moves) {
     // neural network
     const max_nn_wait_count = 1
     let nn_promises = []
-    const call_nn = moves => {
+    const call_nn = (peek, ...args) => {
         const cont = res => nn_output => {
             const k = nn_promises.indexOf(p); k >= 0 && nn_promises.splice(k, 1)
             return res(nn_output)
         }
-        const p = new Promise((res, rej) => self.peek_kata_raw_nn(moves, cont(res)))
+        const p = new Promise((res, rej) => peek(...args, cont(res)))
         nn_promises.push(p); return p
     }
     const wait_for_all_nn_calls = async () => {await Promise.all(nn_promises)}
@@ -48,8 +56,9 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
     }
     const playout = async () => {
         const choice = playout_down(), {leaf, moves, ancestors} = choice
-        const nn_output = await call_nn(moves)
-        playout_up({leaf, ancestors, nn_output})
+        const nn_output = await call_nn(self.peek_kata_raw_nn, moves)
+        const human_nn_output = self.should_run_away && R.hum > 0 && AI.is_supported('sub_model_humanSL') && await call_nn(self.peek_kata_raw_human_nn, moves, R.hum_profile)
+        playout_up({leaf, ancestors, nn_output, human_nn_output})
         await self.on_playout(choice, self)
         repeat_playout()
     }
@@ -62,8 +71,8 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
         set_waiting(leaf)
         return choice
     }
-    const playout_up = ({leaf, ancestors, nn_output}) => {
-        expand_leaf(leaf, nn_output)
+    const playout_up = ({leaf, ancestors, nn_output, human_nn_output}) => {
+        expand_leaf(leaf, nn_output, human_nn_output, self.should_run_away)
         update_ancestors(ancestors)
         unset_waiting(leaf)
     }
@@ -87,6 +96,7 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
         root,
         force_actual: 0.0,
         future_moves: [...future_moves],  // shallow copy
+        should_run_away: null,
         max_visits: 0,
         node_at_step: [],
         on_playout: default_on_playout,
@@ -120,6 +130,7 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
         set_cached_svg,
         lcb,
         peek_kata_raw_nn,
+        peek_kata_raw_human_nn,
     }
     return self
 }
@@ -290,7 +301,8 @@ function select_move(node, bturn, actual_move, force_actual) {
         return [actual_move, false]
     }
     // priority
-    const c_puct = 1.0, dummy_value = 0.0
+    const c_puct = R.c_puct, dummy_value = 0.0
+    // const c_puct = 1.0, dummy_value = 0.0
     const total_original_visits = sum(moves.map(m => node.children[m]?.original_visits || 0))
     const c = c_puct * Math.sqrt(total_original_visits + 1)
     const priority = (policy, value, visits) => value + c * policy / (1 + visits)
@@ -308,14 +320,28 @@ function select_move(node, bturn, actual_move, force_actual) {
     return [selected_move, true]
 }
 
-function expand_leaf(node, nn_output) {
-    const {whiteWin, whiteLoss, noResult, whiteLead, policyPass} = nn_output
+function expand_leaf(node, nn_output, human_nn_output, should_run_away) {
+    const {whiteWin, whiteLoss, noResult, whiteLead, policyPass, whiteOwnership} = nn_output
     // policy
     const move_policy_pair = (p, k) => !isNaN(p) && [to_move(k), p]
     const policy = aa2hash(nn_output.policy.map(move_policy_pair).filter(truep))
-    policy[pass_command] = policyPass[0]
+        policy[pass_command] = policyPass[0]
     // winrate & score (for black)
-    const nn_winrate = whiteLoss[0] + 0.5 * noResult[0], nn_score = - whiteLead[0]
+    let nn_winrate = whiteLoss[0] + 0.5 * noResult[0], nn_score = - whiteLead[0]
+    if (should_run_away) {
+        const c = R.c_owner, o = (1 - whiteOwnership[move2serial(should_run_away)]) / 2
+        nn_winrate = (nn_winrate + c * o) / (1 + c)
+        const lambda = R.lambda
+        if (human_nn_output) {
+            const human_policy = aa2hash(human_nn_output.policy.map(move_policy_pair).filter(truep))
+            human_policy[pass_command] = human_nn_output.policyPass[0]
+            const hum = R.hum
+            each_key_value(policy, (move, p) => {policy[move] = (1 - hum) * policy[move] + hum * human_policy[move]})
+        }
+        each_key_value(policy, (move, p) => {policy[move] = p ** lambda})
+        const p_sum = sum(Object.values(policy))
+        each_key_value(policy, (move, p) => {policy[move] = p / p_sum})
+    }
     const winrate = nn_winrate, square_winrate = winrate**2, score = nn_score
     // expand
     merge(node, {policy, nn_winrate, nn_score, winrate, square_winrate, score, children: {}})
@@ -336,6 +362,10 @@ function expand_leaf(node, nn_output) {
 //     ...
 //   ],
 //   policyPass: [ 0 ],
+//   whiteOwnership: [
+//     -0.0362994, -0.0275093, -0.0348419, -0.0127268,  0.0195608,
+//     ...
+//   ]
 
 function update_ancestors(ancestors) {
     if (empty(ancestors)) {return}

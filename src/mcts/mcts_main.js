@@ -73,11 +73,12 @@ async function play_from_mcts(moves, id) {
     resume_to_previous_visits(new_id)
 }
 
-function plot_mcts_force_actual(val, max_visits) {
+function plot_mcts_force_actual(val, max_visits, should_run_away) {
     const id = make_mcts_state()
     const state = mcts_state[id]
     initialize_mcts(state)
     state.mcts.force_actual = val
+    state.mcts.should_run_away = should_run_away
     switch_to_mcts(id)
     plot_mcts(max_visits, id)
     return id
@@ -127,7 +128,7 @@ function make_mcts_state() {
 }
 
 function initialize_mcts(state) {
-    !state.mcts && (state.mcts = make_mcts(AI.peek_kata_raw_nn, R.future_moves))
+    !state.mcts && (state.mcts = make_mcts(AI.peek_kata_raw_nn, AI.peek_kata_raw_human_nn, R.future_moves))
 }
 
 function mcts_total_trees() {return Object.keys(mcts_state).length}
