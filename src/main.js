@@ -143,7 +143,6 @@ globalize({  // for powered_goban.js
         branch_at, ladder_branches,
         tuning_message: () => tuning_message,
         ...aa2hash([
-            'plot_order_p',
             'plot_endstate_surprise_p',
             'plot_score_stdev_p',
             'plot_shorttermScoreError_p',

@@ -419,15 +419,6 @@ function winrate_from_game(engine_id) {
         const move_b_eval = a[s - 1] && (r - a[s - 1])
         const move_eval = move_b_eval && move_b_eval * turn_sign
         const predict = winrate_suggested(s, engine_id)
-        const order_of = is_black => {
-            if (s <= game.init_len || xor(is_black, cur.is_black)) {return null}
-            const max_order = 20, {suggest} = prev, {move} = cur
-            const hit = (suggest || []).find(z => z.move === move)
-            const valid = hit && hit.order >= 0
-            return clip(valid ? hit.order : Infinity, 0, max_order)
-        }
-        const orders = M.plot_order_p() ?
-              {order_b: order_of(true), order_w: order_of(false)} : {}
         const humansl_scan_of = is_black => {
             if (s <= game.init_len || xor(is_black, cur.is_black)) {return null}
             const {move} = cur, k = move2serial(move), {humansl_scan} = prev
@@ -481,7 +472,7 @@ function winrate_from_game(engine_id) {
         return {
             r, move_b_eval, move_eval, tag, score_without_komi, cumulative_score_loss,
             turn_letter,
-            ...(pass ? {pass} : {predict}), ...orders, ...humansl_scans,
+            ...(pass ? {pass} : {predict}), ...humansl_scans,
         }
     })
 }
