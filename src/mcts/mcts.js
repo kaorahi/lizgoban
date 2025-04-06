@@ -47,7 +47,7 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
             const {moves, ancestors} = get_moves_ancestors(leaf)
             merge(leaf, {visits: 1, original_visits: 0, winrate: leaf.nn_winrate, score: leaf.nn_score})
             merge(leaf, {square_winrate: leaf.winrate**2})
-            update_original_visits(ancestors, leaf, self.future_moves, self.force_actual)
+            update_original_visits(ancestors, leaf, self.future_moves, self.params)
             update_ancestors(ancestors)
             on_playout({leaf, moves, ancestors}, self)
         }
@@ -60,11 +60,11 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
         repeat_playout()
     }
     const playout_down = () => {
-        const choice = select_leaf(self.root, self.future_moves, self.force_actual); if (!choice) {return}
+        const choice = select_leaf(self.root, self.future_moves, self.params); if (!choice) {return}
         const {leaf, moves, ancestors} = choice
         const step = self.root.visits
         leaf.step = step; self.node_at_step[step] = leaf
-        update_original_visits(ancestors, leaf, self.future_moves, self.force_actual)
+        update_original_visits(ancestors, leaf, self.future_moves, self.params)
         set_waiting(leaf)
         return choice
     }
@@ -91,7 +91,9 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
     // object
     const self = {
         root,
-        force_actual: 0.0,
+        params: {
+            force_actual: 0.0,
+        },
         future_moves: [...future_moves],  // shallow copy
         max_visits: 0,
         node_at_step: [],
@@ -238,13 +240,13 @@ function lcb(node) {
 /////////////////////////////////////////////////
 // playout
 
-function select_leaf(root, future_moves, force_actual) {
+function select_leaf(root, future_moves, params) {
     let node = root, bturn = is_bturn(), moves = [], ancestors = []
     future_moves = [...future_moves]  // shallow copy
     while (is_expanded(node)) {
         if (too_long(ancestors.length)) {const msg = 'FAILED: select_leaf'; console.log(msg); throw msg}
         const actual_move = future_moves.shift()
-        const [move, original_p] = select_move(node, bturn, actual_move, force_actual)
+        const [move, original_p] = select_move(node, bturn, actual_move, params)
         if (!move) {return null}
         moves.push(move); ancestors.push(node)
         node = get_child(node, move); bturn = !bturn
@@ -254,7 +256,7 @@ function select_leaf(root, future_moves, force_actual) {
 }
 
 // This is also used in repeat_playout_using_backup.
-function update_original_visits(ancestors, leaf, future_moves, force_actual) {
+function update_original_visits(ancestors, leaf, future_moves, params) {
     //const descendant = [...ancestors, leaf].slice(1)
     const descendant = [...ancestors, leaf]
     const root = descendant.shift()
@@ -264,21 +266,21 @@ function update_original_visits(ancestors, leaf, future_moves, force_actual) {
         const {move} = child
         maybe &&= (move === future_moves[k])
         const forced = maybe &&
-              force_actual_move_p(child.parent, move, force_actual, root.visits)
+              force_actual_move_p(child.parent, move, params, root.visits)
         !forced && child.original_visits++
     })
 }
 
-function force_actual_move_p(node, actual_move, force_actual, root_visits) {
+function force_actual_move_p(node, actual_move, params, root_visits) {
     if (!actual_move) {return false}
     const margin = 2
-    const required_visits = (node.visits - margin) * force_actual
+    const required_visits = (node.visits - margin) * params.force_actual
     const child = node.children[actual_move]
     const child_visits = true_or(child && is_visible(child, root_visits) && child.visits, 0)
     return child_visits < required_visits
 }
 
-function select_move(node, bturn, actual_move, force_actual) {
+function select_move(node, bturn, actual_move, params) {
     // child
     const dummy_child = {visits: 0, original_visits: 0, is_dummy: true}
     const child_for = move => node.children[move] || dummy_child
@@ -288,7 +290,7 @@ function select_move(node, bturn, actual_move, force_actual) {
     const selectable_moves = moves.filter(selectable)
     if (empty(selectable_moves)) {return [null, null]}
     // force actual move
-    if (force_actual_move_p(node, actual_move, force_actual, Infinity)) {
+    if (force_actual_move_p(node, actual_move, params, Infinity)) {
         return [actual_move, false]
     }
     // priority
