@@ -12,7 +12,7 @@ module.exports = functions_in_main => {
     return {
         set_mcts_window_conf,
         resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
-        set_mcts_max_nodes, plot_mcts_force_actual,
+        set_mcts_max_nodes, plot_mcts_force_actual, plot_targeted_mcts,
         play_by_mcts,
     }
 }
@@ -77,14 +77,20 @@ async function play_from_mcts(moves, id) {
     resume_to_previous_visits(new_id)
 }
 
-function plot_mcts_force_actual(val, max_visits) {
+function plot_mcts_force_actual(val, max_visits, params={}) {
     const id = make_mcts_state()
     const state = mcts_state[id]
     initialize_mcts(state)
     state.mcts.params.force_actual = val
+    merge(state.mcts.params, params)
     switch_to_mcts(id)
     plot_mcts(max_visits, id)
     return id
+}
+
+function plot_targeted_mcts(target) {
+    const humansl_profile = AI.is_supported('sub_model_humanSL') && 'rank_9k'
+    plot_mcts_force_actual(0, undefined, {target, humansl_profile})
 }
 
 function play_by_mcts(auto_play_sec, play_func) {
@@ -132,7 +138,9 @@ function make_mcts_state() {
 }
 
 function initialize_mcts(state) {
-    !state.mcts && (state.mcts = make_mcts(AI.peek_kata_raw_nn, R.future_moves))
+    const nn = AI.peek_kata_raw_nn
+    const human_nn = AI.is_supported('sub_model_humanSL') && AI.peek_kata_raw_human_nn
+    !state.mcts && (state.mcts = make_mcts(nn, human_nn, R.future_moves))
 }
 
 function mcts_total_trees() {return Object.keys(mcts_state).length}

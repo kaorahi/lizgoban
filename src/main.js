@@ -201,7 +201,7 @@ const {
 const {
     set_mcts_window_conf,
     resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
-    plot_mcts_force_actual,
+    plot_mcts_force_actual, plot_targeted_mcts,
     play_by_mcts,
 } = require('./mcts/mcts_main.js')({
     get_game: () => game, get_stored, set_stored, switch_to_game_id, goto_move_count,
@@ -261,6 +261,7 @@ const api = {
     update_analysis_region,
     set_persona_code, set_adjust_sanity_p,
     resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
+    plot_targeted_mcts,
     // for debug
     send_to_leelaz: AI.send_to_leelaz,
 }

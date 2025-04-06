@@ -629,12 +629,14 @@ function play_here(e, coord2idx, canvas) {
     const another_board = e.ctrlKey, pass = e.button === 2 && R.move_count > 0
     const goto_p = showing_movenum_p() || dblclick
     const stone_p = aa_ref(R.stones, ...idx).stone
+    const targeted_mcts_p = stone_p && dblclick && e.shiftKey && R.is_katago
     const match_sec = in_match_p() && (set_match_param(), auto_play_in_match_sec())
     const force_create = in_match_p() ? 'never_redo' : !!another_board
     if (is_event_to_edit_middle(e)) {
         pass && main('edit_middle', pass_command); main('edit_middle', move); return true
     }
     if (is_event_to_set_analysis_region(e)) {start_analysis_region(idx); return false}
+    if (targeted_mcts_p) {main('plot_targeted_mcts', move); return false}
     if (goto_p) {goto_idx_maybe(idx, another_board); return true}
     if (stone_p) {
         set_showing_movenum_p(true); hover_here(e, coord2idx, canvas)
