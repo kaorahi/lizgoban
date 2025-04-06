@@ -469,7 +469,7 @@ function dot_edge_prop({node, next_move, child, is_child_pv, root_visits, value_
     const color = is_child_pv ? `"#ff0000${c}"` : `"#000000${c}"`
     // const c = Math.round(oldness * whiteness * 255).toString(16).padStart(2, '0')
     // const color = order === 0 ? `"#$ff{c}{c}"` : `"#${c}${c}${c}"`
-    const tooltip = `"${next_move}\\nstep=${step}\\npolicy=${p}${p_str}${v_str}"`
+    const tooltip = `"${next_move}\\nstep=${step}\\npolicy=${p.toFixed(4)}${p_str}${v_str}"`
     return dot_prop({
         label, penwidth, fontsize, fontcolor, color, tooltip,
     })
@@ -502,7 +502,7 @@ function dot_node_prop(node, move, bturn, policy, move_history, root_visits, vis
     const label = dv < 10 ? `"${move}\\n${wr}"` : full_label
     const except = (flag, str) => flag ? '' : `\\n${str}`
     const except_root = str => except(is_root, str)
-    const policy_str = except_root(`policy: ${policy}`)
+    const policy_str = except_root(`policy: ${policy?.toFixed(4)}`)
     const order_str = except_root(`order: ${order + 1}`)
     const history_str = except_root(`sequence: ${move_history}`)
     const is_major = node => is_major_node(node, visits_threshold)
