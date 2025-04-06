@@ -93,6 +93,8 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
         root,
         params: {
             force_actual: 0.0,
+            c_puct: 1.0,
+            value_of_unevaluated_node: 0.0,
         },
         future_moves: [...future_moves],  // shallow copy
         max_visits: 0,
@@ -294,15 +296,14 @@ function select_move(node, bturn, actual_move, params) {
         return [actual_move, false]
     }
     // priority
-    const c_puct = 1.0, dummy_value = 0.0
     const total_original_visits = sum(moves.map(m => node.children[m]?.original_visits || 0))
-    const c = c_puct * Math.sqrt(total_original_visits + 1)
+    const c = params.c_puct * Math.sqrt(total_original_visits + 1)
     const priority = (policy, value, visits) => value + c * policy / (1 + visits)
     // criterion
     const for_current_player = winrate => bturn ? winrate : 1 - winrate
     const negative_priority = move => {
         const {original_visits, winrate, is_dummy} = child_for(move)
-        const value = is_dummy ? dummy_value : for_current_player(winrate)
+        const value = is_dummy ? params.value_of_unevaluated_node : for_current_player(winrate)
         const policy = node.policy[move]
         const ret = - priority(policy, value, original_visits)
         return ret
