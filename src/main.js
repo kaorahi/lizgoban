@@ -1842,12 +1842,14 @@ function set_board() {
           weak_move_prop('force_ownership_p', auto_play_weaken)
     const stored_keys = ['humansl_stronger_profile', 'humansl_weaker_profile']
     const stored = aa2hash(stored_keys.map(key => [key, get_stored(key)]))
+    const {humansl_scan_profiles} = option
     const aux = {
         bturn: is_bturn(), komi: game.get_komi(), gorule: get_gorule(),
         handicaps, init_len,
         ownership_p,
         analysis_after_raw_nn_p: !auto_analyzing(),
         tmp_humansl_profile: get_humansl_profile_in_match(true),
+        humansl_scan_profiles,
         avoid_resign_p: exercise_match_p,
         ...stored,
     }

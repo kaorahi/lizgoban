@@ -42,6 +42,8 @@ const default_option = {
         winrate_loss: 1.0,
         score_loss: 1.0,
     },
+    humansl_scan_profiles: ['rank_9d', 'rank_3d', 'rank_1k', 'rank_6k', 'rank_15k'],
+    // humansl_scan_profiles: humansl_rank_profiles,
     screenshot_region_command: null,  // "slop"
     screenshot_capture_command: null,  // "maim -f png -g %s | xclip -t image/png -se c"
     sgf_from_image_archive_dir: null,

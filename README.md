@@ -83,6 +83,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Additional plots
   * cumulative score-losses by black and white that indicate mistakes of each player separately
   * ambiguity of life & death that indicates big fights, game stages (opening / middlegame / endgame), etc.
+  * each rank's preferences for the played move (9d, 3d, 1k, 6k, 15k).
 * Indicators that suggest highlight scenes of the game (ko fights, SOPPO)
 * Translucent stones for too long variations as the above screenshot
 * Ownerships of stones by facial expressions
@@ -321,6 +322,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 ### 0.8.1
 
 * Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://github.com/kaorahi/visual_MCTS)
+* Add each rank's preferences in the winrate graph if a human model is available.
 * Add "Next move quiz" to View menu.
 * Add board position copy-paste.
   1. Alt+drag to select the source region.
