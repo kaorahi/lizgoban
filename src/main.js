@@ -593,7 +593,7 @@ function menu_template(win) {
             ...(['⤾ half_turn', false, '↔ horizontal_flip', '↕ vertical_flip', false,
                  '↻ clockwise_rotation', '↺ counterclockwise_rotation']
                 .map(key => key ? item(key.replace(/_/g, ' '), undefined,
-                                       () => transform_board(key)) : sep)),
+                                       () => transform_board(key.split(/ /)[1])) : sep)),
             sep,
             item('◑ swap stone colors', undefined, swap_stone_colors),
             item('⤢ resize to 19x19 (bottom left)', undefined, resize_to_19x19),
