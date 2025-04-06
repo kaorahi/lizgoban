@@ -377,7 +377,8 @@ function too_long(val) {return val > 3 * board_size()**2}
 let previous_dot_visits = 1
 
 function is_major_node(node, visits_threshold) {
-    return !(node.visits < visits_threshold)  // visits can be undefined
+    const shallow = !node.parent?.parent  // root or its direct child
+    return shallow || !(node.visits < visits_threshold)  // visits can be undefined
 }
 
 function dot_from_mcts(mcts, last_move, board_size, given_bturn, future_moves, max_nodes) {
