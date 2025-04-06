@@ -15,7 +15,13 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
         const p = new Promise((res, rej) => self.peek_kata_raw_nn(moves, cont(res)))
         nn_promises.push(p); return p
     }
-    const wait_for_all_nn_calls = async () => {await Promise.all(nn_promises)}
+    const wait_for_all_nn_calls = async () => {
+        let c = 0
+        while (!empty(nn_promises)) {
+            if (too_long(c++)) {const msg = 'FAILED: wait_for_all_nn_calls'; console.log(msg); throw msg}
+            await Promise.all(nn_promises)
+        }
+    }
     // playout
     const repeat_playout = () => {
         repeat_playout_using_backup(self.on_playout)
@@ -105,12 +111,8 @@ function make_mcts(peek_kata_raw_nn, future_moves) {
         // is_using_backup: () => false,
         is_using_backup: () => self.root.visits < self.node_at_step.length,
         wait_for_all_nn_calls,
-        copy_subtree: moves => {
-            // for safety
-            if (!empty(nn_promises)) {
-                console.log('Error: Call wait_for_all_nn_calls before copy_subtree!')
-                return null
-            }
+        copy_subtree_async: async moves => {
+            self.stop(); await wait_for_all_nn_calls()
             return copy_subtree(self, moves)
         },
         pv: () => pv_from(self.root, self.root.visits),

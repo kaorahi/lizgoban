@@ -57,7 +57,14 @@ function toggle_mcts_run(visits, id) {
 
 async function play_from_mcts(moves, id) {
     const state = switch_to_mcts(id); if (!state) {return}
-    await state.mcts.wait_for_all_nn_calls()
+    const new_mcts = await state.mcts.copy_subtree_async(moves)
+    // can't happen
+    if (!new_mcts) {
+        toast(null, 'Failed to copy subtree!')
+        stop_mcts(); delete mcts_state[new_id]
+        return
+    }
+    if (!switch_to_mcts(id)) {return}  // for safety after await
     // Need "mimic" here! (not just "play()")
     // because "play" doesn't update R.stones, that is used for checking
     // illegal moves on existing stones in "play".
@@ -65,13 +72,6 @@ async function play_from_mcts(moves, id) {
     const max_visits = state.mcts.max_visits
     const new_id = make_mcts_state()
     const new_state = mcts_state[new_id]
-    const new_mcts = state.mcts.copy_subtree(moves)
-    // can't happen
-    if (!new_mcts) {
-        toast(null, 'Failed to copy subtree!')
-        stop_mcts(); delete mcts_state[new_id]
-        return
-    }
     new_state.mcts = merge(new_mcts, {future_moves: R.future_moves})
     resume_mcts(null, new_id, 'candidates')
     resume_to_previous_visits(new_id)
