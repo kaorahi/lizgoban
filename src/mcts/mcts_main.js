@@ -118,7 +118,8 @@ function make_mcts_state() {
         id,  // redundant item for conveniene
         game_id: game.id,
         move_count: game.move_count,
-        last_move: game.ref_current().move,
+        movenum: game.movenum(),
+        last_move: game.movenum() > 0 && game.ref_current().move,
         board_size: game.board_size,
         bturn: game.is_bturn(),
         last_playout: [],
@@ -230,7 +231,7 @@ function create_mcts_window() {
 // misc
 
 function mcts_tree_menu_label(id, state) {
-    return `Tree${id}: move ${state.move_count} (${state.last_move || 'init'}) ${state.mcts.root.visits} visits`
+    return `Tree${id}: move ${state.movenum} (${state.last_move || 'init'}) ${state.mcts.root.visits} visits`
 }
 
 /////////////////////////////////////////////////
@@ -351,7 +352,7 @@ async function update_mcts_plot(id, board_info) {
 
 function mcts_diagram_params(id, board_info) {
     const state = mcts_state[id]
-    const {mcts, svg, board_image_dataURL, move_count, last_move, window_conf, max_displayed_nodes, board_size, bturn} = state
+    const {mcts, svg, board_image_dataURL, movenum, last_move, window_conf, max_displayed_nodes, board_size, bturn} = state
     const ready = mcts && svg; if (!ready) {return {}}
     const {max_visits} = mcts, {visits} = mcts.root
     const max_or_cached_visits = Math.max(max_visits, mcts.node_at_step.length)
@@ -360,9 +361,9 @@ function mcts_diagram_params(id, board_info) {
     const running = visits < max_visits
     const mvisits = visits < max_or_cached_visits ? `/${max_or_cached_visits}` : ''
     const nnodes = (max_displayed_nodes < visits) ? `${max_displayed_nodes} nodes, ` : ''
-    const title = `Search Tree (${nnodes}${visits}${mvisits} visits) from move ${move_count} = ${last_move || 'Start'} [Press "i"/"o" to zoom, "p" to reset.]`
+    const title = `Search Tree (${nnodes}${visits}${mvisits} visits) from move ${movenum} = ${last_move || 'Start'} [Press "i"/"o" to zoom, "p" to reset.]`
     const download_filename =
-          `move${move_count}_${last_move || 'init'}_${visits}visits`
+          `move${movenum}_${last_move || 'init'}_${visits}visits`
     const download_uri = to_uri(svg, 'image/svg+xml')
     const sgf_uri = to_uri(M.get_game().to_sgf(), 'text/plain')
     const default_note = get_default_mcts_note(id)
@@ -376,7 +377,7 @@ function get_default_mcts_note(id) {
     const force_str = (force_actual > 0 && !empty(R.future_moves)) ?
           ` ${Math.round(force_actual * 100)}% of visits are allocated to moves that were actually played in the game being analyzed.` : ''
     const names = `B: ${R.player_black || '???'}, W: ${R.player_white || '???'}`
-    const game = M.get_game(), moves = `moves: ${game.move_count} (${game.len()})`
+    const game = M.get_game(), moves = `moves: ${game.movenum()} (${game.len() - game.init_len})`
     return `${names}, ${moves}\n${R.weight_info || ''}\n(${common_str}${force_str})\n`
 }
 
@@ -450,7 +451,7 @@ function update_mcts_menu(id) {
             ...sort_by_tail_number(Object.keys(mcts_state)).map(new_id => {
                 const s = mcts_state[new_id]
                 return {
-                    label: `Tree${new_id}: move ${s.move_count} (${s.last_move || 'init'}) ${s.mcts.root.visits} visits`,
+                    label: `Tree${new_id}: move ${s.movenum} (${s.last_move || 'init'}) ${s.mcts.root.visits} visits`,
                     enabled: id !== new_id,
                     click: () => switch_mcts_plot(new_id),
                 }
