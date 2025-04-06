@@ -951,7 +951,7 @@ function get_reusable_canvas(given_size) {
 }
 function put_reusable_canvas(canvas) {reusable_canvas = canvas}
 
-function generate_board_image_dataURL(size) {
+function generate_board_image_dataURL(size, mcts_target) {
     // assume same DPR across windows
     const canvas = get_reusable_canvas(size)
     const orig_R = {...R}, tmp_R = {
@@ -959,7 +959,7 @@ function generate_board_image_dataURL(size) {
         always_show_coordinates: false,
     }
     merge(R, tmp_R)
-    D.draw_raw_goban(canvas, {draw_last_p: true, draw_coordinates_p: true})
+    D.draw_raw_goban(canvas, {draw_last_p: true, draw_coordinates_p: true, mcts_target})
     merge(R, orig_R)
     const dataURL = canvas.toDataURL()
     put_reusable_canvas(canvas)

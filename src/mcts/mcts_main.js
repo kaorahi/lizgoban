@@ -347,10 +347,10 @@ async function update_mcts_plot(id, board_info) {
     current_mcts_id === null && (current_mcts_id = id)
     if (id !== current_mcts_id) {return}  // obsolete request
     const state = mcts_state[id]; if (!state) {return}
-    const {mcts, last_move, board_size, bturn} = state
+    const {mcts, last_move, board_size, bturn} = state, {target} = mcts.params
     state.svg = await mcts.svg(last_move, board_size, bturn, state.max_displayed_nodes)
     !state.board_image_dataURL &&
-        (state.board_image_dataURL = await M.generate_board_image_dataURL(0.4))
+        (state.board_image_dataURL = await M.generate_board_image_dataURL(0.4, target))
     const win = get_mcts_window(id)
     if (id !== current_mcts_id) {return}  // obsolete request
     win.webContents.send('diagram_params', mcts_diagram_params(id, board_info || {}))

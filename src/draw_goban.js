@@ -293,6 +293,7 @@ function draw_goban(given_canvas, given_stones, opts) {
         read_only, mapping_tics_p, mapping_to_winrate_bar, pv_visits,
         hovered_move, show_until, analysis_region,
         main_canvas_p, handle_mouse_on_goban,
+        mcts_target,
     } = opts || {}
     const canvases = goban_canvas_and_overlays(given_canvas)
     const [bg_canvas, es_canvas, canvas] = canvases
@@ -333,6 +334,7 @@ function draw_goban(given_canvas, given_stones, opts) {
         show_until,
     }
     draw_on_board(stones, drawp, unit, idx2coord, g)
+    mcts_target && draw_mcts_target(mcts_target, unit, idx2coord, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
     !hide_endstate_clusters_p() && (draw_endstate_p || draw_endstate_value_p) &&
         draw_endstate_cluster_p &&
@@ -480,6 +482,12 @@ function draw_cursor(hovered_move, unit, idx2coord, g) {
     const radius = (forced ? 1/2 : 1/4) * unit
     g.fillStyle = color
     fill_circle(xy, radius, g)
+}
+
+function draw_mcts_target(mcts_target, unit, idx2coord, g) {
+    const xy = idx2coord(...move2idx(mcts_target))
+    g.strokeStyle = BLUE; g.lineWidth = 2
+    square_around(xy, unit * 0.25, g)
 }
 
 function draw_endstate_on_board(...args) {

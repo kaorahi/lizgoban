@@ -1716,13 +1716,13 @@ function save_q_and_a_images() {
     const msg_path = `${PATH.join(dir, pre)}...`
     renderer('save_q_and_a_images', ...filenames, msg_path)
 }
-async function generate_board_image_dataURL(relative_size) {
+async function generate_board_image_dataURL(relative_size, mcts_target) {
     update_all()
     const scr = electron.screen.getPrimaryDisplay().workAreaSize
     const screen_size = Math.min(scr.width, scr.height)
     const size = screen_size * relative_size
     const p = make_promise_with_id()
-    renderer('generate_board_image_dataURL', p.id, size)
+    renderer('generate_board_image_dataURL', p.id, size, mcts_target)
     return await p.promise
 }
 
