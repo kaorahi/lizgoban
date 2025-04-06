@@ -330,7 +330,7 @@ function draw_goban(given_canvas, given_stones, opts) {
     const drawp = {
         draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
         draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p, draw_humansl_comparison_p, large_font_p,
-        hovered_move, show_until,
+        show_until,
     }
     draw_on_board(stones, drawp, unit, idx2coord, g)
     !read_only && hovered_move && draw_cursor(hovered_move, unit, idx2coord, g)
@@ -507,7 +507,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
     const {draw_last_p, draw_next_p, draw_expected_p, draw_loss_p, cheap_shadow_p,
            draw_endstate_p, draw_endstate_diff_p, draw_endstate_value_p,
            draw_humansl_comparison_p,
-           large_font_p, hovered_move, show_until}
+           large_font_p, show_until}
           = drawp
     const stone_radius = unit * 0.5
     const draw_exp = (move, exp_p, h, xy) => draw_expected_p && move &&
