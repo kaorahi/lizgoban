@@ -159,7 +159,7 @@ function next_mcts_plot(id, delta) {switch_mcts_plot(next_mcts_id(id, delta))}
 function switch_mcts_plot(id) {switch_to_mcts(id); update_mcts_plot(id)}
 
 function next_mcts_id(id, delta) {
-    const ids = Object.keys(mcts_state).sort()
+    const ids = sort_by_tail_number(Object.keys(mcts_state))
     const k = ids.indexOf(id), n = ids.length
     return ids[(k + delta + n) % n]
 }
