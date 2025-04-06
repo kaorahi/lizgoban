@@ -67,7 +67,11 @@ async function play_from_mcts(moves, id) {
     const new_state = mcts_state[new_id]
     const new_mcts = state.mcts.copy_subtree(moves)
     // can't happen
-    if (!new_mcts) {toast(null, 'Failed to copy subtree!'); stop_mcts(); return}
+    if (!new_mcts) {
+        toast(null, 'Failed to copy subtree!')
+        stop_mcts(); delete mcts_state[new_id]
+        return
+    }
     new_state.mcts = merge(new_mcts, {future_moves: R.future_moves})
     resume_mcts(null, new_id, 'candidates')
     resume_to_previous_visits(new_id)
