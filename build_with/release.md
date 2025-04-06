@@ -2,6 +2,19 @@
 
 # Release notes
 
+## LizGoban 0.8.1-pre2
+
+* Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://kaorahi.github.io/visual_MCTS/)
+* [Experimental] Show the search tree for ["if players try to capture/rescue this stone"](https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449) by shift + double-click. You need to specify KataGo's option `-human-model` for good results. (In the all-in-one package for Windows, Choose "Human-like Analysis" from "Preset" menu.) [ref](https://github.com/kaorahi/visual_MCTS/tree/master/sample4)
+* Add each rank's preferences in the winrate graph if a human model is available.
+* Add board position copy-paste.
+  1. Alt+drag to select the source region.
+  2. `Edit > Flip / rotate / etc. > copy stones`
+  3. Alt+drag to select the destination region.
+  4. `Edit > Flip / rotate / etc. > paste`
+* Add tsumego frame without ko threats. (`Tool > Tsumego frame`)
+* Upgrade libraries (Electron 35, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+
 ## LizGoban 0.8.1-pre1
 
 Just a test of an experimental feature ["next move quiz"](https://github.com/kaorahi/lizgoban/issues/120).
