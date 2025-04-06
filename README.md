@@ -68,6 +68,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Play pair match, "you & KataGo" vs. Leela Zero, etc.
 * [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
 * [Indicate ladder breakers and show continuation of ladders](https://github.com/kaorahi/lizgoban/issues/63) automatically. Enjoy watching [Ladder fight!](https://www.reddit.com/r/baduk/comments/llk8cj/ladder_fight/)
+* [Experimental] Show the search tree for ["if players try to capture/rescue this stone"](https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449).
 * [Experimental] [External control of GUI](https://github.com/kaorahi/lizgoban/issues/61) from another program
 
 ### Original visualizations
@@ -321,7 +322,8 @@ For information about the displayed marks, shortcut keys, and other features, re
 
 ### 0.8.1
 
-* Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://github.com/kaorahi/visual_MCTS)
+* Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://kaorahi.github.io/visual_MCTS/)
+* [Experimental] Show the search tree for ["if players try to capture/rescue this stone"](https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449) by shift + double-click. You need a human model for good results. [ref](https://github.com/kaorahi/visual_MCTS/tree/master/sample4)
 * Add each rank's preferences in the winrate graph if a human model is available.
 * Add "Next move quiz" to View menu.
 * Add board position copy-paste.
