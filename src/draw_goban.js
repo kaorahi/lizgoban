@@ -416,7 +416,7 @@ function policies_text(hovered_move, stones) {
     // can be different from prior in R.suggest because of
     // "symmetry" selection for kata-raw-nn
     const move = target_move() || hovered_move; if (!move) {return ''}
-    const h = aa_ref(stones, ...move2idx(move))
+    const h = aa_ref(stones, ...move2idx(move)); if (!h) {return ''}
     const {default_policy, humansl_policy_info} = h
     const {stronger, weaker} = humansl_policy_info || {}
     const policies = [default_policy, stronger, weaker]
