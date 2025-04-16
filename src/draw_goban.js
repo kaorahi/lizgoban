@@ -822,7 +822,7 @@ function draw_branches(h, xy, radius, g) {
 function draw_loss(h, xy, radius, g) {
     const {gain, punished, overlooked_high_policy} = h, NOTHING = []
     const [color, size, draw, min_width] = !truep(gain) ? NOTHING :
-          (gain <= big_blunder_threshold) ? [RED, 1, rev_triangle_around, 0.7] :
+          (gain <= big_blunder_threshold) ? [RED, 0.85, rev_triangle_around, 0.7] :
           overlooked_high_policy ? ['#888', 0.6, square_around, 1] :
           (gain <= blunder_threshold) ? [BLUE, 0.7, rev_triangle_around, 0.5] :
           // annoying in auto_analysis with visits = 1
