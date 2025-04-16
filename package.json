@@ -53,10 +53,11 @@
       "category": "Game",
       "extraFiles": [
         {
-          "from": "build_with/bin/linux",
+          "from": "build_with/bin/linux/leelaz",
           "to": "resources/external",
           "filter": [
-            "katago"
+            "leelaz",
+            "network.gz"
           ]
         }
       ]
