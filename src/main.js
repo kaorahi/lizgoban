@@ -726,7 +726,6 @@ function menu_template(win) {
         store_toggler_menu_item('Debug log', debug_log_key, null, toggle_debug_log),
         store_toggler_menu_item('...Snip similar lines', 'engine_log_snip_similar_lines'),
         {label: 'REPL', type: 'checkbox', checked: repl_p(), click: toggle_repl},
-        store_toggler_menu_item('Stone image', 'stone_image_p'),
         store_toggler_menu_item('Board image', 'board_image_p'),
         simple_toggler_menu_item('Keep bright board', 'keep_bright_board'),
         item('Copy GTP sequence', undefined,
@@ -833,11 +832,21 @@ function set_gorule(new_gorule, set_as_default_p) {
 }
 
 function stone_style_submenu() {
+    // keep using 'stone_image_p' rather than adding new style 'Image'
+    // so that it is used by default even for existing users [2025-04-13]
+    const img_keys = ['black_stone', 'white_stone']
+    const has_img = image_paths.find(a => img_keys.includes(a[0]))
+    const img_p = has_img && get_stored('stone_image_p')
     const styles = ['2D', '2.5D', '3D', ...(option.face_image_rule ? ['Face'] : [])]
-    return styles.map(label => ({
-        label, type: 'radio', checked: R.stone_style === label,
-        click: () => {set_stored('stone_style', label); update_all()},
+    const style_items = styles.map(label => ({
+        label, type: 'radio', checked: !img_p && R.stone_style === label,
+        click: () => {set_stored('stone_style', label); set_stored('stone_image_p', false); update_all()},
     }))
+    const img_item = has_img && {
+        label: 'Image', type: 'radio', checked: img_p,
+        click: () => {set_stored('stone_image_p', true); update_all()},
+    }
+    return [...style_items, img_item].filter(truep)
 }
 
 function simple_toggler_menu_item(label, key) {
