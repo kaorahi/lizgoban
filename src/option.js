@@ -147,11 +147,11 @@ option.face_image_rule =  // clean me: ugly overwriting
 const face_image_paths = Object.values(option.face_image_rule || {}).flat()
       .flatMap(([ , b, w]) => [b && [b, b], w && [w, w]]).filter(truep)
 const image_paths = [
-    ['black_stone', 'black.png', true],
-    ['white_stone', 'white.png', true],
-    ['board', 'board.png', true],
+    ['black_stone', 'black.png'],
+    ['white_stone', 'white.png'],
+    ['board', 'board.png'],
     ...face_image_paths,
-].map(([key, name, working_dir_p]) => [key, working_dir_p ? PATH.resolve(option.working_dir, name) : default_path_for(name)]).filter(([key, path]) => fs.existsSync(path))
+].map(([key, name]) => [key, default_path_for(name)]).filter(([key, path]) => fs.existsSync(path))
 
 // renderer state
 const stored_keys_spec = [
