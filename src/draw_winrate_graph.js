@@ -461,9 +461,10 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         ['humansl_scan_w', 0, 50],
     ]
     table.forEach(([key, r_bot, r_top]) => {
+        const s0 = clip_init_len(0)
         const pss = winrate_history_values_of(key)
         pss.forEach((ps, s) => {
-            if (!truep(ps?.[0])) {return}
+            if (s < s0 || !truep(ps?.[0])) {return}
             const p_sum = sum(ps), normalized_ps = ps.map(p => p / p_sum)
             const [k2r, ] = translator_pair([0, ps.length], [r_top, r_bot])
             const [p2alpha, ] = translator_pair([0, 1 / ps.length], [0, 0.5])
@@ -493,7 +494,6 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         const rank = R.humansl_scan_profiles?.[p_argmax]?.replace(/rank_/, '')
         // setdebug({estimated_profile, posteriors})
         const [k2r, ] = translator_pair([0, posteriors.length], [r_top, r_bot])
-        const s0 = clip_init_len(0)
         posteriors.forEach((p, k) => {
             const [x0, y0] = sr2coord(s0, k2r(k))
             const [x1, y1] = sr2coord(s0 + 1, k2r(k + 1))
