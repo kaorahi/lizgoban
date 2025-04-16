@@ -41,6 +41,9 @@
         "from": "build_with/img",
         "to": "resources/external",
         "filter": [
+          "board.png",
+          "black.png",
+          "white.png",
           "goisi_*.png"
         ]
       }
