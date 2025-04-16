@@ -549,6 +549,7 @@ function draw_on_board(stones, drawp, unit, idx2coord, g) {
         h.displayed_tag && draw_tag(h.tag, xy, stone_radius, g)
         draw_endstate_diff_p && !hide_endstate_p() &&
             draw_endstate_diff(h.endstate_diff, xy, stone_radius, g)
+        h.movenums && draw_movenums(h, xy, stone_radius, g)
     })
     !R.lizzie_style && !R.busy &&
         each_coord((h, xy) => h.suggest && (h.data.visits > 0)
@@ -709,7 +710,6 @@ function draw_stone(h, xy, radius, draw_last_p, draw_loss_p, g) {
     draw_loss_p && !hide_loss_p && draw_loss(h, xy, radius, g)
     draw_last_p && h.last && h.move_count > R.init_len &&
         draw_last_move(h, xy, radius, g)
-    h.movenums && draw_movenums(h, xy, radius, g)
 }
 
 function gray_stone_by_endstate_p(h, stone_style) {
