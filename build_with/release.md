@@ -5,7 +5,7 @@
 ## LizGoban 0.8.1-pre2
 
 * Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://kaorahi.github.io/visual_MCTS/)
-* [Experimental] Show the search tree for ["if players try to capture/rescue this stone"](https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449) by shift + double-click. You need to specify KataGo's option `-human-model` for good results. (In the all-in-one package for Windows, Choose "Human-like Analysis" from "Preset" menu.) [ref](https://github.com/kaorahi/visual_MCTS/tree/master/sample4)
+* [Experimental] Show the search tree for ["if players try to capture/rescue this stone"](https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449) by shift + double-click. You need to specify KataGo's option `-human-model` for good results. (In the all-in-one package for Windows, choose "Human-like Analysis" from "Preset" menu.) [ref](https://github.com/kaorahi/visual_MCTS/tree/master/sample4)
 * Add each rank's preferences in the winrate graph if a human model is available.
 * Add board position copy-paste.
   1. Alt+drag to select the source region.
