@@ -461,7 +461,7 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         ['humansl_scan_w', 0, 50],
     ]
     table.forEach(([key, r_bot, r_top]) => {
-        const s0 = clip_init_len(0)
+        const s0 = clip_init_len(0), max_bar_width = sr2coord(s0, 0)[0] * 0.2
         const scan_len = R.humansl_scan_profiles?.length || -1
         const valid = (ps, s) => s > s0 && truep(ps?.[0]) && ps.length === scan_len
         const pss = winrate_history_values_of(key)
@@ -474,7 +474,7 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
                 const [x0, y0] = sr2coord(s, k2r(k))
                 const [x1, y1] = sr2coord(s + 1, k2r(k + 1))
                 const current_p = (s === R.move_count)
-                const width = current_p ? (x1 - x0) * 1.6 : 1
+                const width = clip(current_p ? (x1 - x0) * 1.6 : 1, 1, max_bar_width)
                 const rgb = current_p ? '0,128,255' : '0,0,255'
                 const alpha = clip(p2alpha(p), 0, 1)
                 g.fillStyle = `rgba(${rgb},${alpha})`
@@ -502,11 +502,10 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         posteriors.forEach((p, k) => {
             const [x0, y0] = sr2coord(s0, k2r(k))
             const [x1, y1] = sr2coord(s0 + 1, k2r(k + 1))
-            const width = (x1 - x0) * 1.6
             const alpha = p / p_max
             const sep = (y1 - y0) * 0.05
             g.fillStyle = `rgba(${rgb},${alpha})`
-            fill_rect([x0 - width, y0 + sep], [x0, y1 - sep], g)
+            fill_rect([x0 - max_bar_width, y0 + sep], [x0, y1 - sep], g)
         })
         if (!rank) {return}
         const [x0, y0] = sr2coord(s0, r_bot), [ , y1] = sr2coord(s0, r_top)
