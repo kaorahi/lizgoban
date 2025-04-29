@@ -1851,14 +1851,13 @@ function set_board() {
           weak_move_prop('force_ownership_p', auto_play_weaken)
     const stored_keys = ['humansl_stronger_profile', 'humansl_weaker_profile']
     const stored = aa2hash(stored_keys.map(key => [key, get_stored(key)]))
-    const {humansl_scan_profiles} = option
     const aux = {
         bturn: is_bturn(), komi: game.get_komi(), gorule: get_gorule(),
         handicaps, init_len,
         ownership_p,
         analysis_after_raw_nn_p: !auto_analyzing(),
         tmp_humansl_profile: get_humansl_profile_in_match(true),
-        humansl_scan_profiles,
+        humansl_scan_profiles: get_humansl_scan_profiles(),
         avoid_resign_p: exercise_match_p,
         ...stored,
     }
@@ -1899,6 +1898,11 @@ function wink_if_pass(proc, ...args) {
 }
 function wink() {renderer('wink')}
 function toast(message, millisec) {renderer('toast', message, millisec)}
+
+function get_humansl_scan_profiles() {
+    const full = get_stored('humansl_full_scan_p')
+    return full ? humansl_rank_profiles : option.humansl_scan_profiles
+}
 
 /////////////////////////////////////////////////
 // let-me-think-first mode
@@ -2245,7 +2249,7 @@ function update_state(keep_suggest_p) {
     const persona_code = get_stored('persona_code')
     const more = cur.suggest ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
-    const {face_image_rule, pv_trail_max_suggestions, endstate_blur, humansl_scan_profiles} = option
+    const {face_image_rule, pv_trail_max_suggestions, endstate_blur} = option
     update_exercise_metadata()
     P.set_and_render(!keep_suggest_p, {
         history_length, sequence_cursor, sequence_length, attached,
@@ -2256,7 +2260,7 @@ function update_state(keep_suggest_p) {
         persona_code,
         pv_trail_max_suggestions,
         endstate_blur,
-        humansl_scan_profiles,
+        humansl_scan_profiles: get_humansl_scan_profiles(),
     }, more)
 }
 function subboard_stones_suggest_for(su, prev_su) {

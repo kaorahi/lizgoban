@@ -462,9 +462,11 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
     ]
     table.forEach(([key, r_bot, r_top]) => {
         const s0 = clip_init_len(0)
+        const scan_len = R.humansl_scan_profiles?.length || -1
+        const valid = (ps, s) => s > s0 && truep(ps?.[0]) && ps.length === scan_len
         const pss = winrate_history_values_of(key)
         pss.forEach((ps, s) => {
-            if (s <= s0 || !truep(ps?.[0])) {return}
+            if (!valid(ps, s)) {return}
             const p_sum = sum(ps), normalized_ps = ps.map(p => p / p_sum)
             const [k2r, ] = translator_pair([0, ps.length], [r_top, r_bot])
             const [p2alpha, ] = translator_pair([0, 1 / ps.length], [0, 0.5])
@@ -481,8 +483,6 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
             })
         })
         // assume uniform prior
-        const scan_len = R.humansl_scan_profiles?.length || 0
-        const valid = (ps, s) => s > s0 && ps && ps.length === scan_len
         const log_likelihood = ps => sum(ps.map(p => Math.log(p)))
         const lls = aa_transpose(pss.filter(valid)).map(log_likelihood)
         const max_ll = Math.max(...lls)
