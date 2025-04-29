@@ -494,7 +494,7 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         const p_max = Math.max(...posteriors)
         const p_argmax = posteriors.indexOf(p_max)
         const rank = R.humansl_scan_profiles?.[p_argmax]?.replace(/rank_/, '')
-        // setdebug({estimated_profile, posteriors})
+        if (!rank) {return}
         const [k2r, ] = translator_pair([0, posteriors.length], [r_top, r_bot])
         // const rgb = ['fc', '8d', '49'].map(s => parseInt(s, 16)).join(',') // orange
         // const rgb = '0,255,128' // green
@@ -510,7 +510,6 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
             g.fillStyle = `rgba(${rgb},${alpha})`
             fill_rect([x0 - w, y0 + sep], [x0, y1 - sep], g)
         })
-        if (!rank) {return}
         const [x0, y0] = sr2coord(s0, r_bot), [ , y1] = sr2coord(s0, r_top)
         const maxwidth = x0 * 0.8, fontsize = Math.min((y0 - y1) * 1.7, maxwidth)
         const xy = [maxwidth, (y0 + y1) / 2]
