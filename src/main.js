@@ -1067,7 +1067,7 @@ function start_normal_auto_play(strategy, sec, count) {
     auto_play_sec = true_or(sec, -1)
     truep(count) && (auto_play_count = count)
     // proc
-    strategy === 'replay' && rewind_maybe()
+    strategy === 'replay' && !R.in_match && rewind_maybe()
     strategy === 'undo' && rewind_maybe(true)
     stop_auto_analyze(); update_auto_play_time(); update_let_me_think(); resume()
 }
@@ -1232,7 +1232,7 @@ function rankcheck_family_table(weaken_args) {
 }
 
 // match
-let auto_play_weaken = [], pondering_in_match = false
+let auto_play_weaken = []
 function start_match(win, auto_moves_in_match, random_pair_match_rate) {
     const resetp = (auto_moves_in_match === 'reset_param')
     resetp && set_stored('humansl_profile_in_match', '')
@@ -1270,7 +1270,6 @@ function set_match_param(weaken) {
         []
 }
 function auto_play_in_match(sec, count) {
-    pondering_in_match = !pausing
     start_auto_play('play', sec, count || 1)
 }
 let the_auto_moves_in_match = 1
@@ -1404,9 +1403,9 @@ function play_selected_weak_move(selected, weaken) {
     new_sanity && adjust_sanity_p && !auto_play_weaken_for_current_bw()
         && set_stored('sanity', new_sanity)
     const play_com = (m, c) => {
-        R.in_match && !pondering_in_match && !auto_playing() && pause()
         play(m, 'never_redo', null, c)
         is_pass(m) && toast('Pass')
+        R.in_match && !auto_playing() && setTimeout(() => submit_auto_replay(auto_play_sec))
     }
     const pass_maybe_p = (weaken_method === 'pass_maybe')
     const pass_maybe =
