@@ -506,8 +506,9 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
             const [x1, y1] = sr2coord(s0 + 1, k2r(k + 1))
             const alpha = p / p_max
             const sep = (y1 - y0) * 0.05
+            const w = max_bar_width * (k === p_argmax ? 1.5 : 1)
             g.fillStyle = `rgba(${rgb},${alpha})`
-            fill_rect([x0 - max_bar_width, y0 + sep], [x0, y1 - sep], g)
+            fill_rect([x0 - w, y0 + sep], [x0, y1 - sep], g)
         })
         if (!rank) {return}
         const [x0, y0] = sr2coord(s0, r_bot), [ , y1] = sr2coord(s0, r_top)
