@@ -732,7 +732,8 @@ function create_leelaz () {
               !!command?.match(/^(lz|kata)-genmove|^kata-search/)
         merge(h, {
             engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits),
-            ...policies, humansl_scan,
+            ...policies,
+            ...(empty(humansl_scan) ? {} : {humansl_scan}),
             is_suggest_by_genmove,
         })
         f(h)

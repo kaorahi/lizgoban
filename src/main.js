@@ -1857,7 +1857,7 @@ function set_board() {
         ownership_p,
         analysis_after_raw_nn_p: !auto_analyzing(),
         tmp_humansl_profile: get_humansl_profile_in_match(true),
-        humansl_scan_profiles: get_humansl_scan_profiles(),
+        humansl_scan_profiles: get_humansl_scan_profiles(true),
         avoid_resign_p: exercise_match_p,
         ...stored,
     }
@@ -1899,9 +1899,11 @@ function wink_if_pass(proc, ...args) {
 function wink() {renderer('wink')}
 function toast(message, millisec) {renderer('toast', message, millisec)}
 
-function get_humansl_scan_profiles() {
+function get_humansl_scan_profiles(cache_p) {
     const full = get_stored('humansl_full_scan_p')
-    return full ? humansl_rank_profiles : option.humansl_scan_profiles
+    const ret = full ? humansl_rank_profiles : option.humansl_scan_profiles
+    const cached = ret.length == game.ref_current().humansl_scan?.length
+    return (cache_p && cached) ? [] : ret
 }
 
 /////////////////////////////////////////////////
