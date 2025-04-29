@@ -456,6 +456,7 @@ function draw_winrate_graph_amb_gain(w, sr2coord, g) {
 }
 
 function draw_winrate_graph_humansl_scan(sr2coord, g) {
+    // clean me: ugly duplicated code
     const table = [
         ['humansl_scan_b', 50, 100],
         ['humansl_scan_w', 0, 50],
