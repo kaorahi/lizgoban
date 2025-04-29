@@ -366,7 +366,7 @@ function create_leelaz () {
             humansl_stronger_profile !== aux.humansl_stronger_profile ||
             humansl_weaker_profile !== aux.humansl_weaker_profile ||
             tmp_humansl_profile !== aux.tmp_humansl_profile ||
-            JSON.stringify(humansl_scan_profiles) !== JSON.stringify(aux.tmp_humansl_profile)
+            JSON.stringify(humansl_scan_profiles) !== JSON.stringify(aux.humansl_scan_profiles)
         record_simple_aux(aux)
         let update_kata_p = profile_changed_p
         const update_kata = (val, new_val, command, setter) => {
