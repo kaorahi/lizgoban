@@ -100,7 +100,7 @@ let auto_analysis_steps = 1
 let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null, exercise_match_p = false
-let adjust_sanity_p = false
+let adjust_sanity_p = false, adjust_humansl_profile_in_match_p = false
 let auto_play_weaken_for_bw = {}; clear_auto_play_weaken_for_bw()
 let debug_menu_p = !app.isPackaged
 
@@ -142,6 +142,7 @@ globalize({  // for powered_goban.js
         auto_progress, is_busy, is_long_busy, is_pausing, is_bogoterritory,
         branch_at, ladder_branches,
         tuning_message: () => tuning_message,
+        should_adjust_humansl_profile_in_match,
         ...aa2hash([
             'plot_endstate_surprise_p',
             'plot_score_stdev_p',
@@ -259,7 +260,7 @@ const api = {
     increase_exercise_stars,
     detach_from_sabaki,
     update_analysis_region,
-    set_persona_code, set_adjust_sanity_p,
+    set_persona_code, set_adjust_sanity_p, set_adjust_humansl_profile_in_match_p,
     resume_mcts, rewind_mcts, stop_mcts, toggle_mcts_run, play_from_mcts,
     plot_targeted_mcts,
     // for debug
@@ -1053,6 +1054,7 @@ stop_auto_analyze()
 // auto-play (auto-replay (redo) or self-play (play_best) in every XX seconds)
 let last_auto_play_time = 0, default_auto_play_sec = 1
 function start_auto_play(strategy, sec, count) {
+    adjust_humansl_profile_in_match_maybe()
     // (normal cases)
     // Just set "I'm in auto play" here and let the analysis run.
     // Then try_auto_play will play a move when the condition is satisfied.
@@ -1627,6 +1629,9 @@ function open_preference() {
 function set_persona_code(code) {set_stored('persona_code', code)}
 function set_adjust_sanity_p(bool) {adjust_sanity_p = bool}
 function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
+function set_adjust_humansl_profile_in_match_p(bool) {
+    adjust_humansl_profile_in_match_p = bool
+}
 function set_humansl_profile_in_match(profile) {
     set_stored('humansl_profile_in_match', profile)
 }
@@ -1656,6 +1661,16 @@ function get_humansl_profile_in_match(pasted_p) {
     const ret = true_or(recorded_prof, get_stored('humansl_profile_in_match'))
     if (main_p && !ret) {return false}  // '' is not allowed for main_model_humanSL
     return ret
+}
+function should_adjust_humansl_profile_in_match() {
+    return R.in_match && adjust_humansl_profile_in_match_p
+}
+function adjust_humansl_profile_in_match_maybe() {
+    if (!should_adjust_humansl_profile_in_match()) {return}
+    const mle = R[is_bturn() ? 'humansl_scan_mle_w' : 'humansl_scan_mle_b']
+    if (!mle) {return}
+    set_stored('humansl_profile_in_match', mle)
+    renderer('set_humansl_profile_in_match_from_main', mle)
 }
 function get_current_match_param() {
     const weaken = auto_play_weaken.slice()
@@ -1899,7 +1914,8 @@ function wink() {renderer('wink')}
 function toast(message, millisec) {renderer('toast', message, millisec)}
 
 function get_humansl_scan_profiles(cache_p) {
-    const full = get_stored('humansl_full_scan_p')
+    const force_full_p = should_adjust_humansl_profile_in_match()
+    const full = force_full_p || get_stored('humansl_full_scan_p')
     const ret = full ? humansl_rank_profiles : option.humansl_scan_profiles
     const {humansl_scan} = game.ref_current()
     const cached = humansl_scan && (ret.length == humansl_scan.length) &&

@@ -825,17 +825,21 @@ const humansl_profile_in_match_list = [...humansl_rank_profiles.toReversed(), ''
 const humansl_profile_in_match_markers = ['rank_10k', 'rank_1d']
 // const humansl_profile_in_match_markers = ['rank_20k', 'rank_10k', 'rank_1d', 'rank_9d']
 const humansl_profile_in_match_slider = Q('#humansl_profile_in_match_slider')
+const humansl_profile_in_match_auto_checkbox = Q("#humansl_profile_in_match_auto")
 function update_humansl_profile_in_match(manually) {
     const {value} = humansl_profile_in_match_slider
+    const {checked} = humansl_profile_in_match_auto_checkbox
+    humansl_profile_in_match_slider.disabled = checked
     const profile = humansl_profile_in_match_list[to_i(value)]
     const label = profile ? profile.replace(/rank_|preaz_|proyear_/, '') : '(full)'
-    setq("#humansl_profile_in_match_value", label)
+    setq("#humansl_profile_in_match_value", checked ? '?' : label)
     manually && (main('set_humansl_profile_in_match', profile), set_match_param())
 }
 function set_humansl_profile_in_match_from_main(humansl_profile_in_match) {
     merge(R, {humansl_profile_in_match})
     const value = humansl_profile_in_match_list.indexOf(R.humansl_profile_in_match)
-    humansl_profile_in_match_slider.value = value
+    !humansl_profile_in_match_auto_checkbox.checked &&
+        (humansl_profile_in_match_slider.value = value)
     update_humansl_profile_in_match()
 }
 function initialize_humansl_profile_in_match_slider() {
@@ -849,6 +853,12 @@ function initialize_humansl_profile_in_match_slider() {
         markers.appendChild(option)
     })
     humansl_profile_in_match_slider.addEventListener('input', () => update_humansl_profile_in_match(true))
+    const on_check = () => {
+        const {checked} = humansl_profile_in_match_auto_checkbox
+        main('set_adjust_humansl_profile_in_match_p', checked)
+        set_humansl_profile_in_match_from_main(R.humansl_profile_in_match)
+    }
+    humansl_profile_in_match_auto_checkbox.addEventListener('change', on_check)
     update_humansl_profile_in_match()
 }
 initialize_humansl_profile_in_match_slider()
