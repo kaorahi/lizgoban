@@ -181,7 +181,7 @@ function set_renderer_state(...args) {
               weight_info, is_katago, komi, bsize, comment, comment_note, move_history,
               different_engine_for_white_p,
               next_as_suggest,
-              previous_suggest, future_moves, winrate_trail}, endstate_d_i)
+              previous_suggest, future_moves, winrate_trail}, endstate_d_i, humansl_rank_posterior(winrate_history))
     add_next_played_move_as_fake_suggest()
     // decrease useless data traffic to renderer
     const masked_keys = [
@@ -215,6 +215,29 @@ function add_next_played_move_as_fake_suggest() {
 }
 
 function orig_suggest() {return (R.suggest || []).filter(orig_suggest_p)}
+
+function humansl_rank_posterior(winrate_history) {
+    const scan_len = R.humansl_scan_profiles?.length || -1
+    const valid = (ps, s) => s >= R.init_len && truep(ps?.[0]) && ps.length === scan_len
+    const table = [
+        ['humansl_scan_b', 'humansl_scan_posterior_b', 'humansl_scan_mle_b'],
+        ['humansl_scan_w', 'humansl_scan_posterior_w', 'humansl_scan_mle_w'],
+    ]
+    return aa2hash(table.flatMap(([key, total_key, mle_key]) => {
+        const pss = winrate_history.map(h => h[key])
+        // assume uniform prior
+        const filtered_pss = pss.slice(0, R.move_count + 1).filter(valid)
+        const log_likelihood = ps => sum(ps.map(p => Math.log(p)))
+        const lls = aa_transpose(filtered_pss).map(log_likelihood)
+        const max_ll = Math.max(...lls)
+        const argmax_ll = lls.indexOf(max_ll)
+        const rank = R.humansl_scan_profiles?.[argmax_ll]
+        const unnormalized_posteriors = lls.map(ll => Math.exp(ll - max_ll))
+        const s = sum(unnormalized_posteriors)
+        const posteriors = unnormalized_posteriors.map(p => p / s)
+        return [[total_key, posteriors], [mle_key, rank]]
+    }))
+}
 
 /////////////////////////////////////////////////
 // endstate
