@@ -461,7 +461,8 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         ['humansl_scan_w', 0, 50],
     ]
     table.forEach(([key, r_bot, r_top]) => {
-        winrate_history_values_of(key).forEach((ps, s) => {
+        const pss = winrate_history_values_of(key)
+        pss.forEach((ps, s) => {
             if (!truep(ps?.[0])) {return}
             const p_sum = sum(ps), normalized_ps = ps.map(p => p / p_sum)
             const [k2r, ] = translator_pair([0, ps.length], [r_top, r_bot])
@@ -474,9 +475,43 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
                 const rgb = current_p ? '0,128,255' : '0,0,255'
                 const alpha = clip(p2alpha(p), 0, 1)
                 g.fillStyle = `rgba(${rgb},${alpha})`
-                fill_rect([x0 - width, y0 + 1], [x0, y1 - 1], g)
+                const sep = (y1 - y0) * 0.05
+                fill_rect([x0 - width, y0 + sep], [x0, y1 - sep], g)
             })
         })
+        // assume uniform prior
+        const scan_len = R.humansl_scan_profiles?.length || 0
+        const valid = ps => ps && ps.length === scan_len
+        const log_likelihood = ps => sum(ps.map(p => Math.log(p)))
+        const lls = aa_transpose(pss.filter(valid)).map(log_likelihood)
+        const max_ll = Math.max(...lls)
+        const unnormalized_posteriors = lls.map(ll => Math.exp(ll - max_ll))
+        const s = sum(unnormalized_posteriors)
+        const posteriors = unnormalized_posteriors.map(p => p / s)
+        const p_max = Math.max(...posteriors)
+        const p_argmax = posteriors.indexOf(p_max)
+        const rank = R.humansl_scan_profiles?.[p_argmax]?.replace(/rank_/, '')
+        // setdebug({estimated_profile, posteriors})
+        const [k2r, ] = translator_pair([0, posteriors.length], [r_top, r_bot])
+        const s0 = clip_init_len(0)
+        posteriors.forEach((p, k) => {
+            const [x0, y0] = sr2coord(s0, k2r(k))
+            const [x1, y1] = sr2coord(s0 + 1, k2r(k + 1))
+            const width = (x1 - x0) * 1.6
+            const rgb = '0,255,128'
+            const alpha = p / p_max
+            const sep = (y1 - y0) * 0.05
+            g.fillStyle = `rgba(${rgb},${alpha})`
+            fill_rect([x0 - width, y0 + sep], [x0, y1 - sep], g)
+        })
+        if (!rank) {return}
+        const [x0, y0] = sr2coord(s0, r_bot), [ , y1] = sr2coord(s0, r_top)
+        const maxwidth = x0 * 0.8, fontsize = Math.min((y0 - y1) * 1.7, maxwidth)
+        const xy = [maxwidth, (y0 + y1) / 2]
+        g.save()
+        g.textBaseline = 'middle'; g.textAlign = 'right'; g.fillStyle = WHITE
+        fill_text(g, fontsize, rank, ...xy, maxwidth)
+        g.restore()
     })
 }
 

@@ -42,8 +42,20 @@ const default_option = {
         winrate_loss: 1.0,
         score_loss: 1.0,
     },
-    humansl_scan_profiles: ['rank_9d', 'rank_3d', 'rank_1k', 'rank_6k', 'rank_15k'],
-    // humansl_scan_profiles: humansl_rank_profiles,
+    // humansl_scan_profiles: ['rank_9d', 'rank_3d', 'rank_1k', 'rank_6k', 'rank_15k'],
+    // humansl_scan_profiles: [
+    //     'rank_9d', 'rank_6d', 'rank_3d', 'rank_1d',
+    //     'rank_1k', 'rank_3k', 'rank_6k', 'rank_10k',
+    //     'rank_15k', 'rank_20k',
+    // ],
+    // humansl_scan_profiles: [
+    //     'rank_9d', 'rank_7d', 'rank_5d',
+    //     'rank_3d', 'rank_2d', 'rank_1d',
+    //     'rank_1k', 'rank_2k', 'rank_3k',
+    //     'rank_5k', 'rank_7k', 'rank_9k',
+    //     'rank_12k', 'rank_15k', 'rank_20k',
+    // ],
+    humansl_scan_profiles: humansl_rank_profiles,
     screenshot_region_command: null,  // "slop"
     screenshot_capture_command: null,  // "maim -f png -g %s | xclip -t image/png -se c"
     sgf_from_image_archive_dir: null,

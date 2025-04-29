@@ -2245,7 +2245,7 @@ function update_state(keep_suggest_p) {
     const persona_code = get_stored('persona_code')
     const more = cur.suggest ? {background_visits: null, ...cur} :
           keep_suggest_p ? {} : {suggest: []}
-    const {face_image_rule, pv_trail_max_suggestions, endstate_blur} = option
+    const {face_image_rule, pv_trail_max_suggestions, endstate_blur, humansl_scan_profiles} = option
     update_exercise_metadata()
     P.set_and_render(!keep_suggest_p, {
         history_length, sequence_cursor, sequence_length, attached,
@@ -2256,6 +2256,7 @@ function update_state(keep_suggest_p) {
         persona_code,
         pv_trail_max_suggestions,
         endstate_blur,
+        humansl_scan_profiles,
     }, more)
 }
 function subboard_stones_suggest_for(su, prev_su) {
