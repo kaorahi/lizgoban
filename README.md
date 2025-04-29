@@ -64,6 +64,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Preview of branches before switching for nested SGFs
 * Configurable presets that enable easy switching of your favorite combinations on engine, weights, komi, board_type, etc.
 * Random generation of various playing styles for matches vs. weak bots
+* Rank estimation based on KataGo's human-style policy and automatic adjustment of human-style profile
 * AI sparring partner that creates skill-testing situations
 * Play pair match, "you & KataGo" vs. Leela Zero, etc.
 * [Tsumego frame](https://github.com/lightvector/KataGo/pull/261#issuecomment-667661381) for solving life & death problems
@@ -84,7 +85,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
 * Additional plots
   * cumulative score-losses by black and white that indicate mistakes of each player separately
   * ambiguity of life & death that indicates big fights, game stages (opening / middlegame / endgame), etc.
-  * each rank's preferences for the played move (9d, 3d, 1k, 6k, 15k).
+  * each rank's preferences for the played move (9d, 3d, 1k, 6k, 15k, by default)
 * Indicators that suggest highlight scenes of the game (ko fights, SOPPO)
 * Translucent stones for too long variations as the above screenshot
 * Ownerships of stones by facial expressions
@@ -324,7 +325,10 @@ For information about the displayed marks, shortcut keys, and other features, re
 
 * Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://kaorahi.github.io/visual_MCTS/)
 * [Experimental] Show the search tree for ["if players try to capture/rescue this stone"](https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449) by shift + double-click. You need a human model for good results. [ref](https://github.com/kaorahi/visual_MCTS/tree/master/sample4)
-* Add each rank's preferences in the winrate graph if a human model is available.
+* Add rank estimation feature if a human model is available:
+  * rank estimation (9d, 3d, 1k, 6k, or 15k, by default. Check `Edit > Preferences > Finer dan/kyu scan` for finer but slower estimation.)
+  * each rank's preferences in the winrate graph
+  * automatic adjustment of the human-style profile in match vs. AI.
 * Add "Next move quiz" to View menu.
 * Add board position copy-paste.
   1. Alt+drag to select the source region.
