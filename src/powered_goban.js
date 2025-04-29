@@ -91,11 +91,6 @@ function suggest_handler(h) {
     copy_vals(suggest_keys2, cur)
     !prefer_cached_p && copy_vals(suggest_keys2, cur_by_engine)
     game.engines[engine_id] = true; game.current_engine = engine_id
-    // decrease useless data traffic to renderer
-    delete R.default_policy
-    delete R.humansl_stronger_policy
-    delete R.humansl_weaker_policy
-    delete R.humansl_scan
     // if current engine is Leela Zero, recall ownerships by KataGo
     const {endstate, endstate_stdev, score_without_komi} = {...cur, ...preferred_h}
     R.show_endstate && add_endstate_to_stones(R.stones, endstate, endstate_stdev, mc, true)
@@ -188,6 +183,12 @@ function set_renderer_state(...args) {
               next_as_suggest,
               previous_suggest, future_moves, winrate_trail}, endstate_d_i)
     add_next_played_move_as_fake_suggest()
+    // decrease useless data traffic to renderer
+    const masked_keys = [
+        'default_policy', 'humansl_stronger_policy', 'humansl_weaker_policy',
+        'humansl_scan',
+    ]
+    masked_keys.forEach(key => delete R[key])
 }
 function set_and_render(is_board_changed, ...args) {
     set_renderer_state(...args)
