@@ -2,6 +2,16 @@
 
 # Release notes
 
+## LizGoban 0.8.1-pre3
+
+* Upgrade KataGo to [1.16.0](https://github.com/lightvector/KataGo/releases/tag/v1.16.0).
+* Add rank estimation in the winrate graph if a human model is available. (Check `Edit > Preferences > Finer dan/kyu scan` for finer but slower estimation.)
+* Add automatic adjustment of the rank in match vs. AI if a human model is available.
+* Add board and stone images to the all-in-one package for Windows.
+* Fix too strong HumanSL play in match vs. AI in 0.8.1-pre2.
+
+(We have made substantial changes since 0.8.0, so we might call the next release 0.9.0 instead of 0.8.1.)
+
 ## LizGoban 0.8.1-pre2
 
 * Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://kaorahi.github.io/visual_MCTS/)
