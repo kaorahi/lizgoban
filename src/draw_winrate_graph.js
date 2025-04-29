@@ -485,7 +485,8 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         })
         // assume uniform prior
         const log_likelihood = ps => sum(ps.map(p => Math.log(p)))
-        const lls = aa_transpose(pss.filter(valid)).map(log_likelihood)
+        const past_pss = pss.slice(0, R.move_count + 1)
+        const lls = aa_transpose(past_pss.filter(valid)).map(log_likelihood)
         const max_ll = Math.max(...lls)
         const unnormalized_posteriors = lls.map(ll => Math.exp(ll - max_ll))
         const s = sum(unnormalized_posteriors)
