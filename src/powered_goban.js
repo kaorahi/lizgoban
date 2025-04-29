@@ -54,7 +54,6 @@ const suggest_keys2 = [
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'root_rawStScoreError', 'root_rawVarTimeLeft',
     'amb_gain',
-    'humansl_scan',
     ...suggest_keys2_by_policy,
 ]
 
@@ -78,7 +77,7 @@ function suggest_handler(h) {
     const cache_p = R.use_cached_suggest_p && prefer_cached_p
     const preferred_h = cache_p ? {...h, ...cur_by_engine} : h
     // update policies immediately even when cache is used
-    cache_p && suggest_keys2_by_policy.forEach(k => h[k] && (preferred_h[k] = h[k]))
+    cache_p && suggest_keys2_by_policy.forEach(k => h[k] && !empty(h[k]) && (preferred_h[k] = h[k]))
     // do not use suggest_keys1 for background_visits etc.
     // because we need to copy falsy value too.
     preferred_h.background_visits =

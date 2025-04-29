@@ -290,6 +290,7 @@ E.humansl_proyear_profiles = hsl_prepend('proyear_', hsl_years)
 E.humansl_policy_keys = [
     'default_policy',
     'humansl_stronger_policy', 'humansl_weaker_policy',
+    'humansl_scan',
 ]
 
 // avoid letters for keyboard operation in renderer.js

@@ -1902,7 +1902,9 @@ function toast(message, millisec) {renderer('toast', message, millisec)}
 function get_humansl_scan_profiles(cache_p) {
     const full = get_stored('humansl_full_scan_p')
     const ret = full ? humansl_rank_profiles : option.humansl_scan_profiles
-    const cached = ret.length == game.ref_current().humansl_scan?.length
+    const {humansl_scan} = game.ref_current()
+    const cached = humansl_scan && (ret.length == humansl_scan.length) &&
+          !humansl_scan.find(([k, v]) => !truep(v))
     return (cache_p && cached) ? [] : ret
 }
 

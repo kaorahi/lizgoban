@@ -726,8 +726,12 @@ function create_leelaz () {
             'humansl_stronger_policy', 'humansl_weaker_policy',
         ]
         const policies = pick_keys(obtained_policy || {}, ...policy_keys)
-        const humansl_scan = humansl_scan_keys().map(key =>
-            [humansl_scan_policy_for(key), obtained_policy?.[key]])
+        const scan_pair = key => {
+            const v = obtained_policy[key]
+            return truep(v) && [humansl_scan_policy_for(key), v]
+        }
+        const humansl_scan = !obtained_policy ? [] :
+              humansl_scan_keys().map(scan_pair).filter(truep)
         const is_suggest_by_genmove =
               !!command?.match(/^(lz|kata)-genmove|^kata-search/)
         merge(h, {
