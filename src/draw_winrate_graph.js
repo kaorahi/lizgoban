@@ -463,7 +463,7 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
     table.forEach(([key, r_bot, r_top]) => {
         const s0 = clip_init_len(0), max_bar_width = sr2coord(s0, 0)[0] * 0.2
         const scan_len = R.humansl_scan_profiles?.length || -1
-        const valid = (ps, s) => s > s0 && truep(ps?.[0]) && ps.length === scan_len
+        const valid = (ps, s) => s >= s0 && truep(ps?.[0]) && ps.length === scan_len
         const pss = winrate_history_values_of(key)
         pss.forEach((ps, s) => {
             if (!valid(ps, s)) {return}
