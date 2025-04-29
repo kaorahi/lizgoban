@@ -482,7 +482,7 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         })
         // assume uniform prior
         const scan_len = R.humansl_scan_profiles?.length || 0
-        const valid = ps => ps && ps.length === scan_len
+        const valid = (ps, s) => s > s0 && ps && ps.length === scan_len
         const log_likelihood = ps => sum(ps.map(p => Math.log(p)))
         const lls = aa_transpose(pss.filter(valid)).map(log_likelihood)
         const max_ll = Math.max(...lls)
