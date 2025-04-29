@@ -461,15 +461,15 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         ['humansl_scan_b', 50, 100],
         ['humansl_scan_w', 0, 50],
     ]
+    const s0 = clip_init_len(0), max_bar_width = sr2coord(s0, 0)[0] * 0.2
+    const scan_len = R.humansl_scan_profiles?.length || -1
+    const valid = (ps, s) => s >= s0 && truep(ps?.[0]) && ps.length === scan_len
     table.forEach(([key, r_bot, r_top]) => {
-        const s0 = clip_init_len(0), max_bar_width = sr2coord(s0, 0)[0] * 0.2
-        const scan_len = R.humansl_scan_profiles?.length || -1
-        const valid = (ps, s) => s >= s0 && truep(ps?.[0]) && ps.length === scan_len
         const pss = winrate_history_values_of(key)
+        const [k2r, ] = translator_pair([0, scan_len], [r_top, r_bot])
         pss.forEach((ps, s) => {
             if (!valid(ps, s)) {return}
             const p_sum = sum(ps), normalized_ps = ps.map(p => p / p_sum)
-            const [k2r, ] = translator_pair([0, ps.length], [r_top, r_bot])
             const [p2alpha, ] = translator_pair([0, 1 / ps.length], [0, 0.5])
             normalized_ps.forEach((p, k) => {
                 const [x0, y0] = sr2coord(s, k2r(k))
@@ -495,7 +495,6 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         const p_argmax = posteriors.indexOf(p_max)
         const rank = R.humansl_scan_profiles?.[p_argmax]?.replace(/rank_/, '')
         if (!rank) {return}
-        const [k2r, ] = translator_pair([0, posteriors.length], [r_top, r_bot])
         // const rgb = ['fc', '8d', '49'].map(s => parseInt(s, 16)).join(',') // orange
         // const rgb = '0,255,128' // green
         // const rgb = '0,128,255' // blue
