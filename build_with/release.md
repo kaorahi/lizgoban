@@ -2,72 +2,32 @@
 
 # Release notes
 
-## LizGoban 0.8.1-pre3
+## LizGoban 0.9.0
+
+Highlights:
 
 * Upgrade KataGo to [1.16.0](https://github.com/lightvector/KataGo/releases/tag/v1.16.0).
-* Add rank estimation in the winrate graph if a human model is available. (Check `Edit > Preferences > Finer dan/kyu scan` for finer but slower estimation.)
-* Add automatic adjustment of the rank in match vs. AI if a human model is available.
-* Add board and stone images to the all-in-one package for Windows.
-* Fix too strong HumanSL play in match vs. AI in 0.8.1-pre2.
-
-(We have made substantial changes since 0.8.0, so we might call the next release 0.9.0 instead of 0.8.1.)
-
-## LizGoban 0.8.1-pre2
-
 * Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://kaorahi.github.io/visual_MCTS/)
+* Add rank estimation feature if a human model is available:
+  * rank estimation (9d, 3d, 1k, 6k, or 15k, by default. Check `Edit > Preferences > Finer dan/kyu scan` for finer but slower estimation.)
+  * each rank's preferences in the winrate graph
+  * automatic adjustment of the human-style profile in match vs. AI.
 * [Experimental] Show the search tree for ["if players try to capture/rescue this stone"](https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449) by shift + double-click. You need to specify KataGo's option `-human-model` for good results. (In the all-in-one package for Windows, choose "Human-like Analysis" from "Preset" menu.) [ref](https://github.com/kaorahi/visual_MCTS/tree/master/sample4)
-* Add each rank's preferences in the winrate graph if a human model is available.
+
+Further updates:
+
+* Add board and stone images to the all-in-one package for Windows.
 * Add board position copy-paste.
   1. Alt+drag to select the source region.
   2. `Edit > Flip / rotate / etc. > copy stones`
   3. Alt+drag to select the destination region.
   4. `Edit > Flip / rotate / etc. > paste`
 * Add tsumego frame without ko threats. (`Tool > Tsumego frame`)
-* Upgrade libraries (Electron 35, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
-
-## LizGoban 0.8.1-pre1
-
-Just a test of an experimental feature ["next move quiz"](https://github.com/kaorahi/lizgoban/issues/120).
-
 * Add "Next move quiz" to View menu.
-* Upgrade libraries (Electron 33, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
 
-## LizGoban 0.8.0
+Incompatibilities with 0.8.*:
 
-Highlights:
-
-* Upgrade KataGo to [1.15.3](https://github.com/lightvector/KataGo/releases/tag/v1.15.3).
-* Separate the model files from *.exe for larger models including a model for human-like style.
-* Add "human-style" features.
-  * Compare the policies between 5kyu and 1dan, for example.
-  * Play human-like moves for the specified rank.
-* Add a new strategy "spar" to "match vs. AI". It's focused on creating skill-testing situations.
-* Add a sound feature.
-* Add "Open recent" to File menu.
-
-Further updates:
-
-* Blur ownership display. (Borrow the idea from [katrain#555](https://github.com/sanderland/katrain/issues/555).)
-* Replace zone indicator with playing styles indicator.
-* Add ownership distribution chart at the bottom left. (Press "x" key to enlarge it.)
-* Add faint red rings around "hot" stones.
-* Add thin red background for "hot" periods in winrate graph.
-* Add "ambiguity of areas" (faint gray line) and "settled territories" (faint green/pink dots) to score graph.
-* Warn overlooked high-policy best moves by squares on stones.
-* Highlight settled areas by "v" key.
-* Make long press of cursor keys smoother.
-* Change playing style of persona strategy. This is still being tested and might change in the future.
-* Avoid unnatural tenuki in match vs. weakened AI.
-* Add random pair match.
-* Detect encoding of SGF files etc.
-* [Support TamaGo](https://github.com/kobanium/TamaGo).
-* Deprecate the display of preferred moves by "AIs for handicap games".
-* Deprecate homemade "aggressiveness" features and rely on the native KataGo features.
-
-Incompatibilities with 0.7.*:
-
-* Change the autosave format.
-* Upgrade libraries (Electron 32, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+* Upgrade libraries (Electron 36, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
 
 ### Human-style features
 
@@ -87,7 +47,7 @@ You can also play against the "spar" AI. Designed for practice, it focuses not o
 
 Just download the all-in-one package (`LizGoban-*_win_*.zip`), unzip it, and double-click `LizGoban *.exe`. You do not need installation, configuration, additional downloads, and so on. Its file size is due to the built-in engine:
 
-* [KataGo 1.15.3](https://github.com/lightvector/KataGo/releases/tag/v1.15.3) (eigenavx2, opencl)
+* [KataGo](https://github.com/lightvector/KataGo/releases/) (eigenavx2, opencl)
 * [18 block network](https://katagotraining.org/networks/) (kata1-b18c384nbt-s9996)
 * [human-trained network](https://github.com/lightvector/KataGo/releases/tag/v1.15.0) (b18c384nbt-humanv0)
 

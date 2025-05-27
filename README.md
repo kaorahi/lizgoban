@@ -321,7 +321,7 @@ For information about the displayed marks, shortcut keys, and other features, re
 
 ## <a name="Changes"></a>Major changes
 
-### 0.8.1
+### 0.9.0
 
 * Add visualization of AI's search tree. (`Tool > Plot MCTS tree`) [sample](https://kaorahi.github.io/visual_MCTS/)
 * [Experimental] Show the search tree for ["if players try to capture/rescue this stone"](https://github.com/lightvector/KataGo/issues/1031#issuecomment-2746727449) by shift + double-click. You need a human model for good results. [ref](https://github.com/kaorahi/visual_MCTS/tree/master/sample4)
@@ -336,7 +336,7 @@ For information about the displayed marks, shortcut keys, and other features, re
   3. Alt+drag to select the destination region.
   4. `Edit > Flip / rotate / etc. > paste`
 * Add tsumego frame without ko threats. (`Tool > Tsumego frame`)
-* Upgrade libraries (Electron 35, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+* Upgrade libraries (Electron 36, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
 
 ### 0.8.0
 
