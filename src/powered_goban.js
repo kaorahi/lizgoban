@@ -235,7 +235,8 @@ function humansl_rank_posterior(winrate_history) {
         const unnormalized_posteriors = lls.map(ll => Math.exp(ll - max_ll))
         const s = sum(unnormalized_posteriors)
         const posteriors = unnormalized_posteriors.map(p => p / s)
-        return [[total_key, posteriors], [mle_key, rank]]
+        const vague = posteriors[argmax_ll] < 3.0 / lls.length ? '?' : ''
+        return [[total_key, posteriors], [mle_key, rank && (rank + vague)]]
     }))
 }
 

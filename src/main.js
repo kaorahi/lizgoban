@@ -1668,7 +1668,7 @@ function should_adjust_humansl_profile_in_match() {
 function adjust_humansl_profile_in_match_maybe() {
     if (!should_adjust_humansl_profile_in_match()) {return}
     const mle = R[is_bturn() ? 'humansl_scan_mle_w' : 'humansl_scan_mle_b']
-    if (!mle) {return}
+    if (!humansl_rank_profiles.includes(mle)) {return}
     set_stored('humansl_profile_in_match', mle)
     renderer('set_humansl_profile_in_match_from_main', mle)
 }
