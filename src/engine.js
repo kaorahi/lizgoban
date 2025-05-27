@@ -362,11 +362,12 @@ function create_leelaz () {
         avoid_resign_p = aux.avoid_resign_p
     }
     const update_kata_by_aux = aux => {
+        const newp = (a, b, f = identity) => !empty(b) && (f(a) !== f(b))
         const profile_changed_p =
-            humansl_stronger_profile !== aux.humansl_stronger_profile ||
-            humansl_weaker_profile !== aux.humansl_weaker_profile ||
-            tmp_humansl_profile !== aux.tmp_humansl_profile ||
-            JSON.stringify(humansl_scan_profiles) !== JSON.stringify(aux.humansl_scan_profiles)
+              newp(humansl_stronger_profile, aux.humansl_stronger_profile) ||
+              newp(humansl_weaker_profile, aux.humansl_weaker_profile) ||
+              newp(tmp_humansl_profile, aux.tmp_humansl_profile) ||
+              newp(humansl_scan_profiles, aux.humansl_scan_profiles, JSON.stringify)
         record_simple_aux(aux)
         let update_kata_p = profile_changed_p
         const update_kata = (val, new_val, command, setter) => {
