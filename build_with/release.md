@@ -2,6 +2,12 @@
 
 # Release notes
 
+## LizGoban 0.9.1-pre1
+
+* Upgrade KataGo to [1.16.3](https://github.com/lightvector/KataGo/releases/tag/v1.16.3).
+* Enable policy comparison between "human-style" and KataGo. (In the all-in-one package for Windows, select "Human-like Analysis" from "Preset" menu, and "Preferences" from "Edit" menu.)
+* Upgrade libraries (Electron 37, etc.). So you may need to do "npm install" again if you use LizGoban from the command line.
+
 ## LizGoban 0.9.0
 
 Highlights:
