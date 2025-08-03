@@ -1561,7 +1561,7 @@ function open_clipboard_image() {
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
         {label: 'Tool', submenu: [recall]},
         {label: 'Help', submenu: [usage, usage2, tips]},
-        ...(app.isPackaged ? [] : [debug]),
+        ...(!debug_menu_p ? [] : [debug]),
     ]
     // init
     win.setMenu(Menu.buildFromTemplate(menu))
@@ -1621,7 +1621,7 @@ function open_preference() {
         {label: 'File', submenu: [{role: 'close'}]},
         {label: 'View',
          submenu: [{role: 'zoomIn'}, {role: 'zoomOut'}, {role: 'resetZoom'}]},
-        !app.isPackaged && {label: 'Debug', submenu: [{role: 'toggleDevTools'}]},
+        debug_menu_p && {label: 'Debug', submenu: [{role: 'toggleDevTools'}]},
     ].filter(truep)
     const w = get_new_window('preference_window.html', {webPreferences})
     w.setMenu(Menu.buildFromTemplate(menu))
