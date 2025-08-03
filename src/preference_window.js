@@ -67,6 +67,7 @@ const humansl_profile_lists = [
     humansl_rank_profiles.toReversed(),
     humansl_preaz_profiles.toReversed(),
     humansl_proyear_profiles,
+    [null],  // KataGo's original policy
 ]
 function cum_len(aa) {
     const las = a => a.length - 1
@@ -99,8 +100,9 @@ function update_humansl_comparison(text_only_p) {
     const humansl_stronger_profile = p('#humansl_stronger_profile')
     const humansl_weaker_profile = p('#humansl_weaker_profile')
     const humansl_color_enhance = to_f(Q('#humansl_color_enhance').value)
-    setq('#humansl_stronger_profile_label', humansl_stronger_profile)
-    setq('#humansl_weaker_profile_label', humansl_weaker_profile)
+    const no_profile = '(katago)'
+    setq('#humansl_stronger_profile_label', humansl_stronger_profile || no_profile)
+    setq('#humansl_weaker_profile_label', humansl_weaker_profile || no_profile)
     setq('#humansl_color_enhance_label', `color enhance ${humansl_color_enhance}`)
     if (text_only_p) {return}
     send('set_humansl_comparison', {
