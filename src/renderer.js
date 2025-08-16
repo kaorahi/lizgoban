@@ -824,24 +824,35 @@ function shrink_analysis_region(axis, positive) {
 
 // match AI config
 
+const humansl_offset_in_match_list = seq(19,-9).map(to_s)
+const humansl_offset_in_match_init = '0'
+const humansl_offset_in_match_markers = ['-5', '0', '5']
+const humansl_offset_in_match_slider = Q('#humansl_offset_in_match_slider')
+
 const humansl_profile_in_match_list = [...humansl_rank_profiles.toReversed(), '']
 const humansl_profile_in_match_markers = ['rank_10k', 'rank_1d']
 // const humansl_profile_in_match_markers = ['rank_20k', 'rank_10k', 'rank_1d', 'rank_9d']
 const humansl_profile_in_match_slider = Q('#humansl_profile_in_match_slider')
 const humansl_profile_in_match_auto_checkbox = Q("#humansl_profile_in_match_auto")
 function update_humansl_profile_in_match(manually) {
-    const f = (slider, list, disabled, val_id, label_for) => {
+    const f = (slider, list, span, visible, val_id, label_for) => {
         const p = list[to_i(slider.value)]
-        slider.disabled = disabled
+        update_ui_element_sub(span, visible)
         setq(val_id, label_for(p))
         return p
     }
     const {checked} = humansl_profile_in_match_auto_checkbox
     const label_for_profile = p =>
           checked ? '?' : p ? p.replace(/rank_|preaz_|proyear_/, '') : '(full)'
+    const label_for_offset = p => to_i(p) > 0 ? `+${p}` : p
     const profile = f(humansl_profile_in_match_slider, humansl_profile_in_match_list,
-                      checked, "#humansl_profile_in_match_value", label_for_profile)
-    manually && (main('set_humansl_profile_in_match', profile), set_match_param())
+                      humansl_profile_in_match_span, !checked,
+                      "#humansl_profile_in_match_value", label_for_profile)
+    const o_str = f(humansl_offset_in_match_slider, humansl_offset_in_match_list,
+                    humansl_offset_in_match_span, checked,
+                    "#humansl_offset_in_match_value", label_for_offset)
+    const offset = checked ? to_i(o_str) : 0
+    manually && (main('set_humansl_profile_in_match', profile, offset), set_match_param())
 }
 function set_humansl_profile_in_match_from_main(humansl_profile_in_match) {
     merge(R, {humansl_profile_in_match})
@@ -851,6 +862,8 @@ function set_humansl_profile_in_match_from_main(humansl_profile_in_match) {
     update_humansl_profile_in_match()
 }
 function initialize_humansl_profile_in_match_slider() {
+    humansl_offset_in_match_slider.value =
+        humansl_offset_in_match_list.indexOf(humansl_offset_in_match_init)
     const f = (slider, list, markers_id, markers_vals) => {
         const [min, max] = [0, list.length - 1], h = {min, max}
         if (slider.hasAttribute('min')) {return}
@@ -865,6 +878,8 @@ function initialize_humansl_profile_in_match_slider() {
     }
     f(humansl_profile_in_match_slider, humansl_profile_in_match_list,
       '#humansl_profile_in_match_markers', humansl_profile_in_match_markers)
+    f(humansl_offset_in_match_slider, humansl_offset_in_match_list,
+      '#humansl_offset_in_match_markers', humansl_offset_in_match_markers)
     const on_check = () => {
         const {checked} = humansl_profile_in_match_auto_checkbox
         main('set_adjust_humansl_profile_in_match_p', checked)

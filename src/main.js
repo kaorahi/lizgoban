@@ -101,6 +101,7 @@ let auto_play_sec = 0, auto_playing_strategy = 'replay'
 let pausing = false, busy = false
 let exercise_metadata = null, exercise_match_p = false
 let adjust_sanity_p = false, adjust_humansl_profile_in_match_p = false
+let humansl_offset_in_match = 0
 let auto_play_weaken_for_bw = {}; clear_auto_play_weaken_for_bw()
 let debug_menu_p = !app.isPackaged
 
@@ -1632,8 +1633,9 @@ function set_sanity_from_renderer(sanity) {set_stored('sanity', sanity)}
 function set_adjust_humansl_profile_in_match_p(bool) {
     adjust_humansl_profile_in_match_p = bool
 }
-function set_humansl_profile_in_match(profile) {
+function set_humansl_profile_in_match(profile, offset) {
     set_stored('humansl_profile_in_match', profile)
+    humansl_offset_in_match = offset
 }
 function get_humansl_profile_in_match(pasted_p) {
     const require_valid_weaken_method_p = (pasted_p === '')  // dirty!
