@@ -830,12 +830,17 @@ const humansl_profile_in_match_markers = ['rank_10k', 'rank_1d']
 const humansl_profile_in_match_slider = Q('#humansl_profile_in_match_slider')
 const humansl_profile_in_match_auto_checkbox = Q("#humansl_profile_in_match_auto")
 function update_humansl_profile_in_match(manually) {
-    const {value} = humansl_profile_in_match_slider
+    const f = (slider, list, disabled, val_id, label_for) => {
+        const p = list[to_i(slider.value)]
+        slider.disabled = disabled
+        setq(val_id, label_for(p))
+        return p
+    }
     const {checked} = humansl_profile_in_match_auto_checkbox
-    humansl_profile_in_match_slider.disabled = checked
-    const profile = humansl_profile_in_match_list[to_i(value)]
-    const label = profile ? profile.replace(/rank_|preaz_|proyear_/, '') : '(full)'
-    setq("#humansl_profile_in_match_value", checked ? '?' : label)
+    const label_for_profile = p =>
+          checked ? '?' : p ? p.replace(/rank_|preaz_|proyear_/, '') : '(full)'
+    const profile = f(humansl_profile_in_match_slider, humansl_profile_in_match_list,
+                      checked, "#humansl_profile_in_match_value", label_for_profile)
     manually && (main('set_humansl_profile_in_match', profile), set_match_param())
 }
 function set_humansl_profile_in_match_from_main(humansl_profile_in_match) {
