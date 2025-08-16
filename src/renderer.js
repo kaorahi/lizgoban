@@ -846,16 +846,20 @@ function set_humansl_profile_in_match_from_main(humansl_profile_in_match) {
     update_humansl_profile_in_match()
 }
 function initialize_humansl_profile_in_match_slider() {
-    const [min, max] = [0, humansl_profile_in_match_list.length - 1], h = {min, max}
-    if (humansl_profile_in_match_slider.hasAttribute('min')) {return}
-    each_key_value(h, (k, v) => humansl_profile_in_match_slider.setAttribute(k, v))
-    const markers = Q('#humansl_profile_in_match_markers')
-    humansl_profile_in_match_markers.forEach(m => {
-        const option = document.createElement('option')
-        option.value = humansl_profile_in_match_list.indexOf(m)
-        markers.appendChild(option)
-    })
-    humansl_profile_in_match_slider.addEventListener('input', () => update_humansl_profile_in_match(true))
+    const f = (slider, list, markers_id, markers_vals) => {
+        const [min, max] = [0, list.length - 1], h = {min, max}
+        if (slider.hasAttribute('min')) {return}
+        each_key_value(h, (k, v) => slider.setAttribute(k, v))
+        const markers = Q(markers_id)
+        markers_vals.forEach(m => {
+            const option = document.createElement('option')
+            option.value = list.indexOf(m)
+            markers.appendChild(option)
+        })
+        slider.addEventListener('input', () => update_humansl_profile_in_match(true))
+    }
+    f(humansl_profile_in_match_slider, humansl_profile_in_match_list,
+      '#humansl_profile_in_match_markers', humansl_profile_in_match_markers)
     const on_check = () => {
         const {checked} = humansl_profile_in_match_auto_checkbox
         main('set_adjust_humansl_profile_in_match_p', checked)
