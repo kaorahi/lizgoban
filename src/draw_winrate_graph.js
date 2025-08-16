@@ -39,7 +39,10 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
         draw_winrate_graph_show_until(show_until, w, fontsize,
                                       sr2coord, sq2coord, overlay) :
         draw_winrate_graph_future(w, fontsize, sr2coord, sq2coord, overlay)
-    if (R.busy || show_until_p) {return}
+    if (R.busy) {return}
+    if (show_until_p) {
+        draw_winrate_graph_humansl_scan(show_until, sr2coord, g); return
+    }
     const draw_score = score_drawer(w, sq2coord, g)
     const score_loss_p = !alternative_engine_for_white_p()
     update_winrate_text_geom(w, sr2coord, coord2sr)
@@ -47,7 +50,7 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
     draw_winrate_graph_frame(w, sq2coord, g)
     draw_winrate_graph_settled_territory(sq2coord, g)
     draw_winrate_graph_ambiguity(sr2coord, sq2coord, g)
-    draw_winrate_graph_humansl_scan(sr2coord, g)
+    draw_winrate_graph_humansl_scan(show_until, sr2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
@@ -457,8 +460,9 @@ function draw_winrate_graph_amb_gain(w, sr2coord, g) {
     })
 }
 
-function draw_winrate_graph_humansl_scan(sr2coord, g) {
+function draw_winrate_graph_humansl_scan(show_until, sr2coord, g) {
     const profiles = R.humansl_scan_profiles; if (!profiles) {return}
+    const until_p = truep(show_until)
     // utils
     // (validity checker)
     const s0 = clip_init_len(0)
@@ -478,7 +482,7 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         fill_rect([x0 - width, y0 + sep], [(s === s0 ? x_min : x0), y1 - sep], g)
     }
     // clear
-    g.fillStyle = BLACK; fill_rect([0, y_of(100)], [x_min, y_of(0)], g)
+    until_p && (g.fillStyle = BLACK, fill_rect([0, y_of(100)], [x_min, y_of(0)], g))
     // main
     const table = [
         ['humansl_scan_b', 'humansl_scan_posterior_b', 'humansl_scan_mle_b', 50, 100],
@@ -487,7 +491,7 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
     table.forEach(([key, total_key, mle_key, r_bot, r_top]) => {
         const pss = winrate_history_values_of(key)
         // each move
-        pss.forEach((ps, s) => {
+        !until_p && pss.forEach((ps, s) => {
             if (!valid(ps, s)) {return}
             const unit_p = 1 / scan_len, unit_alpha = 0.5
             const p_sum = sum(ps), normalized_ps = ps.map(p => p / p_sum)

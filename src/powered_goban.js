@@ -217,8 +217,10 @@ function add_next_played_move_as_fake_suggest() {
 function orig_suggest() {return (R.suggest || []).filter(orig_suggest_p)}
 
 function humansl_rank_posterior(winrate_history) {
+    const su = get_showing_until(), lim = (su !== Infinity) && su
+    const [from, to] = num_sort([true_or(lim, 0), game.move_count])
     const scan_len = R.humansl_scan_profiles?.length || -1
-    const valid = (ps, s) => s >= R.init_len && truep(ps?.[0]) && ps.length === scan_len
+    const valid = (ps, s) => from + s >= R.init_len && truep(ps?.[0]) && ps.length === scan_len
     const table = [
         ['humansl_scan_b', 'humansl_scan_posterior_b', 'humansl_scan_mle_b'],
         ['humansl_scan_w', 'humansl_scan_posterior_w', 'humansl_scan_mle_w'],
@@ -226,7 +228,7 @@ function humansl_rank_posterior(winrate_history) {
     return aa2hash(table.flatMap(([key, total_key, mle_key]) => {
         const pss = winrate_history.map(h => h[key])
         // assume uniform prior
-        const filtered_pss = pss.slice(0, R.move_count + 1).filter(valid)
+        const filtered_pss = pss.slice(from, to + 1).filter(valid)
         const log_likelihood = ps => sum(ps.map(p => Math.log(p)))
         const lls = aa_transpose(filtered_pss).map(log_likelihood)
         const max_ll = Math.max(...lls)
