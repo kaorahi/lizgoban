@@ -170,14 +170,10 @@ function create_leelaz () {
         }
         return ret
     }
-    const humansl_profile_restorer = (forcep) => {
-        // if -human-model is given, profile should be applied
-        // only for kata-raw-human-nn and genmove etc.
-        const profile_for_sub_model = forcep ? humansl_profile : ''
+    const humansl_profile_restorer = () => {
         const p =
               truep(tmp_humansl_profile) ? tmp_humansl_profile :
-              is_supported('main_model_humanSL') ? humansl_profile :
-              is_supported('sub_model_humanSL') ? profile_for_sub_model : null
+              is_supported('humanSLProfile') ? humansl_profile : null
         return truep(p) ? humansl_profile_setter(p) : 'name'
     }
     const humansl_profile_updater = () => {
@@ -256,7 +252,7 @@ function create_leelaz () {
         // "name" is a workaround for uncertain side effect of allowResignation.
         // I don't know if it's true, but I'll keep it as a charm. [2024-07-24]
         // https://github.com/lightvector/KataGo/issues/959
-        const com = `time_settings 0 ${sec} 1;${resign}${humansl_profile_restorer(true)};name;${command}`
+        const com = `time_settings 0 ${sec} 1;${resign}${humansl_profile_restorer()};name;${command}`
         leelaz(com, on_response)
     }
     const on_genmove_responsor = (callback, cancellable) => {
