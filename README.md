@@ -86,7 +86,7 @@ You will enjoy LizGoban if you are interested in the process as well as the resu
   * cumulative score-losses by black and white that indicate mistakes of each player separately
   * ambiguity of life & death that indicates big fights, game stages (opening / middlegame / endgame), etc.
   * each rank's preferences for the played move (9d, 3d, 1k, 6k, 15k, by default)
-* Indicators that suggest highlight scenes of the game (ko fights, SOPPO)
+* Indicators that suggest highlight scenes of the game (ko fights, etc.)
 * Translucent stones for too long variations as the above screenshot
 * Ownerships of stones by facial expressions
 
