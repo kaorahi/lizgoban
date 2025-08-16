@@ -706,11 +706,10 @@ function handle_mouse_on_winrate_graph(canvas, coord2sr) {
 
 function winrate_graph_goto(e, coord2sr) {
     const goto_move_count = count => main('busy', 'goto_move_count', count)
-    const [s, r] = coord2sr(...mouse2coord(e))
-    goto_move_count(clip(s, 0, R.history_length))
+    goto_move_count(mouse2movenum(e, coord2sr))
 }
 function hover_on_graph(e, coord2sr, canvas) {
-    set_hovered(null, coord2sr(...mouse2coord(e))[0], null)
+    set_hovered(null, mouse2movenum(e, coord2sr), null)
 }
 
 // record mouse position
@@ -763,6 +762,10 @@ function latest_move_count_for_idx(idx) {
 function mouse2coord(e) {
     const bbox = e.target.getBoundingClientRect()
     return [e.clientX - bbox.left, e.clientY - bbox.top].map(css2phys)
+}
+function mouse2movenum(e, coord2sr) {
+    const [s, r] = coord2sr(...mouse2coord(e))
+    return clip(s, R.init_len, R.history_length)
 }
 function mouse2idx(e, coord2idx) {
     const [i, j] = coord2idx(...mouse2coord(e))
