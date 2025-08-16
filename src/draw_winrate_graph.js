@@ -466,7 +466,7 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
     const valid = (ps, s) => s >= s0 && truep(ps?.[0]) && ps.length === scan_len
     // (segment plotter)
     const x_of = s => sr2coord(s, 0)[0], y_of = r => sr2coord(s0, r)[1]
-    const x_min = x_of(s0), dx = x_of(s0 + 1) - x_min
+    const x_min = x_of(s0) - 1, dx = x_of(s0 + 1) - 1 - x_min
     const max_bar_width = x_min * 0.2
     const plot_segment = (p, k, s, width, rgb, unit_p, unit_alpha, r_top, r_bot) => {
         const [k2r, ] = translator_pair([0, scan_len], [r_top, r_bot])
@@ -475,8 +475,10 @@ function draw_winrate_graph_humansl_scan(sr2coord, g) {
         const alpha = clip(p * unit_alpha / unit_p, 0, 1)
         const sep = (y1 - y0) * 0.05
         g.fillStyle = `rgba(${rgb},${alpha})`
-        fill_rect([x0 - width, y0 + sep], [x0, y1 - sep], g)
+        fill_rect([x0 - width, y0 + sep], [(s === s0 ? x_min : x0), y1 - sep], g)
     }
+    // clear
+    g.fillStyle = BLACK; fill_rect([0, y_of(100)], [x_min, y_of(0)], g)
     // main
     const table = [
         ['humansl_scan_b', 'humansl_scan_posterior_b', 'humansl_scan_mle_b', 50, 100],
