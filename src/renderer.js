@@ -1465,7 +1465,7 @@ function orig_showing_until(canvas) {
     const i_am_first_board = is_first_board_canvas(canvas)
     const my_duty_p = hover_on_me || (!hover_on_any_board && i_am_first_board)
     const retval = accept_any ? ret(true, true) : ret(i_am_first_board, my_duty_p)
-    return truep(retval) && D.clip_init_len(retval)
+    return truep(retval) && clip_init_len(retval)
 }
 const update_showing_until = skip_too_frequent_requests(immediately_update_showing_until)
 function increment_showing_until(inc) {
