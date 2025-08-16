@@ -62,14 +62,16 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
 }
 
 function draw_winrate_graph_frame(w, sr2coord, g) {
-    const tics = 9, xtics = 10, xtics_delta = 50
+    const tics = 9, xtics_delta = 50
+    const xtics = 1 + to_i((R.history_length - R.init_len) / xtics_delta)
     const s2x = s => sr2coord(s, 0)[0], r2y = r => sr2coord(R.init_len, r)[1]
+    const [x_beg, x_end] = [R.init_len, clip(R.history_length, 1)].map(s2x)
     const [y0, y50, y100] = [0, 50, 100].map(r2y)
     g.fillStyle = BLACK; fill_rect([0, r2y(100)], [w, r2y(0)], g)
     // horizontal / vertical lines (tics)
     g.strokeStyle = DARK_GRAY; g.fillStyle = DARK_GRAY; g.lineWidth = 1
     seq(tics, 1).forEach(i => {
-        const y = r2y(100 * i / (tics + 1)); line([0, y], [w, y], g)
+        const y = r2y(100 * i / (tics + 1)); line([x_beg, y], [x_end, y], g)
     })
     seq(xtics, 0).forEach(k => {
         const x = s2x(k * xtics_delta + R.init_len); line([x, y0], [x, y100], g)
@@ -79,7 +81,7 @@ function draw_winrate_graph_frame(w, sr2coord, g) {
     // rect([0, 0], [w, h], g)
     // 50% line
     g.strokeStyle = GRAY; g.fillStyle = GRAY; g.lineWidth = 1
-    line([0, y50], [w, y50], g)
+    line([x_beg, y50], [x_end, y50], g)
 }
 
 function draw_winrate_graph_show_until(show_until, w, fontsize,
