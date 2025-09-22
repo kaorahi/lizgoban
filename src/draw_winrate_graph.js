@@ -55,7 +55,7 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
     draw_winrate_graph_tag(fontsize, sr2coord, g)
     draw_winrate_graph_curve(sr2coord, g)
-    draw_score('score') || draw_no_score(w, sq2coord, fontsize, g)
+    draw_score() || draw_no_score(w, sq2coord, fontsize, g)
     // draw amb_gain after score so that overflowed score points
     // are distinguishable by semi-occlusion
     draw_winrate_graph_amb_gain(w, sr2coord_noclip, g)
@@ -221,7 +221,7 @@ function score_drawer(w, sr2coord, g) {
     const scores = winrate_history_values_of('score_without_komi')
           .map(z => truep(z) && (z - R.komi))
     const max_score = max_until_near_future(scores, Math.abs)
-    if (max_score === - Infinity) {return command => ({score: () => false})[command]()}
+    if (max_score === - Infinity) {return () => false}
     const color = "rgba(235,148,0,1)"
     const margin = 3, scale_list = [5, 2, 1, 0.5, 0.2, 0.1]
     const scale = scale_list.find(z => max_score * z < 50 - margin) || last(scale_list)
@@ -234,7 +234,7 @@ function score_drawer(w, sr2coord, g) {
         !R.hide_suggest && draw_score_text(w, to_r, sr2coord, g)  // avoid flicker
         return true
     }
-    return command => ({score: draw_score})[command]()
+    return draw_score
 }
 
 function max_until_near_future(vals, converter) {
