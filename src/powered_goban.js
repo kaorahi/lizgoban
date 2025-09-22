@@ -45,7 +45,7 @@ const suggest_keys0 = ['engine_bturn']
 // keys1: required. individual plot for each engine.
 const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 // keys2: optional. single global plot.
-const suggest_keys2_by_policy = [
+const suggest_keys2_by_policy_etc = [
     'default_policy',
     'humansl_stronger_policy', 'humansl_weaker_policy',
     'humansl_scan',
@@ -58,7 +58,7 @@ const suggest_keys2 = [
     'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
     'root_rawStScoreError', 'root_rawVarTimeLeft',
     'amb_gain',
-    ...suggest_keys2_by_policy,
+    ...suggest_keys2_by_policy_etc,
 ]
 
 const too_small_prior = 1e-3
@@ -81,7 +81,7 @@ function suggest_handler(h) {
     const cache_p = R.use_cached_suggest_p && prefer_cached_p
     const preferred_h = cache_p ? {...h, ...cur_by_engine} : h
     // update policies immediately even when cache is used
-    cache_p && suggest_keys2_by_policy.forEach(k => h[k] && !empty(h[k]) && (preferred_h[k] = h[k]))
+    cache_p && suggest_keys2_by_policy_etc.forEach(k => h[k] && !empty(h[k]) && (preferred_h[k] = h[k]))
     // do not use suggest_keys1 for background_visits etc.
     // because we need to copy falsy value too.
     preferred_h.background_visits =
@@ -188,7 +188,7 @@ function set_renderer_state(...args) {
               previous_suggest, future_moves, winrate_trail}, endstate_d_i, humansl_rank_posterior(winrate_history))
     add_next_played_move_as_fake_suggest()
     // decrease useless data traffic to renderer
-    const masked_keys = suggest_keys2_by_policy
+    const masked_keys = suggest_keys2_by_policy_etc
     masked_keys.forEach(key => delete R[key])
 }
 function set_and_render(is_board_changed, ...args) {
