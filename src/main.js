@@ -1670,9 +1670,12 @@ function should_adjust_humansl_profile_in_match() {
 function adjust_humansl_profile_in_match_maybe() {
     if (!should_adjust_humansl_profile_in_match()) {return}
     const mle = R[is_bturn() ? 'humansl_scan_mle_w' : 'humansl_scan_mle_b']
-    if (!humansl_rank_profiles.includes(mle)) {return}
-    set_stored('humansl_profile_in_match', mle)
-    renderer('set_humansl_profile_in_match_from_main', mle)
+    const k = humansl_rank_profiles.indexOf(mle); if (k < 0) {return} // can't happen
+    const n = humansl_rank_profiles.length
+    const t = clip(k - humansl_offset_in_match, 0, n - 1)
+    const p = humansl_rank_profiles[t]; if (!truep(p)) {return} // can't happen
+    set_stored('humansl_profile_in_match', p)
+    renderer('set_humansl_profile_in_match_from_main', p)
 }
 function get_current_match_param() {
     const weaken = auto_play_weaken.slice()
