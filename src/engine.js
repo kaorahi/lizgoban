@@ -91,24 +91,26 @@ function create_leelaz () {
         if (!need_raw_nn_p) {return}
         const too_slow = (speedometer.latest() < 20)
         const humansl_scan_args = humansl_scan_keys().map(key =>
-            [key, kata_raw_human_nn, humansl_scan_policy_for(key)])
+            [key, null, kata_raw_human_nn, humansl_scan_policy_for(key)])
         const humansl_args = [
-            ['humansl_stronger_policy',
+            ['humansl_stronger_policy', null,
              kata_raw_human_nn, humansl_stronger_profile],
-            ['humansl_weaker_policy',
+            ['humansl_weaker_policy', null,
              kata_raw_human_nn, humansl_weaker_profile],
             ...(too_slow ? [] : humansl_scan_args),
         ]
         const raw_nn_args = [
-            ['default_policy', kata_raw_nn],
+            ['default_policy', null, kata_raw_nn],
         ]
         const args = is_supported('sub_model_humanSL') ? humansl_args :
               (is_supported('kata-raw-nn') && !too_slow) ? raw_nn_args : []
-        const call_nn = ([key, f, ...as], cont) => {
+        const call_nn = ([key, score_key, f, ...as], cont) => {
             const receiver = h => {
                 const policy = h?.policy; if (!policy) {return}
                 obtained_policy_etc || (obtained_policy_etc = {})
                 obtained_policy_etc[key] = policy
+                const white_score = score_key && (h.whiteLead || h.whiteScore)?.[0]
+                truep(white_score) && (obtained_policy_etc[score_key] = - white_score)
                 cont()
             }
             f(receiver, ...as)
