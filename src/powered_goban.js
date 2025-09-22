@@ -188,10 +188,7 @@ function set_renderer_state(...args) {
               previous_suggest, future_moves, winrate_trail}, endstate_d_i, humansl_rank_posterior(winrate_history))
     add_next_played_move_as_fake_suggest()
     // decrease useless data traffic to renderer
-    const masked_keys = [
-        'default_policy', 'humansl_stronger_policy', 'humansl_weaker_policy',
-        'humansl_scan',
-    ]
+    const masked_keys = suggest_keys2_by_policy
     masked_keys.forEach(key => delete R[key])
 }
 function set_and_render(is_board_changed, ...args) {
