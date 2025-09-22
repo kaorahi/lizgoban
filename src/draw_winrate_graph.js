@@ -49,7 +49,7 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
     draw_winrate_graph_frame(w, sr2coord, g)
     draw_winrate_graph_frame(w, sq2coord, g)
     draw_winrate_graph_settled_territory(sq2coord, g)
-    draw_winrate_graph_ambiguity(sr2coord, sq2coord, g)
+    draw_winrate_graph_ambiguity(sr2coord, sq2coord, score_drawer_params, g)
     draw_winrate_graph_humansl_scan(show_until, sr2coord, g)
     draw_winrate_graph_ko_fight(sr2coord, g)
     score_loss_p && draw_winrate_graph_score_loss(w, sq2coord, true, g)
@@ -333,7 +333,11 @@ function draw_winrate_graph_settled_territory(sr2coord, g) {
     R.move_history.forEach(plot)
 }
 
-function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
+// for easy experiments from dev tools (fixme!)
+R.scolor = '#66f'
+R.wcolor = '#aaa'
+
+function draw_winrate_graph_ambiguity(sr2coord, sq2coord, score_drawer_params, g) {
     const radius = 2, line_width = 3
     g.lineWidth = line_width
     const wide_line = width =>
@@ -356,6 +360,7 @@ function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
                 (fill_rect([left, ymin], [right, ymax], g), left = right = null)
         })
     }
+    const {to_r} = score_drawer_params
     const items_in_upper_chart = [
         // key, stroke, fill, scale, plotter
         ['stone_entropy', TRANSPARENT, 'rgba(255,0,0,0.2)', 0.5, highlight_background_above(20)],
@@ -370,6 +375,8 @@ function draw_winrate_graph_ambiguity(sr2coord, sq2coord, g) {
         ['root_rawStScoreError', '#00f', TRANSPARENT, 10, line],
         // ['root_rawStScoreError', TRANSPARENT, '#444', 10, dots],
         ['root_rawVarTimeLeft', 'rgba(128,128,128,0.4)', TRANSPARENT, 2, wide_line(10)],
+        ['humansl_stronger_score', R.scolor, TRANSPARENT, to_r, wide_line(1)],
+        ['humansl_weaker_score', R.wcolor, TRANSPARENT, to_r, wide_line(1)],
 ]
     draw_winrate_graph_ambiguity_sub(items_in_upper_chart, sr2coord, g)
     draw_winrate_graph_ambiguity_sub(items_in_lower_chart, sq2coord, g)

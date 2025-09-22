@@ -48,6 +48,7 @@ const suggest_keys1 = ['suggest', 'visits', 'b_winrate', 'komi', 'gorule']
 const suggest_keys2_by_policy_etc = [
     'default_policy',
     'humansl_stronger_policy', 'humansl_weaker_policy',
+    'humansl_stronger_score', 'humansl_weaker_score',
     'humansl_scan',
 ]
 const suggest_keys2 = [
@@ -171,6 +172,8 @@ function set_renderer_state(...args) {
         'black_settled_territory', 'white_settled_territory', 'area_ambiguity_ratio',
         ...(M.plot_shorttermScoreError_p() ?
             ['root_rawStScoreError', 'root_rawVarTimeLeft'] : []),
+        ...(R.plot_humansl_score_p ?
+            ['humansl_stronger_score', 'humansl_weaker_score'] : []),
         'amb_gain',
     ].filter(truep)
     const get_move_history = z => aa2hash(move_history_keys.map(key => [key, z[key]]))

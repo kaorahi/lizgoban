@@ -178,6 +178,7 @@ const stored_keys_spec = [
     ['random_opening_p', false, 'Random opening', 'r'],
     ['sound', true, 'Sound', 's'],
     ['humansl_full_scan_p', false, 'Finer dan/kyu scan (KataGo HumanSL)', 'f'],
+    ['plot_humansl_score_p', false],
     ['gorule', default_gorule],
     ['stone_image_p', true],
     ['board_image_p', true],

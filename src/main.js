@@ -699,6 +699,7 @@ function menu_template(win) {
         has_sabaki && {label: 'Attach Sabaki', type: 'checkbox', checked: attached,
                        click: toggle_sabaki},
         menu('Experimental...', [
+            store_toggler_menu_item('HumanSL scores', 'plot_humansl_score_p'),
             obsolete_toggler_menu_item('Reuse analysis', 'use_cached_suggest_p'),
             sep,
             item("Save Q&&A images", 'PrintScreen', save_q_and_a_images),

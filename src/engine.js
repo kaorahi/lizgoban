@@ -93,9 +93,9 @@ function create_leelaz () {
         const humansl_scan_args = humansl_scan_keys().map(key =>
             [key, null, kata_raw_human_nn, humansl_scan_policy_for(key)])
         const humansl_args = [
-            ['humansl_stronger_policy', null,
+            ['humansl_stronger_policy', 'humansl_stronger_score',
              kata_raw_human_nn, humansl_stronger_profile],
-            ['humansl_weaker_policy', null,
+            ['humansl_weaker_policy', 'humansl_weaker_score',
              kata_raw_human_nn, humansl_weaker_profile],
             ...(too_slow ? [] : humansl_scan_args),
         ]
@@ -725,6 +725,7 @@ function create_leelaz () {
         const policy_etc_keys = [
             'default_policy',
             'humansl_stronger_policy', 'humansl_weaker_policy',
+            'humansl_stronger_score', 'humansl_weaker_score',
         ]
         const policies_etc = pick_keys(obtained_policy_etc || {}, ...policy_etc_keys)
         const scan_pair = key => {
