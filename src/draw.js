@@ -31,14 +31,14 @@ const {
     get_pv_trail_for, get_winrate_trail,
 } = require('./draw_winrate_bar.js')
 function draw_winrate_bar(...args) {
-    draw_winrate_bar_sub(target_move(), ...args)
+    !fast_redoing_p() && draw_winrate_bar_sub(target_move(), ...args)
 }
 
 const {draw_winrate_graph} = require('./draw_winrate_graph.js')
 
 const {draw_visits_trail_sub} = require('./draw_visits_trail.js')
 function draw_visits_trail(...args) {
-    draw_visits_trail_sub(get_winrate_trail(), ...args)
+    !fast_redoing_p() && draw_visits_trail_sub(get_winrate_trail(), ...args)
 }
 
 const {

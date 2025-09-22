@@ -38,6 +38,8 @@ function try_fast_redo_now() {
     req.proc(moves)
 }
 
+function fast_redoing_p() {return !!fast_redo_request}
+
 function piecewise_linear(pairs) {
     // (ex.)
     // g = piecewise_linear([[0, 1], [2, 3], [5, 9]])
@@ -59,4 +61,5 @@ module.exports = {
     start_fast_redo,
     stop_fast_redo,
     try_fast_redo,
+    fast_redoing_p,
 }

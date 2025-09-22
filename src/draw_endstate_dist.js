@@ -1,6 +1,7 @@
 'use strict'
 
 function draw_endstate_distribution(canvas) {
+    if (fast_redoing_p()) {return}
     const {komi, endstate_sum} = R
     const score_diff = truep(endstate_sum) && (endstate_sum - komi)
     const {ssg, es_leadings} = sorted_stone_groups(komi, score_diff)
