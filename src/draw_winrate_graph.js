@@ -238,7 +238,7 @@ function score_drawer(w, sr2coord, g) {
 }
 
 function max_until_near_future(vals, converter) {
-    const min_moves = 50, future_moves = 1
+    const min_moves = Math.max(50, vals.findIndex(truep)), future_moves = 1
     const concerned_moves = clip(R.move_count + future_moves, min_moves)
     // +1 for the val of initial board
     const concerned_vals = vals.slice(0, concerned_moves + 1).filter(truep)
