@@ -93,8 +93,10 @@ function create_leelaz () {
         const humansl_scan_args = humansl_scan_keys().map(key =>
             [key, kata_raw_human_nn, humansl_scan_policy_for(key)])
         const humansl_args = [
-            ['humansl_stronger_policy', kata_raw_human_nn, humansl_stronger_profile],
-            ['humansl_weaker_policy', kata_raw_human_nn, humansl_weaker_profile],
+            ['humansl_stronger_policy',
+             kata_raw_human_nn, humansl_stronger_profile],
+            ['humansl_weaker_policy',
+             kata_raw_human_nn, humansl_weaker_profile],
             ...(too_slow ? [] : humansl_scan_args),
         ]
         const raw_nn_args = [
