@@ -218,14 +218,10 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 // additional plots
 
 function score_drawer(w, sr2coord, g) {
-    const scores = winrate_history_values_of('score_without_komi')
-          .map(z => truep(z) && (z - R.komi))
-    const max_score = max_until_near_future(scores, Math.abs)
+    const score_drawer_params = get_score_drawer_params()
+    const {scores, max_score, scale, to_r} = score_drawer_params
     if (max_score === - Infinity) {return () => false}
     const color = "rgba(235,148,0,1)"
-    const margin = 3, scale_list = [5, 2, 1, 0.5, 0.2, 0.1]
-    const scale = scale_list.find(z => max_score * z < 50 - margin) || last(scale_list)
-    const to_r = score => 50 + score * scale
     const plotter = (x, y, s, g) => {g.fillStyle = color; fill_circle([x, y], 2.5, g)}
     const draw_score = () => {
         const at_r = [10, 30, 50, 70, 90], to_score = r => (r - 50) / scale
@@ -235,6 +231,16 @@ function score_drawer(w, sr2coord, g) {
         return true
     }
     return draw_score
+}
+
+function get_score_drawer_params() {
+    const scores = winrate_history_values_of('score_without_komi')
+          .map(z => truep(z) && (z - R.komi))
+    const max_score = max_until_near_future(scores, Math.abs)
+    const margin = 3, scale_list = [5, 2, 1, 0.5, 0.2, 0.1]
+    const scale = scale_list.find(z => max_score * z < 50 - margin) || last(scale_list)
+    const to_r = score => 50 + score * scale
+    return {scores, max_score, scale, to_r}
 }
 
 function max_until_near_future(vals, converter) {
