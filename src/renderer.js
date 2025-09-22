@@ -9,7 +9,9 @@ function Q_all(x) {return document.querySelectorAll(x)}
 const electron = require('electron'), ipc = electron.ipcRenderer
 const {globalize} = require('./globalize.js')
 globalize(require('./util.js'), require('./coord.js'), require('./draw_common.js'))
-const {start_fast_redo, stop_fast_redo, try_fast_redo} = require('./fast_redo.js')
+const {
+    start_fast_redo, stop_fast_redo, try_fast_redo,
+} = require('./fast_redo.js')
 const {sgf_rule_from_katago_rule} = require('./katago_rules.js')
 const {save_blob, save_dataURL} = require('./image_exporter.js')
 const {
