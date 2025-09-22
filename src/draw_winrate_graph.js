@@ -43,7 +43,7 @@ function draw_winrate_graph_sub(g, canvas, show_until, handle_mouse_on_winrate_g
     if (show_until_p) {
         draw_winrate_graph_humansl_scan(show_until, sr2coord, g); return
     }
-    const draw_score = score_drawer(w, sq2coord, g)
+    const {draw_score, score_drawer_params} = score_drawer(w, sq2coord, g)
     const score_loss_p = !alternative_engine_for_white_p()
     update_winrate_text_geom(w, sr2coord, coord2sr)
     draw_winrate_graph_frame(w, sr2coord, g)
@@ -220,7 +220,9 @@ function draw_winrate_graph_tag(fontsize, sr2coord, g) {
 function score_drawer(w, sr2coord, g) {
     const score_drawer_params = get_score_drawer_params()
     const {scores, max_score, scale, to_r} = score_drawer_params
-    if (max_score === - Infinity) {return () => false}
+    if (max_score === - Infinity) {
+        return {draw_score: () => false, score_drawer_params}
+    }
     const color = "rgba(235,148,0,1)"
     const plotter = (x, y, s, g) => {g.fillStyle = color; fill_circle([x, y], 2.5, g)}
     const draw_score = () => {
@@ -230,7 +232,7 @@ function score_drawer(w, sr2coord, g) {
         !R.hide_suggest && draw_score_text(w, to_r, sr2coord, g)  // avoid flicker
         return true
     }
-    return draw_score
+    return {draw_score, score_drawer_params}
 }
 
 function get_score_drawer_params() {
