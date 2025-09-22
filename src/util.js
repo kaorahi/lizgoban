@@ -287,11 +287,6 @@ function hsl_prepend(header, ary) {return ary.map(z => header + z)}
 E.humansl_rank_profiles = hsl_prepend('rank_', hsl_dks)
 E.humansl_preaz_profiles = hsl_prepend('preaz_', hsl_dks)
 E.humansl_proyear_profiles = hsl_prepend('proyear_', hsl_years)
-E.humansl_policy_keys = [
-    'default_policy',
-    'humansl_stronger_policy', 'humansl_weaker_policy',
-    'humansl_scan',
-]
 
 // avoid letters for keyboard operation in renderer.js
 const normal_tag_letters = 'defghijklmnorstuy'
