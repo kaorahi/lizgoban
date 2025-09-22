@@ -720,11 +720,11 @@ function create_leelaz () {
         const f = arg.suggest_handler; if (!f) {return}
         const h = parse_analyze(s, bturn, komi, is_katago())
         const engine_id = get_engine_id()
-        const policy_keys = [
+        const policy_etc_keys = [
             'default_policy',
             'humansl_stronger_policy', 'humansl_weaker_policy',
         ]
-        const policies = pick_keys(obtained_policy_etc || {}, ...policy_keys)
+        const policies_etc = pick_keys(obtained_policy_etc || {}, ...policy_etc_keys)
         const scan_pair = key => {
             const v = obtained_policy_etc[key]
             return truep(v) && [humansl_scan_policy_for(key), v]
@@ -735,7 +735,7 @@ function create_leelaz () {
               !!command?.match(/^(lz|kata)-genmove|^kata-search/)
         merge(h, {
             engine_id, gorule, visits_per_sec: speedometer.per_sec(h.visits),
-            ...policies,
+            ...policies_etc,
             ...(empty(humansl_scan) ? {} : {humansl_scan}),
             is_suggest_by_genmove,
         })
