@@ -326,16 +326,20 @@ function load_sabaki_gametree_to_game(gametree, index, game, cache_suggestions_p
     // [misc.]
     // sample of Fox SGF (has two AP[])
     // (;GM[1]FF[4]  SZ[19]  GN[...]  DT[2020-09-19]  PB[...]  PW[...]  BR[P9...]  WR[P7...]  KM[650]HA[0]RU[Japanese]AP[GNU Go:3.8]RE[B+3.50]TM[10800]TC[5]TT[60]AP[foxwq]RL[0]  ;B[pd]  (;W[dp] ...
-    const ap = first_node.AP || []; ap.includes('foxwq') && fix_fox_sgf(game)
+    fix_sgf_komi(game, first_node.AP)
     return true
 }
 
-function fix_fox_sgf(game) {
+function fix_sgf_komi(game, ap) {
+    // ref. https://github.com/lightvector/KataGo/pull/1118
+    const fix_p = ['foxwq', 'SGFC:2.0'].find(z => ap?.includes(z))
+    if (!fix_p) {return}
     // ad hoc fix for Fox SGF
     const reasonable = Math.abs(game.komi) < 50; if (reasonable) {return}
-    // ref. src/cpp/dataio/sgf.cpp in KataGo 1.8.1
+    // ref. src/cpp/dataio/sgf.cpp in KataGo 1.16.0
     const komi_table = [
         // [[given_komi, ...], correct_komi]
+        [[550, 275], 5.5],
         [[325, 650], 6.5],
         [[375, 750], 7.5],
         [[350, 700], 7],
