@@ -932,7 +932,7 @@ function preset_menu_for_recent(menu_tools) {
 
 function apply_preset(rule, win) {
     const stored = [
-        'stone_style', 'random_opening_p', 'auto_overview',
+        'stone_style', 'stone_image_p', 'random_opening_p', 'auto_overview',
     ]
     stored.forEach(key => (rule[key] !== undefined) && set_stored(key, rule[key]))
     const {
