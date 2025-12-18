@@ -141,7 +141,7 @@ function draw_winrate_bar_suggestions(w, h, xfor, vline, move_count, large_bar, 
                target_p, draw_order_p, winrate} = winrate_bar_suggest_prop(s, move_count)
         if (vline_color) {
             const ns = R.next_as_suggest
-            let wr = (ns && ns.visits > s.visits) ?
+            let wr = (ns && ns.move === s.move && ns.visits > s.visits) ?
                 winrate_bar_suggest_prop(ns, move_count).winrate : winrate
             g.lineWidth = 3; g.strokeStyle = vline_color; vline(flip_maybe(wr))
         }
