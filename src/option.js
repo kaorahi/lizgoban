@@ -77,6 +77,8 @@ const default_option = {
 const option = {}
 let white_preset = []
 
+console.log(`Default path = "${default_path_for('.')}"`)
+
 const default_config_paths = [
     default_path_for('.'), process.env.PORTABLE_EXECUTABLE_DIR,
 ]
@@ -92,7 +94,14 @@ function parse_argv() {
     argv.forEach((x, i, a) => parse_option(x, a[i + 1]))
 }
 function parse_option(cur, succ) {
-    const read_file = path => safely(fs.readFileSync, path) || '{}'
+    const read_file = path => {
+        const content = safely(fs.readFileSync, path)
+        const abs_path = PATH.resolve(path)
+        const message = content ? `Config = "${abs_path}"` :
+              `Skipped unreadable "${abs_path}"`
+        console.log(message)
+        return content || '{}'
+    }
     const merge_json = str => verbose_safely(merge_json_unsafe, str)
     const merge_json_unsafe = str => merge_with_preset(JSON.parse(str))
     const merge_with_preset = orig => {
